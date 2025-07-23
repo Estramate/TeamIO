@@ -36,7 +36,7 @@ export function Landing() {
       icon: Users,
       title: "Mitgliederverwaltung",
       description: "Zentrale Verwaltung aller Vereinsmitglieder mit detaillierten Profilen, Rollen und Kontaktdaten.",
-      highlight: "KI-gestützt",
+      highlight: "Intelligent",
       size: "large"
     },
     {
@@ -139,7 +139,7 @@ export function Landing() {
             
             {/* Improved subtitle */}
             <p className="text-xl sm:text-2xl lg:text-3xl text-gray-600 dark:text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
-              Revolutionäre KI-gestützte Plattform für moderne Sportvereine.
+              Revolutionäre Plattform für moderne Sportvereine.
               <br className="hidden sm:block" />
               <span className="text-gray-500 dark:text-gray-500">Intuitiv. Cloudbasiert. Zukunftssicher.</span>
             </p>
@@ -216,7 +216,7 @@ export function Landing() {
             
             {/* Enhanced description */}
             <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-relaxed font-light">
-              Von KI-gestützter Mitgliederverwaltung bis zu Echtzeit-Analytics.
+              Von intelligenter Mitgliederverwaltung bis zu Echtzeit-Analytics.
               <br className="hidden sm:block" />
               <span className="text-gray-500 dark:text-gray-500">Eine All-in-One-Lösung für zeitgemäße Vereinsführung.</span>
             </p>

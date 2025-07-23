@@ -478,7 +478,7 @@ export default function Members() {
                         <DropdownMenuItem 
                           onClick={() => handleToggleStatus(member)}
                           disabled={toggleMemberStatusMutation.isPending}
-                          className={member.status === 'active' ? "text-destructive focus:text-destructive" : "text-green-600 focus:text-green-600"}
+                          className="text-orange-600 focus:text-orange-600"
                         >
                           {member.status === 'active' ? (
                             <>
@@ -600,7 +600,7 @@ export default function Members() {
                             <DropdownMenuItem 
                               onClick={() => handleToggleStatus(member)}
                               disabled={toggleMemberStatusMutation.isPending}
-                              className={member.status === 'active' ? "text-destructive focus:text-destructive" : "text-green-600 focus:text-green-600"}
+                              className="text-orange-600 focus:text-orange-600"
                             >
                               {member.status === 'active' ? (
                                 <>

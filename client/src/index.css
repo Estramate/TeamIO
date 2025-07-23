@@ -46,6 +46,11 @@
   --warning-foreground: hsl(0, 0%, 100%);
   --error: hsl(0, 84.2%, 60.2%);
   --error-foreground: hsl(0, 0%, 100%);
+
+  /* Club-specific theme variables - can be overridden */
+  --club-primary: var(--primary);
+  --club-secondary: var(--secondary);
+  --club-accent: var(--accent);
 }
 
 .dark {
@@ -91,6 +96,11 @@
   --warning-foreground: hsl(240, 10%, 3.9%);
   --error: hsl(0, 62.8%, 50%);
   --error-foreground: hsl(0, 0%, 98%);
+
+  /* Club-specific theme variables - can be overridden */
+  --club-primary: var(--primary);
+  --club-secondary: var(--secondary);
+  --club-accent: var(--accent);
 }
 
 @layer base {
@@ -170,5 +180,38 @@
   
   .text-accent-600 {
     color: var(--accent-600);
+  }
+
+  /* Club theme utilities */
+  .bg-club-primary {
+    background-color: var(--club-primary);
+  }
+  
+  .bg-club-secondary {
+    background-color: var(--club-secondary);
+  }
+  
+  .bg-club-accent {
+    background-color: var(--club-accent);
+  }
+  
+  .text-club-primary {
+    color: var(--club-primary);
+  }
+  
+  .text-club-secondary {
+    color: var(--club-secondary);
+  }
+  
+  .text-club-accent {
+    color: var(--club-accent);
+  }
+  
+  .border-club-primary {
+    border-color: var(--club-primary);
+  }
+  
+  .hover\:bg-club-primary:hover {
+    background-color: var(--club-primary);
   }
 }

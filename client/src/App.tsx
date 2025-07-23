@@ -3,9 +3,11 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ClubThemeProvider } from "@/contexts/ClubThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
-import Landing from "@/pages/landing";
+import { Landing } from "@/pages/landing";
 import Members from "@/pages/members";
 import Teams from "@/pages/teams";
 import Bookings from "@/pages/bookings";
@@ -18,39 +20,45 @@ import Settings from "@/pages/settings";
 import Layout from "@/components/layout";
 import NotFound from "@/pages/not-found";
 
+function AuthenticatedApp() {
+  return (
+    <Layout>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/members" component={Members} />
+        <Route path="/teams" component={Teams} />
+        <Route path="/bookings" component={Bookings} />
+        <Route path="/facilities" component={Facilities} />
+        <Route path="/finance" component={Finance} />
+        <Route path="/calendar" component={Calendar} />
+        <Route path="/communication" component={Communication} />
+        <Route path="/users" component={Users} />
+        <Route path="/settings" component={Settings} />
+        <Route component={NotFound} />
+      </Switch>
+    </Layout>
+  );
+}
+
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  return (
-    <Switch>
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
-        <Layout>
-          <Route path="/" component={Dashboard} />
-          <Route path="/members" component={Members} />
-          <Route path="/teams" component={Teams} />
-          <Route path="/bookings" component={Bookings} />
-          <Route path="/facilities" component={Facilities} />
-          <Route path="/finance" component={Finance} />
-          <Route path="/calendar" component={Calendar} />
-          <Route path="/communication" component={Communication} />
-          <Route path="/users" component={Users} />
-          <Route path="/settings" component={Settings} />
-        </Layout>
-      )}
-      <Route component={NotFound} />
-    </Switch>
-  );
+  if (isLoading) return <div>Loading...</div>;
+
+  return isAuthenticated ? <AuthenticatedApp /> : <Landing />;
 }
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <ThemeProvider>
+        <ClubThemeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </ClubThemeProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

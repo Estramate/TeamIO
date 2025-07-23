@@ -1,6 +1,7 @@
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useClub } from "@/hooks/use-club";
+import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import {
   Users,
@@ -14,6 +15,9 @@ import {
   UserCog,
   Settings,
   X,
+  Sun,
+  Moon,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,6 +46,7 @@ const adminNavigation = [
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const [location, navigate] = useLocation();
   const { selectedClub, setSelectedClub } = useClub();
+  const { theme, toggleTheme } = useTheme();
 
   const { data: clubs } = useQuery({
     queryKey: ['/api/clubs'],
@@ -80,20 +85,20 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg flex flex-col transition-transform duration-300 ease-in-out",
+          "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-card shadow-lg flex flex-col transition-transform duration-300 ease-in-out border-r",
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Users className="text-white text-lg" />
+              <div className="w-10 h-10 bg-club-primary rounded-lg flex items-center justify-center">
+                <Shield className="text-white text-lg" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">TeamIO</h1>
-                <p className="text-sm text-gray-500">
+                <h1 className="text-xl font-bold text-club-primary">TeamIO</h1>
+                <p className="text-sm text-muted-foreground">
                   {selectedClub?.name || "Kein Verein"}
                 </p>
               </div>
@@ -152,14 +157,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   className={cn(
                     "w-full group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                     isActive
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-club-primary/10 text-club-primary"
+                      : "text-foreground hover:bg-muted"
                   )}
                 >
                   <Icon
                     className={cn(
                       "mr-3 text-base flex-shrink-0",
-                      isActive ? "text-blue-500" : "text-gray-400"
+                      isActive ? "text-club-primary" : "text-muted-foreground"
                     )}
                   />
                   <span className="flex-1 text-left">{item.name}</span>
@@ -175,8 +180,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
           {/* Admin Section */}
           <div className="mt-6 px-3">
-            <div className="border-t border-gray-200 pt-4">
-              <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="border-t border-border pt-4">
+              <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Administration
               </p>
               <div className="mt-2 space-y-1">
@@ -194,14 +199,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       className={cn(
                         "w-full group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                         isActive
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-club-primary/10 text-club-primary"
+                          : "text-foreground hover:bg-muted"
                       )}
                     >
                       <Icon
                         className={cn(
                           "mr-3 text-base flex-shrink-0",
-                          isActive ? "text-blue-500" : "text-gray-400"
+                          isActive ? "text-club-primary" : "text-muted-foreground"
                         )}
                       />
                       {item.name}
@@ -213,30 +218,48 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </div>
         </nav>
 
+        {/* Theme Toggle */}
+        <div className="px-3 py-2 border-t border-border">
+          <Button
+            variant="ghost"
+            onClick={toggleTheme}
+            className="w-full justify-start px-3 py-2 text-sm font-medium rounded-lg hover:bg-muted"
+          >
+            {theme === "light" ? (
+              <Moon className="mr-3 h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Sun className="mr-3 h-4 w-4 text-muted-foreground" />
+            )}
+            <span className="text-foreground">
+              {theme === "light" ? "Dark Mode" : "Light Mode"}
+            </span>
+          </Button>
+        </div>
+
         {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-border">
           <div className="flex items-center space-x-3">
-            <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100"
-              alt="User Profile"
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <div className="w-10 h-10 bg-club-primary rounded-full flex items-center justify-center">
+              <Users className="text-white h-5 w-5" />
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-foreground truncate">
                 Administrator
               </p>
-              <p className="text-xs text-gray-500 truncate">
-                Club-Administrator
+              <p className="text-xs text-muted-foreground truncate">
+                Vereinsadministrator
               </p>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => window.location.href = "/api/logout"}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-muted-foreground hover:text-foreground"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
       </aside>

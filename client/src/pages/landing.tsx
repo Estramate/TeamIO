@@ -27,32 +27,32 @@ export function Landing() {
     {
       icon: Users,
       title: "Mitgliederverwaltung",
-      description: "Zentrale Verwaltung aller Vereinsmitglieder mit detaillierten Profilen und Rollen."
+      description: "Zentrale Verwaltung aller Vereinsmitglieder mit detaillierten Profilen, Rollen, Kontaktdaten und Mitgliederstatus. Automatische Kategorisierung nach Alter, Leistungsklasse und Aktivitätsstatus."
     },
     {
       icon: Trophy,
-      title: "Team-Organisation",
-      description: "Intelligente Teamzusammenstellung nach Verfügbarkeit und Leistungsniveau."
+      title: "Team-Organisation", 
+      description: "Intelligente Teamzusammenstellung basierend auf Verfügbarkeit, Leistungsniveau und Trainingszeiten. Automatische Mannschaftsaufstellung und Spielerstatistiken."
     },
     {
       icon: Calendar,
       title: "Terminplanung",
-      description: "Automatisierte Koordination mit Konfliktserkennung und Benachrichtigungen."
+      description: "Vollautomatisierte Terminkoordination für Training, Spiele und Veranstaltungen. Konfliktserkennung, Benachrichtigungen und Integration mit externen Kalendern."
     },
     {
       icon: MapPin,
-      title: "Anlagenverwaltung",
-      description: "Effiziente Buchung und Verwaltung aller Vereinsanlagen in Echtzeit."
+      title: "Anlagenverwaltung", 
+      description: "Effiziente Buchung und Verwaltung aller Vereinsanlagen - Sportplätze, Hallen, Räume. Echtzeitübersicht der Verfügbarkeit und automatische Reservierungsbestätigung."
     },
     {
       icon: BarChart3,
       title: "Finanz-Dashboard",
-      description: "Übersichtliche Analysen mit automatischen Reports und Prognosen."
+      description: "Umfassende Finanzanalysen mit Mitgliedsbeiträgen, Ausgaben und Budgetplanung. Automatische Reports, Mahnwesen und Liquiditätsprognosen."
     },
     {
       icon: MessageSquare,
       title: "Kommunikation",
-      description: "Integrierte Plattform für Vereinskommunikation und Nachrichten."
+      description: "Integrierte Kommunikationsplattform für Trainer, Spieler und Eltern. Push-Benachrichtigungen, Gruppenchats und offizielle Vereinsmitteilungen."
     }
   ];
 
@@ -66,15 +66,21 @@ export function Landing() {
   const testimonials = [
     {
       name: "Michael Weber",
-      role: "Vorstand SV Musterstadt",
-      content: "TeamIO hat unsere Vereinsverwaltung komplett modernisiert. Die Zeitersparnis ist beeindruckend.",
+      role: "1. Vorstand SV Musterstadt • 480 Mitglieder",
+      content: "Seit der Einführung von TeamIO haben wir unseren Verwaltungsaufwand um mehr als die Hälfte reduziert. Besonders die automatische Beitragsverwaltung und die digitalen Mitgliedsausweise haben uns enorm geholfen.",
       avatar: "MW"
     },
     {
       name: "Sarah Schmidt", 
-      role: "Geschäftsführerin TC Beispielort",
-      content: "Endlich eine Lösung, die alle Bereiche nahtlos verbindet. Absolut empfehlenswert.",
+      role: "Geschäftsführerin TC Beispielort • 12 Teams",
+      content: "Die Trainingsplanung war früher ein Alptraum. Jetzt organisiert sich alles automatisch und die Trainer haben endlich direkten Kontakt zu den Eltern. Unsere Mitgliederzufriedenheit ist spürbar gestiegen.",
       avatar: "SS"
+    },
+    {
+      name: "Thomas Müller",
+      role: "Jugendleiter FC Sportfreunde • 8 Jugendmannschaften", 
+      content: "TeamIO hat unsere Jugendarbeit revolutioniert. Die Eltern sind endlich immer informiert, die Anwesenheitslisten führen sich automatisch und wir haben einen perfekten Überblick über alle Altersklassen.",
+      avatar: "TM"
     }
   ];
 
@@ -118,20 +124,11 @@ export function Landing() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Button 
                 size="lg" 
-                className="group bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 font-medium px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+                className="group bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 font-medium px-12 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                 onClick={() => window.location.href = "/api/login"}
               >
                 Kostenlos starten
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="lg"
-                className="group text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium px-8 py-6 text-lg"
-              >
-                <Play className="mr-2 h-5 w-5" />
-                Demo ansehen
               </Button>
             </div>
 
@@ -139,7 +136,7 @@ export function Landing() {
             <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                Kostenlose Testphase
+                Kostenlos registrieren
               </div>
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
@@ -213,24 +210,144 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Testimonials - Minimal */}
+      {/* Detailed Platform Benefits */}
       <section className="py-24 lg:py-32 bg-gray-50 dark:bg-gray-900/50">
         <div className="container mx-auto px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            
+            <div className="text-center mb-16">
+              <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6">
+                Warum TeamIO die
+                <br />
+                <span className="font-medium">richtige Wahl ist</span>
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              
+              {/* For Administrators */}
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-2xl font-medium text-gray-900 dark:text-white mb-4">
+                    Für Vereinsvorstände
+                  </h3>
+                  <ul className="space-y-4">
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                      <span className="text-gray-600 dark:text-gray-400">
+                        <strong>Rechtssichere Mitgliederverwaltung</strong> mit DSGVO-konformen Datenbanken und automatischen Backup-Systemen
+                      </span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                      <span className="text-gray-600 dark:text-gray-400">
+                        <strong>Transparente Finanzen</strong> mit Echtzeit-Übersichten zu Mitgliedsbeiträgen, Ausgaben und Liquidität
+                      </span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                      <span className="text-gray-600 dark:text-gray-400">
+                        <strong>Automatisierte Prozesse</strong> reduzieren den Verwaltungsaufwand um bis zu 70%
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* For Trainers */}
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-2xl font-medium text-gray-900 dark:text-white mb-4">
+                    Für Trainer & Betreuer
+                  </h3>
+                  <ul className="space-y-4">
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                      <span className="text-gray-600 dark:text-gray-400">
+                        <strong>Intelligente Trainingsplanung</strong> mit automatischer Berücksichtigung von Verfügbarkeiten und Leistungsständen
+                      </span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                      <span className="text-gray-600 dark:text-gray-400">
+                        <strong>Direkte Kommunikation</strong> mit Spielern und Eltern über integrierte Messaging-Funktionen
+                      </span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                      <span className="text-gray-600 dark:text-gray-400">
+                        <strong>Detaillierte Statistiken</strong> zur Leistungsentwicklung und Anwesenheit der Sportler
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Technical Features */}
+            <div className="mt-16 pt-16 border-t border-gray-200 dark:border-gray-700">
+              <h3 className="text-2xl font-medium text-gray-900 dark:text-white mb-8 text-center">
+                Technische Highlights
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">Cloud-basiert</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Sichere Datenhaltung in deutschen Rechenzentren mit 99,9% Verfügbarkeit
+                  </p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">DSGVO-konform</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Vollständig rechtskonform mit deutschen und europäischen Datenschutzbestimmungen
+                  </p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Star className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">Mobile-First</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Optimiert für alle Geräte - Smartphone, Tablet und Desktop
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials - Enhanced */}
+      <section className="py-24 lg:py-32 bg-white dark:bg-gray-950">
+        <div className="container mx-auto px-6 lg:px-8">
           
-          <div className="text-center mb-16">
+          <div className="text-center mb-20">
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6">
               Vertrauen durch
               <br />
               <span className="font-medium">Erfahrung</span>
             </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
+              Über 1.000 Vereine setzen bereits auf TeamIO. Hier sind einige ihrer Erfolgsgeschichten.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-sm">
+              <div key={index} className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-300">
                 
                 {/* Quote */}
-                <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
+                <p className="text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
                   "{testimonial.content}"
                 </p>
                 
@@ -242,16 +359,38 @@ export function Landing() {
                     </span>
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white">
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">
                       {testimonial.name}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
                       {testimonial.role}
                     </div>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Additional stats */}
+          <div className="mt-16 pt-16 border-t border-gray-200 dark:border-gray-700">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto text-center">
+              <div>
+                <div className="text-3xl font-light text-gray-900 dark:text-white mb-2">98%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Weiterempfehlungsrate</div>
+              </div>
+              <div>
+                <div className="text-3xl font-light text-gray-900 dark:text-white mb-2">70%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Weniger Verwaltungsaufwand</div>
+              </div>
+              <div>
+                <div className="text-3xl font-light text-gray-900 dark:text-white mb-2">24/7</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Support & Verfügbarkeit</div>
+              </div>
+              <div>
+                <div className="text-3xl font-light text-gray-900 dark:text-white mb-2">5★</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Durchschnittsbewertung</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -290,7 +429,7 @@ export function Landing() {
 
           {/* Final trust indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 mt-12 text-sm text-gray-400 dark:text-gray-600">
-            <span>✓ 30 Tage kostenfrei testen</span>
+            <span>✓ Kostenlos starten</span>
             <span>✓ Jederzeit kündbar</span>
             <span>✓ Deutscher Support</span>
           </div>

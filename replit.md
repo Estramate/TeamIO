@@ -10,7 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### January 23, 2025
+### January 23, 2025 (Latest)
+- **Complete CRUD Operations Fix**: Resolved all database operation issues across the application
+  - Fixed API endpoint inconsistencies - all routes now use proper club-specific structure (/api/clubs/:clubId/)
+  - Implemented date field validation for empty strings to prevent PostgreSQL errors
+  - Corrected apiRequest parameter order in all frontend mutations (method, url, data)
+  - Added comprehensive date field cleaning for Members and Players (birthDate, contractStart, contractEnd, joinDate)
+  - All create, read, update, delete operations now function properly for Teams, Members, and Players
+
 - **Collapsible Sidebar with Tooltips**: Implemented modern collapsible navigation sidebar
   - Toggle button (chevron icons) to expand/collapse sidebar on desktop
   - Collapsed mode shows only icons with hover tooltips for all navigation items

@@ -77,7 +77,8 @@ import {
   Building,
   Trophy,
   Check,
-  X
+  X,
+  BookOpen
 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";

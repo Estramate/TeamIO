@@ -237,21 +237,74 @@ export const events = pgTable("events", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Finance table
+// Finance table - Complete club financial management
 export const finances = pgTable("finances", {
   id: serial("id").primaryKey(),
   clubId: integer("club_id").notNull().references(() => clubs.id),
   memberId: integer("member_id").references(() => members.id),
+  playerId: integer("player_id").references(() => players.id),
   teamId: integer("team_id").references(() => teams.id),
   type: varchar("type", { length: 20 }).notNull(), // income, expense
   category: varchar("category", { length: 100 }).notNull(),
+  subcategory: varchar("subcategory", { length: 100 }),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   description: text("description").notNull(),
   date: date("date").notNull(),
+  dueDate: date("due_date"),
   reference: varchar("reference", { length: 255 }),
   paymentMethod: varchar("payment_method", { length: 50 }),
-  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, paid, overdue, cancelled
+  priority: varchar("priority", { length: 20 }).default("normal"), // low, normal, high, urgent
+  recurring: boolean("recurring").default(false),
+  recurringInterval: varchar("recurring_interval", { length: 20 }), // monthly, quarterly, yearly
+  nextDueDate: date("next_due_date"),
+  attachments: jsonb("attachments"),
   tags: jsonb("tags"),
+  notes: text("notes"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Member fees tracking table
+export const memberFees = pgTable("member_fees", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  memberId: integer("member_id").notNull().references(() => members.id),
+  feeType: varchar("fee_type", { length: 50 }).notNull(), // membership, training, registration, equipment
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  period: varchar("period", { length: 20 }).notNull(), // monthly, quarterly, yearly, one-time
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"),
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, suspended, cancelled
+  lastPayment: date("last_payment"),
+  nextPayment: date("next_payment"),
+  totalPaid: decimal("total_paid", { precision: 10, scale: 2 }).default("0"),
+  totalOwed: decimal("total_owed", { precision: 10, scale: 2 }).default("0"),
+  notes: text("notes"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Training fees for players
+export const trainingFees = pgTable("training_fees", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  playerId: integer("player_id").notNull().references(() => players.id),
+  teamId: integer("team_id").references(() => teams.id),
+  feeType: varchar("fee_type", { length: 50 }).notNull(), // training, coaching, camp, equipment
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  period: varchar("period", { length: 20 }).notNull(), // monthly, quarterly, yearly, one-time
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"),
+  status: varchar("status", { length: 20 }).notNull().default("active"),
+  lastPayment: date("last_payment"),
+  nextPayment: date("next_payment"),
+  totalPaid: decimal("total_paid", { precision: 10, scale: 2 }).default("0"),
+  totalOwed: decimal("total_owed", { precision: 10, scale: 2 }).default("0"),
+  notes: text("notes"),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -270,6 +323,8 @@ export const clubsRelations = relations(clubs, ({ many }) => ({
   bookings: many(bookings),
   events: many(events),
   finances: many(finances),
+  memberFees: many(memberFees),
+  trainingFees: many(trainingFees),
 }));
 
 export const clubMembershipsRelations = relations(clubMemberships, ({ one }) => ({
@@ -395,8 +450,38 @@ export const financesRelations = relations(finances, ({ one }) => ({
     fields: [finances.memberId],
     references: [members.id],
   }),
+  player: one(players, {
+    fields: [finances.playerId],
+    references: [players.id],
+  }),
   team: one(teams, {
     fields: [finances.teamId],
+    references: [teams.id],
+  }),
+}));
+
+export const memberFeesRelations = relations(memberFees, ({ one }) => ({
+  club: one(clubs, {
+    fields: [memberFees.clubId],
+    references: [clubs.id],
+  }),
+  member: one(members, {
+    fields: [memberFees.memberId],
+    references: [members.id],
+  }),
+}));
+
+export const trainingFeesRelations = relations(trainingFees, ({ one }) => ({
+  club: one(clubs, {
+    fields: [trainingFees.clubId],
+    references: [clubs.id],
+  }),
+  player: one(players, {
+    fields: [trainingFees.playerId],
+    references: [players.id],
+  }),
+  team: one(teams, {
+    fields: [trainingFees.teamId],
     references: [teams.id],
   }),
 }));
@@ -481,6 +566,18 @@ export const insertPlayerStatsSchema = createInsertSchema(playerStats).omit({
   updatedAt: true,
 });
 
+export const insertMemberFeeSchema = createInsertSchema(memberFees).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTrainingFeeSchema = createInsertSchema(trainingFees).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -508,3 +605,7 @@ export type PlayerTeamAssignment = typeof playerTeamAssignments.$inferSelect;
 export type InsertPlayerTeamAssignment = z.infer<typeof insertPlayerTeamAssignmentSchema>;
 export type PlayerStats = typeof playerStats.$inferSelect;
 export type InsertPlayerStats = z.infer<typeof insertPlayerStatsSchema>;
+export type MemberFee = typeof memberFees.$inferSelect;
+export type InsertMemberFee = z.infer<typeof insertMemberFeeSchema>;
+export type TrainingFee = typeof trainingFees.$inferSelect;
+export type InsertTrainingFee = z.infer<typeof insertTrainingFeeSchema>;

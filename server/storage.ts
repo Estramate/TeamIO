@@ -12,6 +12,8 @@ import {
   bookings,
   events,
   finances,
+  memberFees,
+  trainingFees,
   type User,
   type UpsertUser,
   type Club,
@@ -38,6 +40,10 @@ import {
   type InsertEvent,
   type Finance,
   type InsertFinance,
+  type MemberFee,
+  type InsertMemberFee,
+  type TrainingFee,
+  type InsertTrainingFee,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -130,6 +136,14 @@ export interface IStorage {
   createFinance(finance: InsertFinance): Promise<Finance>;
   updateFinance(id: number, finance: Partial<InsertFinance>): Promise<Finance>;
   deleteFinance(id: number): Promise<void>;
+
+  // Member fee operations
+  getMemberFees(clubId: number): Promise<any[]>;
+  createMemberFee(memberFee: any): Promise<any>;
+
+  // Training fee operations
+  getTrainingFees(clubId: number): Promise<any[]>;
+  createTrainingFee(trainingFee: any): Promise<any>;
 
   // Dashboard operations
   getDashboardStats(clubId: number): Promise<any>;
@@ -728,6 +742,26 @@ export class DatabaseStorage implements IStorage {
 
   async deletePlayerStats(id: number): Promise<void> {
     await db.delete(playerStats).where(eq(playerStats.id, id));
+  }
+
+  // Member fee operations
+  async getMemberFees(clubId: number): Promise<MemberFee[]> {
+    return await db.select().from(memberFees).where(eq(memberFees.clubId, clubId)).orderBy(desc(memberFees.createdAt));
+  }
+
+  async createMemberFee(memberFeeData: InsertMemberFee): Promise<MemberFee> {
+    const [memberFee] = await db.insert(memberFees).values(memberFeeData).returning();
+    return memberFee;
+  }
+
+  // Training fee operations
+  async getTrainingFees(clubId: number): Promise<TrainingFee[]> {
+    return await db.select().from(trainingFees).where(eq(trainingFees.clubId, clubId)).orderBy(desc(trainingFees.createdAt));
+  }
+
+  async createTrainingFee(trainingFeeData: InsertTrainingFee): Promise<TrainingFee> {
+    const [trainingFee] = await db.insert(trainingFees).values(trainingFeeData).returning();
+    return trainingFee;
   }
 }
 

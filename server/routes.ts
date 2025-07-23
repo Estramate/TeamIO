@@ -355,6 +355,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const finance = await storage.updateFinance(id, req.body);
+      res.json(finance);
+    } catch (error) {
+      console.error('Error updating finance:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.delete('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteFinance(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting finance:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Member fees routes
+  app.get('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const memberFees = await storage.getMemberFees(clubId);
+      res.json(memberFees);
+    } catch (error) {
+      console.error('Error fetching member fees:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.post('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const memberFeeData = { ...req.body, clubId };
+      const memberFee = await storage.createMemberFee(memberFeeData);
+      res.status(201).json(memberFee);
+    } catch (error) {
+      console.error('Error creating member fee:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Training fees routes
+  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const trainingFees = await storage.getTrainingFees(clubId);
+      res.json(trainingFees);
+    } catch (error) {
+      console.error('Error fetching training fees:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const trainingFeeData = { ...req.body, clubId };
+      const trainingFee = await storage.createTrainingFee(trainingFeeData);
+      res.status(201).json(trainingFee);
+    } catch (error) {
+      console.error('Error creating training fee:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // Seed data route (for development)
   app.post('/api/seed-data', isAuthenticated, async (req: any, res) => {
     try {

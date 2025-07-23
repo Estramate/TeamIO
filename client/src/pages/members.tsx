@@ -395,7 +395,7 @@ export default function Members() {
             {/* Add Button */}
             <Button 
               onClick={handleAddMember}
-              className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
+              className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               Mitglied hinzufügen

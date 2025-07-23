@@ -441,7 +441,7 @@ export default function Players() {
               {/* Add Button */}
               <Button 
                 onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}
-                className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
+                className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <UserPlus className="h-4 w-4 mr-2" />
                 Spieler hinzufügen

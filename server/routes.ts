@@ -485,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: "Hauptspielfeld mit Rasen",
           capacity: 500,
           location: "Zentral",
-          status: "available",
+          status: "active",
         }),
         storage.createFacility({
           clubId: club.id,
@@ -494,7 +494,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: "Trainingsplatz mit Kunstrasen",
           capacity: 200,
           location: "Neben dem Hauptplatz",
-          status: "available",
+          status: "active",
         }),
       ]);
 

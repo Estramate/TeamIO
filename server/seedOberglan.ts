@@ -38,7 +38,7 @@ export async function seedSVOberglan1975() {
       location: "Falkenweg 6, 9560 Feldkirchen",
       equipment: ["Tore", "Eckfahnen", "Banden", "Flutlicht"],
       rules: "Platz nur mit Fußballschuhen betreten. Keine Getränke auf dem Platz.",
-      status: "available"
+      status: "active"
     }).returning();
 
     await db.insert(facilities).values({
@@ -49,7 +49,7 @@ export async function seedSVOberglan1975() {
       capacity: 80,
       location: "Falkenweg 6, 9560 Feldkirchen",
       equipment: ["Umkleiden", "Duschen", "Küche", "Vereinsbar"],
-      status: "available"
+      status: "active"
     });
 
     // Create teams based on real KFV data

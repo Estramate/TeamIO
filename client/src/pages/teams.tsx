@@ -359,11 +359,11 @@ export default function Teams() {
 
   if (!selectedClub) {
     return (
-      <div className="flex-1 overflow-y-auto bg-background p-6">
-        <div className="text-center py-12">
-          <UsersRound className="mx-auto h-12 w-12 text-muted-foreground" />
+      <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
+        <div className="text-center py-8 sm:py-12">
+          <UsersRound className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
           <h3 className="mt-2 text-sm font-medium text-foreground">Kein Verein ausgewählt</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground px-4">
             Bitte wählen Sie einen Verein aus, um Teams zu verwalten.
           </p>
         </div>
@@ -373,7 +373,7 @@ export default function Teams() {
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto bg-background p-6">
+      <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
         {/* Header Section with Search, Filters and Add Button */}
         <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
           <div className="flex flex-col gap-4">
@@ -434,11 +434,11 @@ export default function Teams() {
         {/* Content Area - Scrollable */}
         <div>
           {isTeamsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
               {[...Array(8)].map((_, i) => (
                 <Card key={i} className="animate-pulse">
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="h-4 bg-muted rounded w-3/4"></div>
                       <div className="h-3 bg-muted rounded w-1/2"></div>
                       <div className="h-3 bg-muted rounded w-2/3"></div>

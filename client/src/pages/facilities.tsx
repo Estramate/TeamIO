@@ -397,8 +397,8 @@ export default function Facilities() {
         </Card>
       ) : (
         <div className={viewMode === 'grid' 
-          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
-          : "space-y-4"
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" 
+          : "space-y-3 sm:space-y-4"
         }>
           {filteredFacilities.map((facility) => (
             <Card 
@@ -406,11 +406,11 @@ export default function Facilities() {
               className="group hover:shadow-md transition-all duration-200 cursor-pointer border rounded-lg"
               onClick={() => handleViewFacility(facility)}
             >
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2 sm:pb-3">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-1 min-w-0">
                     {getTypeIcon(facility.type || '')}
-                    <CardTitle className="text-base font-medium truncate">
+                    <CardTitle className="text-sm sm:text-base font-medium truncate">
                       {facility.name}
                     </CardTitle>
                   </div>
@@ -419,7 +419,7 @@ export default function Facilities() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                        className="opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity h-8 w-8 p-0 shrink-0"
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
@@ -456,13 +456,13 @@ export default function Facilities() {
               <CardContent className="pt-0">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Typ</span>
-                    <span className="text-sm font-medium">{facility.type || 'Nicht angegeben'}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Typ</span>
+                    <span className="text-xs sm:text-sm font-medium truncate max-w-[120px]">{facility.type || 'Nicht angegeben'}</span>
                   </div>
                   {facility.capacity && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Kapazität</span>
-                      <span className="text-sm font-medium flex items-center">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Kapazität</span>
+                      <span className="text-xs sm:text-sm font-medium flex items-center">
                         <Users className="w-3 h-3 mr-1" />
                         {facility.capacity}
                       </span>
@@ -470,8 +470,8 @@ export default function Facilities() {
                   )}
                   {facility.location && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Standort</span>
-                      <span className="text-sm font-medium flex items-center">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Standort</span>
+                      <span className="text-xs sm:text-sm font-medium flex items-center truncate max-w-[120px]">
                         <MapPin className="w-3 h-3 mr-1" />
                         {facility.location}
                       </span>

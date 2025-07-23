@@ -136,10 +136,10 @@ export function Landing() {
               KI-gestützt, intuitiv und komplett cloudbasiert.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-6 justify-center items-center px-4 max-w-md sm:max-w-none mx-auto">
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+                className="w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
                 onClick={() => window.location.href = "/api/login"}
               >
                 <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -150,7 +150,7 @@ export function Landing() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 font-semibold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105 border-2"
+                className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105 border-2"
               >
                 <PlayCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Demo ansehen
@@ -158,7 +158,7 @@ export function Landing() {
             </div>
 
             {/* Stats Section */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mt-12 sm:mt-16 lg:mt-20 max-w-4xl mx-auto px-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-8 mt-10 sm:mt-16 lg:mt-20 max-w-4xl mx-auto px-4">
               {stats.map((stat, index) => (
                 <div 
                   key={index} 
@@ -167,12 +167,12 @@ export function Landing() {
                   }`}
                   style={{ transitionDelay: `${800 + index * 150}ms` }}
                 >
-                  <div className="mb-4 flex justify-center">
-                    <div className="p-3 rounded-xl bg-white/10 backdrop-blur-sm">
-                      <stat.icon className="w-6 h-6 text-white" />
+                  <div className="mb-2 sm:mb-4 flex justify-center">
+                    <div className="p-2 sm:p-3 rounded-xl bg-white/10 backdrop-blur-sm">
+                      <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{stat.number}</div>
+                  <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-white mb-1 sm:mb-2">{stat.number}</div>
                   <div className="text-blue-200 text-xs sm:text-sm">{stat.label}</div>
                 </div>
               ))}

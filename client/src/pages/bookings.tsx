@@ -426,74 +426,93 @@ export default function Bookings() {
 
   return (
     <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Buchungen</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Verwalten Sie Anlagenbuchungen und Reservierungen</p>
+
+      {/* Header Section with Search, Filters and Add Button */}
+      <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 flex-1">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Buchungen durchsuchen..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 rounded-xl border bg-background"
+              />
+            </div>
+            
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-full sm:w-48 h-10 rounded-xl border bg-background">
+                <SelectValue placeholder="Typ wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Typen</SelectItem>
+                {typeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48 h-10 rounded-xl border bg-background">
+                <SelectValue placeholder="Status wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Status</SelectItem>
+                {statusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={facilityFilter} onValueChange={setFacilityFilter}>
+              <SelectTrigger className="w-full sm:w-48 h-10 rounded-xl border bg-background">
+                <SelectValue placeholder="Anlage wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Anlagen</SelectItem>
+                {facilities.map((facility) => (
+                  <SelectItem key={facility.id} value={facility.id.toString()}>
+                    {facility.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <div className="flex rounded-lg border border-border bg-background p-1">
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* View Toggle */}
+            <div className="flex rounded-xl border bg-background p-1">
               <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setViewMode('grid')}
-                className="h-7 px-3 flex-1 sm:flex-none"
+                onClick={() => setViewMode("grid")}
+                className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
               >
                 <Grid3x3 className="h-4 w-4" />
               </Button>
               <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-7 px-3 flex-1 sm:flex-none"
+                onClick={() => setViewMode("list")}
+                className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
               >
                 <List className="h-4 w-4" />
               </Button>
             </div>
-            <Button onClick={handleCreateBooking} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
+            
+            {/* Add Button */}
+            <Button 
+              onClick={handleCreateBooking} 
+              className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+            >
               <Plus className="w-4 h-4 mr-2" />
-              Neue Buchung
+              Buchung hinzufügen
             </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters and Search */}
-      <div className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 mb-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Buchungen suchen..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Status</SelectItem>
-                <SelectItem value="confirmed">Bestätigt</SelectItem>
-                <SelectItem value="pending">Ausstehend</SelectItem>
-                <SelectItem value="cancelled">Storniert</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Typ" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle Typen</SelectItem>
-              <SelectItem value="training">Training</SelectItem>
-              <SelectItem value="match">Spiel</SelectItem>
-              <SelectItem value="event">Veranstaltung</SelectItem>
-            </SelectContent>
-          </Select>
           </div>
         </div>
       </div>

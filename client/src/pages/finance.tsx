@@ -569,67 +569,80 @@ export default function Finance() {
           </TabsContent>
 
           <TabsContent value="transactions" className="space-y-6">
-            {/* Filter Section */}
-            <Card className="border border-border shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                  <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                      <Input
-                        placeholder="Transaktionen durchsuchen..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
-                    
-                    <Select value={typeFilter} onValueChange={setTypeFilter}>
-                      <SelectTrigger className="w-full sm:w-40">
-                        <SelectValue placeholder="Typ" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Alle Typen</SelectItem>
-                        <SelectItem value="income">Einnahmen</SelectItem>
-                        <SelectItem value="expense">Ausgaben</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-full sm:w-40">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Alle Status</SelectItem>
-                        <SelectItem value="pending">Ausstehend</SelectItem>
-                        <SelectItem value="paid">Bezahlt</SelectItem>
-                        <SelectItem value="overdue">Überfällig</SelectItem>
-                        <SelectItem value="cancelled">Storniert</SelectItem>
-                      </SelectContent>
-                    </Select>
+            {/* Header Section with Search, Filters and Add Button */}
+            <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 flex-1">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Transaktionen durchsuchen..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 h-10 rounded-xl border bg-background"
+                    />
                   </div>
                   
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center border border-border rounded-lg p-1">
-                      <Button
-                        variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setViewMode('grid')}
-                      >
-                        <Grid3x3 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant={viewMode === 'list' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setViewMode('list')}
-                      >
-                        <List className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-full sm:w-48 h-10 rounded-xl border bg-background">
+                      <SelectValue placeholder="Typ wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Alle Typen</SelectItem>
+                      <SelectItem value="income">Einnahmen</SelectItem>
+                      <SelectItem value="expense">Ausgaben</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-48 h-10 rounded-xl border bg-background">
+                      <SelectValue placeholder="Status wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Alle Status</SelectItem>
+                      <SelectItem value="pending">Ausstehend</SelectItem>
+                      <SelectItem value="paid">Bezahlt</SelectItem>
+                      <SelectItem value="overdue">Überfällig</SelectItem>
+                      <SelectItem value="cancelled">Storniert</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </CardContent>
-            </Card>
+                
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  {/* View Toggle */}
+                  <div className="flex rounded-xl border bg-background p-1">
+                    <Button
+                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("grid")}
+                      className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
+                    >
+                      <Grid3x3 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  {/* Add Button */}
+                  <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Transaktion hinzufügen
+                      </Button>
+                    </DialogTrigger>
+                  </Dialog>
+                </div>
+              </div>
+            </div>
 
             {/* Transaction Grid/List */}
             {isFinancesLoading ? (

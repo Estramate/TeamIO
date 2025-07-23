@@ -65,10 +65,21 @@ export default function Players() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   
-  const { selectedClub } = useClubStore();
+  const { selectedClub, setSelectedClub } = useClubStore();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { setPage } = usePage();
+
+  // Auto-select first club if none selected
+  const { data: clubs } = useQuery({
+    queryKey: ["/api/clubs"],
+  });
+
+  useEffect(() => {
+    if (clubs && clubs.length > 0 && !selectedClub) {
+      setSelectedClub(clubs[0].id);
+    }
+  }, [clubs, selectedClub, setSelectedClub]);
 
   useEffect(() => {
     setPage("Spieler", "Verwalten Sie alle Spieler des Vereins");
@@ -80,11 +91,7 @@ export default function Players() {
     enabled: !!selectedClub,
   });
 
-  // Debug logging
-  console.log("Selected Club:", selectedClub);
-  console.log("Players data:", players);
-  console.log("Loading:", isLoading);
-  console.log("Error:", error);
+
 
   // Fetch teams for assignments
   const { data: teams = [] } = useQuery({

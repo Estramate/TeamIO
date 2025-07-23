@@ -333,79 +333,66 @@ export default function Teams() {
 
   return (
     <>
-      <div className="flex-1 flex flex-col overflow-hidden bg-background">
-        {/* Header Section - Fixed */}
-        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  {/* Search and Filter */}
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      placeholder="Teams suchen..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-background border-input text-foreground placeholder:text-muted-foreground"
-                    />
-                  </div>
-                  
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-48 bg-background border-input">
-                      <SelectValue placeholder="Kategorie wählen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Alle Kategorien</SelectItem>
-                      <SelectItem value="youth">Jugend</SelectItem>
-                      <SelectItem value="senior">Senioren</SelectItem>
-                      <SelectItem value="amateur">Amateur</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+      <div className="flex-1 overflow-y-auto bg-background p-6">
+        {/* Header Section with Search, Filters and Add Button */}
+        <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-3 flex-1">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Teams suchen..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-10 rounded-xl border bg-background"
+                />
               </div>
-
-              <div className="flex items-center gap-3 ml-4">
-                {/* View Mode Toggle */}
-                <div className="flex items-center bg-muted rounded-lg p-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className={`min-w-[40px] h-8 px-2 rounded-md transition-all ${
-                      viewMode === 'grid' 
-                        ? 'bg-background text-foreground shadow-sm' 
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className={`min-w-[40px] h-8 px-2 rounded-md transition-all ${
-                      viewMode === 'list' 
-                        ? 'bg-background text-foreground shadow-sm' 
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <List className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Add Button */}
-                <Button onClick={handleAddTeam} className="bg-primary hover:bg-primary/90">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Team hinzufügen
+              
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-48 h-10 rounded-xl border bg-background">
+                  <SelectValue placeholder="Kategorie wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle Kategorien</SelectItem>
+                  <SelectItem value="youth">Jugend</SelectItem>
+                  <SelectItem value="senior">Senioren</SelectItem>
+                  <SelectItem value="amateur">Amateur</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {/* View Toggle */}
+              <div className="flex rounded-xl border bg-background p-1">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="h-8 px-3 rounded-lg"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="h-8 px-3 rounded-lg"
+                >
+                  <List className="h-4 w-4" />
                 </Button>
               </div>
+
+              {/* Add Button */}
+              <Button onClick={handleAddTeam} className="bg-primary hover:bg-primary/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Team hinzufügen
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Content Area - Scrollable */}
-        <div className="flex-1 overflow-auto p-6">
+        <div>
           {isTeamsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
               {[...Array(8)].map((_, i) => (

@@ -11,6 +11,12 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### January 23, 2025
+- **Consistent Bordered Filter Layout**: Applied unified filter design across all management pages
+  - Teams, Players, and Members pages now use identical bordered card containers for filters
+  - Beautiful rounded corners, subtle shadows, and proper spacing for professional appearance
+  - Consistent button placement and styling across all management interfaces
+  
+### January 23, 2025 (Earlier Updates)
 - **Dark Mode Overhaul**: Completely redesigned dark mode system for better usability
   - Changed background from hsl(240, 10%, 3.9%) to hsl(222, 47%, 11%) for better readability
   - Updated card backgrounds to hsl(225, 44%, 16%) for better definition

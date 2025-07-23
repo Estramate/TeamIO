@@ -331,114 +331,112 @@ export default function Players() {
 
   return (
     <>
-      <div className="flex-1 flex flex-col overflow-hidden bg-background">
+      <div className="flex-1 overflow-y-auto bg-background p-6">
         {/* Header Section with Search, Filters and Add Button */}
-        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-          <div className="px-6 py-4">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col sm:flex-row gap-3 flex-1">
-                <div className="relative flex-1 min-w-0 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    placeholder="Name oder Trikotnummer suchen..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 h-10 rounded-xl border bg-background"
-                  />
-                </div>
-                <Select value={positionFilter} onValueChange={setPositionFilter}>
-                  <SelectTrigger className="w-32 h-10 rounded-xl border bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Alle Positionen</SelectItem>
-                    {positionOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-28 h-10 rounded-xl border bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Alle Status</SelectItem>
-                    {statusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+        <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-3 flex-1">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Name oder Trikotnummer suchen..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-10 rounded-xl border bg-background"
+                />
               </div>
-              
-              <div className="flex items-center gap-3">
-                {/* View Toggle */}
-                <div className="flex rounded-xl border bg-background p-1">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                    className="h-8 px-3 rounded-lg"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className="h-8 px-3 rounded-lg"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Add Button */}
-                <Button 
-                  onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}
-                  className="bg-primary hover:bg-primary/90"
+              <Select value={positionFilter} onValueChange={setPositionFilter}>
+                <SelectTrigger className="w-32 h-10 rounded-xl border bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle Positionen</SelectItem>
+                  {positionOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-28 h-10 rounded-xl border bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle Status</SelectItem>
+                  {statusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {/* View Toggle */}
+              <div className="flex rounded-xl border bg-background p-1">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="h-8 px-3 rounded-lg"
                 >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Spieler hinzufügen
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="h-8 px-3 rounded-lg"
+                >
+                  <List className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
 
-            {/* Modern Team Filter Pills */}
-            <div className="px-6 pb-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  onClick={() => setSelectedTeam("all")}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                    selectedTeam === "all"
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  Alle Teams ({(players as Player[]).length})
-                </button>
-                {teamsWithPlayers.map((team) => (
-                  <button
-                    key={team.id}
-                    onClick={() => setSelectedTeam(team.id.toString())}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                      selectedTeam === team.id.toString()
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
-                  >
-                    {team.name} ({(team as any).playerCount})
-                  </button>
-                ))}
-              </div>
+              {/* Add Button */}
+              <Button 
+                onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Spieler hinzufügen
+              </Button>
             </div>
           </div>
         </div>
 
+        {/* Team Filter Pills */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedTeam("all")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                selectedTeam === "all"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              Alle Teams ({(players as Player[]).length})
+            </button>
+            {teamsWithPlayers.map((team) => (
+              <button
+                key={team.id}
+                onClick={() => setSelectedTeam(team.id.toString())}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  selectedTeam === team.id.toString()
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {team.name} ({(team as any).playerCount})
+              </button>
+            ))}
+          </div>
+        </div>
+
       {/* Content Section - Scrollable */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div>
         {/* Players Content */}
           {isLoading ? (
             viewMode === "grid" ? (

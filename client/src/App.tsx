@@ -46,11 +46,13 @@ function AuthenticatedApp() {
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) return <div>Loading...</div>;
-
-  return isAuthenticated ? <AuthenticatedApp /> : <Landing />;
+  // For demo purposes, show landing page by default
+  // Uncomment the line below to enable authentication-based routing
+  // const { isAuthenticated, isLoading } = useAuth();
+  // if (isLoading) return <div>Loading...</div>;
+  // return isAuthenticated ? <AuthenticatedApp /> : <Landing />;
+  
+  return <Landing />;
 }
 
 function App() {

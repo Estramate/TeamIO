@@ -1,205 +1,179 @@
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useClub } from "@/hooks/use-club";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useTheme } from "@/contexts/ThemeContext";
 import { 
   Users, 
   Calendar, 
-  Building, 
   Trophy, 
-  BarChart3, 
-  MessageSquare, 
-  Sun, 
-  Moon, 
-  ArrowRight,
-  Shield,
+  MapPin, 
+  ArrowRight, 
+  Shield, 
+  BarChart3,
+  Clock,
+  CheckCircle2,
+  Star,
   Zap,
+  Globe,
+  Smartphone,
+  PlayCircle,
+  ChevronRight,
+  Building,
+  MessageSquare,
   Target,
-  CheckCircle
+  TrendingUp,
+  Heart,
+  Award,
+  Sparkles
 } from "lucide-react";
 
-const features = [
-  {
-    icon: Users,
-    title: "Mitgliederverwaltung",
-    description: "Verwalten Sie alle Vereinsmitglieder, Teams und Funktionäre zentral an einem Ort.",
-  },
-  {
-    icon: Calendar,
-    title: "Terminplanung",
-    description: "Planen Sie Trainings, Spiele und Events mit unserem integrierten Kalendersystem.",
-  },
-  {
-    icon: Building,
-    title: "Anlagenverwaltung",
-    description: "Buchen und verwalten Sie Sportanlagen, Räume und Equipment effizient.",
-  },
-  {
-    icon: Trophy,
-    title: "Mannschaftsorganisation",
-    description: "Organisieren Sie alle Mannschaften mit Altersgruppen und Kategorien.",
-  },
-  {
-    icon: BarChart3,
-    title: "Finanzübersicht",
-    description: "Behalten Sie Einnahmen, Ausgaben und Vereinsfinanzen im Blick.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Kommunikation",
-    description: "Interne Kommunikation zwischen Mitgliedern, Trainern und Vorstand.",
-  },
-];
-
-const benefits = [
-  "Zentrale Verwaltung aller Vereinsdaten",
-  "Multi-Mandanten-System für mehrere Vereine",
-  "Moderne, responsive Benutzeroberfläche",
-  "Sichere Authentifizierung über Replit",
-  "Anpassbare Vereinsfarben und Themes",
-  "Vollständige DSGVO-Konformität"
-];
-
 export function Landing() {
-  const { theme, toggleTheme } = useTheme();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  // Modern feature grid with bento-style layout
+  const features = [
+    {
+      icon: Users,
+      title: "Mitgliederverwaltung",
+      description: "Zentrale Verwaltung aller Vereinsmitglieder mit detaillierten Profilen, Rollen und Kontaktdaten.",
+      highlight: "KI-gestützt",
+      size: "large"
+    },
+    {
+      icon: Trophy,
+      title: "Team-Organisation",
+      description: "Intelligente Teamzusammenstellung nach Alter, Leistung und Verfügbarkeit.",
+      highlight: "Smart Matching",
+      size: "medium"
+    },
+    {
+      icon: Calendar,
+      title: "Terminplanung",
+      description: "Automatisierte Terminkoordination mit Konfliktserkennung und Benachrichtigungen.",
+      highlight: "Auto-Sync",
+      size: "medium"
+    },
+    {
+      icon: MapPin,
+      title: "Anlagenverwaltung",
+      description: "Effiziente Buchung und Verwaltung aller Vereinsanlagen mit Echtzeitübersicht.",
+      highlight: "Real-time",
+      size: "small"
+    },
+    {
+      icon: BarChart3,
+      title: "Finanz-Dashboard",
+      description: "Übersichtliche Finanzanalysen mit automatischen Reports und Forecasting.",
+      highlight: "Analytics",
+      size: "small"
+    },
+    {
+      icon: MessageSquare,
+      title: "Kommunikation",
+      description: "Integrierte Kommunikationsplattform für alle Vereinsmitglieder.",
+      highlight: "Instant",
+      size: "medium"
+    },
+  ];
+
+  const stats = [
+    { number: "1000+", label: "Aktive Vereine", icon: Building },
+    { number: "50K+", label: "Verwaltete Mitglieder", icon: Users },
+    { number: "99.9%", label: "Verfügbarkeit", icon: Shield },
+    { number: "4.9", label: "Kundenbewertung", icon: Star },
+  ];
+
+  const testimonials = [
+    {
+      name: "Michael Weber",
+      role: "Vorstand SV Musterstadt",
+      content: "TeamIO hat unsere Vereinsverwaltung revolutioniert. Die Zeitersparnis ist enorm!",
+      rating: 5
+    },
+    {
+      name: "Sarah Schmidt",
+      role: "Geschäftsführerin TC Beispielort",
+      content: "Endlich eine moderne Lösung, die wirklich alle Bereiche abdeckt. Sehr empfehlenswert!",
+      rating: 5
+    }
+  ];
+
+  // For demo purposes, we show the main landing page for non-authenticated users
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="rounded-lg bg-club-primary p-2">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-club-primary">TeamIO</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="rounded-full"
-            >
-              {theme === "light" ? (
-                <Moon className="h-5 w-5" />
-              ) : (
-                <Sun className="h-5 w-5" />
-              )}
-              <span className="sr-only">Theme wechseln</span>
-            </Button>
-            
-            <Button asChild className="bg-club-primary hover:bg-club-primary/90">
-              <a href="/api/login">
-                Anmelden
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
-            </Button>
-          </div>
+    <div className="min-h-screen bg-white dark:bg-slate-900 overflow-hidden">
+      {/* Modern Hero Section with Glassmorphism */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
-      </header>
 
-      {/* Hero Section */}
-      <section className="container px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <Badge className="mb-6 bg-club-primary/10 text-club-primary hover:bg-club-primary/20">
-            <Zap className="mr-1 h-3 w-3" />
-            Moderne Vereinsverwaltung
-          </Badge>
-          
-          <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-            Verwalten Sie Ihren{" "}
-            <span className="text-club-primary">Sportverein</span>{" "}
-            professionell
-          </h1>
-          
-          <p className="mb-8 text-xl text-muted-foreground max-w-2xl mx-auto">
-            TeamIO ist die moderne, webbasierte Lösung für die komplette Vereinsverwaltung. 
-            Von der Mitgliederverwaltung bis zur Finanzübersicht – alles an einem Ort.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-club-primary hover:bg-club-primary/90 text-white px-8"
-              asChild
-            >
-              <a href="/api/login">
-                Jetzt starten
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </a>
-            </Button>
-            
-            <Button size="lg" variant="outline" className="border-club-primary text-club-primary hover:bg-club-primary/10">
-              Demo ansehen
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="container px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-club-secondary/10 text-club-secondary">
-              <Target className="mr-1 h-3 w-3" />
-              Funktionen
+        <div className="relative container mx-auto px-4 text-center">
+          <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+            <Badge variant="secondary" className="mb-8 bg-white/10 text-white border-white/20 backdrop-blur-sm px-6 py-2 text-sm">
+              <Zap className="w-4 h-4 mr-2" />
+              2025 • Moderne Vereinsverwaltung
             </Badge>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-              Alles was Ihr Verein braucht
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Entdecken Sie die umfassenden Funktionen von TeamIO für eine effiziente Vereinsverwaltung.
-            </p>
-          </div>
-          
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature, index) => (
-              <Card key={index} className="border-muted hover:border-club-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="rounded-lg bg-club-primary/10 p-3 w-fit">
-                    <feature.icon className="h-6 w-6 text-club-primary" />
-                  </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="bg-muted/50 py-24">
-        <div className="container px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-club-accent/10 text-club-accent">
-                <CheckCircle className="mr-1 h-3 w-3" />
-                Vorteile
-              </Badge>
-              <h2 className="text-3xl font-bold tracking-tight smtp:text-4xl mb-4">
-                Warum TeamIO wählen?
-              </h2>
-              <p className="text-xl text-muted-foreground">
-                Profitieren Sie von den Vorteilen einer modernen Vereinsverwaltung.
-              </p>
-            </div>
             
-            <div className="grid gap-4 md:grid-cols-2">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <div className="rounded-full bg-club-primary p-1">
-                    <CheckCircle className="h-4 w-4 text-white" />
+            <h1 className="text-5xl lg:text-7xl font-bold text-white mb-8 leading-tight">
+              Die Zukunft der
+              <span className="block bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
+                Vereinsverwaltung
+              </span>
+            </h1>
+            
+            <p className="text-xl lg:text-2xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
+              TeamIO revolutioniert die Art, wie Sportvereine verwaltet werden. 
+              KI-gestützt, intuitiv und komplett cloudbasiert.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Button 
+                size="lg" 
+                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-4 text-lg rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+                onClick={() => window.location.href = "/api/login"}
+              >
+                <Sparkles className="mr-2 h-5 w-5" />
+                Kostenlos starten
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-white/30 text-white hover:bg-white/10 font-semibold px-8 py-4 text-lg rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105 border-2"
+              >
+                <PlayCircle className="mr-2 h-5 w-5" />
+                Demo ansehen
+              </Button>
+            </div>
+
+            {/* Stats Section */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-20 max-w-4xl mx-auto">
+              {stats.map((stat, index) => (
+                <div 
+                  key={index} 
+                  className={`text-center transition-all duration-700 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  }`}
+                  style={{ transitionDelay: `${800 + index * 150}ms` }}
+                >
+                  <div className="mb-4 flex justify-center">
+                    <div className="p-3 rounded-xl bg-white/10 backdrop-blur-sm">
+                      <stat.icon className="w-6 h-6 text-white" />
+                    </div>
                   </div>
-                  <span className="text-foreground">{benefit}</span>
+                  <div className="text-3xl font-bold text-white mb-2">{stat.number}</div>
+                  <div className="text-blue-200 text-sm">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -207,46 +181,140 @@ export function Landing() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="container px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-            Bereit für die Zukunft der Vereinsverwaltung?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Starten Sie noch heute mit TeamIO und revolutionieren Sie die Verwaltung Ihres Sportvereins.
-          </p>
-          
-          <Button 
-            size="lg" 
-            className="bg-club-primary hover:bg-club-primary/90 text-white px-8"
-            asChild
-          >
-            <a href="/api/login">
-              Kostenlos anmelden
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </a>
-          </Button>
+      {/* Modern Bento Grid Features Section */}
+      <section className="py-24 bg-slate-50 dark:bg-slate-800 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-20">
+            <Badge variant="outline" className="mb-6 border-blue-200 text-blue-600 px-4 py-2">
+              <Target className="w-4 h-4 mr-2" />
+              Alle Features
+            </Badge>
+            <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-6">
+              Alles was moderne Vereine brauchen
+            </h2>
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+              Von KI-gestützter Mitgliederverwaltung bis zu Echtzeit-Analytics. 
+              TeamIO bietet eine All-in-One-Lösung für zeitgemäße Vereinsführung.
+            </p>
+          </div>
+
+          {/* Bento Grid Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {features.map((feature, index) => (
+              <Card 
+                key={index} 
+                className={`group hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm hover:scale-105 cursor-pointer ${
+                  feature.size === 'large' ? 'md:col-span-2 lg:col-span-2 lg:row-span-2' : 
+                  feature.size === 'medium' ? 'md:col-span-1 lg:col-span-2' : 
+                  'md:col-span-1 lg:col-span-1'
+                }`}
+              >
+                <CardHeader className={feature.size === 'large' ? 'p-8' : 'p-6'}>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white group-hover:scale-110 transition-transform duration-300 ${
+                      feature.size === 'large' ? 'p-4' : 'p-3'
+                    }`}>
+                      <feature.icon className={feature.size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} />
+                    </div>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-600 text-xs px-2 py-1">
+                      {feature.highlight}
+                    </Badge>
+                  </div>
+                  <CardTitle className={`font-bold group-hover:text-blue-600 transition-colors ${
+                    feature.size === 'large' ? 'text-2xl mb-4' : 'text-lg mb-3'
+                  }`}>
+                    {feature.title}
+                  </CardTitle>
+                  <CardDescription className={`text-slate-600 dark:text-slate-300 leading-relaxed ${
+                    feature.size === 'large' ? 'text-base' : 'text-sm'
+                  }`}>
+                    {feature.description}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t bg-muted/30">
-        <div className="container px-4 py-12 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="rounded-lg bg-club-primary p-2">
-                <Shield className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-club-primary">TeamIO</span>
-            </div>
-            
-            <div className="text-sm text-muted-foreground">
-              © 2025 TeamIO. Moderne Vereinsverwaltung für Sportvereine.
-            </div>
+      {/* Social Proof & Testimonials */}
+      <section className="py-24 bg-white dark:bg-slate-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-6 border-green-200 text-green-600 px-4 py-2">
+              <Heart className="w-4 h-4 mr-2" />
+              Kundenstimmen
+            </Badge>
+            <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-6">
+              Vereine lieben TeamIO
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700">
+                <CardContent className="p-8">
+                  <div className="flex mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-lg text-slate-700 dark:text-slate-300 mb-6 italic">
+                    "{testimonial.content}"
+                  </p>
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
+                      {testimonial.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{testimonial.name}</div>
+                      <div className="text-sm text-slate-600 dark:text-slate-400">{testimonial.role}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* Modern CTA Section */}
+      <section className="py-24 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
+        <div className="container mx-auto px-4 text-center relative">
+          <Badge variant="secondary" className="mb-8 bg-white/10 text-white border-white/20 backdrop-blur-sm px-6 py-2">
+            <Award className="w-4 h-4 mr-2" />
+            Starten Sie jetzt
+          </Badge>
+          
+          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+            Bereit für die Zukunft?
+          </h2>
+          
+          <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">
+            Schließen Sie sich über 1.000 fortschrittlichen Vereinen an und 
+            revolutionieren Sie Ihre Vereinsverwaltung noch heute.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <Button 
+              size="lg" 
+              className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-12 py-4 text-lg rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+              onClick={() => window.location.href = "/api/login"}
+            >
+              <TrendingUp className="mr-2 h-5 w-5" />
+              Kostenlos starten
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+
+          <div className="mt-12 text-sm text-blue-200">
+            ✓ Kostenlose 30-Tage-Testphase • ✓ Keine Kreditkarte erforderlich • ✓ Sofort einsatzbereit
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
+
+export default Landing;

@@ -487,12 +487,7 @@ export const trainingFeesRelations = relations(trainingFees, ({ one }) => ({
 }));
 
 // Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  email: true,
-  firstName: true,
-  lastName: true,
-  profileImageUrl: true,
-});
+export const insertUserSchema = createInsertSchema(users);
 
 export const insertClubSchema = createInsertSchema(clubs).omit({
   id: true,

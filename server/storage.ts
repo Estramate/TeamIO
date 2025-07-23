@@ -46,7 +46,7 @@ import {
   type InsertTrainingFee,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, gte } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -537,7 +537,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(finances.clubId, clubId),
-          eq(finances.date, thisMonth)
+          gte(finances.date, thisMonth.toISOString().split('T')[0])
         )
       );
 
@@ -591,7 +591,11 @@ export class DatabaseStorage implements IStorage {
     ];
 
     return activities
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .sort((a, b) => {
+        const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return bTime - aTime;
+      })
       .slice(0, 10);
   }
 
@@ -707,23 +711,31 @@ export class DatabaseStorage implements IStorage {
 
   // Player stats operations
   async getPlayerStats(playerId: number, season?: string): Promise<PlayerStats[]> {
-    let query = db.select().from(playerStats).where(eq(playerStats.playerId, playerId));
+    const conditions = [eq(playerStats.playerId, playerId)];
     
     if (season) {
-      query = query.where(eq(playerStats.season, season));
+      conditions.push(eq(playerStats.season, season));
     }
     
-    return await query.orderBy(desc(playerStats.season));
+    return await db
+      .select()
+      .from(playerStats)
+      .where(conditions.length === 1 ? conditions[0] : and(...conditions))
+      .orderBy(desc(playerStats.season));
   }
 
   async getTeamStats(teamId: number, season?: string): Promise<PlayerStats[]> {
-    let query = db.select().from(playerStats).where(eq(playerStats.teamId, teamId));
+    const conditions = [eq(playerStats.teamId, teamId)];
     
     if (season) {
-      query = query.where(eq(playerStats.season, season));
+      conditions.push(eq(playerStats.season, season));
     }
     
-    return await query.orderBy(desc(playerStats.goals), desc(playerStats.assists));
+    return await db
+      .select()
+      .from(playerStats)
+      .where(conditions.length === 1 ? conditions[0] : and(...conditions))
+      .orderBy(desc(playerStats.goals), desc(playerStats.assists));
   }
 
   async createPlayerStats(statsData: InsertPlayerStats): Promise<PlayerStats> {

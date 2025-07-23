@@ -307,11 +307,11 @@ export default function Members() {
       case 'active':
         return 'success';
       case 'inactive':
-        return 'secondary';
+        return 'destructive';
       case 'suspended':
         return 'destructive';
       default:
-        return 'secondary';
+        return 'destructive';
     }
   };
 

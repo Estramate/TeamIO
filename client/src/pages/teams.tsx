@@ -342,9 +342,9 @@ export default function Teams() {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'active': return 'success';
-      case 'inactive': return 'secondary';
+      case 'inactive': return 'destructive';
       case 'suspended': return 'destructive';
-      default: return 'outline';
+      default: return 'destructive';
     }
   };
 

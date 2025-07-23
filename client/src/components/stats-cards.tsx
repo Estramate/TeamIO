@@ -65,14 +65,14 @@ export default function StatsCards({ stats }: StatsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {cards.map((card, index) => {
         const Icon = card.icon;
         const ChangeIcon = card.changeType === "positive" ? TrendingUp : 
                           card.changeType === "negative" ? TrendingDown : Clock;
         
         return (
-          <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div key={index} className="bg-card rounded-xl shadow-sm p-4 sm:p-6 border border-border">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">{card.title}</p>

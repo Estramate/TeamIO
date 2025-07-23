@@ -427,19 +427,19 @@ export default function Finance() {
     <div className="flex-1 overflow-y-auto bg-background">
       {/* Modern Header */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="flex items-center justify-between p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Finanzen</h1>
-            <p className="text-muted-foreground">Umfassende Vereins-Finanzverwaltung</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Finanzen</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Umfassende Vereins-Finanzverwaltung</p>
           </div>
-          <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm">
+                <Button size="sm" className="w-full sm:w-auto">
                   <Plus className="w-4 h-4 mr-2" />
                   Transaktion
                 </Button>
@@ -449,18 +449,18 @@ export default function Finance() {
         </div>
       </div>
 
-      <div className="p-6">
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-muted p-1 rounded-lg">
-            <TabsTrigger value="overview" className="rounded-md">Übersicht</TabsTrigger>
-            <TabsTrigger value="transactions" className="rounded-md">Transaktionen</TabsTrigger>
-            <TabsTrigger value="membership" className="rounded-md">Beiträge</TabsTrigger>
-            <TabsTrigger value="reports" className="rounded-md">Berichte</TabsTrigger>
+      <div className="p-4 sm:p-6">
+        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-muted p-1 rounded-lg h-auto">
+            <TabsTrigger value="overview" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Übersicht</TabsTrigger>
+            <TabsTrigger value="transactions" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Transaktionen</TabsTrigger>
+            <TabsTrigger value="membership" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Beiträge</TabsTrigger>
+            <TabsTrigger value="reports" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Berichte</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
             {/* Modern Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">

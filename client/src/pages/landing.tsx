@@ -117,48 +117,48 @@ export function Landing() {
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
 
-        <div className="relative container mx-auto px-4 text-center">
+        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
-            <Badge variant="secondary" className="mb-8 bg-white/10 text-white border-white/20 backdrop-blur-sm px-6 py-2 text-sm">
-              <Zap className="w-4 h-4 mr-2" />
+            <Badge variant="secondary" className="mb-6 sm:mb-8 bg-white/10 text-white border-white/20 backdrop-blur-sm px-4 sm:px-6 py-2 text-xs sm:text-sm">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
               2025 • Moderne Vereinsverwaltung
             </Badge>
             
-            <h1 className="text-5xl lg:text-7xl font-bold text-white mb-8 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 sm:mb-8 leading-tight px-2">
               Die Zukunft der
               <span className="block bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
                 Vereinsverwaltung
               </span>
             </h1>
             
-            <p className="text-xl lg:text-2xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl lg:text-2xl text-blue-100 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
               TeamIO revolutioniert die Art, wie Sportvereine verwaltet werden. 
               KI-gestützt, intuitiv und komplett cloudbasiert.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-4">
               <Button 
                 size="lg" 
-                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-4 text-lg rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+                className="w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
                 onClick={() => window.location.href = "/api/login"}
               >
-                <Sparkles className="mr-2 h-5 w-5" />
+                <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Kostenlos starten
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
               
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-white/30 text-white hover:bg-white/10 font-semibold px-8 py-4 text-lg rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105 border-2"
+                className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 font-semibold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105 border-2"
               >
-                <PlayCircle className="mr-2 h-5 w-5" />
+                <PlayCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Demo ansehen
               </Button>
             </div>
 
             {/* Stats Section */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-20 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mt-12 sm:mt-16 lg:mt-20 max-w-4xl mx-auto px-4">
               {stats.map((stat, index) => (
                 <div 
                   key={index} 
@@ -172,8 +172,8 @@ export function Landing() {
                       <stat.icon className="w-6 h-6 text-white" />
                     </div>
                   </div>
-                  <div className="text-3xl font-bold text-white mb-2">{stat.number}</div>
-                  <div className="text-blue-200 text-sm">{stat.label}</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{stat.number}</div>
+                  <div className="text-blue-200 text-xs sm:text-sm">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -182,46 +182,46 @@ export function Landing() {
       </section>
 
       {/* Modern Bento Grid Features Section */}
-      <section className="py-24 bg-slate-50 dark:bg-slate-800 relative">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-20">
-            <Badge variant="outline" className="mb-6 border-blue-200 text-blue-600 px-4 py-2">
-              <Target className="w-4 h-4 mr-2" />
+      <section className="py-16 sm:py-20 lg:py-24 bg-slate-50 dark:bg-slate-800 relative">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+            <Badge variant="outline" className="mb-4 sm:mb-6 border-blue-200 text-blue-600 px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm">
+              <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
               Alle Features
             </Badge>
-            <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6">
               Alles was moderne Vereine brauchen
             </h2>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto px-4">
               Von KI-gestützter Mitgliederverwaltung bis zu Echtzeit-Analytics. 
               TeamIO bietet eine All-in-One-Lösung für zeitgemäße Vereinsführung.
             </p>
           </div>
 
           {/* Bento Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
             {features.map((feature, index) => (
               <Card 
                 key={index} 
                 className={`group hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm hover:scale-105 cursor-pointer ${
-                  feature.size === 'large' ? 'md:col-span-2 lg:col-span-2 lg:row-span-2' : 
-                  feature.size === 'medium' ? 'md:col-span-1 lg:col-span-2' : 
-                  'md:col-span-1 lg:col-span-1'
+                  feature.size === 'large' ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2' : 
+                  feature.size === 'medium' ? 'sm:col-span-2 lg:col-span-2' : 
+                  'sm:col-span-1 lg:col-span-1'
                 }`}
               >
-                <CardHeader className={feature.size === 'large' ? 'p-8' : 'p-6'}>
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white group-hover:scale-110 transition-transform duration-300 ${
-                      feature.size === 'large' ? 'p-4' : 'p-3'
+                <CardHeader className={feature.size === 'large' ? 'p-6 sm:p-8' : 'p-4 sm:p-6'}>
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className={`p-2 sm:p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white group-hover:scale-110 transition-transform duration-300 ${
+                      feature.size === 'large' ? 'sm:p-4' : 'sm:p-3'
                     }`}>
-                      <feature.icon className={feature.size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} />
+                      <feature.icon className={feature.size === 'large' ? 'w-6 h-6 sm:w-8 sm:h-8' : 'w-5 h-5 sm:w-6 sm:h-6'} />
                     </div>
                     <Badge variant="secondary" className="bg-blue-100 text-blue-600 text-xs px-2 py-1">
                       {feature.highlight}
                     </Badge>
                   </div>
                   <CardTitle className={`font-bold group-hover:text-blue-600 transition-colors ${
-                    feature.size === 'large' ? 'text-2xl mb-4' : 'text-lg mb-3'
+                    feature.size === 'large' ? 'text-xl sm:text-2xl mb-3 sm:mb-4' : 'text-base sm:text-lg mb-2 sm:mb-3'
                   }`}>
                     {feature.title}
                   </CardTitle>

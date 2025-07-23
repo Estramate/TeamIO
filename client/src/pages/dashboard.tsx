@@ -53,13 +53,12 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-6">
-
+    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
       {isDashboardLoading ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-card rounded-xl shadow-sm p-6 border border-border animate-pulse">
+              <div key={i} className="bg-card rounded-xl shadow-sm p-4 sm:p-6 border border-border animate-pulse">
                 <div className="h-4 bg-muted rounded w-1/2 mb-3"></div>
                 <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
                 <div className="h-3 bg-muted rounded w-2/3"></div>
@@ -69,12 +68,14 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          <StatsCards stats={dashboardData?.stats} />
+          <StatsCards stats={dashboardData?.stats || {}} />
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-            <ActivityFeed activities={dashboardData?.activities} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8">
+            <div className="lg:col-span-2">
+              <ActivityFeed activities={dashboardData?.activities || []} />
+            </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <UpcomingEvents clubId={selectedClub.id} />
               <TeamStatus clubId={selectedClub.id} />
             </div>

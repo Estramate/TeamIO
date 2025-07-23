@@ -377,10 +377,10 @@ export default function Players() {
     <>
       <div className="flex-1 overflow-y-auto bg-background p-6">
         {/* Header Section with Search, Filters and Add Button */}
-        <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
+          <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-3 flex-1">
-              <div className="relative flex-1 max-w-md">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Name oder Trikotnummer suchen..."
@@ -390,8 +390,8 @@ export default function Players() {
                 />
               </div>
               <Select value={positionFilter} onValueChange={setPositionFilter}>
-                <SelectTrigger className="w-32 h-10 rounded-xl border bg-background">
-                  <SelectValue />
+                <SelectTrigger className="w-full sm:w-40 h-10 rounded-xl border bg-background">
+                  <SelectValue placeholder="Position" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle Positionen</SelectItem>
@@ -403,8 +403,8 @@ export default function Players() {
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-28 h-10 rounded-xl border bg-background">
-                  <SelectValue />
+                <SelectTrigger className="w-full sm:w-32 h-10 rounded-xl border bg-background">
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle Status</SelectItem>
@@ -417,14 +417,14 @@ export default function Players() {
               </Select>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               {/* View Toggle */}
               <div className="flex rounded-xl border bg-background p-1">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="h-8 px-3 rounded-lg"
+                  className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
                 >
                   <Grid3X3 className="h-4 w-4" />
                 </Button>
@@ -432,7 +432,7 @@ export default function Players() {
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="h-8 px-3 rounded-lg"
+                  className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -441,7 +441,7 @@ export default function Players() {
               {/* Add Button */}
               <Button 
                 onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
               >
                 <UserPlus className="h-4 w-4 mr-2" />
                 Spieler hinzufügen
@@ -455,7 +455,7 @@ export default function Players() {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setSelectedTeam("all")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
                 selectedTeam === "all"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -467,7 +467,7 @@ export default function Players() {
               <button
                 key={team.id}
                 onClick={() => setSelectedTeam(team.id.toString())}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
                   selectedTeam === team.id.toString()
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"

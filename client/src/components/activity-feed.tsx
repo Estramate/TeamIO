@@ -60,11 +60,11 @@ export default function ActivityFeed({ activities = [] }: ActivityFeedProps) {
   }
 
   return (
-    <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Neueste Aktivitäten</h3>
-          <button className="text-blue-500 hover:text-blue-600 text-sm font-medium">
+    <div className="bg-card rounded-xl shadow-sm border border-border">
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">Neueste Aktivitäten</h3>
+          <button className="text-primary hover:text-primary/80 text-xs sm:text-sm font-medium">
             Alle anzeigen
           </button>
         </div>

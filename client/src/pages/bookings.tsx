@@ -418,20 +418,20 @@ export default function Bookings() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-6">
+    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Buchungen</h1>
-            <p className="text-muted-foreground">Verwalten Sie Anlagenbuchungen und Reservierungen</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Buchungen</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Verwalten Sie Anlagenbuchungen und Reservierungen</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <div className="flex rounded-lg border border-border bg-background p-1">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className="h-7 px-3"
+                className="h-7 px-3 flex-1 sm:flex-none"
               >
                 <Grid3x3 className="h-4 w-4" />
               </Button>
@@ -439,12 +439,12 @@ export default function Bookings() {
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-                className="h-7 px-3"
+                className="h-7 px-3 flex-1 sm:flex-none"
               >
                 <List className="h-4 w-4" />
               </Button>
             </div>
-            <Button onClick={handleCreateBooking} className="bg-primary hover:bg-primary/90">
+            <Button onClick={handleCreateBooking} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Neue Buchung
             </Button>
@@ -453,30 +453,31 @@ export default function Bookings() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Buchungen suchen..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle Status</SelectItem>
-              <SelectItem value="confirmed">Bestätigt</SelectItem>
-              <SelectItem value="pending">Ausstehend</SelectItem>
-              <SelectItem value="cancelled">Storniert</SelectItem>
+      <div className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 mb-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Buchungen suchen..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Status</SelectItem>
+                <SelectItem value="confirmed">Bestätigt</SelectItem>
+                <SelectItem value="pending">Ausstehend</SelectItem>
+                <SelectItem value="cancelled">Storniert</SelectItem>
             </SelectContent>
           </Select>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Typ" />
             </SelectTrigger>
             <SelectContent>
@@ -486,6 +487,7 @@ export default function Bookings() {
               <SelectItem value="event">Veranstaltung</SelectItem>
             </SelectContent>
           </Select>
+          </div>
         </div>
       </div>
 

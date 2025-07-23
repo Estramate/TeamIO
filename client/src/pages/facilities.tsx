@@ -296,8 +296,8 @@ export default function Facilities() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Anlagen</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Anlagen</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Verwalten Sie die Anlagen und Einrichtungen Ihres Vereins
           </p>
         </div>
@@ -309,8 +309,8 @@ export default function Facilities() {
 
       {/* Filters */}
       <Card className="border rounded-lg shadow-sm">
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

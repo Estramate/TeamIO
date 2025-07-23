@@ -20,12 +20,12 @@ export default function UpcomingEvents({ clubId }: UpcomingEventsProps) {
     .slice(0, 3);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Nächste Termine</h3>
+    <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6">
+      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Nächste Termine</h3>
       
       {upcomingEvents.length === 0 ? (
         <div className="text-center py-4">
-          <p className="text-gray-500 text-sm">Keine anstehenden Termine</p>
+          <p className="text-muted-foreground text-sm">Keine anstehenden Termine</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -55,10 +55,10 @@ export default function UpcomingEvents({ clubId }: UpcomingEventsProps) {
                   </p>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {event.title}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {time} - {event.location || 'Ort TBA'}
                   </p>
                 </div>
@@ -68,7 +68,7 @@ export default function UpcomingEvents({ clubId }: UpcomingEventsProps) {
         </div>
       )}
       
-      <button className="w-full mt-4 text-center text-blue-500 hover:text-blue-600 text-sm font-medium">
+      <button className="w-full mt-4 text-center text-primary hover:text-primary/80 text-sm font-medium">
         Alle Termine anzeigen
       </button>
     </div>

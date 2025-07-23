@@ -786,18 +786,32 @@ export default function Members() {
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center">
-                <User className="h-6 w-6 text-primary/60" />
-              </div>
-              <div>
-                <div className="text-xl font-bold">
-                  {viewingMember?.firstName} {viewingMember?.lastName}
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center">
+                  <User className="h-6 w-6 text-primary/60" />
                 </div>
-                <div className="text-sm text-muted-foreground font-normal">
-                  Mitgliederdetails
+                <div>
+                  <div className="text-xl font-bold">
+                    {viewingMember?.firstName} {viewingMember?.lastName}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-normal">
+                    Mitgliederdetails
+                  </div>
                 </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsDetailDialogOpen(false);
+                  handleEditMember(viewingMember);
+                }}
+                className="shrink-0"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Bearbeiten
+              </Button>
             </DialogTitle>
           </DialogHeader>
           

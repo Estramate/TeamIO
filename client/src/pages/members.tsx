@@ -492,17 +492,19 @@ export default function Members() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Beigetreten
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Aktionen
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-12">
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-card divide-y divide-border">
                   {filteredMembers.map((member: any) => (
-                    <tr key={member.id} className="hover:bg-muted/50">
+                    <tr key={member.id} className="group hover:bg-muted/50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-foreground">
+                          <div 
+                            className="text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors hover:underline"
+                            onClick={() => handleViewMember(member)}
+                          >
                             {member.firstName} {member.lastName}
                           </div>
                           {member.membershipNumber && (
@@ -525,23 +527,30 @@ export default function Members() {
                         {member.joinDate ? new Date(member.joinDate).toLocaleDateString('de-DE') : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditMember(member)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteMember(member)}
-                            disabled={deleteMemberMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditMember(member)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteMember(member)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Löschen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
                   ))}

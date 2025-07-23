@@ -343,20 +343,28 @@ export default function Members() {
           </div>
           
           {/* View Toggle */}
-          <div className="flex items-center bg-muted rounded-lg p-1">
+          <div className="flex items-center bg-muted rounded-lg p-1 border border-border">
             <Button
-              variant={viewMode === 'cards' ? 'default' : 'ghost'}
+              variant="ghost"
               size="sm"
               onClick={() => setViewMode('cards')}
-              className={viewMode === 'cards' ? 'bg-background shadow-sm' : ''}
+              className={`min-w-[40px] h-8 px-2 ${
+                viewMode === 'cards' 
+                  ? 'bg-background text-foreground shadow-sm border border-border hover:bg-background' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
             >
               <LayoutGrid className="w-4 h-4" />
             </Button>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              variant="ghost"
               size="sm"
               onClick={() => setViewMode('list')}
-              className={viewMode === 'list' ? 'bg-background shadow-sm' : ''}
+              className={`min-w-[40px] h-8 px-2 ${
+                viewMode === 'list' 
+                  ? 'bg-background text-foreground shadow-sm border border-border hover:bg-background' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
             >
               <List className="w-4 h-4" />
             </Button>

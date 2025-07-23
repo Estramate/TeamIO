@@ -77,7 +77,7 @@ export default function Teams() {
               Verwalten Sie die Teams von {selectedClub.name}
             </p>
           </div>
-          <Button className="bg-primary-500 hover:bg-primary-600">
+          <Button className="bg-primary hover:bg-primary/90">
             <Plus className="w-4 h-4 mr-2" />
             Team hinzufügen
           </Button>
@@ -111,20 +111,28 @@ export default function Teams() {
           </div>
           
           {/* View Toggle */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center bg-muted rounded-lg p-1 border border-border">
             <Button
-              variant={viewMode === 'cards' ? 'default' : 'ghost'}
+              variant="ghost"
               size="sm"
               onClick={() => setViewMode('cards')}
-              className={viewMode === 'cards' ? 'bg-white shadow-sm' : ''}
+              className={`min-w-[40px] h-8 px-2 ${
+                viewMode === 'cards' 
+                  ? 'bg-background text-foreground shadow-sm border border-border hover:bg-background' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
             >
               <LayoutGrid className="w-4 h-4" />
             </Button>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              variant="ghost"
               size="sm"
               onClick={() => setViewMode('list')}
-              className={viewMode === 'list' ? 'bg-white shadow-sm' : ''}
+              className={`min-w-[40px] h-8 px-2 ${
+                viewMode === 'list' 
+                  ? 'bg-background text-foreground shadow-sm border border-border hover:bg-background' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
             >
               <List className="w-4 h-4" />
             </Button>
@@ -138,27 +146,27 @@ export default function Teams() {
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader>
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
               </CardHeader>
               <CardContent>
-                <div className="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-3 bg-muted rounded w-2/3 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
               </CardContent>
             </Card>
           ))}
         </div>
       ) : filteredTeams.length === 0 ? (
         <div className="text-center py-12">
-          <UsersRound className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Keine Teams gefunden</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <UsersRound className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Keine Teams gefunden</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             {searchTerm || categoryFilter !== 'all' 
               ? "Versuchen Sie, Ihre Suchkriterien anzupassen."
               : "Beginnen Sie mit dem Hinzufügen Ihres ersten Teams."}
           </p>
           {!searchTerm && categoryFilter === 'all' && (
-            <Button className="mt-4 bg-primary-500 hover:bg-primary-600">
+            <Button className="mt-4 bg-primary hover:bg-primary/90">
               <Plus className="w-4 h-4 mr-2" />
               Erstes Team hinzufügen
             </Button>

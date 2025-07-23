@@ -14,6 +14,7 @@ Preferred communication style: Simple, everyday language.
 - **Quick Status Toggle in Context Menus**: Implemented elegant status management through 3-dot navigation menus
   - Added "Aktivieren/Deaktivieren" options to all dropdown menus for Teams, Members, and Players
   - Color-coded menu items: green for "Aktivieren", orange for "Deaktivieren", red for "Löschen"
+  - Green status badges for all active records across Teams, Members, and Players views
   - Clean status badge display without visual clutter from toggle switches
   - One-click status changes with proper loading states and error handling
   - Contextual menu items that dynamically show "Aktivieren" or "Deaktivieren" based on current status

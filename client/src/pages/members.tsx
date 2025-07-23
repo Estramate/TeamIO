@@ -305,7 +305,7 @@ export default function Members() {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'active':
-        return 'default';
+        return 'success';
       case 'inactive':
         return 'secondary';
       case 'suspended':

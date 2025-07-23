@@ -35,6 +35,13 @@ Preferred communication style: Simple, everyday language.
   - **Sticky Header**: Fixed header with backdrop blur for modern app feel
   - **Responsive Grid**: 1-5 columns adaptive layout based on screen size
   - **Improved Scrolling**: Fixed content area scrolling with proper overflow handling
+  - **Modern WebApp-Style Tabs**: Refactored team tabs to modern pill-style buttons with hover effects
+
+- **Complete KM-FR Team Data Integration**: Added all 28 authentic female players from OEFB
+  - Imported complete roster from official OEFB website (vereine.oefb.at)
+  - All players with authentic names, jersey numbers, positions, and profile images
+  - Proper team assignments for accurate filtering and display
+  - Positions include: Tor, Verteidigung, Mittelfeld, Sturm
 
 ## System Architecture
 

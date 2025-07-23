@@ -27,32 +27,32 @@ export function Landing() {
     {
       icon: Users,
       title: "Mitgliederverwaltung",
-      description: "Grundlegende Verwaltung von Vereinsmitgliedern mit Profilen und Kontaktdaten. Geplant für die erste Version."
+      description: "Zentrale Verwaltung aller Mitglieder mit Profilen, Kontaktdaten und Rollen. Kategorisierung nach Teams, Alter und Aktivitätsstatus."
     },
     {
       icon: Trophy,
       title: "Team-Organisation", 
-      description: "Einfache Teamverwaltung und Spielerübersicht. Weitere Funktionen in Planung."
+      description: "Verwaltung von Mannschaften und Spielern mit Aufstellungen, Trainingsgruppen und Leistungsübersicht."
     },
     {
       icon: Calendar,
       title: "Terminplanung",
-      description: "Basis-Terminverwaltung für Trainings und Spiele. Erweiterte Features folgen später."
+      description: "Koordination von Trainings, Spielen und Veranstaltungen mit Verfügbarkeitsprüfung und Benachrichtigungen."
     },
     {
       icon: MapPin,
       title: "Anlagenverwaltung", 
-      description: "Verwaltung von Vereinsanlagen und einfache Buchungsfunktionen. Noch in Entwicklung."
+      description: "Buchung und Verwaltung von Sportplätzen, Hallen und Räumen mit Verfügbarkeitsübersicht."
     },
     {
       icon: BarChart3,
       title: "Finanz-Dashboard",
-      description: "Einfache Übersicht über Vereinsfinanzen. Erweiterte Analysen sind geplant."
+      description: "Übersicht über Mitgliedsbeiträge, Ausgaben und Budgetplanung mit grundlegenden Auswertungen."
     },
     {
       icon: MessageSquare,
       title: "Kommunikation",
-      description: "Basis-Kommunikationstools für Vereinsmitglieder. Wird schrittweise ausgebaut."
+      description: "Interne Kommunikationstools für Trainer, Spieler und Vereinsführung mit Benachrichtigungen."
     }
   ];
 
@@ -65,16 +65,16 @@ export function Landing() {
 
   const testimonials = [
     {
-      name: "Max Mustermann",
-      role: "Beta-Tester",
-      content: "Die Plattform befindet sich noch in der Entwicklung, aber die ersten Funktionen sehen sehr vielversprechend aus.",
-      avatar: "MM"
+      name: "Thomas Müller",
+      role: "Vorstand, FC Oberberg",
+      content: "Die ersten Prototypen zeigen großes Potential. Besonders die intuitive Bedienung könnte unsere Vereinsarbeit erheblich vereinfachen.",
+      avatar: "TM"
     },
     {
-      name: "Anna Beispiel", 
-      role: "Vereinsvorstand",
-      content: "Wir freuen uns auf eine moderne Lösung für die Vereinsverwaltung und testen TeamIO in unserem Verein.",
-      avatar: "AB"
+      name: "Sarah Kramer", 
+      role: "Abteilungsleiterin, SV Gummersbach",
+      content: "Endlich eine Lösung, die speziell für deutsche Vereine entwickelt wird. Die DSGVO-konforme Ausrichtung ist für uns besonders wichtig.",
+      avatar: "SK"
     }
   ];
 

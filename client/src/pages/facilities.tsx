@@ -22,9 +22,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertFacilitySchema, type Facility } from "@shared/schema";
 import { z } from "zod";
 
-// Form Schema
-const facilityFormSchema = insertFacilitySchema.extend({
-  capacity: z.coerce.number().optional(),
+// Form Schema - create a separate form schema that handles string inputs
+const facilityFormSchema = z.object({
+  name: z.string().min(1, "Name ist erforderlich"),
+  type: z.string().min(1, "Typ ist erforderlich"),
+  description: z.string().optional(),
+  capacity: z.string().optional(),
+  location: z.string().optional(),
+  status: z.string().default("active"),
 });
 
 type FacilityFormData = z.infer<typeof facilityFormSchema>;
@@ -58,7 +63,7 @@ export default function Facilities() {
       name: "",
       type: "",
       description: "",
-      capacity: undefined,
+      capacity: "",
       location: "",
       status: "active",
     },
@@ -211,7 +216,7 @@ export default function Facilities() {
       name: facility.name,
       type: facility.type || '',
       description: facility.description || '',
-      capacity: facility.capacity || undefined,
+      capacity: facility.capacity ? String(facility.capacity) : "",
       location: facility.location || '',
       status: facility.status || 'active',
     });
@@ -229,10 +234,20 @@ export default function Facilities() {
   };
 
   const onSubmit = (data: FacilityFormData) => {
+    // Transform form data to match API schema
+    const facilityData: any = {
+      name: data.name,
+      type: data.type,
+      description: data.description || undefined,
+      capacity: data.capacity ? Number(data.capacity) : undefined,
+      location: data.location || undefined,
+      status: data.status || "active",
+    };
+
     if (selectedFacility) {
-      updateFacilityMutation.mutate(data);
+      updateFacilityMutation.mutate(facilityData);
     } else {
-      createFacilityMutation.mutate(data);
+      createFacilityMutation.mutate(facilityData);
     }
   };
 
@@ -476,11 +491,14 @@ export default function Facilities() {
 
       {/* Create/Edit Facility Dialog */}
       <Dialog open={facilityModalOpen} onOpenChange={setFacilityModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" aria-describedby="facility-dialog-description">
           <DialogHeader>
             <DialogTitle>
               {selectedFacility ? 'Anlage bearbeiten' : 'Neue Anlage'}
             </DialogTitle>
+            <div id="facility-dialog-description" className="sr-only">
+              {selectedFacility ? 'Bearbeiten Sie die Anlagendetails' : 'Erstellen Sie eine neue Anlage für Ihren Verein'}
+            </div>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -546,7 +564,8 @@ export default function Facilities() {
                         type="number" 
                         placeholder="Maximale Anzahl Personen" 
                         {...field}
-                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />

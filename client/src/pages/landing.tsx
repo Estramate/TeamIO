@@ -27,32 +27,32 @@ export function Landing() {
     {
       icon: Users,
       title: "Mitgliederverwaltung",
-      description: "Zentrale Verwaltung aller Vereinsmitglieder mit detaillierten Profilen, Rollen, Kontaktdaten und Mitgliederstatus. Automatische Kategorisierung nach Alter, Leistungsklasse und Aktivitätsstatus."
+      description: "Grundlegende Verwaltung von Vereinsmitgliedern mit Profilen und Kontaktdaten. Geplant für die erste Version."
     },
     {
       icon: Trophy,
       title: "Team-Organisation", 
-      description: "Intelligente Teamzusammenstellung basierend auf Verfügbarkeit, Leistungsniveau und Trainingszeiten. Automatische Mannschaftsaufstellung und Spielerstatistiken."
+      description: "Einfache Teamverwaltung und Spielerübersicht. Weitere Funktionen in Planung."
     },
     {
       icon: Calendar,
       title: "Terminplanung",
-      description: "Vollautomatisierte Terminkoordination für Training, Spiele und Veranstaltungen. Konfliktserkennung, Benachrichtigungen und Integration mit externen Kalendern."
+      description: "Basis-Terminverwaltung für Trainings und Spiele. Erweiterte Features folgen später."
     },
     {
       icon: MapPin,
       title: "Anlagenverwaltung", 
-      description: "Effiziente Buchung und Verwaltung aller Vereinsanlagen - Sportplätze, Hallen, Räume. Echtzeitübersicht der Verfügbarkeit und automatische Reservierungsbestätigung."
+      description: "Verwaltung von Vereinsanlagen und einfache Buchungsfunktionen. Noch in Entwicklung."
     },
     {
       icon: BarChart3,
       title: "Finanz-Dashboard",
-      description: "Umfassende Finanzanalysen mit Mitgliedsbeiträgen, Ausgaben und Budgetplanung. Automatische Reports, Mahnwesen und Liquiditätsprognosen."
+      description: "Einfache Übersicht über Vereinsfinanzen. Erweiterte Analysen sind geplant."
     },
     {
       icon: MessageSquare,
       title: "Kommunikation",
-      description: "Integrierte Kommunikationsplattform für Trainer, Spieler und Eltern. Push-Benachrichtigungen, Gruppenchats und offizielle Vereinsmitteilungen."
+      description: "Basis-Kommunikationstools für Vereinsmitglieder. Wird schrittweise ausgebaut."
     }
   ];
 
@@ -170,14 +170,14 @@ export function Landing() {
           {/* Section header */}
           <div className="text-center mb-20">
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6 leading-tight">
-              Alles was moderne
+              Geplante
               <br />
-              <span className="font-medium">Vereine brauchen</span>
+              <span className="font-medium">Kernfunktionen</span>
             </h2>
             
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Eine moderne Lösung für die digitale Vereinsverwaltung.
-              Aktuell in der Entwicklungsphase.
+              Diese Funktionen befinden sich derzeit in der Entwicklung.
+              Der aktuelle Status variiert je nach Feature.
             </p>
           </div>
 
@@ -222,7 +222,7 @@ export function Landing() {
                 </div>
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">Cloud-basiert</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Sichere Datenhaltung mit moderner Cloud-Technologie
+                  Geplante Cloud-Architektur für skalierbare Datenhaltung
                 </p>
               </div>
               
@@ -232,7 +232,7 @@ export function Landing() {
                 </div>
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">DSGVO-konform</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Entwicklung nach deutschen Datenschutzbestimmungen
+                  Entwicklung mit Fokus auf deutsche Datenschutzbestimmungen
                 </p>
               </div>
               
@@ -242,7 +242,7 @@ export function Landing() {
                 </div>
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">Responsive</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Optimiert für Smartphone, Tablet und Desktop
+                  Anpassung an verschiedene Bildschirmgrößen geplant
                 </p>
               </div>
             </div>
@@ -256,12 +256,12 @@ export function Landing() {
           
           <div className="text-center mb-20">
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6">
-              Vertrauen durch
+              Frühe
               <br />
-              <span className="font-medium">Erfahrung</span>
+              <span className="font-medium">Eindrücke</span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Feedback von Beta-Testern und interessierten Vereinen.
+              Erste Rückmeldungen von Vereinsvertretern zu unseren Prototypen.
             </p>
           </div>
 

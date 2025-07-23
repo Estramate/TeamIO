@@ -17,16 +17,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden text-foreground"
+              className="xl:hidden text-foreground"
               onClick={onMenuClick}
             >
               <Menu className="h-4 w-4" />
             </Button>
             
             <div>
-              <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">{title}</h2>
               {subtitle && (
-                <p className="text-sm text-muted-foreground mt-1 hidden sm:block">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">
                   {subtitle}
                 </p>
               )}

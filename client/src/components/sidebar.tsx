@@ -90,7 +90,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       {/* Mobile backdrop */}
       {open && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 xl:hidden"
           onClick={onClose}
         />
       )}
@@ -99,9 +99,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       <TooltipProvider delayDuration={300}>
         <aside
           className={cn(
-            "fixed lg:static inset-y-0 left-0 z-50 bg-card shadow-lg flex flex-col transition-all duration-300 ease-in-out border-r border-border",
+            "fixed xl:static inset-y-0 left-0 z-50 bg-card shadow-lg flex flex-col transition-all duration-300 ease-in-out border-r border-border",
             collapsed ? "w-16" : "w-64",
-            open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+            open ? "translate-x-0" : "-translate-x-full xl:translate-x-0"
           )}
         >
           {/* Header */}
@@ -138,7 +138,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="hidden lg:flex"
+                    className="hidden xl:flex"
                     onClick={() => setCollapsed(!collapsed)}
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -147,7 +147,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="lg:hidden"
+                    className="xl:hidden"
                     onClick={onClose}
                   >
                     <X className="h-4 w-4" />

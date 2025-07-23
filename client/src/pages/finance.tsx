@@ -626,11 +626,11 @@ export default function Finance() {
 
             {/* Transaction Grid/List */}
             {isFinancesLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                 {[...Array(6)].map((_, i) => (
                   <Card key={i} className="animate-pulse">
-                    <CardContent className="p-6">
-                      <div className="space-y-3">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="space-y-2 sm:space-y-3">
                         <div className="h-4 bg-muted rounded w-3/4"></div>
                         <div className="h-6 bg-muted rounded w-1/2"></div>
                         <div className="h-3 bg-muted rounded w-full"></div>
@@ -661,15 +661,15 @@ export default function Finance() {
               </Card>
             ) : (
               <div className={viewMode === 'grid' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' 
-                : 'space-y-4'
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6' 
+                : 'space-y-3 sm:space-y-4'
               }>
                 {filteredFinances.map((finance: any) => (
                   <Card key={finance.id} className="group hover:shadow-lg transition-all duration-200 border border-border">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-3 flex-1">
-                          <div className={`p-2 rounded-lg ${
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex items-start space-x-3 flex-1 min-w-0">
+                          <div className={`p-2 rounded-lg shrink-0 ${
                             finance.type === 'income' 
                               ? 'bg-green-100 dark:bg-green-900/30' 
                               : 'bg-red-100 dark:bg-red-900/30'
@@ -678,11 +678,11 @@ export default function Finance() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-1">
-                              <h3 className="font-semibold text-foreground truncate">{finance.description}</h3>
+                              <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">{finance.description}</h3>
                               {getPriorityIcon(finance.priority)}
                             </div>
-                            <p className="text-sm text-muted-foreground mb-2">{finance.category}</p>
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-2">{finance.category}</p>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                               <span className="flex items-center">
                                 <Calendar className="w-3 h-3 mr-1" />
                                 {formatDate(finance.date)}
@@ -692,9 +692,9 @@ export default function Finance() {
                           </div>
                         </div>
                         
-                        <div className="flex items-center space-x-3">
-                          <div className="text-right">
-                            <p className={`font-bold ${
+                        <div className="flex items-center justify-between sm:justify-end space-x-3">
+                          <div className="text-left sm:text-right">
+                            <p className={`text-sm sm:text-base font-bold ${
                               finance.type === 'income' 
                                 ? 'text-green-600 dark:text-green-400' 
                                 : 'text-red-600 dark:text-red-400'

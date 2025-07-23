@@ -463,7 +463,7 @@ export default function Teams() {
                         </div>
                       </div>
                       
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

@@ -80,7 +80,7 @@ export default function Facilities() {
   }, [isAuthenticated, isLoading, toast]);
 
   // Data fetching
-  const { data: facilities = [], isLoading: isFacilitiesLoading } = useQuery({
+  const { data: facilities = [], isLoading: isFacilitiesLoading } = useQuery<Facility[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'facilities'],
     enabled: !!selectedClub?.id,
     retry: false,
@@ -122,7 +122,7 @@ export default function Facilities() {
 
   const updateFacilityMutation = useMutation({
     mutationFn: (data: FacilityFormData) => 
-      apiRequest('PUT', `/api/clubs/${selectedClub?.id}/facilities/${selectedFacility?.id}`, data),
+      apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/facilities/${selectedFacility?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
       setFacilityModalOpen(false);
@@ -529,7 +529,7 @@ export default function Facilities() {
                   <FormItem>
                     <FormLabel>Beschreibung</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Beschreibung der Anlage" {...field} />
+                      <Textarea placeholder="Beschreibung der Anlage" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -560,7 +560,7 @@ export default function Facilities() {
                   <FormItem>
                     <FormLabel>Standort</FormLabel>
                     <FormControl>
-                      <Input placeholder="Standort/Adresse" {...field} />
+                      <Input placeholder="Standort/Adresse" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

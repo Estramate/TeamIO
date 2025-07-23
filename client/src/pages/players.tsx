@@ -585,7 +585,7 @@ export default function Players() {
                             <DropdownMenuItem 
                               onClick={() => handleTogglePlayerStatus(player)}
                               disabled={togglePlayerStatusMutation.isPending}
-                              className="text-orange-600 focus:text-orange-600"
+                              className={player.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
                             >
                               {player.status === 'active' ? (
                                 <>
@@ -775,7 +775,7 @@ export default function Players() {
                               <DropdownMenuItem 
                                 onClick={() => handleTogglePlayerStatus(player)}
                                 disabled={togglePlayerStatusMutation.isPending}
-                                className="text-orange-600 focus:text-orange-600"
+                                className={player.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
                               >
                                 {player.status === 'active' ? (
                                   <>

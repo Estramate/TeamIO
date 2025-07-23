@@ -113,12 +113,8 @@ export default function Players() {
   }, [clubs, selectedClub, setSelectedClub]);
 
   useEffect(() => {
-    if (players && (players as Player[]).length > 0) {
-      setPage("Spieler", `${(players as Player[]).length} von ${(players as Player[]).length} Spielern`);
-    } else {
-      setPage("Spieler", "Verwalten Sie alle Spieler des Vereins");
-    }
-  }, [setPage, players]);
+    setPage("Spieler", "Verwalten Sie alle Spieler des Vereins");
+  }, [setPage]);
 
   // Fetch players
   const { data: players = [], isLoading, error } = useQuery({
@@ -352,20 +348,20 @@ export default function Players() {
         </div>
 
         {/* Search, Filters and View Toggle */}
-        <div className="px-6 pb-4">
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="px-6 pb-4 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Name oder Trikotnummer suchen..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-9"
+                className="pl-9 h-10 rounded-xl border-0 bg-muted/30"
               />
             </div>
             <div className="flex gap-2 shrink-0">
               <Select value={positionFilter} onValueChange={setPositionFilter}>
-                <SelectTrigger className="w-32 h-9">
+                <SelectTrigger className="w-32 h-10 rounded-xl border-0 bg-muted/30">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -378,7 +374,7 @@ export default function Players() {
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-28 h-9">
+                <SelectTrigger className="w-28 h-10 rounded-xl border-0 bg-muted/30">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -390,12 +386,12 @@ export default function Players() {
                   ))}
                 </SelectContent>
               </Select>
-              <div className="flex border rounded-md">
+              <div className="flex rounded-xl bg-muted/30 p-1">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="h-9 px-3 rounded-r-none"
+                  className="h-8 px-3 rounded-lg"
                 >
                   <Grid3X3 className="h-4 w-4" />
                 </Button>
@@ -403,7 +399,7 @@ export default function Players() {
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="h-9 px-3 rounded-l-none"
+                  className="h-8 px-3 rounded-lg"
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -411,19 +407,32 @@ export default function Players() {
             </div>
           </div>
 
-          {/* Team Tabs */}
-          <Tabs value={selectedTeam} onValueChange={setSelectedTeam} className="w-full">
-            <TabsList className="grid w-full grid-cols-auto">
-              <TabsTrigger value="all" className="text-xs">
-                Alle Teams ({(players as Player[]).length})
-              </TabsTrigger>
-              {teamsWithPlayers.map((team) => (
-                <TabsTrigger key={team.id} value={team.id.toString()} className="text-xs">
-                  {team.name} ({(team as any).playerCount})
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          {/* Modern Team Filter Pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedTeam("all")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                selectedTeam === "all"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              Alle Teams ({(players as Player[]).length})
+            </button>
+            {teamsWithPlayers.map((team) => (
+              <button
+                key={team.id}
+                onClick={() => setSelectedTeam(team.id.toString())}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  selectedTeam === team.id.toString()
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {team.name} ({(team as any).playerCount})
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

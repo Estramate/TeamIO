@@ -357,12 +357,12 @@ export default function Players() {
                 placeholder="Name oder Trikotnummer suchen..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-10 rounded-xl border-0 bg-muted/30"
+                className="pl-9 h-10 rounded-xl border bg-background"
               />
             </div>
             <div className="flex gap-2 shrink-0">
               <Select value={positionFilter} onValueChange={setPositionFilter}>
-                <SelectTrigger className="w-32 h-10 rounded-xl border-0 bg-muted/30">
+                <SelectTrigger className="w-32 h-10 rounded-xl border bg-background">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -375,7 +375,7 @@ export default function Players() {
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-28 h-10 rounded-xl border-0 bg-muted/30">
+                <SelectTrigger className="w-28 h-10 rounded-xl border bg-background">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -387,7 +387,7 @@ export default function Players() {
                   ))}
                 </SelectContent>
               </Select>
-              <div className="flex rounded-xl bg-muted/30 p-1">
+              <div className="flex rounded-xl border bg-background p-1">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"

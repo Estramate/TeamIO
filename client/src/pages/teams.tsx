@@ -16,7 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { 
   UsersRound, 
@@ -504,6 +503,22 @@ export default function Teams() {
                               Bearbeiten
                             </DropdownMenuItem>
                             <DropdownMenuItem 
+                              onClick={() => handleToggleTeamStatus(team)}
+                              disabled={toggleTeamStatusMutation.isPending}
+                            >
+                              {team.status === 'active' ? (
+                                <>
+                                  <Users className="h-4 w-4 mr-2" />
+                                  Deaktivieren
+                                </>
+                              ) : (
+                                <>
+                                  <Users className="h-4 w-4 mr-2" />
+                                  Aktivieren
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
                               onClick={() => handleDeleteTeam(team)}
                               className="text-destructive focus:text-destructive"
                             >
@@ -517,17 +532,9 @@ export default function Teams() {
                     
                     <div className="text-xs text-muted-foreground space-y-1">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Badge variant={getStatusBadgeVariant(team.status)}>
-                            {getStatusLabel(team.status)}
-                          </Badge>
-                          <Switch
-                            checked={team.status === 'active'}
-                            onCheckedChange={() => handleToggleTeamStatus(team)}
-                            disabled={toggleTeamStatusMutation.isPending}
-                            className="scale-75"
-                          />
-                        </div>
+                        <Badge variant={getStatusBadgeVariant(team.status)}>
+                          {getStatusLabel(team.status)}
+                        </Badge>
                         {team.maxMembers && (
                           <span className="flex items-center">
                             <Users className="w-3 h-3 mr-1" />
@@ -594,17 +601,9 @@ export default function Teams() {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-3">
-                              <Badge variant={getStatusBadgeVariant(team.status)}>
-                                {getStatusLabel(team.status)}
-                              </Badge>
-                              <Switch
-                                checked={team.status === 'active'}
-                                onCheckedChange={() => handleToggleTeamStatus(team)}
-                                disabled={toggleTeamStatusMutation.isPending}
-                                className="scale-75"
-                              />
-                            </div>
+                            <Badge variant={getStatusBadgeVariant(team.status)}>
+                              {getStatusLabel(team.status)}
+                            </Badge>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                             {team.season || '-'}
@@ -624,6 +623,22 @@ export default function Teams() {
                                 <DropdownMenuItem onClick={() => handleEditTeam(team)}>
                                   <Edit className="h-4 w-4 mr-2" />
                                   Bearbeiten
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleToggleTeamStatus(team)}
+                                  disabled={toggleTeamStatusMutation.isPending}
+                                >
+                                  {team.status === 'active' ? (
+                                    <>
+                                      <Users className="h-4 w-4 mr-2" />
+                                      Deaktivieren
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Users className="h-4 w-4 mr-2" />
+                                      Aktivieren
+                                    </>
+                                  )}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
                                   onClick={() => handleDeleteTeam(team)}

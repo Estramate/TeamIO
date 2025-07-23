@@ -10,7 +10,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Users, Search, Plus, Edit, Trash2, LayoutGrid, List, Mail, Phone, Calendar, MapPin, User, AlertCircle, MoreHorizontal, Grid3X3 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
@@ -458,17 +457,9 @@ export default function Members() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <div className="flex flex-col items-center gap-1">
-                      <Badge variant={getStatusBadgeVariant(member.status)} className="text-xs">
-                        {getStatusLabel(member.status)}
-                      </Badge>
-                      <Switch
-                        checked={member.status === 'active'}
-                        onCheckedChange={() => handleToggleStatus(member)}
-                        disabled={toggleMemberStatusMutation.isPending}
-                        className="scale-75"
-                      />
-                    </div>
+                    <Badge variant={getStatusBadgeVariant(member.status)} className="text-xs">
+                      {getStatusLabel(member.status)}
+                    </Badge>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button 
@@ -483,6 +474,22 @@ export default function Members() {
                         <DropdownMenuItem onClick={() => handleEditMember(member)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Bearbeiten
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleToggleStatus(member)}
+                          disabled={toggleMemberStatusMutation.isPending}
+                        >
+                          {member.status === 'active' ? (
+                            <>
+                              <User className="h-4 w-4 mr-2" />
+                              Deaktivieren
+                            </>
+                          ) : (
+                            <>
+                              <User className="h-4 w-4 mr-2" />
+                              Aktivieren
+                            </>
+                          )}
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleDeleteMember(member)}
@@ -566,17 +573,9 @@ export default function Members() {
                         <div className="text-sm text-muted-foreground">{member.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <Badge variant={getStatusBadgeVariant(member.status)}>
-                            {getStatusLabel(member.status)}
-                          </Badge>
-                          <Switch
-                            checked={member.status === 'active'}
-                            onCheckedChange={() => handleToggleStatus(member)}
-                            disabled={toggleMemberStatusMutation.isPending}
-                            className="scale-75"
-                          />
-                        </div>
+                        <Badge variant={getStatusBadgeVariant(member.status)}>
+                          {getStatusLabel(member.status)}
+                        </Badge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {member.joinDate ? new Date(member.joinDate).toLocaleDateString('de-DE') : '-'}
@@ -596,6 +595,22 @@ export default function Members() {
                             <DropdownMenuItem onClick={() => handleEditMember(member)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleToggleStatus(member)}
+                              disabled={toggleMemberStatusMutation.isPending}
+                            >
+                              {member.status === 'active' ? (
+                                <>
+                                  <User className="h-4 w-4 mr-2" />
+                                  Deaktivieren
+                                </>
+                              ) : (
+                                <>
+                                  <User className="h-4 w-4 mr-2" />
+                                  Aktivieren
+                                </>
+                              )}
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleDeleteMember(member)}

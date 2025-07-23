@@ -11,12 +11,12 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### January 23, 2025 (Latest)
-- **Quick Status Toggle Functionality**: Implemented instant active/inactive switches for all management pages
-  - Added elegant Switch components next to status badges in both grid and list views
-  - Teams, Members, and Players can now be activated/deactivated with a single click
-  - Real-time status updates with smooth animations and loading states
-  - Consistent toggle placement across all entity types for unified user experience
-  - Backend API endpoints support instant status changes with proper validation
+- **Quick Status Toggle in Context Menus**: Implemented elegant status management through 3-dot navigation menus
+  - Added "Aktivieren/Deaktivieren" options to all dropdown menus for Teams, Members, and Players
+  - Clean status badge display without visual clutter from toggle switches
+  - One-click status changes with proper loading states and error handling
+  - Contextual menu items that dynamically show "Aktivieren" or "Deaktivieren" based on current status
+  - Consistent user experience across grid and list views for all entity types
 
 - **Complete CRUD Operations Fix**: Resolved all database operation issues across the application
   - Fixed API endpoint inconsistencies - all routes now use proper club-specific structure (/api/clubs/:clubId/)

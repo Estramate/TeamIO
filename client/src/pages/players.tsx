@@ -45,7 +45,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useClubStore } from "@/lib/clubStore";
@@ -566,17 +565,9 @@ export default function Players() {
                                   {player.position}
                                 </span>
                               )}
-                              <div className="flex items-center gap-1">
-                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(player.status)}`}>
-                                  {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                                </span>
-                                <Switch
-                                  checked={player.status === 'active'}
-                                  onCheckedChange={() => handleTogglePlayerStatus(player)}
-                                  disabled={togglePlayerStatusMutation.isPending}
-                                  className="scale-75"
-                                />
-                              </div>
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(player.status)}`}>
+                                {statusOptions.find(s => s.value === player.status)?.label || player.status}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -590,6 +581,22 @@ export default function Players() {
                             <DropdownMenuItem onClick={() => handleEdit(player)}>
                               <Edit2 className="mr-2 h-4 w-4" />
                               Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleTogglePlayerStatus(player)}
+                              disabled={togglePlayerStatusMutation.isPending}
+                            >
+                              {player.status === 'active' ? (
+                                <>
+                                  <Users className="mr-2 h-4 w-4" />
+                                  Deaktivieren
+                                </>
+                              ) : (
+                                <>
+                                  <Users className="mr-2 h-4 w-4" />
+                                  Aktivieren
+                                </>
+                              )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDelete(player)}
@@ -716,17 +723,9 @@ export default function Players() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-3">
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(player.status)}`}>
-                              {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                            </span>
-                            <Switch
-                              checked={player.status === 'active'}
-                              onCheckedChange={() => handleTogglePlayerStatus(player)}
-                              disabled={togglePlayerStatusMutation.isPending}
-                              className="scale-75"
-                            />
-                          </div>
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(player.status)}`}>
+                            {statusOptions.find(s => s.value === player.status)?.label || player.status}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1 text-xs text-muted-foreground">
@@ -771,6 +770,22 @@ export default function Players() {
                               <DropdownMenuItem onClick={() => handleEdit(player)}>
                                 <Edit2 className="mr-2 h-4 w-4" />
                                 Bearbeiten
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleTogglePlayerStatus(player)}
+                                disabled={togglePlayerStatusMutation.isPending}
+                              >
+                                {player.status === 'active' ? (
+                                  <>
+                                    <Users className="mr-2 h-4 w-4" />
+                                    Deaktivieren
+                                  </>
+                                ) : (
+                                  <>
+                                    <Users className="mr-2 h-4 w-4" />
+                                    Aktivieren
+                                  </>
+                                )}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleDelete(player)}

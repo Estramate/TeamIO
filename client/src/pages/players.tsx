@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -35,11 +37,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useClubStore } from "@/lib/clubStore";
 import { usePage } from "@/contexts/PageContext";
-import { Player, insertPlayerSchema, type InsertPlayer } from "@shared/schema";
+import { Player, insertPlayerSchema, type InsertPlayer, Team } from "@shared/schema";
 import {
   Search,
   UserPlus,
@@ -47,6 +57,12 @@ import {
   MoreHorizontal,
   Edit2,
   Trash2,
+  Grid3X3,
+  List,
+  Phone,
+  Mail,
+  Calendar,
+  MapPin,
 } from "lucide-react";
 
 const positionOptions = [
@@ -75,6 +91,8 @@ export default function Players() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   
   const { selectedClub, setSelectedClub } = useClubStore();
   const { toast } = useToast();
@@ -201,6 +219,13 @@ export default function Players() {
     },
   });
 
+  // Get player teams data
+  const getPlayerTeams = (playerId: number) => {
+    return (teams as Team[]).filter(team => 
+      team.players?.some(p => p.id === playerId)
+    );
+  };
+
   // Filter players 
   const filteredPlayers = (players as Player[]).filter((player: Player) => {
     const matchesSearch = 
@@ -211,8 +236,17 @@ export default function Players() {
     const matchesPosition = positionFilter === "all" || player.position === positionFilter;
     const matchesStatus = statusFilter === "all" || player.status === statusFilter;
     
-    return matchesSearch && matchesPosition && matchesStatus;
+    // Team filter
+    const matchesTeam = selectedTeam === "all" || 
+      getPlayerTeams(player.id).some(team => team.id.toString() === selectedTeam);
+    
+    return matchesSearch && matchesPosition && matchesStatus && matchesTeam;
   });
+
+  // Get unique teams that have players
+  const teamsWithPlayers = (teams as Team[]).filter(team => 
+    team.players && team.players.length > 0
+  );
 
   const onSubmit = (data: InsertPlayer) => {
     if (editingPlayer) {
@@ -309,9 +343,9 @@ export default function Players() {
           </div>
         </div>
 
-        {/* Search and Filters Bar */}
+        {/* Search, Filters and View Toggle */}
         <div className="px-6 pb-4">
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -348,136 +382,309 @@ export default function Players() {
                   ))}
                 </SelectContent>
               </Select>
+              <div className="flex border rounded-md">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="h-9 px-3 rounded-r-none"
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="h-9 px-3 rounded-l-none"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
+
+          {/* Team Tabs */}
+          <Tabs value={selectedTeam} onValueChange={setSelectedTeam} className="w-full">
+            <TabsList className="grid w-full grid-cols-auto">
+              <TabsTrigger value="all" className="text-xs">
+                Alle Teams ({(players as Player[]).length})
+              </TabsTrigger>
+              {teamsWithPlayers.map((team) => (
+                <TabsTrigger key={team.id} value={team.id.toString()} className="text-xs">
+                  {team.name} ({team.players?.length || 0})
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 
       {/* Content Section - Scrollable */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-6">
-          {/* Players Grid */}
+          {/* Players Content */}
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-12 h-12 bg-muted rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-muted rounded mb-2"></div>
-                        <div className="h-3 bg-muted rounded w-2/3"></div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-2 bg-muted rounded w-full"></div>
-                      <div className="h-2 bg-muted rounded w-3/4"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : filteredPlayers.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {filteredPlayers.map((player: Player) => (
-                <Card key={player.id} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-muted/50 hover:border-muted">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
-                        <div className="relative shrink-0">
-                          {player.profileImageUrl ? (
-                            <img
-                              src={player.profileImageUrl}
-                              alt={`${player.firstName} ${player.lastName}`}
-                              className="w-12 h-12 rounded-full object-cover border-2 border-muted"
-                              onError={(e) => {
-                                const img = e.target as HTMLImageElement;
-                                img.style.display = 'none';
-                                img.nextElementSibling?.classList.remove('hidden');
-                              }}
-                            />
-                          ) : null}
-                          <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center ${player.profileImageUrl ? 'hidden' : ''}`}>
-                            <Users className="h-5 w-5 text-primary/60" />
-                          </div>
-                          {player.jerseyNumber && (
-                            <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
-                              {player.jerseyNumber}
-                            </div>
-                          )}
+            viewMode === "grid" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-12 h-12 bg-muted rounded-full"></div>
+                        <div className="flex-1">
+                          <div className="h-4 bg-muted rounded mb-2"></div>
+                          <div className="h-3 bg-muted rounded w-2/3"></div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors">
-                            {player.firstName} {player.lastName}
-                          </h3>
-                          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                            {player.position && (
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getPositionColor(player.position)}`}>
-                                {player.position}
-                              </span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="h-2 bg-muted rounded w-full"></div>
+                        <div className="h-2 bg-muted rounded w-3/4"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Spieler</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Kontakt</TableHead>
+                      <TableHead className="w-12"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <TableRow key={i} className="animate-pulse">
+                        <TableCell>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-muted rounded-full"></div>
+                            <div>
+                              <div className="h-4 bg-muted rounded w-24 mb-1"></div>
+                              <div className="h-3 bg-muted rounded w-16"></div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell><div className="h-3 bg-muted rounded w-20"></div></TableCell>
+                        <TableCell><div className="h-3 bg-muted rounded w-16"></div></TableCell>
+                        <TableCell><div className="h-3 bg-muted rounded w-32"></div></TableCell>
+                        <TableCell><div className="h-8 w-8 bg-muted rounded"></div></TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            )
+          ) : filteredPlayers.length > 0 ? (
+            viewMode === "grid" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {filteredPlayers.map((player: Player) => (
+                  <Card key={player.id} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-muted/50 hover:border-muted">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          <div className="relative shrink-0">
+                            {player.profileImageUrl ? (
+                              <img
+                                src={player.profileImageUrl}
+                                alt={`${player.firstName} ${player.lastName}`}
+                                className="w-12 h-12 rounded-full object-cover border-2 border-muted"
+                                onError={(e) => {
+                                  const img = e.target as HTMLImageElement;
+                                  img.style.display = 'none';
+                                  img.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : null}
+                            <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center ${player.profileImageUrl ? 'hidden' : ''}`}>
+                              <Users className="h-5 w-5 text-primary/60" />
+                            </div>
+                            {player.jerseyNumber && (
+                              <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
+                                {player.jerseyNumber}
+                              </div>
                             )}
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(player.status)}`}>
-                              {statusOptions.find(s => s.value === player.status)?.label || player.status}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors">
+                              {player.firstName} {player.lastName}
+                            </h3>
+                            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                              {player.position && (
+                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getPositionColor(player.position)}`}>
+                                  {player.position}
+                                </span>
+                              )}
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(player.status)}`}>
+                                {statusOptions.find(s => s.value === player.status)?.label || player.status}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(player)}>
+                              <Edit2 className="mr-2 h-4 w-4" />
+                              Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(player)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Löschen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      <div className="space-y-1.5 text-xs text-muted-foreground">
+                        {player.nationality && (
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                            </div>
+                            <span className="truncate">{player.nationality}</span>
+                          </div>
+                        )}
+                        {(player.height || player.weight) && (
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                            </div>
+                            <span>
+                              {player.height && `${player.height}cm`}
+                              {player.height && player.weight && " • "}
+                              {player.weight && `${player.weight}kg`}
                             </span>
                           </div>
-                        </div>
+                        )}
+                        {player.preferredFoot && (
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                            </div>
+                            <span>{footOptions.find(f => f.value === player.preferredFoot)?.label}</span>
+                          </div>
+                        )}
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(player)}>
-                            <Edit2 className="mr-2 h-4 w-4" />
-                            Bearbeiten
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(player)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Löschen
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    <div className="space-y-1.5 text-xs text-muted-foreground">
-                      {player.nationality && (
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Spieler</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Kontakt</TableHead>
+                      <TableHead className="w-12"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPlayers.map((player: Player) => (
+                      <TableRow key={player.id} className="group hover:bg-muted/50">
+                        <TableCell>
+                          <div className="flex items-center space-x-3">
+                            <div className="relative shrink-0">
+                              {player.profileImageUrl ? (
+                                <img
+                                  src={player.profileImageUrl}
+                                  alt={`${player.firstName} ${player.lastName}`}
+                                  className="w-10 h-10 rounded-full object-cover border-2 border-muted"
+                                  onError={(e) => {
+                                    const img = e.target as HTMLImageElement;
+                                    img.style.display = 'none';
+                                    img.nextElementSibling?.classList.remove('hidden');
+                                  }}
+                                />
+                              ) : null}
+                              <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center ${player.profileImageUrl ? 'hidden' : ''}`}>
+                                <Users className="h-4 w-4 text-primary/60" />
+                              </div>
+                              {player.jerseyNumber && (
+                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold shadow-sm">
+                                  {player.jerseyNumber}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">
+                                {player.firstName} {player.lastName}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {player.nationality}
+                              </div>
+                            </div>
                           </div>
-                          <span className="truncate">{player.nationality}</span>
-                        </div>
-                      )}
-                      {(player.height || player.weight) && (
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                          </div>
-                          <span>
-                            {player.height && `${player.height}cm`}
-                            {player.height && player.weight && " • "}
-                            {player.weight && `${player.weight}kg`}
+                        </TableCell>
+                        <TableCell>
+                          {player.position && (
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPositionColor(player.position)}`}>
+                              {player.position}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(player.status)}`}>
+                            {statusOptions.find(s => s.value === player.status)?.label || player.status}
                           </span>
-                        </div>
-                      )}
-                      {player.preferredFoot && (
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            {player.phone && (
+                              <div className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                <span>{player.phone}</span>
+                              </div>
+                            )}
+                            {player.email && (
+                              <div className="flex items-center gap-1">
+                                <Mail className="h-3 w-3" />
+                                <span>{player.email}</span>
+                              </div>
+                            )}
                           </div>
-                          <span>{footOptions.find(f => f.value === player.preferredFoot)?.label}</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEdit(player)}>
+                                <Edit2 className="mr-2 h-4 w-4" />
+                                Bearbeiten
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(player)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Löschen
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            )
           ) : (
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
@@ -486,11 +693,11 @@ export default function Players() {
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Keine Spieler gefunden</h3>
                 <p className="text-muted-foreground mb-6 max-w-sm">
-                  {searchTerm || positionFilter !== "all" || statusFilter !== "all"
+                  {searchTerm || positionFilter !== "all" || statusFilter !== "all" || selectedTeam !== "all"
                     ? "Keine Spieler entsprechen den aktuellen Filterkriterien. Versuchen Sie andere Filter."
                     : "Noch keine Spieler hinzugefügt. Fügen Sie den ersten Spieler hinzu."}
                 </p>
-                {!searchTerm && positionFilter === "all" && statusFilter === "all" && (
+                {!searchTerm && positionFilter === "all" && statusFilter === "all" && selectedTeam === "all" && (
                   <Button onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     Ersten Spieler hinzufügen

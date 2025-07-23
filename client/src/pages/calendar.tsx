@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
+import { usePage } from "@/contexts/PageContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,12 @@ export default function Calendar() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { setPage } = usePage();
+
+  // Set page title
+  useEffect(() => {
+    setPage("Kalender", "Übersicht über alle Termine und Veranstaltungen");
+  }, [setPage]);
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);

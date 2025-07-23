@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
+import { usePage } from "@/contexts/PageContext";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,13 @@ export default function UsersPage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { setPage } = usePage();
   const queryClient = useQueryClient();
+
+  // Set page title
+  useEffect(() => {
+    setPage("Benutzer", "Verwalten Sie Benutzer und Berechtigungen");
+  }, [setPage]);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');

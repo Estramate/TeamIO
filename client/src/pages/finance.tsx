@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
+import { usePage } from "@/contexts/PageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,7 +104,13 @@ export default function Finance() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { setPage } = usePage();
   const queryClient = useQueryClient();
+
+  // Set page title
+  useEffect(() => {
+    setPage("Finanzen", "Umfassende Vereins-Finanzverwaltung");
+  }, [setPage]);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');

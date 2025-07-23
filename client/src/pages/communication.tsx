@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
+import { usePage } from "@/contexts/PageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +16,12 @@ export default function Communication() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { setPage } = usePage();
+
+  // Set page title
+  useEffect(() => {
+    setPage("Kommunikation", "Nachrichten und Ankündigungen verwalten");
+  }, [setPage]);
   
   const [messageText, setMessageText] = useState('');
   const [recipient, setRecipient] = useState('all');

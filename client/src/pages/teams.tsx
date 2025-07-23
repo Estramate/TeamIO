@@ -554,7 +554,7 @@ export default function Teams() {
                         </Badge>
                         <span className="flex items-center">
                           <Users className="w-3 h-3 mr-1" />
-                          {(players as any[]).filter(p => p.teamId === team.id).length} Spieler
+                          {(players as any[]).filter(p => p.teams?.some((t: any) => t.id === team.id)).length} Spieler
                         </span>
                       </div>
                       {team.maxMembers && (

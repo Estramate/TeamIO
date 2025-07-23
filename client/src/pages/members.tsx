@@ -50,6 +50,8 @@ export default function Members() {
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<any>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [viewingMember, setViewingMember] = useState<any>(null);
 
   // Set page title and redirect if not authenticated
   useEffect(() => {
@@ -240,6 +242,11 @@ export default function Members() {
     setDeleteDialogOpen(true);
   };
 
+  const handleViewMember = (member: any) => {
+    setViewingMember(member);
+    setIsDetailDialogOpen(true);
+  };
+
   const confirmDelete = () => {
     if (memberToDelete) {
       deleteMemberMutation.mutate(memberToDelete.id);
@@ -398,7 +405,10 @@ export default function Members() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-foreground truncate">
+                    <h3 
+                      className="text-base font-semibold text-foreground truncate cursor-pointer hover:text-primary transition-colors hover:underline"
+                      onClick={() => handleViewMember(member)}
+                    >
                       {member.firstName} {member.lastName}
                     </h3>
                     {member.email && (
@@ -760,6 +770,124 @@ export default function Members() {
               {deleteMemberMutation.isPending ? "Löschen..." : "Löschen"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Member Detail Dialog */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center">
+                <User className="h-6 w-6 text-primary/60" />
+              </div>
+              <div>
+                <div className="text-xl font-bold">
+                  {viewingMember?.firstName} {viewingMember?.lastName}
+                </div>
+                <div className="text-sm text-muted-foreground font-normal">
+                  Mitgliederdetails
+                </div>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {viewingMember && (
+            <div className="space-y-6 mt-6">
+              {/* Status */}
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                <span className="text-sm font-medium text-muted-foreground">Status</span>
+                <Badge variant={getStatusBadgeVariant(viewingMember.status)}>
+                  {getStatusLabel(viewingMember.status)}
+                </Badge>
+              </div>
+
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {viewingMember.membershipNumber && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">Mitgliedsnummer</label>
+                    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{viewingMember.membershipNumber}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {viewingMember.joinDate && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">Beitrittsdatum</label>
+                    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{new Date(viewingMember.joinDate).toLocaleDateString('de-DE')}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Contact Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Kontaktinformationen</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {viewingMember.email && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">E-Mail</label>
+                      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{viewingMember.email}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {viewingMember.phone && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Telefon</label>
+                      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{viewingMember.phone}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Personal Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Persönliche Informationen</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  {viewingMember.birthDate && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Geburtsdatum</label>
+                      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{new Date(viewingMember.birthDate).toLocaleDateString('de-DE')}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {viewingMember.address && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Adresse</label>
+                      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{viewingMember.address}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Notes */}
+              {viewingMember.notes && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Notizen</h3>
+                  <div className="p-4 bg-muted/30 rounded-lg">
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{viewingMember.notes}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

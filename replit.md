@@ -43,6 +43,15 @@ Preferred communication style: Simple, everyday language.
   - Proper team assignments for accurate filtering and display
   - Positions include: Tor, Verteidigung, Mittelfeld, Sturm
 
+- **Unified 3-Dot Menu System**: Implemented consistent design pattern across all card-based pages
+  - **Members Page Modernization**: Complete redesign with unified card system and hidden action menus
+  - **Grid/List Toggle**: Consistent view mode switching with modern pill-style buttons
+  - **Member Detail Modal**: Click-to-view comprehensive member information in read-only format
+  - **Hover Interactions**: Professional hover effects with opacity transitions for action menus
+  - **Responsive Design**: Adaptive grid layouts (1-5 columns) based on screen size
+  - **Input Field Visibility**: Fixed light mode visibility issues for search and filter inputs
+  - **Scroll Performance**: Optimized container overflow handling for smooth scrolling with large datasets
+
 ## System Architecture
 
 ### Frontend Architecture

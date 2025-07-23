@@ -146,12 +146,12 @@ export default function Members() {
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Mitglieder suchen..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -168,12 +168,12 @@ export default function Members() {
           </div>
           
           {/* View Toggle */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center bg-muted rounded-lg p-1">
             <Button
               variant={viewMode === 'cards' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('cards')}
-              className={viewMode === 'cards' ? 'bg-white shadow-sm' : ''}
+              className={viewMode === 'cards' ? 'bg-background shadow-sm' : ''}
             >
               <LayoutGrid className="w-4 h-4" />
             </Button>
@@ -181,7 +181,7 @@ export default function Members() {
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-              className={viewMode === 'list' ? 'bg-white shadow-sm' : ''}
+              className={viewMode === 'list' ? 'bg-background shadow-sm' : ''}
             >
               <List className="w-4 h-4" />
             </Button>
@@ -195,18 +195,18 @@ export default function Members() {
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                <div className="h-4 bg-muted rounded w-3/4 mb-3"></div>
+                <div className="h-3 bg-muted rounded w-1/2 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-2/3"></div>
               </CardContent>
             </Card>
           ))}
         </div>
       ) : filteredMembers.length === 0 ? (
         <div className="text-center py-12">
-          <Users className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Keine Mitglieder gefunden</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Keine Mitglieder gefunden</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             {searchTerm || statusFilter !== 'all' 
               ? "Versuchen Sie, Ihre Suchkriterien anzupassen."
               : "Beginnen Sie mit dem Hinzufügen Ihres ersten Mitglieds."}

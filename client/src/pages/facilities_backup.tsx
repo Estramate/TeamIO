@@ -8,8 +8,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { Facility } from "@shared/schema";
-import { insertFacilitySchema } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,13 +36,20 @@ import {
 } from "lucide-react";
 
 // Form Schema
-const facilityFormSchema = insertFacilitySchema.extend({
-  capacity: z.coerce.number().optional(),
+const teamFormSchema = z.object({
+  name: z.string().min(1, "Name ist erforderlich"),
+  category: z.string().optional(),
+  ageGroup: z.string().optional(),
+  gender: z.string().optional(),
+  description: z.string().optional(),
+  maxMembers: z.number().optional(),
+  status: z.string().default("active"),
+  season: z.string().optional(),
 });
 
-type FacilityFormData = z.infer<typeof facilityFormSchema>;
+type TeamFormData = z.infer<typeof teamFormSchema>;
 
-export default function Facilities() {
+export default function Teams() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
@@ -52,14 +57,13 @@ export default function Facilities() {
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [facilityModalOpen, setFacilityModalOpen] = useState(false);
-  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<any>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [facilityToDelete, setFacilityToDelete] = useState<Facility | null>(null);
+  const [teamToDelete, setTeamToDelete] = useState<any>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const [viewingFacility, setViewingFacility] = useState<Facility | null>(null);
+  const [viewingTeam, setViewingTeam] = useState<any>(null);
 
   const form = useForm<TeamFormData>({
     resolver: zodResolver(teamFormSchema),

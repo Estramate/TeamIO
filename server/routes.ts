@@ -213,6 +213,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/clubs/:clubId/facilities/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const clubId = parseInt(req.params.clubId);
+      const updates = { ...req.body };
+      
+      const facility = await storage.updateFacility(id, updates);
+      res.json(facility);
+    } catch (error) {
+      console.error("Error updating facility:", error);
+      res.status(500).json({ message: "Failed to update facility" });
+    }
+  });
+
+  app.delete('/api/clubs/:clubId/facilities/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const clubId = parseInt(req.params.clubId);
+      
+      await storage.deleteFacility(id);
+      res.json({ message: "Facility deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting facility:", error);
+      res.status(500).json({ message: "Failed to delete facility" });
+    }
+  });
+
   // Booking routes
   app.get('/api/clubs/:clubId/bookings', isAuthenticated, async (req: any, res) => {
     try {

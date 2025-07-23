@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, Search, Plus, Edit, Trash2, LayoutGrid, List, Mail, Phone, Calendar, MapPin, User, AlertCircle } from "lucide-react";
+import { Users, Search, Plus, Edit, Trash2, LayoutGrid, List, Mail, Phone, Calendar, MapPin, User, AlertCircle, MoreHorizontal, Grid3X3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
@@ -42,7 +43,7 @@ export default function Members() {
   const { setPage } = usePage();
   const queryClient = useQueryClient();
   
-  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [memberModalOpen, setMemberModalOpen] = useState(false);
@@ -198,7 +199,7 @@ export default function Members() {
   });
 
   // Filter members
-  const filteredMembers = members.filter((member: any) => {
+  const filteredMembers = (members as any[]).filter((member: any) => {
     const matchesSearch = 
       member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -311,20 +312,20 @@ export default function Members() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
+      <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="flex flex-col sm:flex-row gap-4 flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 flex-1">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Mitglieder suchen..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
+                className="pl-10 h-10 rounded-xl border bg-background"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-40 h-10 rounded-xl border bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -337,30 +338,22 @@ export default function Members() {
           </div>
           
           {/* View Toggle */}
-          <div className="flex items-center bg-muted rounded-lg p-1 border border-border">
+          <div className="flex rounded-xl border bg-background p-1">
             <Button
-              variant="ghost"
+              variant={viewMode === "grid" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setViewMode('cards')}
-              className={`min-w-[40px] h-8 px-2 ${
-                viewMode === 'cards' 
-                  ? 'bg-background text-foreground shadow-sm border border-border hover:bg-background' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
+              onClick={() => setViewMode("grid")}
+              className="h-8 px-3 rounded-lg"
             >
-              <LayoutGrid className="w-4 h-4" />
+              <Grid3X3 className="h-4 w-4" />
             </Button>
             <Button
-              variant="ghost"
+              variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setViewMode('list')}
-              className={`min-w-[40px] h-8 px-2 ${
-                viewMode === 'list' 
-                  ? 'bg-background text-foreground shadow-sm border border-border hover:bg-background' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
+              onClick={() => setViewMode("list")}
+              className="h-8 px-3 rounded-lg"
             >
-              <List className="w-4 h-4" />
+              <List className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -398,71 +391,73 @@ export default function Members() {
             </Button>
           )}
         </div>
-      ) : viewMode === 'cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           {filteredMembers.map((member: any) => (
-            <Card key={member.id} className="hover:shadow-md transition-shadow border-border">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-foreground">
+            <Card key={member.id} className="group hover:shadow-lg transition-all duration-300 border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:scale-[1.02] cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-foreground truncate">
                       {member.firstName} {member.lastName}
                     </h3>
                     {member.email && (
-                      <p className="text-sm text-muted-foreground flex items-center mt-1">
-                        <Mail className="w-3 h-3 mr-1" />
+                      <p className="text-xs text-muted-foreground flex items-center mt-1 truncate">
+                        <Mail className="w-3 h-3 mr-1 shrink-0" />
                         {member.email}
                       </p>
                     )}
-                    {member.phone && (
-                      <p className="text-sm text-muted-foreground flex items-center mt-1">
-                        <Phone className="w-3 h-3 mr-1" />
-                        {member.phone}
-                      </p>
-                    )}
                   </div>
-                  <Badge variant={getStatusBadgeVariant(member.status)}>
-                    {getStatusLabel(member.status)}
-                  </Badge>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    <Badge variant={getStatusBadgeVariant(member.status)} className="text-xs">
+                      {getStatusLabel(member.status)}
+                    </Badge>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEditMember(member)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Bearbeiten
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteMember(member)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Löschen
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
                 
-                <div className="text-sm text-muted-foreground mb-4 space-y-1">
+                <div className="text-xs text-muted-foreground space-y-1">
                   {member.membershipNumber && (
-                    <p className="flex items-center">
-                      <User className="w-3 h-3 mr-1" />
-                      Mitgliedsnummer: {member.membershipNumber}
+                    <p className="flex items-center truncate">
+                      <User className="w-3 h-3 mr-1 shrink-0" />
+                      Nr: {member.membershipNumber}
+                    </p>
+                  )}
+                  {member.phone && (
+                    <p className="flex items-center truncate">
+                      <Phone className="w-3 h-3 mr-1 shrink-0" />
+                      {member.phone}
                     </p>
                   )}
                   {member.joinDate && (
-                    <p className="flex items-center">
-                      <Calendar className="w-3 h-3 mr-1" />
-                      Beigetreten: {new Date(member.joinDate).toLocaleDateString('de-DE')}
+                    <p className="flex items-center truncate">
+                      <Calendar className="w-3 h-3 mr-1 shrink-0" />
+                      {new Date(member.joinDate).toLocaleDateString('de-DE')}
                     </p>
                   )}
-                  {member.address && (
-                    <p className="flex items-center">
-                      <MapPin className="w-3 h-3 mr-1" />
-                      {member.address.length > 30 ? `${member.address.substring(0, 30)}...` : member.address}
-                    </p>
-                  )}
-                </div>
-                
-                <div className="flex items-center justify-end space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEditMember(member)}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteMember(member)}
-                    disabled={deleteMemberMutation.isPending}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
               </CardContent>
             </Card>

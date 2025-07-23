@@ -156,7 +156,7 @@ export default function Players() {
   // Create player mutation
   const createPlayerMutation = useMutation({
     mutationFn: async (data: InsertPlayer) => {
-      return await apiRequest(`/api/clubs/${selectedClub}/players`, "POST", data);
+      return await apiRequest("POST", `/api/clubs/${selectedClub}/players`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
@@ -179,7 +179,7 @@ export default function Players() {
   // Update player mutation
   const updatePlayerMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: InsertPlayer }) => {
-      return await apiRequest(`/api/clubs/${selectedClub}/players/${id}`, "PATCH", data);
+      return await apiRequest("PATCH", `/api/clubs/${selectedClub}/players/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
@@ -203,7 +203,7 @@ export default function Players() {
   // Delete player mutation
   const deletePlayerMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/clubs/${selectedClub}/players/${id}`, "DELETE");
+      return await apiRequest("DELETE", `/api/clubs/${selectedClub}/players/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });

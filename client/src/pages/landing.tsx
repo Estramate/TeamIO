@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { 
   Users, 
   Calendar, 
@@ -13,11 +12,8 @@ import {
   Star,
   Building,
   MessageSquare,
-  Target,
-  TrendingUp,
-  Heart,
-  Award,
-  Sparkles
+  CheckCircle,
+  Play
 } from "lucide-react";
 
 export function Landing() {
@@ -27,272 +23,230 @@ export function Landing() {
     setIsVisible(true);
   }, []);
 
-  // Modern feature grid with bento-style layout
   const features = [
     {
       icon: Users,
       title: "Mitgliederverwaltung",
-      description: "Zentrale Verwaltung aller Vereinsmitglieder mit detaillierten Profilen, Rollen und Kontaktdaten.",
-      highlight: "Intelligent",
-      size: "large"
+      description: "Zentrale Verwaltung aller Vereinsmitglieder mit detaillierten Profilen und Rollen."
     },
     {
       icon: Trophy,
       title: "Team-Organisation",
-      description: "Intelligente Teamzusammenstellung nach Alter, Leistung und Verfügbarkeit.",
-      highlight: "Smart Matching",
-      size: "medium"
+      description: "Intelligente Teamzusammenstellung nach Verfügbarkeit und Leistungsniveau."
     },
     {
       icon: Calendar,
       title: "Terminplanung",
-      description: "Automatisierte Terminkoordination mit Konfliktserkennung und Benachrichtigungen.",
-      highlight: "Auto-Sync",
-      size: "medium"
+      description: "Automatisierte Koordination mit Konfliktserkennung und Benachrichtigungen."
     },
     {
       icon: MapPin,
       title: "Anlagenverwaltung",
-      description: "Effiziente Buchung und Verwaltung aller Vereinsanlagen mit Echtzeitübersicht.",
-      highlight: "Real-time",
-      size: "small"
+      description: "Effiziente Buchung und Verwaltung aller Vereinsanlagen in Echtzeit."
     },
     {
       icon: BarChart3,
       title: "Finanz-Dashboard",
-      description: "Übersichtliche Finanzanalysen mit automatischen Reports und Forecasting.",
-      highlight: "Analytics",
-      size: "small"
+      description: "Übersichtliche Analysen mit automatischen Reports und Prognosen."
     },
     {
       icon: MessageSquare,
       title: "Kommunikation",
-      description: "Integrierte Kommunikationsplattform für alle Vereinsmitglieder.",
-      highlight: "Instant",
-      size: "medium"
-    },
+      description: "Integrierte Plattform für Vereinskommunikation und Nachrichten."
+    }
   ];
 
   const stats = [
-    { number: "1000+", label: "Aktive Vereine", icon: Building },
-    { number: "50K+", label: "Verwaltete Mitglieder", icon: Users },
-    { number: "99.9%", label: "Verfügbarkeit", icon: Shield },
-    { number: "4.9", label: "Kundenbewertung", icon: Star },
+    { number: "1.000+", label: "Aktive Vereine" },
+    { number: "50.000+", label: "Mitglieder" },
+    { number: "99,9%", label: "Verfügbarkeit" },
+    { number: "4,9/5", label: "Bewertung" }
   ];
 
   const testimonials = [
     {
       name: "Michael Weber",
       role: "Vorstand SV Musterstadt",
-      content: "TeamIO hat unsere Vereinsverwaltung revolutioniert. Die Zeitersparnis ist enorm!",
-      rating: 5
+      content: "TeamIO hat unsere Vereinsverwaltung komplett modernisiert. Die Zeitersparnis ist beeindruckend.",
+      avatar: "MW"
     },
     {
-      name: "Sarah Schmidt",
+      name: "Sarah Schmidt", 
       role: "Geschäftsführerin TC Beispielort",
-      content: "Endlich eine moderne Lösung, die wirklich alle Bereiche abdeckt. Sehr empfehlenswert!",
-      rating: 5
+      content: "Endlich eine Lösung, die alle Bereiche nahtlos verbindet. Absolut empfehlenswert.",
+      avatar: "SS"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-black dark:bg-white overflow-hidden">
-      {/* 2025 Brutalist Full-Screen Hero */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
-        {/* Raw background with organic shapes */}
-        <div className="absolute inset-0 bg-black dark:bg-white">
-          {/* Floating organic shapes */}
-          <div className="absolute top-20 left-10 w-32 h-32 bg-white/5 dark:bg-black/5 rounded-[40%_60%_30%_70%] animate-pulse" />
-          <div className="absolute top-40 right-20 w-48 h-48 bg-white/3 dark:bg-black/3 rounded-[60%_40%_70%_30%] animate-pulse" style={{ animationDelay: '2s' }} />
-          <div className="absolute bottom-32 left-1/3 w-64 h-64 bg-white/2 dark:bg-black/2 rounded-[30%_70%_40%_60%] animate-pulse" style={{ animationDelay: '4s' }} />
-          
-          {/* Brutalist grid overlay */}
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_97%,rgba(255,255,255,0.03)_98%,transparent_100%),linear-gradient(0deg,transparent_97%,rgba(255,255,255,0.03)_98%,transparent_100%)] dark:bg-[linear-gradient(90deg,transparent_97%,rgba(0,0,0,0.03)_98%,transparent_100%),linear-gradient(0deg,transparent_97%,rgba(0,0,0,0.03)_98%,transparent_100%)] bg-[size:100px_100px]" />
-        </div>
+    <div className="min-h-screen bg-white dark:bg-gray-950">
+      {/* Hero Section - Clean & Premium */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Subtle background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800" />
+        
+        {/* Floating geometric shapes - very subtle */}
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-50/30 dark:bg-blue-900/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/3 right-1/3 w-96 h-96 bg-purple-50/20 dark:bg-purple-900/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
 
-        {/* Asymmetric Layout */}
-        <div className="relative w-full px-8 lg:px-16">
-          {/* Left column - Text */}
-          <div className="max-w-4xl">
-            {/* Status indicator - Brutalist style */}
-            <div className="inline-block mb-8 lg:mb-12">
-              <div className="bg-white dark:bg-black text-black dark:text-white px-6 py-3 font-black text-sm tracking-widest uppercase border-2 border-white dark:border-black transform -rotate-1 hover:rotate-0 transition-transform duration-300">
-                ● LIVE 2025
-              </div>
+        <div className="relative container mx-auto px-6 lg:px-8 text-center">
+          <div className={`transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            
+            {/* Premium badge */}
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Jetzt verfügbar • 2025</span>
             </div>
             
-            {/* Brutalist Typography */}
-            <h1 className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black text-white dark:text-black mb-8 lg:mb-12 leading-[0.8] tracking-tighter">
-              TEAM
+            {/* Hero headline - Clean typography */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-light text-gray-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
+              Die Zukunft der
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 dark:from-black dark:to-gray-600 italic transform inline-block -skew-x-12">
-                IO
+              <span className="font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+                Vereinsverwaltung
               </span>
             </h1>
             
-            {/* Raw subtitle */}
-            <div className="mb-16 lg:mb-20">
-              <p className="text-2xl lg:text-3xl text-gray-300 dark:text-gray-700 font-light mb-4 leading-tight">
-                Vereinsverwaltung.
-                <br />
-                Neu gedacht.
-              </p>
-              <div className="w-32 h-1 bg-white dark:bg-black transform -rotate-1" />
-            </div>
+            {/* Elegant subtitle */}
+            <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
+              Moderne Plattform für zeitgemäße Sportvereine.
+              <br className="hidden sm:block" />
+              Intuitiv, cloudbasiert und zukunftssicher.
+            </p>
 
-            {/* Brutal CTA */}
-            <div className="flex flex-col sm:flex-row gap-6">
+            {/* Premium CTA */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Button 
                 size="lg" 
-                className="group bg-white dark:bg-black text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900 font-black px-12 py-6 text-xl uppercase tracking-wider border-4 border-white dark:border-black transform hover:-translate-y-1 hover:rotate-1 transition-all duration-300 rounded-none shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]"
+                className="group bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 font-medium px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                 onClick={() => window.location.href = "/api/login"}
               >
-                START NOW
-                <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
+                Kostenlos starten
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="lg"
+                className="group text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium px-8 py-6 text-lg"
+              >
+                <Play className="mr-2 h-5 w-5" />
+                Demo ansehen
               </Button>
             </div>
-          </div>
-          
-          {/* Right column - 3D-ish elements */}
-          <div className="absolute right-8 lg:right-16 top-1/2 -translate-y-1/2 hidden lg:block">
-            <div className="relative">
-              {/* Floating cards with 3D effect */}
-              <div className="w-64 h-40 bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-black/20 transform rotate-12 hover:rotate-6 transition-all duration-500">
-                <div className="p-6">
-                  <Users className="w-8 h-8 text-white dark:text-black mb-4" />
-                  <div className="text-white dark:text-black font-bold text-lg">1000+</div>
-                  <div className="text-white/70 dark:text-black/70 text-sm">VEREINE</div>
-                </div>
+
+            {/* Trust indicators */}
+            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center">
+                <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                Kostenlose Testphase
               </div>
-              
-              <div className="w-64 h-40 bg-white/5 dark:bg-black/5 backdrop-blur-sm border border-white/10 dark:border-black/10 transform -rotate-6 hover:rotate-0 transition-all duration-500 mt-8 -ml-16">
-                <div className="p-6">
-                  <Trophy className="w-8 h-8 text-white dark:text-black mb-4" />
-                  <div className="text-white dark:text-black font-bold text-lg">50K+</div>
-                  <div className="text-white/70 dark:text-black/70 text-sm">MITGLIEDER</div>
-                </div>
+              <div className="flex items-center">
+                <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                Keine Kreditkarte erforderlich
+              </div>
+              <div className="flex items-center">
+                <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                DSGVO-konform
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Bento Box Features Section */}
-      <section className="py-24 lg:py-32 bg-white dark:bg-black relative overflow-hidden">
-        {/* Background noise */}
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_98%,rgba(0,0,0,0.02)_99%,transparent_100%),linear-gradient(0deg,transparent_98%,rgba(0,0,0,0.02)_99%,transparent_100%)] dark:bg-[linear-gradient(90deg,transparent_98%,rgba(255,255,255,0.02)_99%,transparent_100%),linear-gradient(0deg,transparent_98%,rgba(255,255,255,0.02)_99%,transparent_100%)] bg-[size:50px_50px]" />
-        
-        <div className="container mx-auto px-8 lg:px-16 relative">
-          {/* Brutal section header */}
-          <div className="mb-20">
-            <div className="inline-block mb-8">
-              <div className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 font-black text-sm tracking-widest uppercase border-2 border-black dark:border-white transform rotate-1">
-                ● FEATURES
+      {/* Stats Section */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-900/50">
+        <div className="container mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-3xl lg:text-4xl font-light text-gray-900 dark:text-white mb-2">
+                  {stat.number}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                  {stat.label}
+                </div>
               </div>
-            </div>
-            
-            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-black dark:text-white mb-8 leading-tight tracking-tighter">
-              ALLES WAS
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Clean Grid */}
+      <section className="py-24 lg:py-32">
+        <div className="container mx-auto px-6 lg:px-8">
+          
+          {/* Section header */}
+          <div className="text-center mb-20">
+            <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6 leading-tight">
+              Alles was moderne
               <br />
-              <span className="italic -skew-x-6">MODERNE</span> VEREINE
-              <br />
-              BRAUCHEN
+              <span className="font-medium">Vereine brauchen</span>
             </h2>
+            
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
+              Von intelligenter Mitgliederverwaltung bis zu Echtzeit-Analytics.
+              Eine All-in-One-Lösung für zeitgemäße Vereinsführung.
+            </p>
           </div>
 
-          {/* Asymmetric Bento Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl">
+          {/* Clean feature grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
-              <div 
-                key={index} 
-                className={`group relative bg-gray-50 dark:bg-gray-950 border-2 border-black dark:border-white transform hover:-translate-y-2 hover:rotate-1 transition-all duration-300 ${
-                  feature.size === 'large' ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2' : 
-                  feature.size === 'medium' ? 'sm:col-span-2 lg:col-span-2' : 
-                  'sm:col-span-1 lg:col-span-1'
-                }`}
-              >
-                <div className={`p-8 ${feature.size === 'large' ? 'lg:p-12' : 'lg:p-8'}`}>
-                  {/* Icon and badge */}
-                  <div className="flex items-start justify-between mb-6">
-                    <div className={`bg-black dark:bg-white text-white dark:text-black p-4 border-2 border-black dark:border-white transform -rotate-3 group-hover:rotate-0 transition-transform duration-300 ${
-                      feature.size === 'large' ? 'lg:p-5' : 'lg:p-4'
-                    }`}>
-                      <feature.icon className={`${feature.size === 'large' ? 'w-8 h-8 lg:w-10 lg:h-10' : 'w-6 h-6 lg:w-7 lg:h-7'}`} />
-                    </div>
-                    
-                    <div className="bg-white dark:bg-black text-black dark:text-white px-3 py-1 text-xs font-black uppercase tracking-wider border border-black dark:border-white">
-                      {feature.highlight}
-                    </div>
+              <Card key={index} className="group border-0 shadow-sm hover:shadow-lg transition-all duration-300 bg-white dark:bg-gray-900">
+                <CardContent className="p-8">
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <feature.icon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                   </div>
                   
-                  {/* Title */}
-                  <h3 className={`font-black text-black dark:text-white mb-4 uppercase tracking-tight ${
-                    feature.size === 'large' ? 'text-2xl lg:text-3xl' : 'text-xl lg:text-2xl'
-                  }`}>
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-4">
                     {feature.title}
                   </h3>
                   
-                  {/* Description */}
-                  <p className={`text-gray-600 dark:text-gray-400 leading-relaxed ${
-                    feature.size === 'large' ? 'text-lg' : 'text-base'
-                  }`}>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                     {feature.description}
                   </p>
-                </div>
-                
-                {/* Corner accent */}
-                <div className="absolute top-0 right-0 w-4 h-4 bg-black dark:bg-white transform rotate-45 translate-x-2 -translate-y-2" />
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials - Raw Style */}
-      <section className="py-24 lg:py-32 bg-gray-100 dark:bg-gray-900 relative">
-        <div className="container mx-auto px-8 lg:px-16">
-          {/* Section header */}
-          <div className="mb-20">
-            <div className="inline-block mb-8">
-              <div className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 font-black text-sm tracking-widest uppercase border-2 border-black dark:border-white transform -rotate-1">
-                ● TESTIMONIALS
-              </div>
-            </div>
-            
-            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-black dark:text-white leading-tight tracking-tighter">
-              VEREINE
+      {/* Testimonials - Minimal */}
+      <section className="py-24 lg:py-32 bg-gray-50 dark:bg-gray-900/50">
+        <div className="container mx-auto px-6 lg:px-8">
+          
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6">
+              Vertrauen durch
               <br />
-              <span className="italic skew-x-6">LIEBEN</span> TEAMIO
+              <span className="font-medium">Erfahrung</span>
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="group relative">
-                <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 lg:p-12 transform hover:-translate-y-1 hover:rotate-1 transition-all duration-300">
-                  {/* Quote mark */}
-                  <div className="text-8xl text-black/10 dark:text-white/10 font-black leading-none mb-4">"</div>
-                  
-                  {/* Stars */}
-                  <div className="flex mb-6">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-6 h-6 fill-black dark:fill-white text-black dark:text-white" />
-                    ))}
+              <div key={index} className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-sm">
+                
+                {/* Quote */}
+                <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
+                  "{testimonial.content}"
+                </p>
+                
+                {/* Author */}
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {testimonial.avatar}
+                    </span>
                   </div>
-                  
-                  {/* Content */}
-                  <p className="text-xl lg:text-2xl text-black dark:text-white mb-8 leading-relaxed font-medium">
-                    {testimonial.content}
-                  </p>
-                  
-                  {/* Author */}
-                  <div className="flex items-center">
-                    <div className="w-16 h-16 bg-black dark:bg-white text-white dark:text-black font-black text-2xl flex items-center justify-center border-2 border-black dark:border-white mr-6">
-                      {testimonial.name.charAt(0)}
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      {testimonial.name}
                     </div>
-                    <div>
-                      <div className="font-black text-black dark:text-white text-lg uppercase">{testimonial.name}</div>
-                      <div className="text-gray-600 dark:text-gray-400 font-medium">{testimonial.role}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {testimonial.role}
                     </div>
                   </div>
                 </div>
@@ -302,46 +256,43 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Final CTA - Maximum Impact */}
-      <section className="py-24 lg:py-32 bg-black dark:bg-white relative overflow-hidden">
-        {/* Organic shapes */}
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-10 right-10 w-40 h-40 bg-white/5 dark:bg-black/5 rounded-[60%_40%_30%_70%] animate-pulse" />
-          <div className="absolute bottom-20 left-20 w-32 h-32 bg-white/3 dark:bg-black/3 rounded-[40%_60%_70%_30%] animate-pulse" style={{ animationDelay: '1s' }} />
-        </div>
+      {/* CTA Section - Premium */}
+      <section className="py-24 lg:py-32 relative overflow-hidden">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-gray-100 dark:via-white dark:to-gray-100" />
         
-        <div className="container mx-auto px-8 lg:px-16 text-center relative">
-          {/* Status */}
-          <div className="inline-block mb-12">
-            <div className="bg-white dark:bg-black text-black dark:text-white px-6 py-3 font-black text-sm tracking-widest uppercase border-2 border-white dark:border-black">
-              ● READY?
-            </div>
-          </div>
-          
-          {/* Dramatic headline */}
-          <h2 className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black text-white dark:text-black mb-12 leading-[0.8] tracking-tighter">
-            STARTE
+        {/* Subtle pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent)]" />
+        
+        <div className="relative container mx-auto px-6 lg:px-8 text-center">
+          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-light text-white dark:text-gray-900 mb-8 leading-tight">
+            Bereit für die
             <br />
-            <span className="italic -skew-x-12">JETZT</span>
+            <span className="font-medium">Zukunft?</span>
           </h2>
           
-          {/* CTA */}
-          <div className="mb-16">
+          <p className="text-xl text-gray-300 dark:text-gray-600 mb-12 max-w-3xl mx-auto font-light">
+            Starten Sie noch heute und erleben Sie, wie einfach
+            <br className="hidden sm:block" />
+            moderne Vereinsverwaltung sein kann.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button 
               size="lg" 
-              className="group bg-white dark:bg-black text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900 font-black px-20 py-8 text-2xl uppercase tracking-widest border-4 border-white dark:border-black transform hover:-translate-y-2 hover:-rotate-1 transition-all duration-300 rounded-none shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] dark:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.1)]"
+              className="group bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 font-medium px-10 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={() => window.location.href = "/api/login"}
             >
-              GO
-              <ArrowRight className="ml-4 h-8 w-8 group-hover:translate-x-3 transition-transform duration-300" />
+              Jetzt kostenlos starten
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
             </Button>
           </div>
 
-          {/* Trust indicators */}
-          <div className="flex flex-wrap justify-center items-center gap-8 text-white/70 dark:text-black/70 font-black text-sm uppercase tracking-widest">
-            <div>● KOSTENLOS</div>
-            <div>● SOFORT</div>
-            <div>● KEINE KARTE</div>
+          {/* Final trust indicators */}
+          <div className="flex flex-wrap justify-center items-center gap-8 mt-12 text-sm text-gray-400 dark:text-gray-600">
+            <span>✓ 30 Tage kostenfrei testen</span>
+            <span>✓ Jederzeit kündbar</span>
+            <span>✓ Deutscher Support</span>
           </div>
         </div>
       </section>

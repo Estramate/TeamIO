@@ -264,6 +264,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const booking = await storage.getBooking(id);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      res.json(booking);
+    } catch (error) {
+      console.error("Error fetching booking:", error);
+      res.status(500).json({ message: "Failed to fetch booking" });
+    }
+  });
+
+  app.patch('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = { ...req.body };
+      
+      // Clean up cost field for proper decimal handling
+      if (updates.cost) {
+        updates.cost = parseFloat(updates.cost).toString();
+      }
+      
+      const booking = await storage.updateBooking(id, updates);
+      res.json(booking);
+    } catch (error) {
+      console.error("Error updating booking:", error);
+      res.status(500).json({ message: "Failed to update booking" });
+    }
+  });
+
+  app.delete('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBooking(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting booking:", error);
+      res.status(500).json({ message: "Failed to delete booking" });
+    }
+  });
+
   // Event routes
   app.get('/api/clubs/:clubId/events', isAuthenticated, async (req: any, res) => {
     try {
@@ -413,8 +456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Seed players route (for development)
   app.post('/api/seed-players', isAuthenticated, async (req: any, res) => {
     try {
-      const clubId = req.body.clubId || 1; // Default to SV Oberglan
-      await seedPlayers(clubId);
+      await seedPlayers();
       res.json({ message: "Player data seeded successfully" });
     } catch (error) {
       console.error("Error seeding player data:", error);

@@ -57,30 +57,24 @@ export function Landing() {
   ];
 
   const stats = [
-    { number: "1.000+", label: "Aktive Vereine" },
-    { number: "50.000+", label: "Mitglieder" },
-    { number: "99,9%", label: "Verfügbarkeit" },
-    { number: "4,9/5", label: "Bewertung" }
+    { number: "Beta", label: "Phase" },
+    { number: "Neu", label: "2025" },
+    { number: "Cloud", label: "Basiert" },
+    { number: "DSGVO", label: "Konform" }
   ];
 
   const testimonials = [
     {
-      name: "Michael Weber",
-      role: "1. Vorstand SV Musterstadt • 480 Mitglieder",
-      content: "Seit der Einführung von TeamIO haben wir unseren Verwaltungsaufwand um mehr als die Hälfte reduziert. Besonders die automatische Beitragsverwaltung und die digitalen Mitgliedsausweise haben uns enorm geholfen.",
-      avatar: "MW"
+      name: "Max Mustermann",
+      role: "Beta-Tester",
+      content: "Die Plattform befindet sich noch in der Entwicklung, aber die ersten Funktionen sehen sehr vielversprechend aus.",
+      avatar: "MM"
     },
     {
-      name: "Sarah Schmidt", 
-      role: "Geschäftsführerin TC Beispielort • 12 Teams",
-      content: "Die Trainingsplanung war früher ein Alptraum. Jetzt organisiert sich alles automatisch und die Trainer haben endlich direkten Kontakt zu den Eltern. Unsere Mitgliederzufriedenheit ist spürbar gestiegen.",
-      avatar: "SS"
-    },
-    {
-      name: "Thomas Müller",
-      role: "Jugendleiter FC Sportfreunde • 8 Jugendmannschaften", 
-      content: "TeamIO hat unsere Jugendarbeit revolutioniert. Die Eltern sind endlich immer informiert, die Anwesenheitslisten führen sich automatisch und wir haben einen perfekten Überblick über alle Altersklassen.",
-      avatar: "TM"
+      name: "Anna Beispiel", 
+      role: "Vereinsvorstand",
+      content: "Wir freuen uns auf eine moderne Lösung für die Vereinsverwaltung und testen TeamIO in unserem Verein.",
+      avatar: "AB"
     }
   ];
 
@@ -115,9 +109,9 @@ export function Landing() {
             
             {/* Elegant subtitle */}
             <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-              Moderne Plattform für zeitgemäße Sportvereine.
+              Eine moderne Plattform für Sportvereine in Entwicklung.
               <br className="hidden sm:block" />
-              Intuitiv, cloudbasiert und zukunftssicher.
+              Vereinsverwaltung neu gedacht.
             </p>
 
             {/* Premium CTA */}
@@ -182,8 +176,8 @@ export function Landing() {
             </h2>
             
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Von intelligenter Mitgliederverwaltung bis zu Echtzeit-Analytics.
-              Eine All-in-One-Lösung für zeitgemäße Vereinsführung.
+              Eine moderne Lösung für die digitale Vereinsverwaltung.
+              Aktuell in der Entwicklungsphase.
             </p>
           </div>
 
@@ -210,117 +204,46 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Detailed Platform Benefits */}
+      {/* Simple Benefits Section */}
       <section className="py-24 lg:py-32 bg-gray-50 dark:bg-gray-900/50">
         <div className="container mx-auto px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto text-center">
             
-            <div className="text-center mb-16">
-              <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6">
-                Warum TeamIO die
-                <br />
-                <span className="font-medium">richtige Wahl ist</span>
-              </h2>
-            </div>
+            <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-12">
+              Geplante
+              <br />
+              <span className="font-medium">Funktionen</span>
+            </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              
-              {/* For Administrators */}
-              <div className="space-y-8">
-                <div>
-                  <h3 className="text-2xl font-medium text-gray-900 dark:text-white mb-4">
-                    Für Vereinsvorstände
-                  </h3>
-                  <ul className="space-y-4">
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        <strong>Rechtssichere Mitgliederverwaltung</strong> mit DSGVO-konformen Datenbanken und automatischen Backup-Systemen
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        <strong>Transparente Finanzen</strong> mit Echtzeit-Übersichten zu Mitgliedsbeiträgen, Ausgaben und Liquidität
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        <strong>Automatisierte Prozesse</strong> reduzieren den Verwaltungsaufwand um bis zu 70%
-                      </span>
-                    </li>
-                  </ul>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Cloud-basiert</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Sichere Datenhaltung mit moderner Cloud-Technologie
+                </p>
               </div>
-
-              {/* For Trainers */}
-              <div className="space-y-8">
-                <div>
-                  <h3 className="text-2xl font-medium text-gray-900 dark:text-white mb-4">
-                    Für Trainer & Betreuer
-                  </h3>
-                  <ul className="space-y-4">
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        <strong>Intelligente Trainingsplanung</strong> mit automatischer Berücksichtigung von Verfügbarkeiten und Leistungsständen
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        <strong>Direkte Kommunikation</strong> mit Spielern und Eltern über integrierte Messaging-Funktionen
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        <strong>Detaillierte Statistiken</strong> zur Leistungsentwicklung und Anwesenheit der Sportler
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Technical Features */}
-            <div className="mt-16 pt-16 border-t border-gray-200 dark:border-gray-700">
-              <h3 className="text-2xl font-medium text-gray-900 dark:text-white mb-8 text-center">
-                Technische Highlights
-              </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">Cloud-basiert</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Sichere Datenhaltung in deutschen Rechenzentren mit 99,9% Verfügbarkeit
-                  </p>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
-                
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
-                  </div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">DSGVO-konform</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Vollständig rechtskonform mit deutschen und europäischen Datenschutzbestimmungen
-                  </p>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">DSGVO-konform</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Entwicklung nach deutschen Datenschutzbestimmungen
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Star className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
-                
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Star className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">Mobile-First</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Optimiert für alle Geräte - Smartphone, Tablet und Desktop
-                  </p>
-                </div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Responsive</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Optimiert für Smartphone, Tablet und Desktop
+                </p>
               </div>
             </div>
           </div>
@@ -338,13 +261,13 @@ export function Landing() {
               <span className="font-medium">Erfahrung</span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Über 1.000 Vereine setzen bereits auf TeamIO. Hier sind einige ihrer Erfolgsgeschichten.
+              Feedback von Beta-Testern und interessierten Vereinen.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-300">
+              <div key={index} className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-8 shadow-sm">
                 
                 {/* Quote */}
                 <p className="text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
@@ -362,35 +285,13 @@ export function Landing() {
                     <div className="font-medium text-gray-900 dark:text-white text-sm">
                       {testimonial.name}
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
                       {testimonial.role}
                     </div>
                   </div>
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Additional stats */}
-          <div className="mt-16 pt-16 border-t border-gray-200 dark:border-gray-700">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto text-center">
-              <div>
-                <div className="text-3xl font-light text-gray-900 dark:text-white mb-2">98%</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Weiterempfehlungsrate</div>
-              </div>
-              <div>
-                <div className="text-3xl font-light text-gray-900 dark:text-white mb-2">70%</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Weniger Verwaltungsaufwand</div>
-              </div>
-              <div>
-                <div className="text-3xl font-light text-gray-900 dark:text-white mb-2">24/7</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Support & Verfügbarkeit</div>
-              </div>
-              <div>
-                <div className="text-3xl font-light text-gray-900 dark:text-white mb-2">5★</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Durchschnittsbewertung</div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

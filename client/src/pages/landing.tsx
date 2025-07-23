@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useClub } from "@/hooks/use-club";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +11,6 @@ import {
   Shield, 
   BarChart3,
   Star,
-  Zap,
   Building,
   MessageSquare,
   Target,
@@ -98,162 +95,138 @@ export function Landing() {
     }
   ];
 
-  // For demo purposes, we show the main landing page for non-authenticated users
-
   return (
-    <div className="min-h-screen bg-white dark:bg-black overflow-hidden">
-      {/* Ultra Modern Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Advanced Background with Grid Pattern */}
-        <div className="absolute inset-0">
-          {/* Base gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-black dark:to-gray-900" />
+    <div className="min-h-screen bg-black dark:bg-white overflow-hidden">
+      {/* 2025 Brutalist Full-Screen Hero */}
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        {/* Raw background with organic shapes */}
+        <div className="absolute inset-0 bg-black dark:bg-white">
+          {/* Floating organic shapes */}
+          <div className="absolute top-20 left-10 w-32 h-32 bg-white/5 dark:bg-black/5 rounded-[40%_60%_30%_70%] animate-pulse" />
+          <div className="absolute top-40 right-20 w-48 h-48 bg-white/3 dark:bg-black/3 rounded-[60%_40%_70%_30%] animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute bottom-32 left-1/3 w-64 h-64 bg-white/2 dark:bg-black/2 rounded-[30%_70%_40%_60%] animate-pulse" style={{ animationDelay: '4s' }} />
           
-          {/* Modern grid pattern */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-30" />
-          
-          {/* Animated orbs */}
-          <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-gradient-to-r from-gray-200/20 to-gray-300/20 dark:from-gray-700/20 dark:to-gray-600/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-gradient-to-l from-gray-300/15 to-gray-400/15 dark:from-gray-600/15 dark:to-gray-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-          
-          {/* Subtle texture overlay */}
-          <div className="absolute inset-0 opacity-10 mix-blend-overlay bg-gradient-to-br from-gray-900/5 via-transparent to-gray-900/5 dark:from-white/5 dark:via-transparent dark:to-white/5" />
+          {/* Brutalist grid overlay */}
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_97%,rgba(255,255,255,0.03)_98%,transparent_100%),linear-gradient(0deg,transparent_97%,rgba(255,255,255,0.03)_98%,transparent_100%)] dark:bg-[linear-gradient(90deg,transparent_97%,rgba(0,0,0,0.03)_98%,transparent_100%),linear-gradient(0deg,transparent_97%,rgba(0,0,0,0.03)_98%,transparent_100%)] bg-[size:100px_100px]" />
         </div>
 
-        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-6xl">
-          <div className={`transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            {/* Modern status badge */}
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 mb-8">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">2025 • Jetzt verfügbar</span>
+        {/* Asymmetric Layout */}
+        <div className="relative w-full px-8 lg:px-16">
+          {/* Left column - Text */}
+          <div className="max-w-4xl">
+            {/* Status indicator - Brutalist style */}
+            <div className="inline-block mb-8 lg:mb-12">
+              <div className="bg-white dark:bg-black text-black dark:text-white px-6 py-3 font-black text-sm tracking-widest uppercase border-2 border-white dark:border-black transform -rotate-1 hover:rotate-0 transition-transform duration-300">
+                ● LIVE 2025
+              </div>
             </div>
             
-            {/* Hero headline with improved typography */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 dark:text-white mb-8 leading-[0.9] tracking-tight">
-              Die Zukunft der
+            {/* Brutalist Typography */}
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black text-white dark:text-black mb-8 lg:mb-12 leading-[0.8] tracking-tighter">
+              TEAM
               <br />
-              <span className="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-gray-100 dark:via-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
-                Vereinsverwaltung
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 dark:from-black dark:to-gray-600 italic transform inline-block -skew-x-12">
+                IO
               </span>
             </h1>
             
-            {/* Improved subtitle */}
-            <p className="text-xl sm:text-2xl lg:text-3xl text-gray-600 dark:text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
-              Revolutionäre Plattform für moderne Sportvereine.
-              <br className="hidden sm:block" />
-              <span className="text-gray-500 dark:text-gray-500">Intuitiv. Cloudbasiert. Zukunftssicher.</span>
-            </p>
-
-            {/* Modern CTA with enhanced styling */}
-            <div className="flex justify-center items-center mb-16">
-              <Button 
-                size="lg" 
-                className="group relative bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 font-semibold px-12 py-6 text-lg rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 border-0 overflow-hidden"
-                onClick={() => window.location.href = "/api/login"}
-              >
-                {/* Button shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                
-                <Sparkles className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
-                Kostenlos starten
-                <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-              </Button>
+            {/* Raw subtitle */}
+            <div className="mb-16 lg:mb-20">
+              <p className="text-2xl lg:text-3xl text-gray-300 dark:text-gray-700 font-light mb-4 leading-tight">
+                Vereinsverwaltung.
+                <br />
+                Neu gedacht.
+              </p>
+              <div className="w-32 h-1 bg-white dark:bg-black transform -rotate-1" />
             </div>
 
-            {/* Modern Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
-              {stats.map((stat, index) => (
-                <div 
-                  key={index} 
-                  className={`relative group transition-all duration-700 ${
-                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                  }`}
-                  style={{ transitionDelay: `${800 + index * 100}ms` }}
-                >
-                  <div className="relative p-6 rounded-3xl bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 transition-all duration-300 hover:scale-105">
-                    {/* Modern icon container */}
-                    <div className="mb-4 flex justify-center">
-                      <div className="p-3 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-100 dark:to-gray-200">
-                        <stat.icon className="w-6 h-6 text-white dark:text-gray-900" />
-                      </div>
-                    </div>
-                    
-                    {/* Large number display */}
-                    <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">{stat.number}</div>
-                    
-                    {/* Label */}
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</div>
-                    
-                    {/* Subtle accent */}
-                    <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-gray-900/0 via-gray-900/0 to-gray-900/5 dark:from-white/0 dark:via-white/0 dark:to-white/5 pointer-events-none" />
-                  </div>
+            {/* Brutal CTA */}
+            <div className="flex flex-col sm:flex-row gap-6">
+              <Button 
+                size="lg" 
+                className="group bg-white dark:bg-black text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900 font-black px-12 py-6 text-xl uppercase tracking-wider border-4 border-white dark:border-black transform hover:-translate-y-1 hover:rotate-1 transition-all duration-300 rounded-none shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]"
+                onClick={() => window.location.href = "/api/login"}
+              >
+                START NOW
+                <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
+              </Button>
+            </div>
+          </div>
+          
+          {/* Right column - 3D-ish elements */}
+          <div className="absolute right-8 lg:right-16 top-1/2 -translate-y-1/2 hidden lg:block">
+            <div className="relative">
+              {/* Floating cards with 3D effect */}
+              <div className="w-64 h-40 bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-black/20 transform rotate-12 hover:rotate-6 transition-all duration-500">
+                <div className="p-6">
+                  <Users className="w-8 h-8 text-white dark:text-black mb-4" />
+                  <div className="text-white dark:text-black font-bold text-lg">1000+</div>
+                  <div className="text-white/70 dark:text-black/70 text-sm">VEREINE</div>
                 </div>
-              ))}
+              </div>
+              
+              <div className="w-64 h-40 bg-white/5 dark:bg-black/5 backdrop-blur-sm border border-white/10 dark:border-black/10 transform -rotate-6 hover:rotate-0 transition-all duration-500 mt-8 -ml-16">
+                <div className="p-6">
+                  <Trophy className="w-8 h-8 text-white dark:text-black mb-4" />
+                  <div className="text-white dark:text-black font-bold text-lg">50K+</div>
+                  <div className="text-white/70 dark:text-black/70 text-sm">MITGLIEDER</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Ultra Modern Features Section */}
-      <section className="py-24 lg:py-32 bg-gray-50/50 dark:bg-gray-950/50 relative overflow-hidden">
-        {/* Background elements */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-100/30 to-transparent dark:via-gray-800/30" />
+      {/* Bento Box Features Section */}
+      <section className="py-24 lg:py-32 bg-white dark:bg-black relative overflow-hidden">
+        {/* Background noise */}
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_98%,rgba(0,0,0,0.02)_99%,transparent_100%),linear-gradient(0deg,transparent_98%,rgba(0,0,0,0.02)_99%,transparent_100%)] dark:bg-[linear-gradient(90deg,transparent_98%,rgba(255,255,255,0.02)_99%,transparent_100%),linear-gradient(0deg,transparent_98%,rgba(255,255,255,0.02)_99%,transparent_100%)] bg-[size:50px_50px]" />
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-20">
-            {/* Modern section indicator */}
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-900/5 dark:bg-white/5 border border-gray-200/50 dark:border-gray-700/50 mb-8">
-              <Target className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Funktionen</span>
+        <div className="container mx-auto px-8 lg:px-16 relative">
+          {/* Brutal section header */}
+          <div className="mb-20">
+            <div className="inline-block mb-8">
+              <div className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 font-black text-sm tracking-widest uppercase border-2 border-black dark:border-white transform rotate-1">
+                ● FEATURES
+              </div>
             </div>
             
-            {/* Enhanced headline */}
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-300 dark:to-white bg-clip-text text-transparent mb-8 leading-tight tracking-tight">
-              Alles was moderne
+            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-black dark:text-white mb-8 leading-tight tracking-tighter">
+              ALLES WAS
               <br />
-              Vereine brauchen
+              <span className="italic -skew-x-6">MODERNE</span> VEREINE
+              <br />
+              BRAUCHEN
             </h2>
-            
-            {/* Enhanced description */}
-            <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-relaxed font-light">
-              Von intelligenter Mitgliederverwaltung bis zu Echtzeit-Analytics.
-              <br className="hidden sm:block" />
-              <span className="text-gray-500 dark:text-gray-500">Eine All-in-One-Lösung für zeitgemäße Vereinsführung.</span>
-            </p>
           </div>
 
-          {/* Ultra Modern Bento Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-7xl mx-auto">
+          {/* Asymmetric Bento Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl">
             {features.map((feature, index) => (
               <div 
                 key={index} 
-                className={`group relative overflow-hidden rounded-3xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 transition-all duration-700 hover:scale-[1.02] cursor-pointer ${
+                className={`group relative bg-gray-50 dark:bg-gray-950 border-2 border-black dark:border-white transform hover:-translate-y-2 hover:rotate-1 transition-all duration-300 ${
                   feature.size === 'large' ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2' : 
                   feature.size === 'medium' ? 'sm:col-span-2 lg:col-span-2' : 
                   'sm:col-span-1 lg:col-span-1'
                 }`}
               >
-                {/* Gradient overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-900/0 via-gray-900/0 to-gray-900/5 dark:from-white/0 dark:via-white/0 dark:to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
-                <div className={`relative p-8 ${feature.size === 'large' ? 'lg:p-12' : 'lg:p-8'}`}>
-                  {/* Header with icon and badge */}
+                <div className={`p-8 ${feature.size === 'large' ? 'lg:p-12' : 'lg:p-8'}`}>
+                  {/* Icon and badge */}
                   <div className="flex items-start justify-between mb-6">
-                    <div className={`relative p-4 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-100 dark:to-gray-200 text-white dark:text-gray-900 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 ${
+                    <div className={`bg-black dark:bg-white text-white dark:text-black p-4 border-2 border-black dark:border-white transform -rotate-3 group-hover:rotate-0 transition-transform duration-300 ${
                       feature.size === 'large' ? 'lg:p-5' : 'lg:p-4'
                     }`}>
-                      {/* Icon glow effect */}
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-600/20 to-gray-900/20 dark:from-white/20 dark:to-gray-200/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      <feature.icon className={`relative z-10 ${feature.size === 'large' ? 'w-8 h-8 lg:w-10 lg:h-10' : 'w-6 h-6 lg:w-7 lg:h-7'}`} />
+                      <feature.icon className={`${feature.size === 'large' ? 'w-8 h-8 lg:w-10 lg:h-10' : 'w-6 h-6 lg:w-7 lg:h-7'}`} />
                     </div>
                     
-                    <div className="px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50">
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{feature.highlight}</span>
+                    <div className="bg-white dark:bg-black text-black dark:text-white px-3 py-1 text-xs font-black uppercase tracking-wider border border-black dark:border-white">
+                      {feature.highlight}
                     </div>
                   </div>
                   
                   {/* Title */}
-                  <h3 className={`font-black text-gray-900 dark:text-white mb-4 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300 ${
+                  <h3 className={`font-black text-black dark:text-white mb-4 uppercase tracking-tight ${
                     feature.size === 'large' ? 'text-2xl lg:text-3xl' : 'text-xl lg:text-2xl'
                   }`}>
                     {feature.title}
@@ -265,71 +238,63 @@ export function Landing() {
                   }`}>
                     {feature.description}
                   </p>
-                  
-                  {/* Bottom accent line */}
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
+                
+                {/* Corner accent */}
+                <div className="absolute top-0 right-0 w-4 h-4 bg-black dark:bg-white transform rotate-45 translate-x-2 -translate-y-2" />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Modern Testimonials Section */}
-      <section className="py-24 lg:py-32 bg-white dark:bg-black relative">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            {/* Section indicator */}
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-900/5 dark:bg-white/5 border border-gray-200/50 dark:border-gray-700/50 mb-8">
-              <Heart className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Kundenstimmen</span>
+      {/* Testimonials - Raw Style */}
+      <section className="py-24 lg:py-32 bg-gray-100 dark:bg-gray-900 relative">
+        <div className="container mx-auto px-8 lg:px-16">
+          {/* Section header */}
+          <div className="mb-20">
+            <div className="inline-block mb-8">
+              <div className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 font-black text-sm tracking-widest uppercase border-2 border-black dark:border-white transform -rotate-1">
+                ● TESTIMONIALS
+              </div>
             </div>
             
-            {/* Enhanced headline */}
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-300 dark:to-white bg-clip-text text-transparent mb-8 leading-tight tracking-tight">
-              Vereine lieben
+            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-black dark:text-white leading-tight tracking-tighter">
+              VEREINE
               <br />
-              TeamIO
+              <span className="italic skew-x-6">LIEBEN</span> TEAMIO
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="group relative">
-                {/* Modern testimonial card */}
-                <div className="relative p-8 lg:p-12 rounded-3xl bg-gray-50/80 dark:bg-gray-950/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 transition-all duration-500 hover:scale-[1.02]">
-                  {/* Quote decoration */}
-                  <div className="absolute top-6 left-6 text-6xl text-gray-200/50 dark:text-gray-700/50 font-serif leading-none">"</div>
+                <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 lg:p-12 transform hover:-translate-y-1 hover:rotate-1 transition-all duration-300">
+                  {/* Quote mark */}
+                  <div className="text-8xl text-black/10 dark:text-white/10 font-black leading-none mb-4">"</div>
                   
-                  {/* Rating stars */}
-                  <div className="flex mb-6 relative z-10">
+                  {/* Stars */}
+                  <div className="flex mb-6">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-gray-800 dark:fill-gray-300 text-gray-800 dark:text-gray-300" />
+                      <Star key={i} className="w-6 h-6 fill-black dark:fill-white text-black dark:text-white" />
                     ))}
                   </div>
                   
-                  {/* Testimonial text */}
-                  <p className="text-xl lg:text-2xl text-gray-700 dark:text-gray-300 mb-8 leading-relaxed font-light relative z-10">
+                  {/* Content */}
+                  <p className="text-xl lg:text-2xl text-black dark:text-white mb-8 leading-relaxed font-medium">
                     {testimonial.content}
                   </p>
                   
-                  {/* Author info */}
-                  <div className="flex items-center relative z-10">
-                    <div className="relative">
-                      <div className="w-14 h-14 bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-200 dark:to-gray-100 rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-xl mr-4 group-hover:scale-110 transition-transform duration-300">
-                        {testimonial.name.charAt(0)}
-                      </div>
-                      {/* Avatar glow effect */}
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-600/20 to-gray-900/20 dark:from-white/20 dark:to-gray-200/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {/* Author */}
+                  <div className="flex items-center">
+                    <div className="w-16 h-16 bg-black dark:bg-white text-white dark:text-black font-black text-2xl flex items-center justify-center border-2 border-black dark:border-white mr-6">
+                      {testimonial.name.charAt(0)}
                     </div>
                     <div>
-                      <div className="font-bold text-gray-900 dark:text-white text-lg">{testimonial.name}</div>
+                      <div className="font-black text-black dark:text-white text-lg uppercase">{testimonial.name}</div>
                       <div className="text-gray-600 dark:text-gray-400 font-medium">{testimonial.role}</div>
                     </div>
                   </div>
-                  
-                  {/* Bottom accent */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-b-3xl" />
                 </div>
               </div>
             ))}
@@ -337,68 +302,46 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Ultra Modern CTA Section */}
-      <section className="py-24 lg:py-32 bg-gradient-to-br from-gray-900 via-black to-gray-900 dark:from-gray-100 dark:via-white dark:to-gray-100 relative overflow-hidden">
-        {/* Advanced background effects */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.03)_0%,transparent_50%)] dark:bg-[radial-gradient(circle_at_30%_30%,rgba(0,0,0,0.03)_0%,transparent_50%)]" />
-          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-gray-700/10 dark:bg-gray-300/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/3 w-72 h-72 bg-gray-600/10 dark:bg-gray-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+      {/* Final CTA - Maximum Impact */}
+      <section className="py-24 lg:py-32 bg-black dark:bg-white relative overflow-hidden">
+        {/* Organic shapes */}
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-10 right-10 w-40 h-40 bg-white/5 dark:bg-black/5 rounded-[60%_40%_30%_70%] animate-pulse" />
+          <div className="absolute bottom-20 left-20 w-32 h-32 bg-white/3 dark:bg-black/3 rounded-[40%_60%_70%_30%] animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
-          {/* Status indicator */}
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 dark:border-black/20 mb-12">
-            <Award className="w-4 h-4 mr-2 text-white dark:text-gray-900" />
-            <span className="text-sm font-medium text-white dark:text-gray-900">Jetzt starten</span>
+        <div className="container mx-auto px-8 lg:px-16 text-center relative">
+          {/* Status */}
+          <div className="inline-block mb-12">
+            <div className="bg-white dark:bg-black text-black dark:text-white px-6 py-3 font-black text-sm tracking-widest uppercase border-2 border-white dark:border-black">
+              ● READY?
+            </div>
           </div>
           
           {/* Dramatic headline */}
-          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white dark:text-gray-900 mb-8 leading-tight tracking-tight">
-            Bereit für die
+          <h2 className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black text-white dark:text-black mb-12 leading-[0.8] tracking-tighter">
+            STARTE
             <br />
-            <span className="bg-gradient-to-r from-gray-300 to-white dark:from-gray-700 dark:to-gray-900 bg-clip-text text-transparent">
-              Zukunft?
-            </span>
+            <span className="italic -skew-x-12">JETZT</span>
           </h2>
           
-          {/* Enhanced description */}
-          <p className="text-xl lg:text-2xl text-gray-300 dark:text-gray-600 mb-16 max-w-4xl mx-auto leading-relaxed font-light">
-            Schließen Sie sich über 1.000 fortschrittlichen Vereinen an und revolutionieren Sie 
-            <br className="hidden sm:block" />
-            Ihre Vereinsverwaltung noch heute.
-          </p>
-
-          {/* Premium CTA button */}
-          <div className="flex justify-center items-center mb-16">
+          {/* CTA */}
+          <div className="mb-16">
             <Button 
               size="lg" 
-              className="group relative bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 font-bold px-16 py-6 text-xl rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 border-0 overflow-hidden"
+              className="group bg-white dark:bg-black text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900 font-black px-20 py-8 text-2xl uppercase tracking-widest border-4 border-white dark:border-black transform hover:-translate-y-2 hover:-rotate-1 transition-all duration-300 rounded-none shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] dark:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.1)]"
               onClick={() => window.location.href = "/api/login"}
             >
-              {/* Button shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-200/20 dark:via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              
-              <TrendingUp className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform duration-300" />
-              Kostenlos starten
-              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform duration-300" />
+              GO
+              <ArrowRight className="ml-4 h-8 w-8 group-hover:translate-x-3 transition-transform duration-300" />
             </Button>
           </div>
 
           {/* Trust indicators */}
-          <div className="flex flex-wrap justify-center items-center gap-6 text-sm font-medium text-gray-400 dark:text-gray-600">
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
-              30-Tage-Testphase
-            </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
-              Keine Kreditkarte
-            </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
-              Sofort einsatzbereit
-            </div>
+          <div className="flex flex-wrap justify-center items-center gap-8 text-white/70 dark:text-black/70 font-black text-sm uppercase tracking-widest">
+            <div>● KOSTENLOS</div>
+            <div>● SOFORT</div>
+            <div>● KEINE KARTE</div>
           </div>
         </div>
       </section>

@@ -335,15 +335,16 @@ export default function Players() {
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 flex-1">
-              <Button 
-                onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}
-                className="shrink-0"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Hinzufügen
-              </Button>
+            <div className="flex-1">
+              {/* Left side can be empty or contain other elements */}
             </div>
+            <Button 
+              onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}
+              className="shrink-0"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Spieler hinzufügen
+            </Button>
           </div>
         </div>
 

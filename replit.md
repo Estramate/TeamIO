@@ -8,6 +8,24 @@ TeamIO is a comprehensive club management system designed for sports clubs and o
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+### January 23, 2025
+- **Dark Mode Overhaul**: Completely redesigned dark mode system for better usability
+  - Changed background from hsl(240, 10%, 3.9%) to hsl(222, 47%, 11%) for better readability
+  - Updated card backgrounds to hsl(225, 44%, 16%) for better definition
+  - Enhanced border and input colors to hsl(220, 34%, 25%) for visible boundaries
+  - Improved contrast ratios across all components for modern web standards
+  
+- **UI Improvements**: Fixed duplicate buttons and enhanced user experience
+  - Removed duplicate "Mitglied hinzufügen" buttons from header (kept only on specific pages)
+  - Updated all components to use consistent theme variables instead of hardcoded gray values
+  - Enhanced Member page with better search and filter styling
+
+- **Dynamic Page Titles**: Implemented PageContext system for correct page titles
+  - Fixed issue where all pages showed "Dashboard" title
+  - Each page now displays correct title and subtitle based on current section
+
 ## System Architecture
 
 ### Frontend Architecture

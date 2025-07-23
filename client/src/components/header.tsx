@@ -1,15 +1,12 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, Plus, Bell } from "lucide-react";
+import { Menu, Bell } from "lucide-react";
 import { usePage } from "@/contexts/PageContext";
-import MemberModal from "./member-modal";
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const [memberModalOpen, setMemberModalOpen] = useState(false);
   const { title, subtitle } = usePage();
 
   return (
@@ -37,22 +34,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Button
-              onClick={() => setMemberModalOpen(true)}
-              className="bg-club-primary hover:bg-club-primary/90 text-white hidden sm:flex"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Mitglied hinzufügen
-            </Button>
-            
-            <Button
-              onClick={() => setMemberModalOpen(true)}
-              size="sm"
-              className="bg-club-primary hover:bg-club-primary/90 text-white sm:hidden"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-            
             <div className="relative">
               <Button variant="ghost" size="sm" className="relative text-foreground hover:bg-muted">
                 <Bell className="h-5 w-5" />
@@ -64,11 +45,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
         </div>
       </header>
-
-      <MemberModal 
-        open={memberModalOpen} 
-        onClose={() => setMemberModalOpen(false)} 
-      />
     </>
   );
 }

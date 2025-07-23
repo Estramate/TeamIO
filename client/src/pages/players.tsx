@@ -330,9 +330,10 @@ export default function Players() {
   }
 
   return (
-    <div className="flex-1 overflow-hidden bg-background">
-      {/* Header Section - Fixed */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+    <>
+      <div className="flex-1 flex flex-col overflow-hidden bg-background">
+        {/* Header Section - Fixed */}
+        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex-1">
@@ -438,9 +439,8 @@ export default function Players() {
       </div>
 
       {/* Content Section - Scrollable */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          {/* Players Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {/* Players Content */}
           {isLoading ? (
             viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
@@ -766,9 +766,11 @@ export default function Players() {
               </div>
             </div>
           )}
+        </div>
+      </div>
 
-          {/* Player Detail Dialog */}
-          <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+      {/* Player Detail Dialog */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3">
@@ -1168,8 +1170,6 @@ export default function Players() {
               </Form>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

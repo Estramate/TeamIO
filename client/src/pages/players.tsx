@@ -45,6 +45,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useClubStore } from "@/lib/clubStore";
@@ -200,6 +201,27 @@ export default function Players() {
     },
   });
 
+  // Status toggle mutation for players
+  const togglePlayerStatusMutation = useMutation({
+    mutationFn: async ({ playerId, newStatus }: { playerId: number; newStatus: string }) => {
+      return await apiRequest("PUT", `/api/clubs/${selectedClub}/players/${playerId}`, { status: newStatus });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
+      toast({
+        title: "Erfolg",
+        description: "Spieler-Status wurde erfolgreich geändert",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Fehler",
+        description: "Status konnte nicht geändert werden",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Delete player mutation
   const deletePlayerMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -293,6 +315,14 @@ export default function Players() {
   const handleViewPlayer = (player: Player) => {
     setViewingPlayer(player);
     setIsDetailDialogOpen(true);
+  };
+
+  const handleTogglePlayerStatus = (player: Player) => {
+    const newStatus = player.status === 'active' ? 'inactive' : 'active';
+    togglePlayerStatusMutation.mutate({
+      playerId: player.id,
+      newStatus
+    });
   };
 
   const getPositionColor = (position: string) => {
@@ -536,9 +566,17 @@ export default function Players() {
                                   {player.position}
                                 </span>
                               )}
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(player.status)}`}>
-                                {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                              </span>
+                              <div className="flex items-center gap-1">
+                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(player.status)}`}>
+                                  {statusOptions.find(s => s.value === player.status)?.label || player.status}
+                                </span>
+                                <Switch
+                                  checked={player.status === 'active'}
+                                  onCheckedChange={() => handleTogglePlayerStatus(player)}
+                                  disabled={togglePlayerStatusMutation.isPending}
+                                  className="scale-75"
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -678,9 +716,17 @@ export default function Players() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(player.status)}`}>
-                            {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                          </span>
+                          <div className="flex items-center gap-3">
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(player.status)}`}>
+                              {statusOptions.find(s => s.value === player.status)?.label || player.status}
+                            </span>
+                            <Switch
+                              checked={player.status === 'active'}
+                              onCheckedChange={() => handleTogglePlayerStatus(player)}
+                              disabled={togglePlayerStatusMutation.isPending}
+                              className="scale-75"
+                            />
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1 text-xs text-muted-foreground">

@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Users, Search, Plus, Edit, Trash2, LayoutGrid, List, Mail, Phone, Calendar, MapPin, User, AlertCircle, MoreHorizontal, Grid3X3 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
@@ -166,6 +167,38 @@ export default function Members() {
     },
   });
 
+  // Status toggle mutation
+  const toggleMemberStatusMutation = useMutation({
+    mutationFn: async ({ memberId, newStatus }: { memberId: number; newStatus: string }) => {
+      await apiRequest("PUT", `/api/clubs/${selectedClub?.id}/members/${memberId}`, { status: newStatus });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'members'] });
+      toast({
+        title: "Erfolg",
+        description: "Status wurde erfolgreich geändert",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Fehler",
+        description: "Status konnte nicht geändert werden",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Delete member mutation
   const deleteMemberMutation = useMutation({
     mutationFn: async (memberId: number) => {
@@ -245,6 +278,14 @@ export default function Members() {
   const handleViewMember = (member: any) => {
     setViewingMember(member);
     setIsDetailDialogOpen(true);
+  };
+
+  const handleToggleStatus = (member: any) => {
+    const newStatus = member.status === 'active' ? 'inactive' : 'active';
+    toggleMemberStatusMutation.mutate({
+      memberId: member.id,
+      newStatus
+    });
   };
 
   const confirmDelete = () => {
@@ -417,9 +458,17 @@ export default function Members() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <Badge variant={getStatusBadgeVariant(member.status)} className="text-xs">
-                      {getStatusLabel(member.status)}
-                    </Badge>
+                    <div className="flex flex-col items-center gap-1">
+                      <Badge variant={getStatusBadgeVariant(member.status)} className="text-xs">
+                        {getStatusLabel(member.status)}
+                      </Badge>
+                      <Switch
+                        checked={member.status === 'active'}
+                        onCheckedChange={() => handleToggleStatus(member)}
+                        disabled={toggleMemberStatusMutation.isPending}
+                        className="scale-75"
+                      />
+                    </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button 
@@ -517,9 +566,17 @@ export default function Members() {
                         <div className="text-sm text-muted-foreground">{member.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge variant={getStatusBadgeVariant(member.status)}>
-                          {getStatusLabel(member.status)}
-                        </Badge>
+                        <div className="flex items-center gap-3">
+                          <Badge variant={getStatusBadgeVariant(member.status)}>
+                            {getStatusLabel(member.status)}
+                          </Badge>
+                          <Switch
+                            checked={member.status === 'active'}
+                            onCheckedChange={() => handleToggleStatus(member)}
+                            disabled={toggleMemberStatusMutation.isPending}
+                            className="scale-75"
+                          />
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {member.joinDate ? new Date(member.joinDate).toLocaleDateString('de-DE') : '-'}

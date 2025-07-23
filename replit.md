@@ -11,6 +11,13 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### January 23, 2025 (Latest)
+- **Quick Status Toggle Functionality**: Implemented instant active/inactive switches for all management pages
+  - Added elegant Switch components next to status badges in both grid and list views
+  - Teams, Members, and Players can now be activated/deactivated with a single click
+  - Real-time status updates with smooth animations and loading states
+  - Consistent toggle placement across all entity types for unified user experience
+  - Backend API endpoints support instant status changes with proper validation
+
 - **Complete CRUD Operations Fix**: Resolved all database operation issues across the application
   - Fixed API endpoint inconsistencies - all routes now use proper club-specific structure (/api/clubs/:clubId/)
   - Implemented date field validation for empty strings to prevent PostgreSQL errors

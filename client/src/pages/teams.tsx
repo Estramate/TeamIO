@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { 
   UsersRound, 
@@ -195,6 +196,38 @@ export default function Teams() {
     },
   });
 
+  // Status toggle mutation for teams
+  const toggleTeamStatusMutation = useMutation({
+    mutationFn: async ({ teamId, newStatus }: { teamId: number; newStatus: string }) => {
+      await apiRequest("PUT", `/api/clubs/${selectedClub?.id}/teams/${teamId}`, { status: newStatus });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
+      toast({
+        title: "Erfolg",
+        description: "Team-Status wurde erfolgreich geändert",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Fehler",
+        description: "Status konnte nicht geändert werden",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Delete team mutation
   const deleteTeamMutation = useMutation({
     mutationFn: async (teamId: number) => {
@@ -278,6 +311,14 @@ export default function Teams() {
   const handleDeleteTeam = (team: any) => {
     setTeamToDelete(team);
     setDeleteDialogOpen(true);
+  };
+
+  const handleToggleTeamStatus = (team: any) => {
+    const newStatus = team.status === 'active' ? 'inactive' : 'active';
+    toggleTeamStatusMutation.mutate({
+      teamId: team.id,
+      newStatus
+    });
   };
 
   const handleViewTeam = (team: any) => {
@@ -476,9 +517,17 @@ export default function Teams() {
                     
                     <div className="text-xs text-muted-foreground space-y-1">
                       <div className="flex items-center justify-between">
-                        <Badge variant={getStatusBadgeVariant(team.status)}>
-                          {getStatusLabel(team.status)}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getStatusBadgeVariant(team.status)}>
+                            {getStatusLabel(team.status)}
+                          </Badge>
+                          <Switch
+                            checked={team.status === 'active'}
+                            onCheckedChange={() => handleToggleTeamStatus(team)}
+                            disabled={toggleTeamStatusMutation.isPending}
+                            className="scale-75"
+                          />
+                        </div>
                         {team.maxMembers && (
                           <span className="flex items-center">
                             <Users className="w-3 h-3 mr-1" />
@@ -545,9 +594,17 @@ export default function Teams() {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <Badge variant={getStatusBadgeVariant(team.status)}>
-                              {getStatusLabel(team.status)}
-                            </Badge>
+                            <div className="flex items-center gap-3">
+                              <Badge variant={getStatusBadgeVariant(team.status)}>
+                                {getStatusLabel(team.status)}
+                              </Badge>
+                              <Switch
+                                checked={team.status === 'active'}
+                                onCheckedChange={() => handleToggleTeamStatus(team)}
+                                disabled={toggleTeamStatusMutation.isPending}
+                                className="scale-75"
+                              />
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                             {team.season || '-'}

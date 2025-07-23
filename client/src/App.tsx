@@ -46,13 +46,20 @@ function AuthenticatedApp() {
 }
 
 function Router() {
-  // For demo purposes, show landing page by default
-  // Uncomment the line below to enable authentication-based routing
-  // const { isAuthenticated, isLoading } = useAuth();
-  // if (isLoading) return <div>Loading...</div>;
-  // return isAuthenticated ? <AuthenticatedApp /> : <Landing />;
+  const { isAuthenticated, isLoading } = useAuth();
   
-  return <Landing />;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Lade Anwendung...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? <AuthenticatedApp /> : <Landing />;
 }
 
 function App() {

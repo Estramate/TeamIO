@@ -221,11 +221,9 @@ export default function Players() {
     },
   });
 
-  // Get player teams data
-  const getPlayerTeams = (playerId: number) => {
-    return (teams as Team[]).filter(team => 
-      team.players?.some(p => p.id === playerId)
-    );
+  // Get player teams data from the player object directly
+  const getPlayerTeams = (player: Player) => {
+    return (player as any).teams || [];
   };
 
   // Filter players 
@@ -240,15 +238,18 @@ export default function Players() {
     
     // Team filter
     const matchesTeam = selectedTeam === "all" || 
-      getPlayerTeams(player.id).some(team => team.id.toString() === selectedTeam);
+      getPlayerTeams(player).some(team => team.id.toString() === selectedTeam);
     
     return matchesSearch && matchesPosition && matchesStatus && matchesTeam;
   });
 
   // Get unique teams that have players
-  const teamsWithPlayers = (teams as Team[]).filter(team => 
-    team.players && team.players.length > 0
-  );
+  const teamsWithPlayers = (teams as Team[]).map(team => {
+    const playersInTeam = (players as Player[]).filter(player => 
+      getPlayerTeams(player).some(playerTeam => playerTeam.id === team.id)
+    );
+    return { ...team, playerCount: playersInTeam.length };
+  }).filter(team => team.playerCount > 0);
 
   const onSubmit = (data: InsertPlayer) => {
     if (editingPlayer) {
@@ -418,7 +419,7 @@ export default function Players() {
               </TabsTrigger>
               {teamsWithPlayers.map((team) => (
                 <TabsTrigger key={team.id} value={team.id.toString()} className="text-xs">
-                  {team.name} ({team.players?.length || 0})
+                  {team.name} ({(team as any).playerCount})
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -557,6 +558,24 @@ export default function Players() {
                       </div>
 
                       <div className="space-y-1.5 text-xs text-muted-foreground">
+                        {/* Teams */}
+                        {getPlayerTeams(player).length > 0 && (
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-primary/20 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {getPlayerTeams(player).slice(0, 2).map((team, idx) => (
+                                <span key={team.id} className="truncate">
+                                  {team.name}{idx < Math.min(getPlayerTeams(player).length - 1, 1) && ", "}
+                                </span>
+                              ))}
+                              {getPlayerTeams(player).length > 2 && (
+                                <span className="text-muted-foreground">+{getPlayerTeams(player).length - 2}</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                         {player.nationality && (
                           <div className="flex items-center gap-1.5">
                             <div className="w-3 h-3 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
@@ -577,12 +596,14 @@ export default function Players() {
                             </span>
                           </div>
                         )}
-                        {player.preferredFoot && (
+                        {player.birthDate && (
                           <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                            <div className="w-3 h-3 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                             </div>
-                            <span>{footOptions.find(f => f.value === player.preferredFoot)?.label}</span>
+                            <span>
+                              {new Date().getFullYear() - new Date(player.birthDate).getFullYear()} Jahre
+                            </span>
                           </div>
                         )}
                       </div>
@@ -656,6 +677,22 @@ export default function Players() {
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1 text-xs text-muted-foreground">
+                            {/* Teams first */}
+                            {getPlayerTeams(player).length > 0 && (
+                              <div className="flex items-center gap-1 mb-1">
+                                <Users className="h-3 w-3" />
+                                <div className="flex flex-wrap gap-1">
+                                  {getPlayerTeams(player).slice(0, 2).map((team, idx) => (
+                                    <span key={team.id} className="font-medium text-primary">
+                                      {team.name}{idx < Math.min(getPlayerTeams(player).length - 1, 1) && ", "}
+                                    </span>
+                                  ))}
+                                  {getPlayerTeams(player).length > 2 && (
+                                    <span className="text-muted-foreground">+{getPlayerTeams(player).length - 2}</span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                             {player.phone && (
                               <div className="flex items-center gap-1">
                                 <Phone className="h-3 w-3" />
@@ -665,7 +702,7 @@ export default function Players() {
                             {player.email && (
                               <div className="flex items-center gap-1">
                                 <Mail className="h-3 w-3" />
-                                <span>{player.email}</span>
+                                <span className="truncate max-w-32">{player.email}</span>
                               </div>
                             )}
                           </div>
@@ -913,11 +950,11 @@ export default function Players() {
                   )}
 
                   {/* Teams */}
-                  {getPlayerTeams(viewingPlayer.id).length > 0 && (
+                  {getPlayerTeams(viewingPlayer).length > 0 && (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold border-b pb-2">Teams</h3>
                       <div className="flex flex-wrap gap-2">
-                        {getPlayerTeams(viewingPlayer.id).map((team) => (
+                        {getPlayerTeams(viewingPlayer).map((team) => (
                           <Badge key={team.id} variant="secondary" className="text-sm">
                             {team.name}
                           </Badge>

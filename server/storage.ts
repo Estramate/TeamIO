@@ -582,12 +582,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Player operations
-  async getPlayers(clubId: number): Promise<Player[]> {
-    return await db
+  async getPlayers(clubId: number): Promise<(Player & { teams?: Team[] })[]> {
+    const playersData = await db
       .select()
       .from(players)
       .where(eq(players.clubId, clubId))
       .orderBy(asc(players.lastName), asc(players.firstName));
+
+    // Get team assignments for all players
+    const playersWithTeams = await Promise.all(
+      playersData.map(async (player) => {
+        const teamAssignments = await db
+          .select({
+            team: teams,
+          })
+          .from(playerTeamAssignments)
+          .innerJoin(teams, eq(playerTeamAssignments.teamId, teams.id))
+          .where(
+            and(
+              eq(playerTeamAssignments.playerId, player.id),
+              eq(playerTeamAssignments.isActive, true)
+            )
+          );
+
+        return {
+          ...player,
+          teams: teamAssignments.map(ta => ta.team),
+        };
+      })
+    );
+
+    return playersWithTeams;
   }
 
   async getPlayer(id: number): Promise<Player | undefined> {

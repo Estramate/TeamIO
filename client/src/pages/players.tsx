@@ -75,10 +75,16 @@ export default function Players() {
   }, [setPage]);
 
   // Fetch players
-  const { data: players = [], isLoading } = useQuery({
+  const { data: players = [], isLoading, error } = useQuery({
     queryKey: [`/api/clubs/${selectedClub}/players`],
     enabled: !!selectedClub,
   });
+
+  // Debug logging
+  console.log("Selected Club:", selectedClub);
+  console.log("Players data:", players);
+  console.log("Loading:", isLoading);
+  console.log("Error:", error);
 
   // Fetch teams for assignments
   const { data: teams = [] } = useQuery({
@@ -179,7 +185,7 @@ export default function Players() {
   });
 
   // Filter players
-  const filteredPlayers = players.filter((player: Player) => {
+  const filteredPlayers = (players as Player[]).filter((player: Player) => {
     const matchesSearch = 
       player.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       player.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -250,8 +256,18 @@ export default function Players() {
     }
   };
 
-  if (isLoading) {
-    return <div>Lädt Spieler...</div>;
+  if (!selectedClub) {
+    return (
+      <div className="flex-1 overflow-y-auto bg-background p-6">
+        <div className="text-center py-12">
+          <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Kein Verein ausgewählt</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Bitte wählen Sie einen Verein aus, um Spieler zu verwalten.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

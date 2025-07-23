@@ -103,12 +103,6 @@ export default function Teams() {
   const { data: teams = [], isLoading: isTeamsLoading } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
     enabled: !!selectedClub?.id,
-  });
-
-  // Load players for counting
-  const { data: players = [] } = useQuery<any[]>({
-    queryKey: ['/api/clubs', selectedClub?.id, 'players'],
-    enabled: !!selectedClub?.id,
     retry: false,
   });
 
@@ -567,6 +561,21 @@ export default function Teams() {
                           <Calendar className="w-3 h-3 mr-1" />
                           Saison: {team.season}
                         </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+                        </div>
+                            <Users className="w-3 h-3 mr-1" />
+                            Max: {team.maxMembers}
+                          </span>
+                        )}
+                      </div>
+                      {team.season && (
+                        <p className="flex items-center">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          {team.season}
+                        </p>
                       )}
                     </div>
                   </CardContent>

@@ -505,6 +505,7 @@ export default function Teams() {
                             <DropdownMenuItem 
                               onClick={() => handleToggleTeamStatus(team)}
                               disabled={toggleTeamStatusMutation.isPending}
+                              className={team.status === 'active' ? "text-destructive focus:text-destructive" : "text-green-600 focus:text-green-600"}
                             >
                               {team.status === 'active' ? (
                                 <>
@@ -627,6 +628,7 @@ export default function Teams() {
                                 <DropdownMenuItem 
                                   onClick={() => handleToggleTeamStatus(team)}
                                   disabled={toggleTeamStatusMutation.isPending}
+                                  className={team.status === 'active' ? "text-destructive focus:text-destructive" : "text-green-600 focus:text-green-600"}
                                 >
                                   {team.status === 'active' ? (
                                     <>

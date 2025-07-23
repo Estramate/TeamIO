@@ -93,7 +93,7 @@ export default function Teams() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: teams = [], isLoading: isTeamsLoading } = useQuery({
+  const { data: teams = [], isLoading: isTeamsLoading } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
     enabled: !!selectedClub?.id,
     retry: false,
@@ -102,13 +102,20 @@ export default function Teams() {
   // Create team mutation
   const createTeamMutation = useMutation({
     mutationFn: async (teamData: TeamFormData) => {
-      return await apiRequest(`/api/clubs/${selectedClub?.id}/teams`, {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/teams`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           ...teamData,
           maxMembers: teamData.maxMembers ? Number(teamData.maxMembers) : null,
         }),
       });
+      if (!response.ok) {
+        throw new Error('Failed to create team');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
@@ -143,13 +150,20 @@ export default function Teams() {
   // Update team mutation
   const updateTeamMutation = useMutation({
     mutationFn: async (teamData: TeamFormData) => {
-      return await apiRequest(`/api/clubs/${selectedClub?.id}/teams/${selectedTeam.id}`, {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/teams/${selectedTeam.id}`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           ...teamData,
           maxMembers: teamData.maxMembers ? Number(teamData.maxMembers) : null,
         }),
       });
+      if (!response.ok) {
+        throw new Error('Failed to update team');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
@@ -184,9 +198,13 @@ export default function Teams() {
   // Delete team mutation
   const deleteTeamMutation = useMutation({
     mutationFn: async (teamId: number) => {
-      return await apiRequest(`/api/clubs/${selectedClub?.id}/teams/${teamId}`, {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/teams/${teamId}`, {
         method: 'DELETE',
       });
+      if (!response.ok) {
+        throw new Error('Failed to delete team');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
@@ -583,56 +601,270 @@ export default function Teams() {
           )}
         </div>
       </div>
-                          {team.category === 'youth' ? 'Jugend' :
-                           team.category === 'senior' ? 'Senioren' : 'Amateur'}
-                        </Badge>
-                      )}
-                      {team.ageGroup && (
-                        <Badge variant="outline">{team.ageGroup}</Badge>
-                      )}
-                      {team.gender && (
-                        <Badge variant="outline">
-                          {team.gender === 'male' ? 'Herren' :
-                           team.gender === 'female' ? 'Damen' : 'Mixed'}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <Badge 
-                    variant={team.status === 'active' ? 'default' : 'secondary'}
-                  >
-                    {team.status === 'active' ? 'Aktiv' : 'Inaktiv'}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {team.description && (
-                  <p className="text-sm text-gray-600 mb-4">{team.description}</p>
+
+      {/* Team Add/Edit Modal */}
+      <Dialog open={teamModalOpen} onOpenChange={setTeamModalOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedTeam ? 'Team bearbeiten' : 'Neues Team hinzufügen'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Team Name *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="z.B. 1. Herren" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kategorie</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Kategorie wählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="youth">Jugend</SelectItem>
+                          <SelectItem value="senior">Senioren</SelectItem>
+                          <SelectItem value="amateur">Amateur</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="ageGroup"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Altersgruppe</FormLabel>
+                      <FormControl>
+                        <Input placeholder="z.B. U16, Ü35" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Geschlecht</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Geschlecht wählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="male">Herren</SelectItem>
+                          <SelectItem value="female">Damen</SelectItem>
+                          <SelectItem value="mixed">Mixed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="maxMembers"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Max. Mitglieder</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="z.B. 25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="season"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Saison</FormLabel>
+                      <FormControl>
+                        <Input placeholder="z.B. 2024/25" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Beschreibung</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Beschreibung des Teams..."
+                        className="resize-none"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-                
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 mr-1" />
-                    <span>0/{team.maxMembers || 20} Mitglieder</span>
-                  </div>
-                  <span className="text-xs">
-                    {team.season && `Saison: ${team.season}`}
-                  </span>
+              />
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setTeamModalOpen(false)}
+                >
+                  Abbrechen
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createTeamMutation.isPending || updateTeamMutation.isPending}
+                >
+                  {createTeamMutation.isPending || updateTeamMutation.isPending ? 'Speichern...' : 'Speichern'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Team löschen</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              Sind Sie sicher, dass Sie das Team "{teamToDelete?.name}" löschen möchten? 
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deleteTeamMutation.isPending}
+            >
+              {deleteTeamMutation.isPending ? 'Lösche...' : 'Löschen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Team Detail Dialog */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              {viewingTeam?.name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {viewingTeam && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {viewingTeam.category && (
+                  <Badge variant="secondary">
+                    {viewingTeam.category === 'youth' ? 'Jugend' :
+                     viewingTeam.category === 'senior' ? 'Senioren' : 'Amateur'}
+                  </Badge>
+                )}
+                {viewingTeam.ageGroup && (
+                  <Badge variant="outline">{viewingTeam.ageGroup}</Badge>
+                )}
+                {viewingTeam.gender && (
+                  <Badge variant="outline">
+                    {viewingTeam.gender === 'male' ? 'Herren' :
+                     viewingTeam.gender === 'female' ? 'Damen' : 'Mixed'}
+                  </Badge>
+                )}
+                <Badge variant={getStatusBadgeVariant(viewingTeam.status)}>
+                  {getStatusLabel(viewingTeam.status)}
+                </Badge>
+              </div>
+              
+              {viewingTeam.description && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Beschreibung</h4>
+                  <p className="text-sm text-muted-foreground">{viewingTeam.description}</p>
                 </div>
-                
-                <div className="mt-4 flex items-center justify-end space-x-2">
-                  <Button variant="outline" size="sm">
-                    Bearbeiten
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Mitglieder
-                  </Button>
+              )}
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Max. Mitglieder:</span>
+                  <p className="text-muted-foreground">{viewingTeam.maxMembers || 'Nicht festgelegt'}</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+                <div>
+                  <span className="font-medium">Saison:</span>
+                  <p className="text-muted-foreground">{viewingTeam.season || 'Nicht festgelegt'}</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  onClick={() => {
+                    setIsDetailDialogOpen(false);
+                    handleEditTeam(viewingTeam);
+                  }}
+                  className="flex-1"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Bearbeiten
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setIsDetailDialogOpen(false)}
+                  className="flex-1"
+                >
+                  Schließen
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

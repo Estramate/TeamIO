@@ -299,7 +299,7 @@ export default function Members() {
     <div className="flex-1 overflow-y-auto bg-background p-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-end">
           <Button 
             onClick={handleAddMember}
             className="bg-primary hover:bg-primary/90"

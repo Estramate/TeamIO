@@ -113,8 +113,12 @@ export default function Players() {
   }, [clubs, selectedClub, setSelectedClub]);
 
   useEffect(() => {
-    setPage("Spieler", "Verwalten Sie alle Spieler des Vereins");
-  }, [setPage]);
+    if (players && (players as Player[]).length > 0) {
+      setPage("Spieler", `${(players as Player[]).length} von ${(players as Player[]).length} Spielern`);
+    } else {
+      setPage("Spieler", "Verwalten Sie alle Spieler des Vereins");
+    }
+  }, [setPage, players]);
 
   // Fetch players
   const { data: players = [], isLoading, error } = useQuery({
@@ -335,19 +339,15 @@ export default function Players() {
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Spieler</h1>
-              <p className="text-sm text-muted-foreground">
-                {isLoading ? "Lade Spieler..." : `${filteredPlayers.length} von ${(players as Player[]).length} Spielern`}
-              </p>
+            <div className="flex items-center gap-4 flex-1">
+              <Button 
+                onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}
+                className="shrink-0"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Hinzufügen
+              </Button>
             </div>
-            <Button 
-              onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}
-              className="shrink-0"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Hinzufügen
-            </Button>
           </div>
         </div>
 

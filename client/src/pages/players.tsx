@@ -334,6 +334,21 @@ export default function Players() {
     }
   };
 
+  // Status badge variant - unified with teams and members
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'inactive':
+      case 'injured':
+      case 'suspended':
+        return 'destructive';
+      default:
+        return 'destructive';
+    }
+  };
+
+  // Keep getStatusColor for positions (not status)
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
@@ -565,9 +580,9 @@ export default function Players() {
                                   {player.position}
                                 </span>
                               )}
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(player.status)}`}>
+                              <Badge variant={getStatusBadgeVariant(player.status)}>
                                 {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                              </span>
+                              </Badge>
                             </div>
                           </div>
                         </div>
@@ -724,9 +739,9 @@ export default function Players() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(player.status)}`}>
+                          <Badge variant={getStatusBadgeVariant(player.status)}>
                             {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                          </span>
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1 text-xs text-muted-foreground">

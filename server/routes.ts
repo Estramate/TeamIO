@@ -424,8 +424,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/clubs/:clubId/players", isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
+      const cleanedData = { ...req.body };
+      
+      // Clean up empty date fields to prevent PostgreSQL errors
+      if (cleanedData.birthDate === '') {
+        cleanedData.birthDate = null;
+      }
+      if (cleanedData.contractStart === '') {
+        cleanedData.contractStart = null;
+      }
+      if (cleanedData.contractEnd === '') {
+        cleanedData.contractEnd = null;
+      }
+      
       const validatedData = insertPlayerSchema.parse({
-        ...req.body,
+        ...cleanedData,
         clubId,
       });
       const player = await storage.createPlayer(validatedData);
@@ -440,7 +453,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
-      const player = await storage.updatePlayer(id, req.body);
+      const updates = { ...req.body };
+      
+      // Clean up empty date fields to prevent PostgreSQL errors
+      if (updates.birthDate === '') {
+        updates.birthDate = null;
+      }
+      if (updates.contractStart === '') {
+        updates.contractStart = null;
+      }
+      if (updates.contractEnd === '') {
+        updates.contractEnd = null;
+      }
+      
+      const player = await storage.updatePlayer(id, updates);
       res.json(player);
     } catch (error) {
       console.error("Error updating player:", error);

@@ -106,10 +106,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/members/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/clubs/:clubId/members/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
-      const updates = req.body;
+      const clubId = parseInt(req.params.clubId);
+      const updates = { ...req.body };
+      
+      // Clean up empty date fields to prevent PostgreSQL errors
+      if (updates.birthDate === '') {
+        updates.birthDate = null;
+      }
+      if (updates.joinDate === '') {
+        updates.joinDate = null;
+      }
+      
       const member = await storage.updateMember(id, updates);
       res.json(member);
     } catch (error) {
@@ -118,9 +128,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/members/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/members/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
+      const clubId = parseInt(req.params.clubId);
       await storage.deleteMember(id);
       res.json({ success: true });
     } catch (error) {
@@ -150,6 +161,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating team:", error);
       res.status(500).json({ message: "Failed to create team" });
+    }
+  });
+
+  app.put('/api/clubs/:clubId/teams/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const clubId = parseInt(req.params.clubId);
+      const updates = req.body;
+      const team = await storage.updateTeam(id, updates);
+      res.json(team);
+    } catch (error) {
+      console.error("Error updating team:", error);
+      res.status(500).json({ message: "Failed to update team" });
+    }
+  });
+
+  app.delete('/api/clubs/:clubId/teams/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const clubId = parseInt(req.params.clubId);
+      await storage.deleteTeam(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      res.status(500).json({ message: "Failed to delete team" });
     }
   });
 
@@ -400,9 +436,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/players/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/clubs/:clubId/players/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
+      const clubId = parseInt(req.params.clubId);
       const player = await storage.updatePlayer(id, req.body);
       res.json(player);
     } catch (error) {
@@ -411,9 +448,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/players/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/clubs/:clubId/players/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
+      const clubId = parseInt(req.params.clubId);
       await storage.deletePlayer(id);
       res.status(204).send();
     } catch (error) {

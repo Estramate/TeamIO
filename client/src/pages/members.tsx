@@ -134,7 +134,7 @@ export default function Members() {
   // Update member mutation
   const updateMemberMutation = useMutation({
     mutationFn: async (memberData: MemberFormData) => {
-      await apiRequest("PUT", `/api/members/${selectedMember.id}`, memberData);
+      await apiRequest("PUT", `/api/clubs/${selectedClub?.id}/members/${selectedMember.id}`, memberData);
     },
     onSuccess: () => {
       toast({
@@ -169,7 +169,7 @@ export default function Members() {
   // Delete member mutation
   const deleteMemberMutation = useMutation({
     mutationFn: async (memberId: number) => {
-      await apiRequest("DELETE", `/api/members/${memberId}`);
+      await apiRequest("DELETE", `/api/clubs/${selectedClub?.id}/members/${memberId}`);
     },
     onSuccess: () => {
       toast({

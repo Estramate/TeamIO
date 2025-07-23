@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ClubThemeProvider } from "@/contexts/ClubThemeContext";
+import { PageProvider } from "@/contexts/PageContext";
 import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
 import { Landing } from "@/pages/landing";
@@ -22,21 +23,23 @@ import NotFound from "@/pages/not-found";
 
 function AuthenticatedApp() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/members" component={Members} />
-        <Route path="/teams" component={Teams} />
-        <Route path="/bookings" component={Bookings} />
-        <Route path="/facilities" component={Facilities} />
-        <Route path="/finance" component={Finance} />
-        <Route path="/calendar" component={Calendar} />
-        <Route path="/communication" component={Communication} />
-        <Route path="/users" component={Users} />
-        <Route path="/settings" component={Settings} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <PageProvider>
+      <Layout>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/members" component={Members} />
+          <Route path="/teams" component={Teams} />
+          <Route path="/bookings" component={Bookings} />
+          <Route path="/facilities" component={Facilities} />
+          <Route path="/finance" component={Finance} />
+          <Route path="/calendar" component={Calendar} />
+          <Route path="/communication" component={Communication} />
+          <Route path="/users" component={Users} />
+          <Route path="/settings" component={Settings} />
+          <Route component={NotFound} />
+        </Switch>
+      </Layout>
+    </PageProvider>
   );
 }
 

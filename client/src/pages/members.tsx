@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
+import { usePage } from "@/contexts/PageContext";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export default function Members() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { setPage } = usePage();
   const queryClient = useQueryClient();
   
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
@@ -25,7 +27,11 @@ export default function Members() {
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>(null);
 
-  // Redirect to home if not authenticated
+  // Set page title and redirect if not authenticated
+  useEffect(() => {
+    setPage("Mitglieder", selectedClub ? `Verwalten Sie die Mitglieder von ${selectedClub.name}` : "Bitte wählen Sie einen Verein aus");
+  }, [setPage, selectedClub]);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
@@ -106,11 +112,11 @@ export default function Members() {
 
   if (!selectedClub) {
     return (
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+      <div className="flex-1 overflow-y-auto bg-background p-6">
         <div className="text-center py-12">
-          <Users className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Kein Verein ausgewählt</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Kein Verein ausgewählt</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             Bitte wählen Sie einen Verein aus, um Mitglieder zu verwalten.
           </p>
         </div>
@@ -119,18 +125,15 @@ export default function Members() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+    <div className="flex-1 overflow-y-auto bg-background p-6">
       <div className="mb-8">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Mitglieder</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Verwalten Sie die Mitglieder von {selectedClub.name}
-            </p>
+          <div className="flex-1">
+            {/* Title is handled by Header component via PageContext */}
           </div>
           <Button 
             onClick={() => setMemberModalOpen(true)}
-            className="bg-primary-500 hover:bg-primary-600"
+            className="bg-club-primary hover:bg-club-primary/90 text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
             Mitglied hinzufügen
@@ -139,7 +142,7 @@ export default function Members() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
             <div className="relative flex-1 max-w-md">

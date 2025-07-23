@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
+import { usePage } from "@/contexts/PageContext";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import StatsCards from "@/components/stats-cards";
 import ActivityFeed from "@/components/activity-feed";
@@ -13,8 +14,13 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { setPage } = usePage();
 
-  // Redirect to home if not authenticated
+  // Set page title and redirect if not authenticated
+  useEffect(() => {
+    setPage("Dashboard", selectedClub ? `Willkommen zurück, hier ist die Übersicht für ${selectedClub.name}` : "Bitte wählen Sie einen Verein aus");
+  }, [setPage, selectedClub]);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
@@ -37,23 +43,17 @@ export default function Dashboard() {
 
   if (!selectedClub) {
     return (
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+      <div className="flex-1 overflow-y-auto bg-background p-6">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Willkommen bei TeamIO</h2>
-          <p className="text-gray-600 mb-6">Bitte wählen Sie einen Verein aus, um zu beginnen.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-4">Willkommen bei TeamIO</h2>
+          <p className="text-muted-foreground mb-6">Bitte wählen Sie einen Verein aus, um zu beginnen.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Willkommen zurück, hier ist die Übersicht für {selectedClub.name}
-        </p>
-      </div>
+    <div className="flex-1 overflow-y-auto bg-background p-6">
 
       {isDashboardLoading ? (
         <div className="space-y-6">

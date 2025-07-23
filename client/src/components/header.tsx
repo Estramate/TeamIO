@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, Plus, Bell } from "lucide-react";
+import { usePage } from "@/contexts/PageContext";
 import MemberModal from "./member-modal";
 
 interface HeaderProps {
@@ -9,33 +10,36 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   const [memberModalOpen, setMemberModalOpen] = useState(false);
+  const { title, subtitle } = usePage();
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+      <header className="bg-card shadow-sm border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden"
+              className="lg:hidden text-foreground"
               onClick={onMenuClick}
             >
               <Menu className="h-4 w-4" />
             </Button>
             
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-              <p className="text-sm text-gray-500 mt-1 hidden sm:block">
-                Willkommen zurück, hier ist die Übersicht für Ihren Verein
-              </p>
+              <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+              {subtitle && (
+                <p className="text-sm text-muted-foreground mt-1 hidden sm:block">
+                  {subtitle}
+                </p>
+              )}
             </div>
           </div>
           
           <div className="flex items-center space-x-4">
             <Button
               onClick={() => setMemberModalOpen(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white hidden sm:flex"
+              className="bg-club-primary hover:bg-club-primary/90 text-white hidden sm:flex"
             >
               <Plus className="w-4 h-4 mr-2" />
               Mitglied hinzufügen
@@ -44,15 +48,15 @@ export default function Header({ onMenuClick }: HeaderProps) {
             <Button
               onClick={() => setMemberModalOpen(true)}
               size="sm"
-              className="bg-blue-500 hover:bg-blue-600 text-white sm:hidden"
+              className="bg-club-primary hover:bg-club-primary/90 text-white sm:hidden"
             >
               <Plus className="w-4 h-4" />
             </Button>
             
             <div className="relative">
-              <Button variant="ghost" size="sm" className="relative">
+              <Button variant="ghost" size="sm" className="relative text-foreground hover:bg-muted">
                 <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   3
                 </span>
               </Button>

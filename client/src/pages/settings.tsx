@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
+import { usePage } from "@/contexts/PageContext";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export default function Settings() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { setPage } = usePage();
   const queryClient = useQueryClient();
   
   const [clubSettings, setClubSettings] = useState({
@@ -58,7 +60,11 @@ export default function Settings() {
     dataRetention: '2-years',
   });
 
-  // Redirect to home if not authenticated
+  // Set page title and redirect if not authenticated
+  useEffect(() => {
+    setPage("Einstellungen", selectedClub ? `Verwalten Sie die Einstellungen für ${selectedClub.name}` : "Bitte wählen Sie einen Verein aus");
+  }, [setPage, selectedClub]);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
@@ -177,11 +183,11 @@ export default function Settings() {
 
   if (!selectedClub) {
     return (
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+      <div className="flex-1 overflow-y-auto bg-background p-6">
         <div className="text-center py-12">
-          <SettingsIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Kein Verein ausgewählt</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <SettingsIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Kein Verein ausgewählt</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             Bitte wählen Sie einen Verein aus, um Einstellungen zu verwalten.
           </p>
         </div>
@@ -190,17 +196,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Einstellungen</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Verwalten Sie die Einstellungen für {selectedClub.name}
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="flex-1 overflow-y-auto bg-background p-6">
 
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList className="grid w-full grid-cols-6">

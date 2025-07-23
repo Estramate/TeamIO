@@ -203,7 +203,7 @@ export default function Players() {
   // Status toggle mutation for players
   const togglePlayerStatusMutation = useMutation({
     mutationFn: async ({ playerId, newStatus }: { playerId: number; newStatus: string }) => {
-      return await apiRequest("PUT", `/api/clubs/${selectedClub}/players/${playerId}`, { status: newStatus });
+      return await apiRequest("PATCH", `/api/clubs/${selectedClub}/players/${playerId}`, { status: newStatus });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });

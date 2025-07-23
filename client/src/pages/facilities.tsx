@@ -20,21 +20,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { 
-  UsersRound, 
   Search, 
   Plus, 
-  Users, 
   LayoutGrid, 
   List, 
   MoreHorizontal, 
   Edit, 
   Trash2, 
   Eye,
-  Calendar,
   MapPin,
-  User,
+  Users,
   AlertCircle,
-  Trophy
+  Building
 } from "lucide-react";
 
 // Form Schema
@@ -61,16 +58,13 @@ export default function Facilities() {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [viewingFacility, setViewingFacility] = useState<Facility | null>(null);
 
-  const form = useForm<TeamFormData>({
-    resolver: zodResolver(teamFormSchema),
+  const form = useForm<FacilityFormData>({
+    resolver: zodResolver(facilityFormSchema),
     defaultValues: {
       name: "",
-      category: "",
-      ageGroup: "",
-      gender: "",
+      type: "",
       description: "",
       status: "active",
-      season: "2024/25",
     },
   });
 
@@ -89,38 +83,25 @@ export default function Facilities() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: teams = [], isLoading: isTeamsLoading } = useQuery<any[]>({
-    queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
+  const { data: facilities = [], isLoading: isFacilitiesLoading } = useQuery<Facility[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'facilities'],
     enabled: !!selectedClub?.id,
     retry: false,
   });
 
-  // Create team mutation
-  const createTeamMutation = useMutation({
-    mutationFn: async (teamData: TeamFormData) => {
-      const response = await fetch(`/api/clubs/${selectedClub?.id}/teams`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...teamData,
-          maxMembers: teamData.maxMembers ? Number(teamData.maxMembers) : null,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to create team');
-      }
-      return response.json();
+  // Create facility mutation
+  const createFacilityMutation = useMutation({
+    mutationFn: async (facilityData: FacilityFormData) => {
+      return apiRequest('POST', `/api/clubs/${selectedClub?.id}/facilities`, facilityData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
-      setTeamModalOpen(false);
-      setSelectedTeam(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
+      setFacilityModalOpen(false);
+      setSelectedFacility(null);
       form.reset();
       toast({
         title: "Erfolg",
-        description: "Team wurde erfolgreich erstellt",
+        description: "Anlage wurde erfolgreich erstellt",
       });
     },
     onError: (error) => {
@@ -137,70 +118,26 @@ export default function Facilities() {
       }
       toast({
         title: "Fehler",
-        description: "Team konnte nicht erstellt werden",
+        description: "Anlage konnte nicht erstellt werden",
         variant: "destructive",
       });
     },
   });
 
-  // Update team mutation
-  const updateTeamMutation = useMutation({
-    mutationFn: async (teamData: TeamFormData) => {
-      const response = await fetch(`/api/clubs/${selectedClub?.id}/teams/${selectedTeam.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...teamData,
-          maxMembers: teamData.maxMembers ? Number(teamData.maxMembers) : null,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update team');
-      }
-      return response.json();
+  // Update facility mutation
+  const updateFacilityMutation = useMutation({
+    mutationFn: async (facilityData: FacilityFormData) => {
+      if (!selectedFacility) throw new Error('No facility selected');
+      return apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/facilities/${selectedFacility.id}`, facilityData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
-      setTeamModalOpen(false);
-      setSelectedTeam(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
+      setFacilityModalOpen(false);
+      setSelectedFacility(null);
       form.reset();
       toast({
-        title: "Erfolg", 
-        description: "Team wurde erfolgreich aktualisiert",
-      });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Fehler",
-        description: "Team konnte nicht aktualisiert werden",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Status toggle mutation for teams
-  const toggleTeamStatusMutation = useMutation({
-    mutationFn: async ({ teamId, newStatus }: { teamId: number; newStatus: string }) => {
-      await apiRequest("PUT", `/api/clubs/${selectedClub?.id}/teams/${teamId}`, { status: newStatus });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
-      toast({
         title: "Erfolg",
-        description: "Team-Status wurde erfolgreich geändert",
+        description: "Anlage wurde erfolgreich aktualisiert",
       });
     },
     onError: (error) => {
@@ -217,30 +154,24 @@ export default function Facilities() {
       }
       toast({
         title: "Fehler",
-        description: "Status konnte nicht geändert werden",
+        description: "Anlage konnte nicht aktualisiert werden",
         variant: "destructive",
       });
     },
   });
 
-  // Delete team mutation
-  const deleteTeamMutation = useMutation({
-    mutationFn: async (teamId: number) => {
-      const response = await fetch(`/api/clubs/${selectedClub?.id}/teams/${teamId}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete team');
-      }
-      return response.json();
+  // Delete facility mutation
+  const deleteFacilityMutation = useMutation({
+    mutationFn: async (facilityId: number) => {
+      return apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/facilities/${facilityId}`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
       setDeleteDialogOpen(false);
-      setTeamToDelete(null);
+      setFacilityToDelete(null);
       toast({
         title: "Erfolg",
-        description: "Team wurde erfolgreich gelöscht",
+        description: "Anlage wurde erfolgreich gelöscht",
       });
     },
     onError: (error) => {
@@ -257,560 +188,445 @@ export default function Facilities() {
       }
       toast({
         title: "Fehler",
-        description: "Team konnte nicht gelöscht werden",
+        description: "Anlage konnte nicht gelöscht werden",
         variant: "destructive",
       });
     },
   });
 
-  const filteredTeams = teams.filter((team: any) => {
+  // Helper functions
+  const filteredFacilities = facilities.filter((facility) => {
     const matchesSearch = 
-      team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      team.ageGroup?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      team.category?.toLowerCase().includes(searchTerm.toLowerCase());
+      facility.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (facility.type && facility.type.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (facility.description && facility.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesCategory = categoryFilter === 'all' || team.category === categoryFilter;
+    const matchesType = typeFilter === 'all' || facility.type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || facility.status === statusFilter;
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesType && matchesStatus;
   });
 
-  const handleAddTeam = () => {
-    setSelectedTeam(null);
-    form.reset({
-      name: "",
-      category: "",
-      ageGroup: "",
-      gender: "",
-      description: "",
-      status: "active",
-      season: "2024/25",
-    });
-    setTeamModalOpen(true);
+  // Event handlers
+  const handleCreateFacility = () => {
+    setSelectedFacility(null);
+    form.reset();
+    setFacilityModalOpen(true);
   };
 
-  const handleEditTeam = (team: any) => {
-    setSelectedTeam(team);
+  const handleEditFacility = (facility: Facility) => {
+    setSelectedFacility(facility);
     form.reset({
-      name: team.name,
-      category: team.category || "",
-      ageGroup: team.ageGroup || "",
-      gender: team.gender || "",
-      description: team.description || "",
-      maxMembers: team.maxMembers || undefined,
-      status: team.status,
-      season: team.season || "2024/25",
+      name: facility.name,
+      type: facility.type || '',
+      description: facility.description || '',
+      capacity: facility.capacity || undefined,
+      location: facility.location || '',
+      status: facility.status || 'active',
     });
-    setTeamModalOpen(true);
+    setFacilityModalOpen(true);
   };
 
-  const handleDeleteTeam = (team: any) => {
-    setTeamToDelete(team);
+  const handleDeleteFacility = (facility: Facility) => {
+    setFacilityToDelete(facility);
     setDeleteDialogOpen(true);
   };
 
-  const handleToggleTeamStatus = (team: any) => {
-    const newStatus = team.status === 'active' ? 'inactive' : 'active';
-    toggleTeamStatusMutation.mutate({
-      teamId: team.id,
-      newStatus
-    });
-  };
-
-  const handleViewTeam = (team: any) => {
-    setViewingTeam(team);
+  const handleViewFacility = (facility: Facility) => {
+    setViewingFacility(facility);
     setIsDetailDialogOpen(true);
   };
 
-  const handleSubmit = (data: TeamFormData) => {
-    if (selectedTeam) {
-      updateTeamMutation.mutate(data);
+  const onSubmit = (data: FacilityFormData) => {
+    if (selectedFacility) {
+      updateFacilityMutation.mutate(data);
     } else {
-      createTeamMutation.mutate(data);
+      createFacilityMutation.mutate(data);
     }
   };
 
   const confirmDelete = () => {
-    if (teamToDelete) {
-      deleteTeamMutation.mutate(teamToDelete.id);
+    if (facilityToDelete) {
+      deleteFacilityMutation.mutate(facilityToDelete.id);
     }
   };
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return 'success';
-      case 'inactive': return 'destructive';
-      case 'suspended': return 'destructive';
-      default: return 'destructive';
+      case 'active':
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Aktiv</Badge>;
+      case 'maintenance':
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Wartung</Badge>;
+      case 'inactive':
+        return <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Inaktiv</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'active': return 'Aktiv';
-      case 'inactive': return 'Inaktiv';
-      case 'suspended': return 'Suspendiert';
-      default: return status;
+  const getTypeIcon = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case 'field':
+      case 'platz':
+        return <Building className="w-4 h-4" />;
+      case 'gym':
+      case 'halle':
+        return <Building className="w-4 h-4" />;
+      case 'pool':
+      case 'schwimmbad':
+        return <Building className="w-4 h-4" />;
+      default:
+        return <Building className="w-4 h-4" />;
     }
   };
 
-  if (!selectedClub) {
+  if (isLoading || !selectedClub) {
     return (
-      <div className="flex-1 overflow-y-auto bg-background p-6">
-        <div className="text-center py-12">
-          <UsersRound className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-2 text-sm font-medium text-foreground">Kein Verein ausgewählt</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Bitte wählen Sie einen Verein aus, um Teams zu verwalten.
-          </p>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Lade Anlagen...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="flex-1 overflow-y-auto bg-background p-6">
-        {/* Header Section with Search, Filters and Add Button */}
-        <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-3 flex-1">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Anlagen</h1>
+          <p className="text-muted-foreground">
+            Verwalten Sie die Anlagen und Einrichtungen Ihres Vereins
+          </p>
+        </div>
+        <Button onClick={handleCreateFacility} className="w-full sm:w-auto">
+          <Plus className="w-4 h-4 mr-2" />
+          Anlage hinzufügen
+        </Button>
+      </div>
+
+      {/* Filters */}
+      <Card className="border rounded-lg shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Teams suchen..."
+                  placeholder="Anlagen durchsuchen..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-10 rounded-xl border bg-background"
+                  className="pl-10"
                 />
               </div>
-              
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-48 h-10 rounded-xl border bg-background">
-                  <SelectValue placeholder="Kategorie wählen" />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Typ" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle Kategorien</SelectItem>
-                  <SelectItem value="youth">Jugend</SelectItem>
-                  <SelectItem value="senior">Senioren</SelectItem>
-                  <SelectItem value="amateur">Amateur</SelectItem>
+                  <SelectItem value="all">Alle Typen</SelectItem>
+                  <SelectItem value="field">Platz</SelectItem>
+                  <SelectItem value="gym">Halle</SelectItem>
+                  <SelectItem value="pool">Schwimmbad</SelectItem>
+                  <SelectItem value="other">Sonstige</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {/* View Toggle */}
-              <div className="flex rounded-xl border bg-background p-1">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle Status</SelectItem>
+                  <SelectItem value="active">Aktiv</SelectItem>
+                  <SelectItem value="maintenance">Wartung</SelectItem>
+                  <SelectItem value="inactive">Inaktiv</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex border rounded-md">
                 <Button
-                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className="h-8 px-3 rounded-lg"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-r-none"
                 >
-                  <LayoutGrid className="h-4 w-4" />
+                  <LayoutGrid className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant={viewMode === "list" ? "default" : "ghost"}
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setViewMode("list")}
-                  className="h-8 px-3 rounded-lg"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-l-none"
                 >
-                  <List className="h-4 w-4" />
+                  <List className="w-4 h-4" />
                 </Button>
               </div>
-
-              {/* Add Button */}
-              <Button onClick={handleAddTeam} className="bg-primary hover:bg-primary/90">
-                <Plus className="w-4 h-4 mr-2" />
-                Team hinzufügen
-              </Button>
             </div>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Content Area - Scrollable */}
-        <div>
-          {isTeamsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {[...Array(8)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                      <div className="h-4 bg-muted rounded w-3/4"></div>
-                      <div className="h-3 bg-muted rounded w-1/2"></div>
-                      <div className="h-3 bg-muted rounded w-2/3"></div>
+      {/* Facilities Grid/List */}
+      {isFacilitiesLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-muted-foreground">Lade Anlagen...</p>
+          </div>
+        </div>
+      ) : filteredFacilities.length === 0 ? (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Building className="w-12 h-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Keine Anlagen gefunden</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              {searchTerm || typeFilter !== 'all' || statusFilter !== 'all'
+                ? "Keine Anlagen entsprechen den aktuellen Filterkriterien."
+                : "Beginnen Sie mit der Erstellung Ihrer ersten Anlage."}
+            </p>
+            {(!searchTerm && typeFilter === 'all' && statusFilter === 'all') && (
+              <Button onClick={handleCreateFacility}>
+                <Plus className="w-4 h-4 mr-2" />
+                Erste Anlage erstellen
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className={viewMode === 'grid' 
+          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
+          : "space-y-4"
+        }>
+          {filteredFacilities.map((facility) => (
+            <Card 
+              key={facility.id} 
+              className="group hover:shadow-md transition-all duration-200 cursor-pointer border rounded-lg"
+              onClick={() => handleViewFacility(facility)}
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-2">
+                    {getTypeIcon(facility.type || '')}
+                    <CardTitle className="text-base font-medium truncate">
+                      {facility.name}
+                    </CardTitle>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewFacility(facility);
+                      }}>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Anzeigen
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditFacility(facility);
+                      }}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Bearbeiten
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteFacility(facility);
+                        }}
+                        className="text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Löschen
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Typ</span>
+                    <span className="text-sm font-medium">{facility.type || 'Nicht angegeben'}</span>
+                  </div>
+                  {facility.capacity && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Kapazität</span>
+                      <span className="text-sm font-medium flex items-center">
+                        <Users className="w-3 h-3 mr-1" />
+                        {facility.capacity}
+                      </span>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : filteredTeams.length === 0 ? (
-            <div className="text-center py-12">
-              <UsersRound className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-2 text-sm font-medium text-foreground">Keine Teams gefunden</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {searchTerm || categoryFilter !== 'all' 
-                  ? "Versuchen Sie, Ihre Suchkriterien anzupassen."
-                  : "Beginnen Sie mit dem Hinzufügen Ihres ersten Teams."}
-              </p>
-              {!searchTerm && categoryFilter === 'all' && (
-                <Button onClick={handleAddTeam} className="mt-4 bg-primary hover:bg-primary/90">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Erstes Team hinzufügen
-                </Button>
-              )}
-            </div>
-          ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {filteredTeams.map((team: any) => (
-                <Card key={team.id} className="group hover:shadow-lg transition-all duration-300 border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:scale-[1.02] cursor-pointer">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 
-                          className="text-base font-semibold text-foreground truncate cursor-pointer hover:text-primary transition-colors hover:underline"
-                          onClick={() => handleViewTeam(team)}
-                        >
-                          {team.name}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-2">
-                          {team.category && (
-                            <Badge variant="secondary" className="text-xs">
-                              {team.category}
-                            </Badge>
-                          )}
-                          {team.ageGroup && (
-                            <Badge variant="outline" className="text-xs">
-                              {team.ageGroup}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditTeam(team)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Bearbeiten
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleToggleTeamStatus(team)}
-                              disabled={toggleTeamStatusMutation.isPending}
-                              className={team.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
-                            >
-                              {team.status === 'active' ? (
-                                <>
-                                  <Users className="h-4 w-4 mr-2" />
-                                  Deaktivieren
-                                </>
-                              ) : (
-                                <>
-                                  <Users className="h-4 w-4 mr-2" />
-                                  Aktivieren
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteTeam(team)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Löschen
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                  )}
+                  {facility.location && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Standort</span>
+                      <span className="text-sm font-medium flex items-center">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        {facility.location}
+                      </span>
                     </div>
-                    
-                    <div className="text-xs text-muted-foreground space-y-1">
-                      <div className="flex items-center justify-between">
-                        <Badge variant={getStatusBadgeVariant(team.status)}>
-                          {getStatusLabel(team.status)}
-                        </Badge>
-                        {team.maxMembers && (
-                          <span className="flex items-center">
-                            <Users className="w-3 h-3 mr-1" />
-                            Max: {team.maxMembers}
-                          </span>
-                        )}
-                      </div>
-                      {team.season && (
-                        <p className="flex items-center">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {team.season}
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card className="border-border">
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-muted border-b border-border">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Kategorie
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Saison
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-12">
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-card divide-y divide-border">
-                      {filteredTeams.map((team: any) => (
-                        <tr key={team.id} className="group hover:bg-muted/50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div 
-                                className="text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors hover:underline"
-                                onClick={() => handleViewTeam(team)}
-                              >
-                                {team.name}
-                              </div>
-                              {team.ageGroup && (
-                                <div className="text-sm text-muted-foreground">
-                                  {team.ageGroup}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-foreground">{team.category || '-'}</div>
-                            {team.gender && (
-                              <div className="text-sm text-muted-foreground">{team.gender}</div>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <Badge variant={getStatusBadgeVariant(team.status)}>
-                              {getStatusLabel(team.status)}
-                            </Badge>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                            {team.season || '-'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEditTeam(team)}>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Bearbeiten
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleToggleTeamStatus(team)}
-                                  disabled={toggleTeamStatusMutation.isPending}
-                                  className={team.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
-                                >
-                                  {team.status === 'active' ? (
-                                    <>
-                                      <Users className="h-4 w-4 mr-2" />
-                                      Deaktivieren
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Users className="h-4 w-4 mr-2" />
-                                      Aktivieren
-                                    </>
-                                  )}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleDeleteTeam(team)}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Löschen
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    {getStatusBadge(facility.status || 'active')}
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )}
+          ))}
         </div>
-      </div>
+      )}
 
-      {/* Team Add/Edit Modal */}
-      <Dialog open={teamModalOpen} onOpenChange={setTeamModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      {/* Create/Edit Facility Dialog */}
+      <Dialog open={facilityModalOpen} onOpenChange={setFacilityModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
-              {selectedTeam ? 'Team bearbeiten' : 'Neues Team hinzufügen'}
+              {selectedFacility ? 'Anlage bearbeiten' : 'Neue Anlage'}
             </DialogTitle>
           </DialogHeader>
-
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Team Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="z.B. 1. Herren" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kategorie</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Kategorie wählen" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="youth">Jugend</SelectItem>
-                          <SelectItem value="senior">Senioren</SelectItem>
-                          <SelectItem value="amateur">Amateur</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="ageGroup"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Altersgruppe</FormLabel>
-                      <FormControl>
-                        <Input placeholder="z.B. U16, Ü35" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Geschlecht</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Geschlecht wählen" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="male">Herren</SelectItem>
-                          <SelectItem value="female">Damen</SelectItem>
-                          <SelectItem value="mixed">Mixed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="maxMembers"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Max. Mitglieder</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="z.B. 25" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="season"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Saison</FormLabel>
-                      <FormControl>
-                        <Input placeholder="z.B. 2024/25" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="description"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Beschreibung</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Beschreibung des Teams..."
-                        className="resize-none"
-                        rows={3}
+                      <Input placeholder="Anlagenname" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Typ</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Anlagentyp auswählen" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="field">Platz</SelectItem>
+                        <SelectItem value="gym">Halle</SelectItem>
+                        <SelectItem value="pool">Schwimmbad</SelectItem>
+                        <SelectItem value="court">Court</SelectItem>
+                        <SelectItem value="track">Laufbahn</SelectItem>
+                        <SelectItem value="other">Sonstige</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="capacity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kapazität (optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="Maximale Anzahl Personen" 
                         {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Standort (optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Adresse oder Beschreibung des Standorts" 
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Beschreibung (optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Zusätzliche Informationen zur Anlage"
+                        className="min-h-[80px]"
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Status auswählen" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="active">Aktiv</SelectItem>
+                        <SelectItem value="maintenance">Wartung</SelectItem>
+                        <SelectItem value="inactive">Inaktiv</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setTeamModalOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setFacilityModalOpen(false)}>
                   Abbrechen
                 </Button>
                 <Button 
                   type="submit" 
-                  disabled={createTeamMutation.isPending || updateTeamMutation.isPending}
+                  disabled={createFacilityMutation.isPending || updateFacilityMutation.isPending}
                 >
-                  {createTeamMutation.isPending || updateTeamMutation.isPending ? 'Speichern...' : 'Speichern'}
+                  {createFacilityMutation.isPending || updateFacilityMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Speichern...
+                    </>
+                  ) : (
+                    selectedFacility ? 'Aktualisieren' : 'Erstellen'
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -822,106 +638,105 @@ export default function Facilities() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Team löschen</DialogTitle>
+            <DialogTitle className="flex items-center text-red-600">
+              <AlertCircle className="w-5 h-5 mr-2" />
+              Anlage löschen
+            </DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p className="text-sm text-muted-foreground">
-              Sind Sie sicher, dass Sie das Team "{teamToDelete?.name}" löschen möchten? 
+            <p>
+              Sind Sie sicher, dass Sie die Anlage{' '}
+              <strong>{facilityToDelete?.name}</strong> löschen möchten?
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
               Diese Aktion kann nicht rückgängig gemacht werden.
             </p>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Abbrechen
             </Button>
-            <Button
-              variant="destructive"
+            <Button 
+              variant="destructive" 
               onClick={confirmDelete}
-              disabled={deleteTeamMutation.isPending}
+              disabled={deleteFacilityMutation.isPending}
             >
-              {deleteTeamMutation.isPending ? 'Lösche...' : 'Löschen'}
+              {deleteFacilityMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Löschen...
+                </>
+              ) : (
+                'Löschen'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Team Detail Dialog */}
+      {/* Facility Detail Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              {viewingTeam?.name}
+            <DialogTitle className="flex items-center">
+              {getTypeIcon(viewingFacility?.type || '')}
+              <span className="ml-2">{viewingFacility?.name}</span>
             </DialogTitle>
           </DialogHeader>
-          
-          {viewingTeam && (
+          {viewingFacility && (
             <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {viewingTeam.category && (
-                  <Badge variant="secondary">
-                    {viewingTeam.category === 'youth' ? 'Jugend' :
-                     viewingTeam.category === 'senior' ? 'Senioren' : 'Amateur'}
-                  </Badge>
-                )}
-                {viewingTeam.ageGroup && (
-                  <Badge variant="outline">{viewingTeam.ageGroup}</Badge>
-                )}
-                {viewingTeam.gender && (
-                  <Badge variant="outline">
-                    {viewingTeam.gender === 'male' ? 'Herren' :
-                     viewingTeam.gender === 'female' ? 'Damen' : 'Mixed'}
-                  </Badge>
-                )}
-                <Badge variant={getStatusBadgeVariant(viewingTeam.status)}>
-                  {getStatusLabel(viewingTeam.status)}
-                </Badge>
-              </div>
-              
-              {viewingTeam.description && (
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Beschreibung</h4>
-                  <p className="text-sm text-muted-foreground">{viewingTeam.description}</p>
+                  <h4 className="font-medium text-sm text-muted-foreground">Typ</h4>
+                  <p className="mt-1">{viewingFacility.type || 'Nicht angegeben'}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Status</h4>
+                  <div className="mt-1">
+                    {getStatusBadge(viewingFacility.status || 'active')}
+                  </div>
+                </div>
+                {viewingFacility.capacity && (
+                  <div>
+                    <h4 className="font-medium text-sm text-muted-foreground">Kapazität</h4>
+                    <p className="mt-1 flex items-center">
+                      <Users className="w-4 h-4 mr-1" />
+                      {viewingFacility.capacity} Personen
+                    </p>
+                  </div>
+                )}
+                {viewingFacility.location && (
+                  <div>
+                    <h4 className="font-medium text-sm text-muted-foreground">Standort</h4>
+                    <p className="mt-1 flex items-center">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      {viewingFacility.location}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {viewingFacility.description && (
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Beschreibung</h4>
+                  <p className="mt-1 text-sm">{viewingFacility.description}</p>
                 </div>
               )}
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Max. Mitglieder:</span>
-                  <p className="text-muted-foreground">{viewingTeam.maxMembers || 'Nicht festgelegt'}</p>
-                </div>
-                <div>
-                  <span className="font-medium">Saison:</span>
-                  <p className="text-muted-foreground">{viewingTeam.season || 'Nicht festgelegt'}</p>
-                </div>
-              </div>
-              
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  onClick={() => {
-                    setIsDetailDialogOpen(false);
-                    handleEditTeam(viewingTeam);
-                  }}
-                  className="flex-1"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Bearbeiten
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => setIsDetailDialogOpen(false)}
-                  className="flex-1"
-                >
-                  Schließen
-                </Button>
-              </div>
             </div>
           )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
+              Schließen
+            </Button>
+            <Button onClick={() => {
+              setIsDetailDialogOpen(false);
+              if (viewingFacility) handleEditFacility(viewingFacility);
+            }}>
+              <Edit className="w-4 h-4 mr-2" />
+              Bearbeiten
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

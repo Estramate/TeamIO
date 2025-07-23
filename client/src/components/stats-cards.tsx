@@ -2,23 +2,23 @@ import { Users, UsersRound, Calendar, Euro, TrendingUp, TrendingDown, Clock } fr
 
 interface StatsCardsProps {
   stats?: {
-    memberCount: number;
-    teamCount: number;
-    todayBookingsCount: number;
-    pendingBookingsCount: number;
-    monthlyBudget: number;
+    memberCount?: number;
+    teamCount?: number;
+    todayBookingsCount?: number;
+    pendingBookingsCount?: number;
+    monthlyBudget?: number;
   };
 }
 
 export default function StatsCards({ stats }: StatsCardsProps) {
   if (!stats) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
-            <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+          <div key={i} className="bg-card rounded-xl shadow-sm p-4 sm:p-6 border border-border animate-pulse">
+            <div className="h-4 bg-muted rounded w-1/2 mb-3"></div>
+            <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
+            <div className="h-3 bg-muted rounded w-2/3"></div>
           </div>
         ))}
       </div>
@@ -28,7 +28,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
   const cards = [
     {
       title: "Mitglieder",
-      value: stats.memberCount,
+      value: stats.memberCount || 0,
       change: "+3 diese Woche",
       changeType: "positive" as const,
       icon: Users,
@@ -37,7 +37,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: "Teams",
-      value: stats.teamCount,
+      value: stats.teamCount || 0,
       change: "+1 diese Woche",
       changeType: "positive" as const,
       icon: UsersRound,
@@ -46,8 +46,8 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: "Buchungen heute",
-      value: stats.todayBookingsCount,
-      change: `${stats.pendingBookingsCount} ausstehend`,
+      value: stats.todayBookingsCount || 0,
+      change: `${stats.pendingBookingsCount || 0} ausstehend`,
       changeType: "neutral" as const,
       icon: Calendar,
       iconBg: "bg-orange-100",
@@ -55,9 +55,9 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: "Monatsbudget",
-      value: `€${stats.monthlyBudget.toLocaleString()}`,
-      change: stats.monthlyBudget >= 0 ? "+€180 vs. Vormonat" : "-€180 vs. Vormonat",
-      changeType: stats.monthlyBudget >= 0 ? "positive" : "negative" as const,
+      value: `€${(stats.monthlyBudget || 0).toLocaleString()}`,
+      change: (stats.monthlyBudget || 0) >= 0 ? "+€180 vs. Vormonat" : "-€180 vs. Vormonat",
+      changeType: (stats.monthlyBudget || 0) >= 0 ? "positive" : "negative" as const,
       icon: Euro,
       iconBg: "bg-emerald-100",
       iconColor: "text-emerald-500",

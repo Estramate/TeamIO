@@ -46,13 +46,13 @@ export default function ActivityFeed({ activities = [] }: ActivityFeedProps) {
 
   if (activities.length === 0) {
     return (
-      <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Neueste Aktivitäten</h3>
+      <div className="bg-card rounded-xl shadow-sm border border-border">
+        <div className="p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">Neueste Aktivitäten</h3>
           </div>
           <div className="text-center py-8">
-            <p className="text-gray-500">Noch keine Aktivitäten vorhanden</p>
+            <p className="text-muted-foreground">Noch keine Aktivitäten vorhanden</p>
           </div>
         </div>
       </div>

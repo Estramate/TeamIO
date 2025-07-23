@@ -11,7 +11,7 @@ export default function UpcomingEvents({ clubId }: UpcomingEventsProps) {
     queryKey: ['/api/clubs', clubId, 'events'],
     enabled: !!clubId,
     retry: false,
-  });
+  }) as { data: any[] };
 
   // Get next 3 upcoming events
   const upcomingEvents = events

@@ -1,5 +1,6 @@
 import { seedTeams } from "./seedTeams";
 import { seedPlayers } from "./seedPlayers";
+import { seedAllTeamsPlayers } from "./seedAllTeams";
 
 async function seedAll() {
   try {
@@ -9,9 +10,13 @@ async function seedAll() {
     console.log("Step 1: Seeding teams...");
     await seedTeams();
     
-    // Then seed players
-    console.log("Step 2: Seeding players...");
+    // Then seed KM players
+    console.log("Step 2: Seeding KM players...");
     await seedPlayers();
+    
+    // Finally seed all other teams players
+    console.log("Step 3: Seeding additional teams players...");
+    await seedAllTeamsPlayers();
     
     console.log("✓ Complete seeding process finished successfully!");
     

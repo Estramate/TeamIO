@@ -5,6 +5,9 @@ import {
   members,
   teams,
   teamMemberships,
+  players,
+  playerTeamAssignments,
+  playerStats,
   facilities,
   bookings,
   events,
@@ -21,6 +24,12 @@ import {
   type InsertTeam,
   type TeamMembership,
   type InsertTeamMembership,
+  type Player,
+  type InsertPlayer,
+  type PlayerTeamAssignment,
+  type InsertPlayerTeamAssignment,
+  type PlayerStats,
+  type InsertPlayerStats,
   type Facility,
   type InsertFacility,
   type Booking,
@@ -72,6 +81,27 @@ export interface IStorage {
   addMemberToTeam(membership: InsertTeamMembership): Promise<TeamMembership>;
   removeMemberFromTeam(memberId: number, teamId: number): Promise<void>;
   updateTeamMembership(memberId: number, teamId: number, updates: Partial<InsertTeamMembership>): Promise<TeamMembership>;
+
+  // Player operations
+  getPlayers(clubId: number): Promise<Player[]>;
+  getPlayer(id: number): Promise<Player | undefined>;
+  createPlayer(player: InsertPlayer): Promise<Player>;
+  updatePlayer(id: number, player: Partial<InsertPlayer>): Promise<Player>;
+  deletePlayer(id: number): Promise<void>;
+
+  // Player-Team assignment operations
+  getPlayerTeams(playerId: number): Promise<PlayerTeamAssignment[]>;
+  getTeamPlayers(teamId: number): Promise<PlayerTeamAssignment[]>;
+  assignPlayerToTeam(assignment: InsertPlayerTeamAssignment): Promise<PlayerTeamAssignment>;
+  removePlayerFromTeam(playerId: number, teamId: number): Promise<void>;
+  updatePlayerTeamAssignment(playerId: number, teamId: number, updates: Partial<InsertPlayerTeamAssignment>): Promise<PlayerTeamAssignment>;
+
+  // Player stats operations
+  getPlayerStats(playerId: number, season?: string): Promise<PlayerStats[]>;
+  getTeamStats(teamId: number, season?: string): Promise<PlayerStats[]>;
+  createPlayerStats(stats: InsertPlayerStats): Promise<PlayerStats>;
+  updatePlayerStats(id: number, stats: Partial<InsertPlayerStats>): Promise<PlayerStats>;
+  deletePlayerStats(id: number): Promise<void>;
 
   // Facility operations
   getFacilities(clubId: number): Promise<Facility[]>;
@@ -549,6 +579,130 @@ export class DatabaseStorage implements IStorage {
     return activities
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 10);
+  }
+
+  // Player operations
+  async getPlayers(clubId: number): Promise<Player[]> {
+    return await db
+      .select()
+      .from(players)
+      .where(eq(players.clubId, clubId))
+      .orderBy(asc(players.lastName), asc(players.firstName));
+  }
+
+  async getPlayer(id: number): Promise<Player | undefined> {
+    const [player] = await db.select().from(players).where(eq(players.id, id));
+    return player;
+  }
+
+  async createPlayer(playerData: InsertPlayer): Promise<Player> {
+    const [player] = await db.insert(players).values(playerData).returning();
+    return player;
+  }
+
+  async updatePlayer(id: number, playerData: Partial<InsertPlayer>): Promise<Player> {
+    const [player] = await db
+      .update(players)
+      .set({ ...playerData, updatedAt: new Date() })
+      .where(eq(players.id, id))
+      .returning();
+    return player;
+  }
+
+  async deletePlayer(id: number): Promise<void> {
+    // First delete all related assignments and stats
+    await db.delete(playerTeamAssignments).where(eq(playerTeamAssignments.playerId, id));
+    await db.delete(playerStats).where(eq(playerStats.playerId, id));
+    await db.delete(players).where(eq(players.id, id));
+  }
+
+  // Player-Team assignment operations
+  async getPlayerTeams(playerId: number): Promise<PlayerTeamAssignment[]> {
+    return await db
+      .select()
+      .from(playerTeamAssignments)
+      .where(eq(playerTeamAssignments.playerId, playerId))
+      .orderBy(desc(playerTeamAssignments.isActive), asc(playerTeamAssignments.joinedAt));
+  }
+
+  async getTeamPlayers(teamId: number): Promise<PlayerTeamAssignment[]> {
+    return await db
+      .select()
+      .from(playerTeamAssignments)
+      .where(and(eq(playerTeamAssignments.teamId, teamId), eq(playerTeamAssignments.isActive, true)))
+      .orderBy(asc(playerTeamAssignments.joinedAt));
+  }
+
+  async assignPlayerToTeam(assignmentData: InsertPlayerTeamAssignment): Promise<PlayerTeamAssignment> {
+    const [assignment] = await db.insert(playerTeamAssignments).values(assignmentData).returning();
+    return assignment;
+  }
+
+  async removePlayerFromTeam(playerId: number, teamId: number): Promise<void> {
+    await db
+      .update(playerTeamAssignments)
+      .set({ isActive: false, leftAt: new Date(), updatedAt: new Date() })
+      .where(and(
+        eq(playerTeamAssignments.playerId, playerId),
+        eq(playerTeamAssignments.teamId, teamId),
+        eq(playerTeamAssignments.isActive, true)
+      ));
+  }
+
+  async updatePlayerTeamAssignment(
+    playerId: number,
+    teamId: number,
+    updates: Partial<InsertPlayerTeamAssignment>
+  ): Promise<PlayerTeamAssignment> {
+    const [assignment] = await db
+      .update(playerTeamAssignments)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(
+        eq(playerTeamAssignments.playerId, playerId),
+        eq(playerTeamAssignments.teamId, teamId),
+        eq(playerTeamAssignments.isActive, true)
+      ))
+      .returning();
+    return assignment;
+  }
+
+  // Player stats operations
+  async getPlayerStats(playerId: number, season?: string): Promise<PlayerStats[]> {
+    let query = db.select().from(playerStats).where(eq(playerStats.playerId, playerId));
+    
+    if (season) {
+      query = query.where(eq(playerStats.season, season));
+    }
+    
+    return await query.orderBy(desc(playerStats.season));
+  }
+
+  async getTeamStats(teamId: number, season?: string): Promise<PlayerStats[]> {
+    let query = db.select().from(playerStats).where(eq(playerStats.teamId, teamId));
+    
+    if (season) {
+      query = query.where(eq(playerStats.season, season));
+    }
+    
+    return await query.orderBy(desc(playerStats.goals), desc(playerStats.assists));
+  }
+
+  async createPlayerStats(statsData: InsertPlayerStats): Promise<PlayerStats> {
+    const [stats] = await db.insert(playerStats).values(statsData).returning();
+    return stats;
+  }
+
+  async updatePlayerStats(id: number, statsData: Partial<InsertPlayerStats>): Promise<PlayerStats> {
+    const [stats] = await db
+      .update(playerStats)
+      .set({ ...statsData, updatedAt: new Date() })
+      .where(eq(playerStats.id, id))
+      .returning();
+    return stats;
+  }
+
+  async deletePlayerStats(id: number): Promise<void> {
+    await db.delete(playerStats).where(eq(playerStats.id, id));
   }
 }
 

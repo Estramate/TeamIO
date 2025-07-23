@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { seedPlayers } from "./seedPlayers";
 import {
   insertClubSchema,
   insertMemberSchema,
@@ -10,6 +11,8 @@ import {
   insertBookingSchema,
   insertEventSchema,
   insertFinanceSchema,
+  insertPlayerSchema,
+  insertPlayerTeamAssignmentSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -341,6 +344,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error seeding data:", error);
       res.status(500).json({ message: "Failed to seed data" });
+    }
+  });
+
+  // Seed players route (for development)
+  app.post('/api/seed-players', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = req.body.clubId || 1; // Default to SV Oberglan
+      await seedPlayers(clubId);
+      res.json({ message: "Player data seeded successfully" });
+    } catch (error) {
+      console.error("Error seeding player data:", error);
+      res.status(500).json({ message: "Failed to seed player data" });
+    }
+  });
+
+  // Player routes
+  app.get("/api/clubs/:clubId/players", isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const players = await storage.getPlayers(clubId);
+      res.json(players);
+    } catch (error) {
+      console.error("Error fetching players:", error);
+      res.status(500).json({ message: "Failed to fetch players" });
+    }
+  });
+
+  app.get("/api/players/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const player = await storage.getPlayer(id);
+      if (!player) {
+        return res.status(404).json({ message: "Player not found" });
+      }
+      res.json(player);
+    } catch (error) {
+      console.error("Error fetching player:", error);
+      res.status(500).json({ message: "Failed to fetch player" });
+    }
+  });
+
+  app.post("/api/clubs/:clubId/players", isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const validatedData = insertPlayerSchema.parse({
+        ...req.body,
+        clubId,
+      });
+      const player = await storage.createPlayer(validatedData);
+      res.status(201).json(player);
+    } catch (error) {
+      console.error("Error creating player:", error);
+      res.status(500).json({ message: "Failed to create player" });
+    }
+  });
+
+  app.patch("/api/players/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const player = await storage.updatePlayer(id, req.body);
+      res.json(player);
+    } catch (error) {
+      console.error("Error updating player:", error);
+      res.status(500).json({ message: "Failed to update player" });
+    }
+  });
+
+  app.delete("/api/players/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deletePlayer(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting player:", error);
+      res.status(500).json({ message: "Failed to delete player" });
+    }
+  });
+
+  // Player-Team assignment routes
+  app.get("/api/players/:playerId/teams", isAuthenticated, async (req: any, res) => {
+    try {
+      const playerId = parseInt(req.params.playerId);
+      const assignments = await storage.getPlayerTeams(playerId);
+      res.json(assignments);
+    } catch (error) {
+      console.error("Error fetching player teams:", error);
+      res.status(500).json({ message: "Failed to fetch player teams" });
+    }
+  });
+
+  app.get("/api/teams/:teamId/players", isAuthenticated, async (req: any, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const assignments = await storage.getTeamPlayers(teamId);
+      res.json(assignments);
+    } catch (error) {
+      console.error("Error fetching team players:", error);
+      res.status(500).json({ message: "Failed to fetch team players" });
+    }
+  });
+
+  app.post("/api/players/:playerId/teams/:teamId", isAuthenticated, async (req: any, res) => {
+    try {
+      const playerId = parseInt(req.params.playerId);
+      const teamId = parseInt(req.params.teamId);
+      const validatedData = insertPlayerTeamAssignmentSchema.parse({
+        playerId,
+        teamId,
+        ...req.body,
+      });
+      const assignment = await storage.assignPlayerToTeam(validatedData);
+      res.status(201).json(assignment);
+    } catch (error) {
+      console.error("Error assigning player to team:", error);
+      res.status(500).json({ message: "Failed to assign player to team" });
+    }
+  });
+
+  app.delete("/api/players/:playerId/teams/:teamId", isAuthenticated, async (req: any, res) => {
+    try {
+      const playerId = parseInt(req.params.playerId);
+      const teamId = parseInt(req.params.teamId);
+      await storage.removePlayerFromTeam(playerId, teamId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing player from team:", error);
+      res.status(500).json({ message: "Failed to remove player from team" });
     }
   });
 

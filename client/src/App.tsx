@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
 import { Landing } from "@/pages/landing";
 import Members from "@/pages/members";
+import Players from "@/pages/players";
 import Teams from "@/pages/teams";
 import Bookings from "@/pages/bookings";
 import Facilities from "@/pages/facilities";
@@ -28,6 +29,7 @@ function AuthenticatedApp() {
         <Switch>
           <Route path="/" component={Dashboard} />
           <Route path="/members" component={Members} />
+          <Route path="/players" component={Players} />
           <Route path="/teams" component={Teams} />
           <Route path="/bookings" component={Bookings} />
           <Route path="/facilities" component={Facilities} />

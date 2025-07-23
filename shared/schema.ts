@@ -71,6 +71,61 @@ export const clubMemberships = pgTable("club_memberships", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Players table - active players in teams
+export const players = pgTable("players", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  jerseyNumber: integer("jersey_number"),
+  position: varchar("position", { length: 50 }), // Tor, Verteidigung, Mittelfeld, Sturm
+  birthDate: date("birth_date"),
+  phone: varchar("phone", { length: 50 }),
+  email: varchar("email", { length: 255 }),
+  address: text("address"),
+  nationality: varchar("nationality", { length: 50 }),
+  profileImageUrl: varchar("profile_image_url", { length: 500 }),
+  height: integer("height"), // in cm
+  weight: integer("weight"), // in kg
+  preferredFoot: varchar("preferred_foot", { length: 10 }), // left, right, both
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, injured, suspended, inactive
+  contractStart: date("contract_start"),
+  contractEnd: date("contract_end"),
+  salary: decimal("salary", { precision: 10, scale: 2 }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Player-Team assignments (many-to-many relationship)
+export const playerTeamAssignments = pgTable("player_team_assignments", {
+  id: serial("id").primaryKey(),
+  playerId: integer("player_id").notNull().references(() => players.id),
+  teamId: integer("team_id").notNull().references(() => teams.id),
+  season: varchar("season", { length: 20 }).notNull().default("2024/25"),
+  isActive: boolean("is_active").notNull().default(true),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  leftAt: timestamp("left_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Player statistics
+export const playerStats = pgTable("player_stats", {
+  id: serial("id").primaryKey(),
+  playerId: integer("player_id").notNull().references(() => players.id),
+  teamId: integer("team_id").notNull().references(() => teams.id),
+  season: varchar("season", { length: 20 }).notNull().default("2024/25"),
+  gamesPlayed: integer("games_played").notNull().default(0),
+  goals: integer("goals").notNull().default(0),
+  assists: integer("assists").notNull().default(0),
+  yellowCards: integer("yellow_cards").notNull().default(0),
+  redCards: integer("red_cards").notNull().default(0),
+  minutesPlayed: integer("minutes_played").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Members table - actual club members (can be different from system users)
 export const members = pgTable("members", {
   id: serial("id").primaryKey(),
@@ -209,6 +264,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const clubsRelations = relations(clubs, ({ many }) => ({
   memberships: many(clubMemberships),
   members: many(members),
+  players: many(players),
   teams: many(teams),
   facilities: many(facilities),
   bookings: many(bookings),
@@ -224,6 +280,37 @@ export const clubMembershipsRelations = relations(clubMemberships, ({ one }) => 
   club: one(clubs, {
     fields: [clubMemberships.clubId],
     references: [clubs.id],
+  }),
+}));
+
+export const playersRelations = relations(players, ({ one, many }) => ({
+  club: one(clubs, {
+    fields: [players.clubId],
+    references: [clubs.id],
+  }),
+  teamAssignments: many(playerTeamAssignments),
+  stats: many(playerStats),
+}));
+
+export const playerTeamAssignmentsRelations = relations(playerTeamAssignments, ({ one }) => ({
+  player: one(players, {
+    fields: [playerTeamAssignments.playerId],
+    references: [players.id],
+  }),
+  team: one(teams, {
+    fields: [playerTeamAssignments.teamId],
+    references: [teams.id],
+  }),
+}));
+
+export const playerStatsRelations = relations(playerStats, ({ one }) => ({
+  player: one(players, {
+    fields: [playerStats.playerId],
+    references: [players.id],
+  }),
+  team: one(teams, {
+    fields: [playerStats.teamId],
+    references: [teams.id],
   }),
 }));
 
@@ -243,6 +330,8 @@ export const teamsRelations = relations(teams, ({ one, many }) => ({
     references: [clubs.id],
   }),
   memberships: many(teamMemberships),
+  playerAssignments: many(playerTeamAssignments),
+  playerStats: many(playerStats),
   bookings: many(bookings),
   events: many(events),
   finances: many(finances),
@@ -374,6 +463,24 @@ export const insertFinanceSchema = createInsertSchema(finances).omit({
   updatedAt: true,
 });
 
+export const insertPlayerSchema = createInsertSchema(players).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPlayerTeamAssignmentSchema = createInsertSchema(playerTeamAssignments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPlayerStatsSchema = createInsertSchema(playerStats).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -395,3 +502,9 @@ export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type Finance = typeof finances.$inferSelect;
 export type InsertFinance = z.infer<typeof insertFinanceSchema>;
+export type Player = typeof players.$inferSelect;
+export type InsertPlayer = z.infer<typeof insertPlayerSchema>;
+export type PlayerTeamAssignment = typeof playerTeamAssignments.$inferSelect;
+export type InsertPlayerTeamAssignment = z.infer<typeof insertPlayerTeamAssignmentSchema>;
+export type PlayerStats = typeof playerStats.$inferSelect;
+export type InsertPlayerStats = z.infer<typeof insertPlayerStatsSchema>;

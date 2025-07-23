@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import {
   Users,
+  Users2,
   BarChart3,
   UsersRound,
   Calendar,
@@ -30,6 +31,7 @@ interface SidebarProps {
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Mitglieder", href: "/members", icon: Users, badge: true },
+  { name: "Spieler", href: "/players", icon: Users2, badge: true },
   { name: "Teams", href: "/teams", icon: UsersRound, badge: true },
   { name: "Kalender", href: "/calendar", icon: Calendar },
   { name: "Anlagen", href: "/facilities", icon: MapPin },
@@ -65,8 +67,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     retry: false,
   });
 
+  const { data: players } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'players'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
   const handleClubChange = (clubId: string) => {
-    const club = clubs?.find((c: any) => c.id.toString() === clubId);
+    const club = (clubs as any[])?.find((c: any) => c.id.toString() === clubId);
     if (club) {
       setSelectedClub(club);
     }
@@ -123,7 +131,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <SelectValue placeholder="Verein auswählen" />
               </SelectTrigger>
               <SelectContent>
-                {clubs?.map((club: any) => (
+                {(clubs as any[])?.map((club: any) => (
                   <SelectItem key={club.id} value={club.id.toString()}>
                     {club.name} ({club.role})
                   </SelectItem>
@@ -142,9 +150,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               let badge = null;
               
               if (item.badge && item.href === "/members" && members) {
-                badge = members.length;
+                badge = (members as any[]).length;
+              } else if (item.badge && item.href === "/players" && players) {
+                badge = (players as any[]).length;
               } else if (item.badge && item.href === "/teams" && teams) {
-                badge = teams.length;
+                badge = (teams as any[]).length;
               }
               
               return (

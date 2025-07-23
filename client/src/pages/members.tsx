@@ -305,20 +305,7 @@ export default function Members() {
 
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-end">
-          <Button 
-            onClick={handleAddMember}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Mitglied hinzufügen
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters and Search */}
+      {/* Header Section with Search, Filters and Add Button */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
@@ -344,23 +331,34 @@ export default function Members() {
             </Select>
           </div>
           
-          {/* View Toggle */}
-          <div className="flex rounded-xl border bg-background p-1">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="h-8 px-3 rounded-lg"
+          <div className="flex items-center gap-3">
+            {/* View Toggle */}
+            <div className="flex rounded-xl border bg-background p-1">
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="h-8 px-3 rounded-lg"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="h-8 px-3 rounded-lg"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Add Button */}
+            <Button 
+              onClick={handleAddMember}
+              className="bg-primary hover:bg-primary/90"
             >
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="h-8 px-3 rounded-lg"
-            >
-              <List className="h-4 w-4" />
+              <Plus className="w-4 h-4 mr-2" />
+              Mitglied hinzufügen
             </Button>
           </div>
         </div>

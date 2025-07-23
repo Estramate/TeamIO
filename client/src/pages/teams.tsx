@@ -55,11 +55,11 @@ export default function Teams() {
 
   if (!selectedClub) {
     return (
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+      <div className="flex-1 overflow-y-auto bg-background p-6">
         <div className="text-center py-12">
-          <UsersRound className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Kein Verein ausgewählt</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <UsersRound className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Kein Verein ausgewählt</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             Bitte wählen Sie einen Verein aus, um Teams zu verwalten.
           </p>
         </div>
@@ -68,15 +68,9 @@ export default function Teams() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Teams</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Verwalten Sie die Teams von {selectedClub.name}
-            </p>
-          </div>
+    <div className="flex-1 overflow-y-auto bg-background p-6">
+      <div className="mb-6">
+        <div className="flex items-center justify-end">
           <Button className="bg-primary hover:bg-primary/90">
             <Plus className="w-4 h-4 mr-2" />
             Team hinzufügen
@@ -85,16 +79,16 @@ export default function Teams() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Teams suchen..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>

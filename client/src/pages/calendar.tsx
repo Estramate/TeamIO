@@ -79,11 +79,11 @@ export default function Calendar() {
 
   if (!selectedClub) {
     return (
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+      <div className="flex-1 overflow-y-auto bg-background p-6">
         <div className="text-center py-12">
-          <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Kein Verein ausgewählt</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Kein Verein ausgewählt</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             Bitte wählen Sie einen Verein aus, um den Kalender zu verwenden.
           </p>
         </div>
@@ -92,16 +92,10 @@ export default function Calendar() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Kalender</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Termine und Buchungen von {selectedClub.name}
-            </p>
-          </div>
-          <Button className="bg-primary-500 hover:bg-primary-600">
+    <div className="flex-1 overflow-y-auto bg-background p-6">
+      <div className="mb-6">
+        <div className="flex items-center justify-end">
+          <Button className="bg-primary hover:bg-primary/90">
             <Plus className="w-4 h-4 mr-2" />
             Termin hinzufügen
           </Button>

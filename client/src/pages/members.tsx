@@ -298,14 +298,8 @@ export default function Members() {
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Mitglieder</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Verwalten Sie die Mitglieder von {selectedClub.name}
-            </p>
-          </div>
           <Button 
             onClick={handleAddMember}
             className="bg-primary hover:bg-primary/90"

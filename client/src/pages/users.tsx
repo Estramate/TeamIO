@@ -123,24 +123,16 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Benutzerverwaltung</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Verwalten Sie Benutzer und Berechtigungen für {selectedClub.name}
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button 
-              onClick={() => setInviteModalOpen(true)}
-              className="bg-primary-500 hover:bg-primary-600"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Benutzer einladen
-            </Button>
-          </div>
+    <div className="flex-1 overflow-y-auto bg-background p-6">
+      <div className="mb-6">
+        <div className="flex items-center justify-end">
+          <Button 
+            onClick={() => setInviteModalOpen(true)}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Benutzer einladen
+          </Button>
         </div>
       </div>
 

@@ -128,17 +128,7 @@ export default function Communication() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Kommunikation</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Kommunizieren Sie mit Mitgliedern von {selectedClub.name}
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="flex-1 overflow-y-auto bg-background p-6">
 
       <Tabs defaultValue="messages" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">

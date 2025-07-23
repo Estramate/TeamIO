@@ -1,0 +1,392 @@
+import {
+  pgTable,
+  text,
+  varchar,
+  timestamp,
+  jsonb,
+  index,
+  serial,
+  integer,
+  decimal,
+  boolean,
+  date,
+  uuid,
+} from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
+import { z } from "zod";
+
+// Session storage table (required for Replit Auth)
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table (required for Replit Auth)
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Clubs table - main entity for multi-club support
+export const clubs = pgTable("clubs", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  address: text("address"),
+  phone: varchar("phone", { length: 50 }),
+  email: varchar("email", { length: 255 }),
+  website: varchar("website", { length: 255 }),
+  logo: varchar("logo", { length: 500 }),
+  settings: jsonb("settings"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Club memberships - links users to clubs with roles
+export const clubMemberships = pgTable("club_memberships", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  role: varchar("role", { length: 100 }).notNull(), // club-administrator, president, etc.
+  permissions: jsonb("permissions"), // specific permissions for this user in this club
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, inactive, suspended
+  joinedAt: timestamp("joined_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Members table - actual club members (can be different from system users)
+export const members = pgTable("members", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 50 }),
+  birthDate: date("birth_date"),
+  address: text("address"),
+  membershipNumber: varchar("membership_number", { length: 50 }),
+  status: varchar("status", { length: 20 }).notNull().default("active"),
+  joinDate: date("join_date"),
+  notes: text("notes"),
+  emergencyContact: jsonb("emergency_contact"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Teams table
+export const teams = pgTable("teams", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  category: varchar("category", { length: 100 }), // youth, senior, etc.
+  ageGroup: varchar("age_group", { length: 50 }), // U17, U15, etc.
+  gender: varchar("gender", { length: 20 }), // male, female, mixed
+  description: text("description"),
+  maxMembers: integer("max_members"),
+  status: varchar("status", { length: 20 }).notNull().default("active"),
+  season: varchar("season", { length: 20 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Team memberships - links members to teams
+export const teamMemberships = pgTable("team_memberships", {
+  id: serial("id").primaryKey(),
+  teamId: integer("team_id").notNull().references(() => teams.id),
+  memberId: integer("member_id").notNull().references(() => members.id),
+  role: varchar("role", { length: 100 }).notNull().default("player"), // player, captain, trainer, etc.
+  position: varchar("position", { length: 100 }), // goalkeeper, defender, etc.
+  jerseyNumber: integer("jersey_number"),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  leftAt: timestamp("left_at"),
+  status: varchar("status", { length: 20 }).notNull().default("active"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Facilities table
+export const facilities = pgTable("facilities", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 100 }).notNull(), // field, court, gym, etc.
+  description: text("description"),
+  capacity: integer("capacity"),
+  location: varchar("location", { length: 255 }),
+  equipment: jsonb("equipment"),
+  rules: text("rules"),
+  maintenanceNotes: text("maintenance_notes"),
+  status: varchar("status", { length: 20 }).notNull().default("available"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Bookings table
+export const bookings = pgTable("bookings", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  facilityId: integer("facility_id").notNull().references(() => facilities.id),
+  teamId: integer("team_id").references(() => teams.id),
+  memberId: integer("member_id").references(() => members.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // training, match, event
+  recurring: boolean("recurring").default(false),
+  recurringPattern: varchar("recurring_pattern", { length: 50 }), // weekly, monthly
+  recurringUntil: date("recurring_until"),
+  contactPerson: varchar("contact_person", { length: 255 }),
+  contactEmail: varchar("contact_email", { length: 255 }),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  participants: integer("participants"),
+  cost: decimal("cost", { precision: 10, scale: 2 }),
+  status: varchar("status", { length: 20 }).notNull().default("confirmed"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Events/Calendar table
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  teamId: integer("team_id").references(() => teams.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  location: varchar("location", { length: 255 }),
+  type: varchar("type", { length: 50 }).notNull(), // match, training, meeting, event
+  isPublic: boolean("is_public").default(true),
+  participants: jsonb("participants"),
+  status: varchar("status", { length: 20 }).notNull().default("scheduled"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Finance table
+export const finances = pgTable("finances", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  memberId: integer("member_id").references(() => members.id),
+  teamId: integer("team_id").references(() => teams.id),
+  type: varchar("type", { length: 20 }).notNull(), // income, expense
+  category: varchar("category", { length: 100 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  date: date("date").notNull(),
+  reference: varchar("reference", { length: 255 }),
+  paymentMethod: varchar("payment_method", { length: 50 }),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  tags: jsonb("tags"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  clubMemberships: many(clubMemberships),
+}));
+
+export const clubsRelations = relations(clubs, ({ many }) => ({
+  memberships: many(clubMemberships),
+  members: many(members),
+  teams: many(teams),
+  facilities: many(facilities),
+  bookings: many(bookings),
+  events: many(events),
+  finances: many(finances),
+}));
+
+export const clubMembershipsRelations = relations(clubMemberships, ({ one }) => ({
+  user: one(users, {
+    fields: [clubMemberships.userId],
+    references: [users.id],
+  }),
+  club: one(clubs, {
+    fields: [clubMemberships.clubId],
+    references: [clubs.id],
+  }),
+}));
+
+export const membersRelations = relations(members, ({ one, many }) => ({
+  club: one(clubs, {
+    fields: [members.clubId],
+    references: [clubs.id],
+  }),
+  teamMemberships: many(teamMemberships),
+  bookings: many(bookings),
+  finances: many(finances),
+}));
+
+export const teamsRelations = relations(teams, ({ one, many }) => ({
+  club: one(clubs, {
+    fields: [teams.clubId],
+    references: [clubs.id],
+  }),
+  memberships: many(teamMemberships),
+  bookings: many(bookings),
+  events: many(events),
+  finances: many(finances),
+}));
+
+export const teamMembershipsRelations = relations(teamMemberships, ({ one }) => ({
+  team: one(teams, {
+    fields: [teamMemberships.teamId],
+    references: [teams.id],
+  }),
+  member: one(members, {
+    fields: [teamMemberships.memberId],
+    references: [members.id],
+  }),
+}));
+
+export const facilitiesRelations = relations(facilities, ({ one, many }) => ({
+  club: one(clubs, {
+    fields: [facilities.clubId],
+    references: [clubs.id],
+  }),
+  bookings: many(bookings),
+}));
+
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  club: one(clubs, {
+    fields: [bookings.clubId],
+    references: [clubs.id],
+  }),
+  facility: one(facilities, {
+    fields: [bookings.facilityId],
+    references: [facilities.id],
+  }),
+  team: one(teams, {
+    fields: [bookings.teamId],
+    references: [teams.id],
+  }),
+  member: one(members, {
+    fields: [bookings.memberId],
+    references: [members.id],
+  }),
+}));
+
+export const eventsRelations = relations(events, ({ one }) => ({
+  club: one(clubs, {
+    fields: [events.clubId],
+    references: [clubs.id],
+  }),
+  team: one(teams, {
+    fields: [events.teamId],
+    references: [teams.id],
+  }),
+}));
+
+export const financesRelations = relations(finances, ({ one }) => ({
+  club: one(clubs, {
+    fields: [finances.clubId],
+    references: [clubs.id],
+  }),
+  member: one(members, {
+    fields: [finances.memberId],
+    references: [members.id],
+  }),
+  team: one(teams, {
+    fields: [finances.teamId],
+    references: [teams.id],
+  }),
+}));
+
+// Insert schemas
+export const insertUserSchema = createInsertSchema(users).pick({
+  email: true,
+  firstName: true,
+  lastName: true,
+  profileImageUrl: true,
+});
+
+export const insertClubSchema = createInsertSchema(clubs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertClubMembershipSchema = createInsertSchema(clubMemberships).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMemberSchema = createInsertSchema(members).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTeamMembershipSchema = createInsertSchema(teamMemberships).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFacilitySchema = createInsertSchema(facilities).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBookingSchema = createInsertSchema(bookings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFinanceSchema = createInsertSchema(finances).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types
+export type UpsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+export type Club = typeof clubs.$inferSelect;
+export type InsertClub = z.infer<typeof insertClubSchema>;
+export type ClubMembership = typeof clubMemberships.$inferSelect;
+export type InsertClubMembership = z.infer<typeof insertClubMembershipSchema>;
+export type Member = typeof members.$inferSelect;
+export type InsertMember = z.infer<typeof insertMemberSchema>;
+export type Team = typeof teams.$inferSelect;
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type TeamMembership = typeof teamMemberships.$inferSelect;
+export type InsertTeamMembership = z.infer<typeof insertTeamMembershipSchema>;
+export type Facility = typeof facilities.$inferSelect;
+export type InsertFacility = z.infer<typeof insertFacilitySchema>;
+export type Booking = typeof bookings.$inferSelect;
+export type InsertBooking = z.infer<typeof insertBookingSchema>;
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type Finance = typeof finances.$inferSelect;
+export type InsertFinance = z.infer<typeof insertFinanceSchema>;

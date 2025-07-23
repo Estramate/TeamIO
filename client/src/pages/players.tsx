@@ -76,13 +76,13 @@ export default function Players() {
 
   // Fetch players
   const { data: players = [], isLoading } = useQuery({
-    queryKey: ["/api/clubs", selectedClub, "players"],
+    queryKey: [`/api/clubs/${selectedClub}/players`],
     enabled: !!selectedClub,
   });
 
   // Fetch teams for assignments
   const { data: teams = [] } = useQuery({
-    queryKey: ["/api/clubs", selectedClub, "teams"],
+    queryKey: [`/api/clubs/${selectedClub}/teams`],
     enabled: !!selectedClub,
   });
 
@@ -114,13 +114,10 @@ export default function Players() {
   // Create player mutation
   const createPlayerMutation = useMutation({
     mutationFn: async (data: InsertPlayer) => {
-      return await apiRequest(`/api/clubs/${selectedClub}/players`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return await apiRequest(`/api/clubs/${selectedClub}/players`, "POST", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clubs", selectedClub, "players"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
       setIsCreateDialogOpen(false);
       form.reset();
       toast({
@@ -140,13 +137,10 @@ export default function Players() {
   // Update player mutation
   const updatePlayerMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertPlayer> }) => {
-      return await apiRequest(`/api/players/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      });
+      return await apiRequest(`/api/players/${id}`, "PATCH", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clubs", selectedClub, "players"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
       setEditingPlayer(null);
       form.reset();
       toast({
@@ -166,12 +160,10 @@ export default function Players() {
   // Delete player mutation
   const deletePlayerMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/players/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest(`/api/players/${id}`, "DELETE");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clubs", selectedClub, "players"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
       toast({
         title: "Spieler gelöscht",
         description: "Der Spieler wurde erfolgreich entfernt.",
@@ -263,17 +255,20 @@ export default function Players() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="flex-1 overflow-y-auto bg-background p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div></div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { setEditingPlayer(null); form.reset(); }}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Spieler hinzufügen
-            </Button>
-          </DialogTrigger>
+      <div className="mb-6">
+        <div className="flex items-center justify-end">
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                onClick={() => { setEditingPlayer(null); form.reset(); }}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Spieler hinzufügen
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -621,6 +616,7 @@ export default function Players() {
             </Form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Filters */}
@@ -668,9 +664,29 @@ export default function Players() {
         </CardContent>
       </Card>
 
-      {/* Players Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredPlayers.map((player: Player) => (
+      {/* Players List */}
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="text-muted-foreground">Lädt Spieler...</div>
+        </div>
+      ) : filteredPlayers.length === 0 ? (
+        <div className="text-center py-12">
+          <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Keine Spieler gefunden</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Noch keine Spieler hinzugefügt.
+          </p>
+          <Button 
+            className="mt-4"
+            onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Ersten Spieler hinzufügen
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredPlayers.map((player: Player) => (
           <Card key={player.id} className="hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
@@ -775,27 +791,8 @@ export default function Players() {
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
-
-      {filteredPlayers.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-12">
-            <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Keine Spieler gefunden</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchTerm || positionFilter !== "all" || statusFilter !== "all"
-                ? "Keine Spieler entsprechen den aktuellen Filterkriterien."
-                : "Noch keine Spieler hinzugefügt."}
-            </p>
-            {!searchTerm && positionFilter === "all" && statusFilter === "all" && (
-              <Button onClick={() => { setEditingPlayer(null); form.reset(); setIsCreateDialogOpen(true); }}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Ersten Spieler hinzufügen
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+          ))}
+        </div>
       )}
     </div>
   );

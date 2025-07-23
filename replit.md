@@ -11,6 +11,13 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### January 23, 2025
+- **Collapsible Sidebar with Tooltips**: Implemented modern collapsible navigation sidebar
+  - Toggle button (chevron icons) to expand/collapse sidebar on desktop
+  - Collapsed mode shows only icons with hover tooltips for all navigation items
+  - Smooth transitions and animations for professional web app experience
+  - Maintains mobile responsive design with overlay for small screens
+  - Tooltips display navigation names and badge counts in collapsed mode
+  
 - **Consistent Bordered Filter Layout**: Applied unified filter design across all management pages
   - Teams, Players, and Members pages now use identical bordered card containers for filters
   - Beautiful rounded corners, subtle shadows, and proper spacing for professional appearance

@@ -99,48 +99,62 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       <TooltipProvider delayDuration={300}>
         <aside
           className={cn(
-            "fixed lg:static inset-y-0 left-0 z-50 bg-card shadow-lg flex flex-col transition-all duration-300 ease-in-out border-r",
-            collapsed ? "w-20" : "w-64",
+            "fixed lg:static inset-y-0 left-0 z-50 bg-card shadow-lg flex flex-col transition-all duration-300 ease-in-out border-r border-border",
+            collapsed ? "w-16" : "w-64",
             open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
           )}
         >
           {/* Header */}
-          <div className={cn("border-b border-border transition-all duration-300", collapsed ? "p-4" : "p-6")}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-club-primary rounded-lg flex items-center justify-center shrink-0">
-                  <Shield className="text-white text-lg" />
+          <div className={cn("border-b border-border transition-all duration-300", collapsed ? "p-2" : "p-6")}>
+            {collapsed ? (
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-10 h-10 bg-club-primary rounded-lg flex items-center justify-center">
+                  <Shield className="text-white w-5 h-5" />
                 </div>
-                {!collapsed && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-8 h-8 p-0 hover:bg-muted"
+                  onClick={() => setCollapsed(!collapsed)}
+                >
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-club-primary rounded-lg flex items-center justify-center shrink-0">
+                    <Shield className="text-white text-lg" />
+                  </div>
                   <div className="overflow-hidden">
                     <h1 className="text-xl font-bold text-club-primary whitespace-nowrap">TeamIO</h1>
                     <p className="text-sm text-muted-foreground truncate">
                       {selectedClub?.name || "Kein Verein"}
                     </p>
                   </div>
-                )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* Collapse Toggle */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="hidden lg:flex"
+                    onClick={() => setCollapsed(!collapsed)}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  {/* Mobile Close */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="lg:hidden"
+                    onClick={onClose}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                {/* Collapse Toggle */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="hidden lg:flex"
-                  onClick={() => setCollapsed(!collapsed)}
-                >
-                  {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                </Button>
-                {/* Mobile Close */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="lg:hidden"
-                  onClick={onClose}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            )}
             
             {/* Club Selector */}
             {!collapsed && (
@@ -166,7 +180,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-4">
-            <div className={cn("space-y-1", collapsed ? "px-2" : "px-3")}>
+            <div className={cn("space-y-2", collapsed ? "px-2" : "px-3")}>
               {navigation.map((item) => {
                 const isActive = location === item.href;
                 const Icon = item.icon;
@@ -188,25 +202,33 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       onClose();
                     }}
                     className={cn(
-                      "w-full group flex items-center text-sm font-medium rounded-lg transition-colors",
-                      collapsed ? "justify-center p-3" : "px-3 py-2",
+                      "w-full group flex items-center text-sm font-medium transition-all duration-200",
+                      collapsed 
+                        ? "justify-center p-2 rounded-lg hover:bg-muted/50" 
+                        : "px-3 py-2.5 rounded-lg hover:bg-muted/80",
                       isActive
-                        ? "bg-club-primary/10 text-club-primary"
-                        : "text-foreground hover:bg-muted"
+                        ? collapsed 
+                          ? "bg-club-primary text-white" 
+                          : "bg-club-primary/10 text-club-primary border-l-4 border-club-primary"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <Icon
                       className={cn(
-                        "text-base flex-shrink-0",
-                        collapsed ? "w-5 h-5" : "mr-3",
-                        isActive ? "text-club-primary" : "text-muted-foreground"
+                        "flex-shrink-0 transition-colors",
+                        collapsed ? "w-5 h-5" : "w-4 h-4 mr-3",
+                        isActive 
+                          ? collapsed 
+                            ? "text-white" 
+                            : "text-club-primary" 
+                          : "text-muted-foreground group-hover:text-foreground"
                       )}
                     />
                     {!collapsed && (
                       <>
-                        <span className="flex-1 text-left">{item.name}</span>
+                        <span className="flex-1 text-left font-medium">{item.name}</span>
                         {badge && (
-                          <span className="ml-auto bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+                          <span className="ml-auto bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-xs font-medium">
                             {badge}
                           </span>
                         )}
@@ -220,10 +242,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     <TooltipTrigger asChild>
                       {navigationButton}
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="flex items-center gap-2">
-                      <span>{item.name}</span>
+                    <TooltipContent side="right" className="flex items-center gap-2 bg-popover border border-border shadow-md">
+                      <span className="font-medium">{item.name}</span>
                       {badge && (
-                        <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+                        <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-xs font-medium">
                           {badge}
                         </span>
                       )}
@@ -237,11 +259,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             <div className={cn("mt-6", collapsed ? "px-2" : "px-3")}>
               <div className="border-t border-border pt-4">
                 {!collapsed && (
-                  <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                     Administration
                   </p>
                 )}
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {adminNavigation.map((item) => {
                     const isActive = location === item.href;
                     const Icon = item.icon;
@@ -254,21 +276,29 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                           onClose();
                         }}
                         className={cn(
-                          "w-full group flex items-center text-sm font-medium rounded-lg transition-colors",
-                          collapsed ? "justify-center p-3" : "px-3 py-2",
+                          "w-full group flex items-center text-sm font-medium transition-all duration-200",
+                          collapsed 
+                            ? "justify-center p-2 rounded-lg hover:bg-muted/50" 
+                            : "px-3 py-2.5 rounded-lg hover:bg-muted/80",
                           isActive
-                            ? "bg-club-primary/10 text-club-primary"
-                            : "text-foreground hover:bg-muted"
+                            ? collapsed 
+                              ? "bg-club-primary text-white" 
+                              : "bg-club-primary/10 text-club-primary border-l-4 border-club-primary"
+                            : "text-muted-foreground hover:text-foreground"
                         )}
                       >
                         <Icon
                           className={cn(
-                            "text-base flex-shrink-0",
-                            collapsed ? "w-5 h-5" : "mr-3",
-                            isActive ? "text-club-primary" : "text-muted-foreground"
+                            "flex-shrink-0 transition-colors",
+                            collapsed ? "w-5 h-5" : "w-4 h-4 mr-3",
+                            isActive 
+                              ? collapsed 
+                                ? "text-white" 
+                                : "text-club-primary" 
+                              : "text-muted-foreground group-hover:text-foreground"
                           )}
                         />
-                        {!collapsed && item.name}
+                        {!collapsed && <span className="font-medium">{item.name}</span>}
                       </button>
                     );
 
@@ -277,8 +307,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         <TooltipTrigger asChild>
                           {adminButton}
                         </TooltipTrigger>
-                        <TooltipContent side="right">
-                          {item.name}
+                        <TooltipContent side="right" className="bg-popover border border-border shadow-md">
+                          <span className="font-medium">{item.name}</span>
                         </TooltipContent>
                       </Tooltip>
                     ) : adminButton;
@@ -289,41 +319,39 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </nav>
 
           {/* Theme Toggle */}
-          <div className={cn("border-t border-border", collapsed ? "px-2 py-2" : "px-3 py-2")}>
+          <div className={cn("border-t border-border", collapsed ? "px-2 py-3" : "px-3 py-3")}>
             {collapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
+                  <button
                     onClick={toggleTheme}
-                    className="w-full justify-center p-3 text-sm font-medium rounded-lg hover:bg-muted"
+                    className="w-full flex justify-center p-2 rounded-lg hover:bg-muted/50 transition-all duration-200 group"
                   >
                     {theme === "light" ? (
-                      <Moon className="h-5 w-5 text-muted-foreground" />
+                      <Moon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     ) : (
-                      <Sun className="h-5 w-5 text-muted-foreground" />
+                      <Sun className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     )}
-                  </Button>
+                  </button>
                 </TooltipTrigger>
-                <TooltipContent side="right">
-                  {theme === "light" ? "Dark Mode" : "Light Mode"}
+                <TooltipContent side="right" className="bg-popover border border-border shadow-md">
+                  <span className="font-medium">{theme === "light" ? "Dark Mode" : "Light Mode"}</span>
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <Button
-                variant="ghost"
+              <button
                 onClick={toggleTheme}
-                className="w-full justify-start px-3 py-2 text-sm font-medium rounded-lg hover:bg-muted"
+                className="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-muted/80 transition-all duration-200 text-muted-foreground hover:text-foreground group"
               >
                 {theme === "light" ? (
-                  <Moon className="mr-3 h-4 w-4 text-muted-foreground" />
+                  <Moon className="mr-3 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 ) : (
-                  <Sun className="mr-3 h-4 w-4 text-muted-foreground" />
+                  <Sun className="mr-3 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 )}
-                <span className="text-foreground">
+                <span className="font-medium">
                   {theme === "light" ? "Dark Mode" : "Light Mode"}
                 </span>
-              </Button>
+              </button>
             )}
           </div>
 
@@ -332,13 +360,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             {collapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="w-full flex justify-center">
-                    <div className="w-10 h-10 bg-club-primary rounded-full flex items-center justify-center cursor-pointer">
+                  <div className="w-full flex justify-center p-1">
+                    <div className="w-10 h-10 bg-club-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-club-primary/90 transition-colors">
                       <Users className="text-white h-5 w-5" />
                     </div>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="right">
+                <TooltipContent side="right" className="bg-popover border border-border shadow-md">
                   <div>
                     <p className="font-medium">Administrator</p>
                     <p className="text-xs text-muted-foreground">Vereinsadministrator</p>
@@ -362,7 +390,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => window.location.href = "/api/logout"}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground p-1 h-8 w-8"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

@@ -93,6 +93,8 @@ export default function Players() {
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewingPlayer, setViewingPlayer] = useState<Player | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   
   const { selectedClub, setSelectedClub } = useClubStore();
   const { toast } = useToast();
@@ -285,6 +287,11 @@ export default function Players() {
     if (confirm(`Möchten Sie ${player.firstName} ${player.lastName} wirklich löschen?`)) {
       deletePlayerMutation.mutate(player.id);
     }
+  };
+
+  const handleViewPlayer = (player: Player) => {
+    setViewingPlayer(player);
+    setIsDetailDialogOpen(true);
   };
 
   const getPositionColor = (position: string) => {
@@ -509,7 +516,10 @@ export default function Players() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors">
+                            <h3 
+                              className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors cursor-pointer hover:underline"
+                              onClick={() => handleViewPlayer(player)}
+                            >
                               {player.firstName} {player.lastName}
                             </h3>
                             <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
@@ -620,7 +630,10 @@ export default function Players() {
                               )}
                             </div>
                             <div>
-                              <div className="font-medium text-sm">
+                              <div 
+                                className="font-medium text-sm cursor-pointer hover:text-primary hover:underline transition-colors"
+                                onClick={() => handleViewPlayer(player)}
+                              >
                                 {player.firstName} {player.lastName}
                               </div>
                               <div className="text-xs text-muted-foreground">
@@ -706,6 +719,245 @@ export default function Players() {
               </div>
             </div>
           )}
+
+          {/* Player Detail Dialog */}
+          <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <div className="relative">
+                    {viewingPlayer?.profileImageUrl ? (
+                      <img
+                        src={viewingPlayer.profileImageUrl}
+                        alt={`${viewingPlayer.firstName} ${viewingPlayer.lastName}`}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-muted"
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          img.style.display = 'none';
+                          img.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center ${viewingPlayer?.profileImageUrl ? 'hidden' : ''}`}>
+                      <Users className="h-6 w-6 text-primary/60" />
+                    </div>
+                    {viewingPlayer?.jerseyNumber && (
+                      <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
+                        {viewingPlayer.jerseyNumber}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">
+                      {viewingPlayer?.firstName} {viewingPlayer?.lastName}
+                    </div>
+                    <div className="text-sm text-muted-foreground font-normal">
+                      Spielerdetails
+                    </div>
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
+              
+              {viewingPlayer && (
+                <div className="space-y-6">
+                  {/* Basic Info */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold border-b pb-2">Grunddaten</h3>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Vorname:</span>
+                          <span className="font-medium">{viewingPlayer.firstName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Nachname:</span>
+                          <span className="font-medium">{viewingPlayer.lastName}</span>
+                        </div>
+                        {viewingPlayer.jerseyNumber && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Trikotnummer:</span>
+                            <span className="font-medium">#{viewingPlayer.jerseyNumber}</span>
+                          </div>
+                        )}
+                        {viewingPlayer.position && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Position:</span>
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPositionColor(viewingPlayer.position)}`}>
+                              {viewingPlayer.position}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Status:</span>
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(viewingPlayer.status)}`}>
+                            {statusOptions.find(s => s.value === viewingPlayer.status)?.label || viewingPlayer.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold border-b pb-2">Persönliche Daten</h3>
+                      
+                      <div className="space-y-3">
+                        {viewingPlayer.birthDate && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              <Calendar className="h-4 w-4" />
+                              Geburtsdatum:
+                            </span>
+                            <span className="font-medium">
+                              {new Date(viewingPlayer.birthDate).toLocaleDateString('de-DE')}
+                            </span>
+                          </div>
+                        )}
+                        {viewingPlayer.nationality && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              <MapPin className="h-4 w-4" />
+                              Nationalität:
+                            </span>
+                            <span className="font-medium">{viewingPlayer.nationality}</span>
+                          </div>
+                        )}
+                        {viewingPlayer.height && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Größe:</span>
+                            <span className="font-medium">{viewingPlayer.height} cm</span>
+                          </div>
+                        )}
+                        {viewingPlayer.weight && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Gewicht:</span>
+                            <span className="font-medium">{viewingPlayer.weight} kg</span>
+                          </div>
+                        )}
+                        {viewingPlayer.preferredFoot && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Bevorzugter Fuß:</span>
+                            <span className="font-medium">
+                              {footOptions.find(f => f.value === viewingPlayer.preferredFoot)?.label}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact Info */}
+                  {(viewingPlayer.phone || viewingPlayer.email || viewingPlayer.address) && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold border-b pb-2">Kontaktdaten</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {viewingPlayer.phone && (
+                          <div className="flex items-center gap-3">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <div className="text-sm text-muted-foreground">Telefon</div>
+                              <div className="font-medium">{viewingPlayer.phone}</div>
+                            </div>
+                          </div>
+                        )}
+                        {viewingPlayer.email && (
+                          <div className="flex items-center gap-3">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <div className="text-sm text-muted-foreground">E-Mail</div>
+                              <div className="font-medium">{viewingPlayer.email}</div>
+                            </div>
+                          </div>
+                        )}
+                        {viewingPlayer.address && (
+                          <div className="flex items-start gap-3 md:col-span-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                            <div>
+                              <div className="text-sm text-muted-foreground">Adresse</div>
+                              <div className="font-medium">{viewingPlayer.address}</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Contract Info */}
+                  {(viewingPlayer.contractStart || viewingPlayer.contractEnd || viewingPlayer.salary) && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold border-b pb-2">Vertragsdaten</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {viewingPlayer.contractStart && (
+                          <div>
+                            <div className="text-sm text-muted-foreground">Vertragsbeginn</div>
+                            <div className="font-medium">
+                              {new Date(viewingPlayer.contractStart).toLocaleDateString('de-DE')}
+                            </div>
+                          </div>
+                        )}
+                        {viewingPlayer.contractEnd && (
+                          <div>
+                            <div className="text-sm text-muted-foreground">Vertragsende</div>
+                            <div className="font-medium">
+                              {new Date(viewingPlayer.contractEnd).toLocaleDateString('de-DE')}
+                            </div>
+                          </div>
+                        )}
+                        {viewingPlayer.salary && (
+                          <div>
+                            <div className="text-sm text-muted-foreground">Gehalt</div>
+                            <div className="font-medium">{viewingPlayer.salary.toLocaleString('de-DE')} €</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Teams */}
+                  {getPlayerTeams(viewingPlayer.id).length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold border-b pb-2">Teams</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {getPlayerTeams(viewingPlayer.id).map((team) => (
+                          <Badge key={team.id} variant="secondary" className="text-sm">
+                            {team.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Notes */}
+                  {viewingPlayer.notes && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold border-b pb-2">Notizen</h3>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-sm whitespace-pre-wrap">{viewingPlayer.notes}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end pt-4 border-t">
+                    <Button
+                      onClick={() => {
+                        setIsDetailDialogOpen(false);
+                        handleEdit(viewingPlayer);
+                      }}
+                      variant="outline"
+                      className="mr-2"
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Bearbeiten
+                    </Button>
+                    <Button
+                      onClick={() => setIsDetailDialogOpen(false)}
+                    >
+                      Schließen
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
 
           {/* Create/Edit Dialog */}
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

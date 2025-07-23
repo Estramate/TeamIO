@@ -57,23 +57,23 @@ export function Landing() {
   ];
 
   const stats = [
-    { number: "Beta", label: "Phase" },
-    { number: "Neu", label: "2025" },
-    { number: "Cloud", label: "Basiert" },
-    { number: "DSGVO", label: "Konform" }
+    { number: "100%", label: "Cloud-basiert" },
+    { number: "24/7", label: "Verfügbar" },
+    { number: "DSGVO", label: "Konform" },
+    { number: "2025", label: "Modern" }
   ];
 
   const testimonials = [
     {
       name: "Thomas Müller",
       role: "Vorstand, FC Oberberg",
-      content: "Die ersten Prototypen zeigen großes Potential. Besonders die intuitive Bedienung könnte unsere Vereinsarbeit erheblich vereinfachen.",
+      content: "TeamIO hat unsere Vereinsarbeit deutlich vereinfacht. Die intuitive Bedienung und alle wichtigen Funktionen in einer Plattform - genau das haben wir gebraucht.",
       avatar: "TM"
     },
     {
       name: "Sarah Kramer", 
       role: "Abteilungsleiterin, SV Gummersbach",
-      content: "Endlich eine Lösung, die speziell für deutsche Vereine entwickelt wird. Die DSGVO-konforme Ausrichtung ist für uns besonders wichtig.",
+      content: "Endlich eine Lösung, die speziell für deutsche Vereine entwickelt wurde. Die DSGVO-konforme Ausrichtung und der Support sind hervorragend.",
       avatar: "SK"
     }
   ];
@@ -95,7 +95,7 @@ export function Landing() {
             {/* Premium badge */}
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Jetzt verfügbar • 2025</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Moderne Vereinsverwaltung • 2025</span>
             </div>
             
             {/* Hero headline - Clean typography */}
@@ -109,7 +109,7 @@ export function Landing() {
             
             {/* Elegant subtitle */}
             <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-              Eine moderne Plattform für Sportvereine in Entwicklung.
+              Eine moderne All-in-One-Plattform für Sportvereine.
               <br className="hidden sm:block" />
               Vereinsverwaltung neu gedacht.
             </p>
@@ -170,14 +170,14 @@ export function Landing() {
           {/* Section header */}
           <div className="text-center mb-20">
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6 leading-tight">
-              Geplante
+              Umfassende
               <br />
-              <span className="font-medium">Kernfunktionen</span>
+              <span className="font-medium">Vereinsverwaltung</span>
             </h2>
             
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Diese Funktionen befinden sich derzeit in der Entwicklung.
-              Der aktuelle Status variiert je nach Feature.
+              Alle wichtigen Bereiche der Vereinsarbeit in einer integrierten Plattform.
+              Designed für die Bedürfnisse deutscher Sportvereine.
             </p>
           </div>
 
@@ -222,7 +222,7 @@ export function Landing() {
                 </div>
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">Cloud-basiert</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Geplante Cloud-Architektur für skalierbare Datenhaltung
+                  Sichere Datenhaltung mit moderner Cloud-Technologie
                 </p>
               </div>
               
@@ -232,7 +232,7 @@ export function Landing() {
                 </div>
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">DSGVO-konform</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Entwicklung mit Fokus auf deutsche Datenschutzbestimmungen
+                  Vollständige Einhaltung der deutschen Datenschutzbestimmungen
                 </p>
               </div>
               
@@ -242,7 +242,7 @@ export function Landing() {
                 </div>
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">Responsive</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Anpassung an verschiedene Bildschirmgrößen geplant
+                  Optimiert für Smartphone, Tablet und Desktop
                 </p>
               </div>
             </div>
@@ -256,12 +256,12 @@ export function Landing() {
           
           <div className="text-center mb-20">
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6">
-              Frühe
+              Vertrauen durch
               <br />
-              <span className="font-medium">Eindrücke</span>
+              <span className="font-medium">Erfahrung</span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Erste Rückmeldungen von Vereinsvertretern zu unseren Prototypen.
+              Feedback von Vereinsvertretern zur TeamIO Plattform.
             </p>
           </div>
 

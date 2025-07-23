@@ -228,6 +228,18 @@ export default function Facilities() {
     setDeleteDialogOpen(true);
   };
 
+  const handleToggleStatus = (facility: Facility) => {
+    const newStatus = (facility.status === 'active' || facility.status === 'available') ? 'inactive' : 'active';
+    updateFacilityMutation.mutate({
+      name: facility.name,
+      type: facility.type || '',
+      description: facility.description || undefined,
+      capacity: facility.capacity ? String(facility.capacity) : undefined,
+      location: facility.location || undefined,
+      status: newStatus,
+    });
+  };
+
   const handleViewFacility = (facility: Facility) => {
     setViewingFacility(facility);
     setIsDetailDialogOpen(true);
@@ -260,6 +272,7 @@ export default function Facilities() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
+      case 'available': // Handle old "available" status as active
         return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Aktiv</Badge>;
       case 'maintenance':
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Wartung</Badge>;
@@ -439,6 +452,22 @@ export default function Facilities() {
                       }}>
                         <Edit className="mr-2 h-4 w-4" />
                         Bearbeiten
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleStatus(facility);
+                      }}>
+                        {(facility.status === 'active' || facility.status === 'available') ? (
+                          <>
+                            <span className="mr-2 h-4 w-4 rounded-full bg-red-500"></span>
+                            Deaktivieren
+                          </>
+                        ) : (
+                          <>
+                            <span className="mr-2 h-4 w-4 rounded-full bg-green-500"></span>
+                            Aktivieren
+                          </>
+                        )}
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={(e) => {

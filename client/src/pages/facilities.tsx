@@ -6,34 +6,21 @@ import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import type { Facility } from "@shared/schema";
-import { insertFacilitySchema } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { 
-  Search, 
-  Plus, 
-  LayoutGrid, 
-  List, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  Eye,
-  MapPin,
-  Users,
-  AlertCircle,
-  Building
-} from "lucide-react";
+import { Building, Users, MapPin, Plus, Search, Edit, Trash2, MoreHorizontal, LayoutGrid, List, Eye } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertFacilitySchema, type Facility } from "@shared/schema";
+import { z } from "zod";
 
 // Form Schema
 const facilityFormSchema = insertFacilitySchema.extend({
@@ -53,7 +40,7 @@ export default function Facilities() {
   useEffect(() => {
     setPage("Anlagen", "Verwalten Sie Ihre Vereinsanlagen und Einrichtungen");
   }, [setPage]);
-  
+
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -71,6 +58,8 @@ export default function Facilities() {
       name: "",
       type: "",
       description: "",
+      capacity: undefined,
+      location: "",
       status: "active",
     },
   });
@@ -90,22 +79,22 @@ export default function Facilities() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: facilities = [], isLoading: isFacilitiesLoading } = useQuery<Facility[]>({
+  // Data fetching
+  const { data: facilities = [], isLoading: isFacilitiesLoading } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'facilities'],
     enabled: !!selectedClub?.id,
     retry: false,
   });
 
-  // Create facility mutation
+  // Mutations
   const createFacilityMutation = useMutation({
-    mutationFn: async (facilityData: FacilityFormData) => {
-      return apiRequest('POST', `/api/clubs/${selectedClub?.id}/facilities`, facilityData);
-    },
+    mutationFn: (data: FacilityFormData) => 
+      apiRequest('POST', `/api/clubs/${selectedClub?.id}/facilities`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
       setFacilityModalOpen(false);
-      setSelectedFacility(null);
       form.reset();
+      setSelectedFacility(null);
       toast({
         title: "Erfolg",
         description: "Anlage wurde erfolgreich erstellt",
@@ -131,17 +120,14 @@ export default function Facilities() {
     },
   });
 
-  // Update facility mutation
   const updateFacilityMutation = useMutation({
-    mutationFn: async (facilityData: FacilityFormData) => {
-      if (!selectedFacility) throw new Error('No facility selected');
-      return apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/facilities/${selectedFacility.id}`, facilityData);
-    },
+    mutationFn: (data: FacilityFormData) => 
+      apiRequest('PUT', `/api/clubs/${selectedClub?.id}/facilities/${selectedFacility?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
       setFacilityModalOpen(false);
-      setSelectedFacility(null);
       form.reset();
+      setSelectedFacility(null);
       toast({
         title: "Erfolg",
         description: "Anlage wurde erfolgreich aktualisiert",
@@ -167,11 +153,9 @@ export default function Facilities() {
     },
   });
 
-  // Delete facility mutation
   const deleteFacilityMutation = useMutation({
-    mutationFn: async (facilityId: number) => {
-      return apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/facilities/${facilityId}`, {});
-    },
+    mutationFn: (facilityId: number) => 
+      apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/facilities/${facilityId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
       setDeleteDialogOpen(false);
@@ -299,82 +283,79 @@ export default function Facilities() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Anlagen</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Verwalten Sie die Anlagen und Einrichtungen Ihres Vereins
-          </p>
-        </div>
-        <Button onClick={handleCreateFacility} className="w-full sm:w-auto">
-          <Plus className="w-4 h-4 mr-2" />
-          Anlage hinzufügen
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <Card className="border rounded-lg shadow-sm">
-        <CardContent className="p-4 sm:p-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Anlagen durchsuchen..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
+      {/* Header Section with Search, Filters and Add Button */}
+      <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 flex-1">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Anlagen durchsuchen..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 rounded-xl border bg-background"
+              />
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Typ" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alle Typen</SelectItem>
-                  <SelectItem value="field">Platz</SelectItem>
-                  <SelectItem value="gym">Halle</SelectItem>
-                  <SelectItem value="pool">Schwimmbad</SelectItem>
-                  <SelectItem value="other">Sonstige</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alle Status</SelectItem>
-                  <SelectItem value="active">Aktiv</SelectItem>
-                  <SelectItem value="maintenance">Wartung</SelectItem>
-                  <SelectItem value="inactive">Inaktiv</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex border rounded-md">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className="rounded-r-none"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className="rounded-l-none"
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+            
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-full sm:w-48 h-10 rounded-xl border bg-background">
+                <SelectValue placeholder="Typ wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Typen</SelectItem>
+                <SelectItem value="field">Platz</SelectItem>
+                <SelectItem value="gym">Halle</SelectItem>
+                <SelectItem value="pool">Schwimmbad</SelectItem>
+                <SelectItem value="court">Court</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48 h-10 rounded-xl border bg-background">
+                <SelectValue placeholder="Status wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Status</SelectItem>
+                <SelectItem value="active">Aktiv</SelectItem>
+                <SelectItem value="maintenance">Wartung</SelectItem>
+                <SelectItem value="inactive">Inaktiv</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* View Toggle */}
+            <div className="flex rounded-xl border bg-background p-1">
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Add Button */}
+            <Button 
+              onClick={handleCreateFacility} 
+              className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Anlage hinzufügen
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Facilities Grid/List */}
       {isFacilitiesLoading ? (
@@ -417,18 +398,16 @@ export default function Facilities() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-2 flex-1 min-w-0">
                     {getTypeIcon(facility.type || '')}
-                    <CardTitle className="text-sm sm:text-base font-medium truncate">
-                      {facility.name}
-                    </CardTitle>
+                    <CardTitle className="text-sm sm:text-base truncate">{facility.name}</CardTitle>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity h-8 w-8 p-0 shrink-0"
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        <MoreHorizontal className="w-4 h-4" />
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -436,24 +415,24 @@ export default function Facilities() {
                         e.stopPropagation();
                         handleViewFacility(facility);
                       }}>
-                        <Eye className="w-4 h-4 mr-2" />
+                        <Eye className="mr-2 h-4 w-4" />
                         Anzeigen
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={(e) => {
                         e.stopPropagation();
                         handleEditFacility(facility);
                       }}>
-                        <Edit className="w-4 h-4 mr-2" />
+                        <Edit className="mr-2 h-4 w-4" />
                         Bearbeiten
                       </DropdownMenuItem>
-                      <DropdownMenuItem
+                      <DropdownMenuItem 
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteFacility(facility);
                         }}
-                        className="text-red-600"
+                        className="text-red-600 focus:text-red-600"
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
+                        <Trash2 className="mr-2 h-4 w-4" />
                         Löschen
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -545,16 +524,29 @@ export default function Facilities() {
               />
               <FormField
                 control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Beschreibung</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Beschreibung der Anlage" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="capacity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Kapazität (optional)</FormLabel>
+                    <FormLabel>Kapazität</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
                         placeholder="Maximale Anzahl Personen" 
                         {...field}
-                        value={field.value || ''}
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -566,31 +558,9 @@ export default function Facilities() {
                 name="location"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Standort (optional)</FormLabel>
+                    <FormLabel>Standort</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="Adresse oder Beschreibung des Standorts" 
-                        {...field}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Beschreibung (optional)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Zusätzliche Informationen zur Anlage"
-                        className="min-h-[80px]"
-                        {...field}
-                        value={field.value || ''}
-                      />
+                      <Input placeholder="Standort/Adresse" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -629,7 +599,7 @@ export default function Facilities() {
                   {createFacilityMutation.isPending || updateFacilityMutation.isPending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Speichern...
+                      {selectedFacility ? 'Aktualisieren...' : 'Erstellen...'}
                     </>
                   ) : (
                     selectedFacility ? 'Aktualisieren' : 'Erstellen'
@@ -642,44 +612,25 @@ export default function Facilities() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-red-600">
-              <AlertCircle className="w-5 h-5 mr-2" />
-              Anlage löschen
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p>
-              Sind Sie sicher, dass Sie die Anlage{' '}
-              <strong>{facilityToDelete?.name}</strong> löschen möchten?
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Diese Aktion kann nicht rückgängig gemacht werden.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Abbrechen
-            </Button>
-            <Button 
-              variant="destructive" 
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Anlage löschen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sind Sie sicher, dass Sie die Anlage "{facilityToDelete?.name}" löschen möchten?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
               onClick={confirmDelete}
-              disabled={deleteFacilityMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteFacilityMutation.isPending ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Löschen...
-                </>
-              ) : (
-                'Löschen'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Facility Detail Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>

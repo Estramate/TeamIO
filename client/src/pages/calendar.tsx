@@ -924,7 +924,7 @@ export default function Calendar() {
                                 {event.endTime && ` - ${event.endTime}`}
                               </div>
                             )}
-                            {event.facilityName && (
+                            {event.facilityName && event.height >= 60 && (
                               <div className="text-xs opacity-80 mt-1 truncate">
                                 📍 {event.facilityName}
                               </div>
@@ -1092,15 +1092,16 @@ export default function Calendar() {
                                   <span>{event.icon}</span>
                                   <span className="truncate">
                                     {event.source === 'booking' ? `${event.typeLabel}: ${event.title}` : (event.title || event.name)}
+                                    {event.facilityName && event.height < 60 && ` @ ${event.facilityName}`}
                                   </span>
                                 </div>
-                                {event.time && (
+                                {event.time && event.height >= 50 && (
                                   <div className="text-xs opacity-90 mt-1">
                                     {event.time}
                                     {event.endTime && ` - ${event.endTime}`}
                                   </div>
                                 )}
-                                {event.facilityName && (
+                                {event.facilityName && event.height >= 60 && (
                                   <div className="text-xs opacity-80 mt-1 truncate">
                                     📍 {event.facilityName}
                                   </div>

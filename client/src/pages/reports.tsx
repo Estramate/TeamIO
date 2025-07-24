@@ -713,8 +713,8 @@ export default function ReportsPage() {
       totalPlayers: 'Spieler gesamt',
       activePlayers: 'Aktive Spieler',
       inactivePlayers: 'Inaktive Spieler',
-      averagePlayersPerTeam: 'Durchschn. Spieler pro Team',
-      averageActivePlayersPerTeam: 'Durchschn. aktive Spieler pro Team',
+      averagePlayersPerTeam: 'Ø Spieler pro Team',
+      averageActivePlayersPerTeam: 'Ø aktive Spieler pro Team',
       averageTeamSize: 'Durchschnittliche Teamgröße',
       saldoStatus: 'Saldo-Status'
     };

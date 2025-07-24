@@ -124,6 +124,7 @@ export default function Finance() {
   const [isTrainingFeeDialogOpen, setIsTrainingFeeDialogOpen] = useState(false);
   const [editingFinance, setEditingFinance] = useState<any>(null);
   const [selectedFinance, setSelectedFinance] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<string>('overview');
 
   // Form initialization
   const financeForm = useForm({

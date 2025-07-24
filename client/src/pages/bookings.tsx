@@ -414,8 +414,23 @@ export default function Bookings() {
     setBookingModalOpen(true);
   };
 
+  // Helper function to convert UTC date to local datetime-local format
+  const formatForDateTimeLocal = (dateString: string) => {
+    const date = new Date(dateString);
+    // Subtract timezone offset to get local time representation
+    const offset = date.getTimezoneOffset() * 60000;
+    const localDate = new Date(date.getTime() - offset);
+    return localDate.toISOString().slice(0, 16);
+  };
+
   const handleEditBooking = (booking: Booking) => {
     setSelectedBooking(booking);
+    console.log('Editing booking with times:', { startTime: booking.startTime, endTime: booking.endTime });
+    console.log('Formatted for form:', { 
+      startTime: formatForDateTimeLocal(booking.startTime), 
+      endTime: formatForDateTimeLocal(booking.endTime) 
+    });
+    
     form.reset({
       title: booking.title,
       description: booking.description || "",
@@ -423,8 +438,8 @@ export default function Bookings() {
       teamId: booking.teamId ? booking.teamId.toString() : undefined,
       type: booking.type,
       status: booking.status,
-      startTime: format(new Date(booking.startTime), "yyyy-MM-dd'T'HH:mm"),
-      endTime: format(new Date(booking.endTime), "yyyy-MM-dd'T'HH:mm"),
+      startTime: formatForDateTimeLocal(booking.startTime),
+      endTime: formatForDateTimeLocal(booking.endTime),
       contactPerson: booking.contactPerson || "",
       contactEmail: booking.contactEmail || "",
       contactPhone: booking.contactPhone || "",
@@ -451,10 +466,21 @@ export default function Bookings() {
   };
 
   const onSubmit = (data: BookingFormData) => {
+    console.log('Form submission - original data:', data);
+    
+    // Convert datetime-local to proper ISO strings preserving local time
+    const processedData = {
+      ...data,
+      startTime: new Date(data.startTime).toISOString(),
+      endTime: new Date(data.endTime).toISOString(),
+    };
+    
+    console.log('Form submission - processed data:', processedData);
+    
     if (selectedBooking) {
-      updateBookingMutation.mutate({ ...data, id: selectedBooking.id });
+      updateBookingMutation.mutate({ ...processedData, id: selectedBooking.id });
     } else {
-      createBookingMutation.mutate(data);
+      createBookingMutation.mutate(processedData);
     }
   };
 

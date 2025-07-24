@@ -610,8 +610,8 @@ export default function Calendar() {
         description: draggedEvent.description || '',
         facilityId: draggedEvent.facilityId,
         teamId: draggedEvent.teamId,
-        startTime: newStartTime,
-        endTime: newEndTime,
+        startTime: newStartTime.toISOString(),
+        endTime: newEndTime.toISOString(),
         type: draggedEvent.type,
         status: draggedEvent.status || 'confirmed',
         participants: draggedEvent.participants || 0,
@@ -629,8 +629,8 @@ export default function Calendar() {
       const updateData = {
         title: draggedEvent.title,
         description: draggedEvent.description || '',
-        startDate: newStartTime,
-        endDate: newEndTime,
+        startDate: newStartTime.toISOString(),
+        endDate: newEndTime.toISOString(),
         location: draggedEvent.location || '',
       };
       updateEventMutation.mutate({ id: draggedEvent.id, data: updateData });
@@ -750,11 +750,30 @@ export default function Calendar() {
   };
 
   const handleBookingSubmit = (data: any) => {
+    console.log('Calendar booking form submitted:', data);
+    
+    // Create dates in local timezone and convert to proper ISO for backend
+    const startTime = new Date(data.startTime);
+    const endTime = new Date(data.endTime);
+    
+    console.log('Calendar local datetime inputs:', { startTime, endTime });
+    console.log('Calendar converting to ISO:', { 
+      startTimeISO: startTime.toISOString(), 
+      endTimeISO: endTime.toISOString() 
+    });
+    
     const processedData = {
       ...data,
       clubId: selectedClub?.id,
       facilityId: Number(data.facilityId),
+      teamId: data.teamId ? Number(data.teamId) : null,
+      participants: data.participants ? Number(data.participants) : null,
+      cost: data.cost || null,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
     };
+
+    console.log('Calendar processed data:', processedData);
 
     if (editingBooking) {
       updateBookingMutation.mutate({ id: editingBooking.id, data: processedData });
@@ -781,15 +800,31 @@ export default function Calendar() {
     setShowEventModal(true);
   };
 
+  // Helper function to convert UTC date to local datetime-local format
+  const formatForDateTimeLocal = (dateString: string) => {
+    const date = new Date(dateString);
+    // Subtract timezone offset to get local time representation
+    const offset = date.getTimezoneOffset() * 60000;
+    const localDate = new Date(date.getTime() - offset);
+    return localDate.toISOString().slice(0, 16);
+  };
+
   const openBookingModal = (booking?: any) => {
     if (booking) {
       setEditingBooking(booking);
+      console.log('Opening booking modal with:', booking);
+      console.log('Original startTime:', booking.startTime, 'endTime:', booking.endTime);
+      console.log('Formatted for form:', {
+        startTime: formatForDateTimeLocal(booking.startTime),
+        endTime: formatForDateTimeLocal(booking.endTime)
+      });
+      
       bookingForm.reset({
         title: booking.title,
         description: booking.description || '',
         facilityId: booking.facilityId.toString(),
-        startTime: format(new Date(booking.startTime), 'yyyy-MM-dd\'T\'HH:mm'),
-        endTime: format(new Date(booking.endTime), 'yyyy-MM-dd\'T\'HH:mm'),
+        startTime: formatForDateTimeLocal(booking.startTime),
+        endTime: formatForDateTimeLocal(booking.endTime),
         type: booking.type,
         status: booking.status,
       });

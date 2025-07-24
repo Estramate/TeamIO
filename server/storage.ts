@@ -455,30 +455,43 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Facility not found');
     }
 
-    // Find overlapping bookings, excluding cancelled bookings
-    const overlappingBookings = await db
+    // Find ALL overlapping bookings first (excluding only cancelled bookings)
+    const allBookings = await db
       .select()
       .from(bookings)
       .where(
         and(
           eq(bookings.facilityId, facilityId),
-          ne(bookings.status, 'cancelled'), // Exclude cancelled bookings
-          // Check for time overlap: (start1 < end2) AND (start2 < end1)
-          // SQL: startTime < booking.endTime AND endTime > booking.startTime
-          excludeBookingId ? ne(bookings.id, excludeBookingId) : eq(1, 1) // Always true if no exclusion
+          ne(bookings.status, 'cancelled') // Exclude cancelled bookings
         )
       );
 
-    // Filter overlapping bookings in JavaScript for precise time comparison
-    const conflictingBookings = overlappingBookings.filter(booking => {
+    // Filter for time overlaps in JavaScript for precise time comparison
+    const allConflictingBookings = allBookings.filter(booking => {
       const bookingStart = new Date(booking.startTime);
       const bookingEnd = new Date(booking.endTime);
       return startTime < bookingEnd && endTime > bookingStart;
     });
 
+    // Now exclude the specific booking ID if provided (for edit scenarios)
+    const conflictingBookings = excludeBookingId 
+      ? allConflictingBookings.filter(booking => booking.id !== excludeBookingId)
+      : allConflictingBookings;
+
     const currentBookings = conflictingBookings.length;
     const maxConcurrent = facility.maxConcurrentBookings || 1;
     const available = currentBookings < maxConcurrent;
+
+    console.log('Availability check:', {
+      facilityId,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      excludeBookingId,
+      allConflictingBookings: allConflictingBookings.length,
+      afterExclusion: currentBookings,
+      maxConcurrent,
+      available
+    });
 
     return {
       available,

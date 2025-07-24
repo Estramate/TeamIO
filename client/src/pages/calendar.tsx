@@ -439,8 +439,15 @@ export default function Calendar() {
       }
     }
     
-    document.addEventListener('mousemove', handleResizeMove);
-    document.addEventListener('mouseup', handleResizeEnd);
+    const moveHandler = (e: MouseEvent) => handleResizeMove(e);
+    const upHandler = (e: MouseEvent) => handleResizeEnd(e);
+    
+    document.addEventListener('mousemove', moveHandler);
+    document.addEventListener('mouseup', upHandler);
+    
+    // Store handlers for cleanup
+    (window as any).resizeMoveHandler = moveHandler;
+    (window as any).resizeUpHandler = upHandler;
   };
 
   const handleResizeMove = (e: MouseEvent) => {
@@ -467,31 +474,38 @@ export default function Calendar() {
     }
   };
 
-  const handleResizeEnd = () => {
+  const handleResizeEnd = (e: MouseEvent) => {
     if (!resizingEvent || !resizeDirection) return;
     
-    const deltaY = window.event ? (window.event as MouseEvent).clientY - resizeStartY : 0;
+    const deltaY = e.clientY - resizeStartY;
     const hourDelta = deltaY / 50;
     const snappedHourDelta = Math.round(hourDelta * 2) / 2;
+    
+    console.log('Resize end - deltaY:', deltaY, 'hourDelta:', hourDelta, 'snappedHourDelta:', snappedHourDelta);
+    console.log('Resize direction:', resizeDirection, 'resizeStartTime:', resizeStartTime, 'resizeEndTime:', resizeEndTime);
     
     let newStartTime = resizeStartTime;
     let newEndTime = resizeEndTime;
     
     if (resizeDirection === 'start' && resizeStartTime) {
       newStartTime = new Date(resizeStartTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
+      console.log('New start time:', newStartTime);
     } else if (resizeDirection === 'end' && resizeEndTime) {
       newEndTime = new Date(resizeEndTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
+      console.log('New end time:', newEndTime);
     }
     
-    // Validate that start < end
+    // Validate that start < end and times are reasonable
     if (newStartTime && newEndTime && newStartTime < newEndTime) {
+      console.log('Updating booking with new times:', { start: newStartTime, end: newEndTime });
+      
       const updateData = {
         title: resizingEvent.title,
         description: resizingEvent.description || '',
         facilityId: resizingEvent.facilityId,
         teamId: resizingEvent.teamId,
-        startTime: newStartTime,
-        endTime: newEndTime,
+        startTime: newStartTime.toISOString(),
+        endTime: newEndTime.toISOString(),
         type: resizingEvent.type,
         status: resizingEvent.status || 'confirmed',
         participants: resizingEvent.participants || 0,
@@ -506,6 +520,8 @@ export default function Calendar() {
       };
       
       updateBookingMutation.mutate({ id: resizingEvent.id, data: updateData });
+    } else {
+      console.log('Invalid time range - not updating');
     }
     
     // Clean up
@@ -516,8 +532,14 @@ export default function Calendar() {
     setResizeEndTime(null);
     setSnapPreview({ hour: 0, visible: false });
     
-    document.removeEventListener('mousemove', handleResizeMove);
-    document.removeEventListener('mouseup', handleResizeEnd);
+    const moveHandler = (window as any).resizeMoveHandler;
+    const upHandler = (window as any).resizeUpHandler;
+    
+    if (moveHandler) document.removeEventListener('mousemove', moveHandler);
+    if (upHandler) document.removeEventListener('mouseup', upHandler);
+    
+    delete (window as any).resizeMoveHandler;
+    delete (window as any).resizeUpHandler;
   };
 
   const handleDrop = (e: React.DragEvent, newDate: Date, newHour?: number) => {

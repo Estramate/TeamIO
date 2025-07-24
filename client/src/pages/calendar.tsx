@@ -299,20 +299,36 @@ export default function Calendar() {
 
   // Helper function to calculate event position and height in time grid
   const getEventTimePosition = (event: any) => {
-    const startTime = new Date(event.startTime || event.date);
-    const endTime = new Date(event.endTime || event.date);
+    let startHour = 8; // Default start hour
+    let endHour = 9;   // Default end hour (1 hour duration)
     
-    const startHour = startTime.getHours() + startTime.getMinutes() / 60;
-    const endHour = endTime.getHours() + endTime.getMinutes() / 60;
+    if (event.source === 'booking') {
+      // For bookings, parse the time strings
+      if (event.time) {
+        const [hours, minutes] = event.time.split(':').map(Number);
+        startHour = hours + minutes / 60;
+      }
+      if (event.endTime) {
+        const [hours, minutes] = event.endTime.split(':').map(Number);
+        endHour = hours + minutes / 60;
+      }
+    } else if (event.source === 'event') {
+      // For events, use the date and time
+      const startTime = new Date(event.startDate || event.date);
+      const endTime = new Date(event.endDate || event.date);
+      
+      startHour = startTime.getHours() + startTime.getMinutes() / 60;
+      endHour = endTime.getHours() + endTime.getMinutes() / 60;
+    }
     
     // Clamp to 6:00-24:00 range
     const clampedStart = Math.max(6, Math.min(24, startHour));
-    const clampedEnd = Math.max(6, Math.min(24, endHour));
+    const clampedEnd = Math.max(clampedStart + 0.5, Math.min(24, endHour)); // Minimum 30min duration
     
     const top = ((clampedStart - 6) / 18) * 100; // Percentage from top
     const height = ((clampedEnd - clampedStart) / 18) * 100; // Percentage height
     
-    return { top, height: Math.max(height, 2) }; // Minimum 2% height
+    return { top, height: Math.max(height, 3) }; // Minimum 3% height for visibility
   };
 
   // Drag & Drop handlers
@@ -1209,7 +1225,7 @@ export default function Calendar() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {teams?.map((team) => (
+                          {teams?.map((team: any) => (
                             <SelectItem key={team.id} value={team.id.toString()}>
                               {team.name}
                             </SelectItem>

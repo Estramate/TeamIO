@@ -84,7 +84,24 @@ import {
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
-type BookingFormData = z.infer<typeof bookingFormSchema>;
+// Local form data type that matches the schema's string inputs before transformation
+interface BookingFormData {
+  title: string;
+  description?: string;
+  facilityId: string;
+  teamId?: string;
+  memberId?: string;
+  type: string;
+  startTime: string;
+  endTime: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  participants?: string;
+  cost?: string;
+  status?: string;
+  notes?: string;
+}
 
 export default function Bookings() {
   const { toast } = useToast();
@@ -116,17 +133,19 @@ export default function Bookings() {
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
       title: "",
-      description: null,
+      description: "",
+      facilityId: "",
+      teamId: "",
       type: "training",
       status: "confirmed",
       startTime: "",
       endTime: "",
-      contactPerson: null,
-      contactEmail: null,
-      contactPhone: null,
-      notes: null,
-      participants: null,
-      cost: null,
+      contactPerson: "",
+      contactEmail: "",
+      contactPhone: "",
+      notes: "",
+      participants: "",
+      cost: "",
     },
   });
 
@@ -375,7 +394,7 @@ export default function Bookings() {
       console.log("DEBUG: Checking availability for:", { facilityId, startTime, endTime });
       setIsCheckingAvailability(true);
       checkAvailabilityMutation.mutate({ 
-        facilityId, 
+        facilityId: parseInt(facilityId), 
         startTime: new Date(startTime).toISOString(), 
         endTime: new Date(endTime).toISOString(),
         excludeBookingId: selectedBooking?.id
@@ -398,8 +417,8 @@ export default function Bookings() {
     form.reset({
       title: booking.title,
       description: booking.description || "",
-      facilityId: booking.facilityId,
-      teamId: booking.teamId || undefined,
+      facilityId: booking.facilityId.toString(),
+      teamId: booking.teamId ? booking.teamId.toString() : undefined,
       type: booking.type,
       status: booking.status,
       startTime: format(new Date(booking.startTime), "yyyy-MM-dd'T'HH:mm"),
@@ -407,8 +426,8 @@ export default function Bookings() {
       contactPerson: booking.contactPerson || "",
       contactEmail: booking.contactEmail || "",
       contactPhone: booking.contactPhone || "",
-      participants: booking.participants || undefined,
-      cost: booking.cost ? parseFloat(booking.cost) : undefined,
+      participants: booking.participants ? booking.participants.toString() : undefined,
+      cost: booking.cost ? booking.cost : undefined,
       notes: booking.notes || "",
     });
     setBookingModalOpen(true);
@@ -748,7 +767,7 @@ export default function Bookings() {
                       <FormLabel>Anlage *</FormLabel>
                       <Select 
                         onValueChange={(value) => {
-                          field.onChange(parseInt(value));
+                          field.onChange(value);
                           // Reset availability when facility changes
                           setAvailabilityStatus(null);
                         }}
@@ -779,7 +798,7 @@ export default function Bookings() {
                     <FormItem>
                       <FormLabel>Team (optional)</FormLabel>
                       <Select 
-                        onValueChange={(value) => field.onChange(value === "none" ? undefined : parseInt(value))}
+                        onValueChange={(value) => field.onChange(value === "none" ? undefined : value)}
                         value={field.value?.toString() || "none"}
                       >
                         <FormControl>

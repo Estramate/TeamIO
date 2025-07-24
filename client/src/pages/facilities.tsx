@@ -29,6 +29,7 @@ const facilityFormSchema = z.object({
   description: z.string().optional(),
   capacity: z.string().optional(),
   location: z.string().optional(),
+  maxConcurrentBookings: z.string().min(1, "Maximale Buchungen sind erforderlich"),
   status: z.string().default("active"),
 });
 
@@ -65,6 +66,7 @@ export default function Facilities() {
       description: "",
       capacity: "",
       location: "",
+      maxConcurrentBookings: "1",
       status: "active",
     },
   });
@@ -218,6 +220,7 @@ export default function Facilities() {
       description: facility.description || '',
       capacity: facility.capacity ? String(facility.capacity) : "",
       location: facility.location || '',
+      maxConcurrentBookings: facility.maxConcurrentBookings ? String(facility.maxConcurrentBookings) : "1",
       status: facility.status || 'active',
     });
     setFacilityModalOpen(true);
@@ -268,6 +271,7 @@ export default function Facilities() {
         description: facility.description || undefined,
         capacity: facility.capacity ? String(facility.capacity) : undefined,
         location: facility.location || undefined,
+        maxConcurrentBookings: facility.maxConcurrentBookings ? String(facility.maxConcurrentBookings) : "1",
         status: newStatus,
       }
     });
@@ -286,6 +290,7 @@ export default function Facilities() {
       description: data.description || undefined,
       capacity: data.capacity ? Number(data.capacity) : undefined,
       location: data.location || undefined,
+      maxConcurrentBookings: data.maxConcurrentBookings ? Number(data.maxConcurrentBookings) : 1,
       status: data.status || "active",
     };
 
@@ -794,6 +799,26 @@ export default function Facilities() {
               />
               <FormField
                 control={form.control}
+                name="maxConcurrentBookings"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Maximale zeitgleiche Buchungen</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min="1"
+                        placeholder="Anzahl zeitgleicher Buchungen" 
+                        {...field}
+                        value={field.value || "1"}
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
@@ -898,6 +923,13 @@ export default function Facilities() {
                     </p>
                   </div>
                 )}
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Max. zeitgleiche Buchungen</h4>
+                  <p className="mt-1 flex items-center">
+                    <Building className="w-4 h-4 mr-1" />
+                    {viewingFacility.maxConcurrentBookings || 1} Buchung(en)
+                  </p>
+                </div>
               </div>
               {viewingFacility.description && (
                 <div>

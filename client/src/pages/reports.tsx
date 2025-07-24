@@ -21,7 +21,7 @@ export default function ReportsPage() {
   const queryClient = useQueryClient();
   
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<Record<string, 'pending' | 'success' | 'error'>>({});
 
@@ -55,6 +55,11 @@ export default function ReportsPage() {
 
   const { data: trainingFees } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'training-fees'],
+    enabled: !!selectedClub?.id,
+  });
+
+  const { data: players } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'players'],
     enabled: !!selectedClub?.id,
   });
 
@@ -451,9 +456,9 @@ export default function ReportsPage() {
         const xPos = index < midpoint ? 25 : 110;
         const yPos = yPosition + (index % midpoint) * 8;
         
-        doc.setFont(undefined, 'bold');
+        doc.setFont('helvetica', 'bold');
         doc.text(`${label}:`, xPos, yPos);
-        doc.setFont(undefined, 'normal');
+        doc.setFont('helvetica', 'normal');
         doc.text(`${value}`, xPos + 50, yPos);
       });
       
@@ -696,7 +701,6 @@ export default function ReportsPage() {
   };
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
-  const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: format(new Date(2024, i, 1), 'MMMM', { locale: de }) }));
 
   return (
     <div className="flex flex-col h-full">
@@ -715,16 +719,7 @@ export default function ReportsPage() {
               </SelectContent>
             </Select>
             
-            <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
-              <SelectTrigger className="w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map(month => (
-                  <SelectItem key={month.value} value={month.value.toString()}>{month.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
           </div>
           
           <Button 

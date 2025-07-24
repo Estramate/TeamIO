@@ -72,11 +72,11 @@ export default function Dashboard() {
           <StatsCards stats={dashboardData?.stats || {}} />
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8 mb-8">
-            <div className="lg:col-span-2 flex flex-col gap-4" style={{ height: 'calc(100vh - 320px)' }}>
-              <div style={{ height: 'calc(50% - 8px)' }}>
+            <div className="lg:col-span-2 flex flex-col gap-4 lg:h-[calc(100vh-320px)]">
+              <div className="h-96 lg:h-[calc(50%-8px)]">
                 <ActivityFeed activities={dashboardData?.activities || []} />
               </div>
-              <div style={{ height: 'calc(50% - 8px)' }}>
+              <div className="h-80 lg:h-[calc(50%-8px)]">
                 <div className="bg-card rounded-xl shadow-sm border border-border h-full flex flex-col p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
@@ -127,11 +127,11 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="space-y-4 sm:space-y-6 flex flex-col" style={{ height: 'calc(100vh - 320px)' }}>
-              <div style={{ height: 'calc(50% - 8px)' }}>
+            <div className="space-y-4 sm:space-y-6 flex flex-col lg:h-[calc(100vh-320px)]">
+              <div className="h-80 lg:h-[calc(50%-8px)]">
                 <UpcomingEvents clubId={selectedClub.id} />
               </div>
-              <div style={{ height: 'calc(50% - 8px)' }}>
+              <div className="h-96 lg:h-[calc(50%-8px)]">
                 <TeamStatus clubId={selectedClub.id} />
               </div>
             </div>

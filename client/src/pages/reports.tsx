@@ -217,7 +217,7 @@ export default function ReportsPage() {
         totalIncome: totalIncome.toLocaleString('de-DE'),
         totalExpenses: totalExpenses.toLocaleString('de-DE'),
         balance: balance.toLocaleString('de-DE'),
-        balanceStatus: balance >= 0 ? 'positive' : 'negative'
+        saldoStatus: balance >= 0 ? 'positiv' : 'negativ'
       },
       monthlyData,
       categories: generateCategoryBreakdown(yearFinances)
@@ -228,7 +228,10 @@ export default function ReportsPage() {
   const generateMemberStatistics = () => {
     const totalMembers = (members as any[])?.length || 0;
     const activeMembers = (members as any[])?.filter((m: any) => m.status === 'active').length || 0;
-    const payingMembers = (members as any[])?.filter((m: any) => m.paysMembershipFee).length || 0;
+    // Zahlende Mitglieder sind die, die tatsächlich Mitgliedsbeiträge haben
+    const memberWithFees = (memberFees as any[])?.filter((f: any) => f.status === 'active') || [];
+    const payingMemberIds = [...new Set(memberWithFees.map((f: any) => f.memberId))];
+    const payingMembers = payingMemberIds.length;
 
     // Age distribution
     const ageGroups = {
@@ -341,8 +344,16 @@ export default function ReportsPage() {
   // Team overview report
   const generateTeamOverview = () => {
     const teamStats = (teams as any[])?.map((team: any) => {
-      // Count players in this team
-      const teamPlayers = (players as any[])?.filter((p: any) => p.teamId === team.id) || [];
+      // Count players in this team - players haben ein Array von teamIds
+      const teamPlayers = (players as any[])?.filter((p: any) => {
+        if (!p.teamIds) return false;
+        try {
+          const teamIds = Array.isArray(p.teamIds) ? p.teamIds : JSON.parse(p.teamIds || '[]');
+          return teamIds.includes(team.id);
+        } catch (error) {
+          return false;
+        }
+      }) || [];
       const teamMembers = (members as any[])?.filter((m: any) => m.teamId === team.id) || [];
       const teamTrainingFees = (trainingFees as any[])?.filter((f: any) => {
         if (!f.teamIds) return false;
@@ -682,7 +693,8 @@ export default function ReportsPage() {
       totalPlayers: 'Spieler gesamt',
       averagePlayersPerTeam: 'Durchschn. Spieler pro Team',
       averageMembersPerTeam: 'Durchschn. Mitglieder pro Team',
-      averageTeamSize: 'Durchschnittliche Teamgröße'
+      averageTeamSize: 'Durchschnittliche Teamgröße',
+      saldoStatus: 'Saldo-Status'
     };
     return labels[key] || key;
   };

@@ -455,13 +455,14 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Facility not found');
     }
 
-    // Find overlapping bookings
+    // Find overlapping bookings, excluding cancelled bookings
     const overlappingBookings = await db
       .select()
       .from(bookings)
       .where(
         and(
           eq(bookings.facilityId, facilityId),
+          ne(bookings.status, 'cancelled'), // Exclude cancelled bookings
           // Check for time overlap: (start1 < end2) AND (start2 < end1)
           // SQL: startTime < booking.endTime AND endTime > booking.startTime
           excludeBookingId ? ne(bookings.id, excludeBookingId) : eq(1, 1) // Always true if no exclusion

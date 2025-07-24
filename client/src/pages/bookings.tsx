@@ -594,12 +594,6 @@ export default function Bookings() {
               ? "Versuchen Sie, Ihre Suchkriterien anzupassen."
               : "Beginnen Sie mit dem Hinzufügen Ihrer ersten Buchung."}
           </p>
-          {!searchTerm && statusFilter === 'all' && typeFilter === 'all' && (
-            <Button className="mt-4 w-full sm:w-auto">
-              <Plus className="w-4 h-4 mr-2" />
-              Erste Buchung hinzufügen
-            </Button>
-          )}
         </div>
       ) : (
         <div className="space-y-3 sm:space-y-4">

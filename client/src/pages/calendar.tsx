@@ -768,7 +768,8 @@ export default function Calendar() {
                       {timeSlots.map((slot) => (
                         <div
                           key={slot.hour}
-                          className="h-[50px] border-b border-border/50 flex items-center justify-center text-xs text-muted-foreground"
+                          className="h-[50px] flex items-start justify-center text-xs text-muted-foreground pt-1"
+                          style={{ borderBottom: '1px solid hsl(var(--border) / 0.3)' }}
                         >
                           {slot.label}
                         </div>
@@ -898,7 +899,8 @@ export default function Calendar() {
                       {timeSlots.map((slot) => (
                         <div
                           key={slot.hour}
-                          className="h-12 border-b border-border/50 flex items-center justify-center text-xs text-muted-foreground"
+                          className="h-[50px] flex items-start justify-center text-xs text-muted-foreground pt-1"
+                          style={{ borderBottom: '1px solid hsl(var(--border) / 0.3)' }}
                         >
                           {slot.label}
                         </div>
@@ -924,8 +926,8 @@ export default function Calendar() {
                           {timeSlots.map((slot) => (
                             <div
                               key={slot.hour}
-                              className="absolute inset-x-0 h-[50px] border-b border-border/30"
-                              style={{ top: `${((slot.hour - 6) / 18) * 100}%` }}
+                              className="absolute inset-x-0 h-[1px] border-b border-border/30"
+                              style={{ top: `${(slot.hour - 6) * 50}px` }}
                             />
                           ))}
                           

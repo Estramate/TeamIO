@@ -343,25 +343,12 @@ export default function ReportsPage() {
 
   // Team overview report
   const generateTeamOverview = () => {
-    console.log('DEBUG: Teams data:', teams);
-    console.log('DEBUG: Players data:', players);
-    console.log('DEBUG: Members data:', members);
-    
     const teamStats = (teams as any[])?.map((team: any) => {
-      // First try the direct teamId field, then try teamIds array
+      // Players haben ein 'teams' Array mit Team-Objekten
       const teamPlayers = (players as any[])?.filter((p: any) => {
-        // Try direct teamId first
-        if (p.teamId === team.id) return true;
-        
-        // Try teamIds array
-        if (p.teamIds) {
-          try {
-            const teamIds = Array.isArray(p.teamIds) ? p.teamIds : JSON.parse(p.teamIds || '[]');
-            return teamIds.includes(team.id) || teamIds.includes(team.id.toString());
-          } catch (error) {
-            console.error('Error parsing teamIds:', error);
-            return false;
-          }
+        // Check if player has a teams array and if this team is in it
+        if (p.teams && Array.isArray(p.teams)) {
+          return p.teams.some((t: any) => t.id === team.id);
         }
         return false;
       }) || [];

@@ -418,11 +418,15 @@ export default function Calendar() {
     setSnapPreview({ hour: 0, visible: false });
   };
 
+  // State to prevent modal opening during resize
+  const [isResizing, setIsResizing] = useState(false);
+
   // Resize handlers - only for end time (extending events)
   const handleResizeStart = (event: any, direction: 'end', e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     
+    setIsResizing(true);
     setResizingEvent(event);
     setResizeDirection('end');
     setResizeStartY(e.clientY);
@@ -535,6 +539,11 @@ export default function Calendar() {
     setResizeStartTime(null);
     setResizeEndTime(null);
     setSnapPreview({ hour: 0, visible: false });
+    
+    // Delay to prevent modal opening after resize
+    setTimeout(() => {
+      setIsResizing(false);
+    }, 100);
     
     const moveHandler = (window as any).resizeMoveHandler;
     const upHandler = (window as any).resizeUpHandler;
@@ -1068,6 +1077,9 @@ export default function Calendar() {
                               zIndex: 10 + index,
                             }}
                             onClick={() => {
+                              // Don't open modal if we just finished resizing
+                              if (isResizing) return;
+                              
                               if (event.source === 'event') {
                                 setEditingEvent(event);
                                 setShowEventModal(true);
@@ -1274,6 +1286,9 @@ export default function Calendar() {
                                   zIndex: 10 + index,
                                 }}
                                 onClick={() => {
+                                  // Don't open modal if we just finished resizing
+                                  if (isResizing) return;
+                                  
                                   if (event.source === 'event') {
                                     setEditingEvent(event);
                                     setShowEventModal(true);

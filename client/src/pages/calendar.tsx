@@ -833,6 +833,8 @@ export default function Calendar() {
                                 
                                 // Handle endTime - if it's just time string, combine with startTime date
                                 let endTimeFormatted = '';
+                                console.log('Day view processing endTime:', event.endTime, 'startTime:', event.startTime);
+                                
                                 if (event.endTime) {
                                   if (event.endTime.includes('T') || event.endTime.includes('-')) {
                                     // Full datetime
@@ -845,11 +847,15 @@ export default function Calendar() {
                                       const endDate = new Date(startDate);
                                       endDate.setHours(hours, minutes || 0, 0, 0);
                                       endTimeFormatted = format(endDate, 'yyyy-MM-dd\'T\'HH:mm');
-                                    } catch {
+                                      console.log('Day view formatted endTime:', endTimeFormatted);
+                                    } catch (error) {
+                                      console.error('Day view error formatting endTime:', error);
                                       endTimeFormatted = '';
                                     }
                                   }
                                 }
+                                
+                                console.log('Day view final endTimeFormatted:', endTimeFormatted);
                                 
                                 bookingForm.reset({
                                   title: event.title || '',
@@ -1003,6 +1009,8 @@ export default function Calendar() {
                                     
                                     // Handle endTime - if it's just time string, combine with startTime date
                                     let endTimeFormatted = '';
+                                    console.log('Processing endTime:', event.endTime, 'startTime:', event.startTime);
+                                    
                                     if (event.endTime) {
                                       if (event.endTime.includes('T') || event.endTime.includes('-')) {
                                         // Full datetime
@@ -1015,11 +1023,15 @@ export default function Calendar() {
                                           const endDate = new Date(startDate);
                                           endDate.setHours(hours, minutes || 0, 0, 0);
                                           endTimeFormatted = format(endDate, 'yyyy-MM-dd\'T\'HH:mm');
-                                        } catch {
+                                          console.log('Formatted endTime:', endTimeFormatted);
+                                        } catch (error) {
+                                          console.error('Error formatting endTime:', error);
                                           endTimeFormatted = '';
                                         }
                                       }
                                     }
+                                    
+                                    console.log('Final endTimeFormatted:', endTimeFormatted);
                                     
                                     bookingForm.reset({
                                       title: event.title || '',

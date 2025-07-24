@@ -60,8 +60,8 @@ export default function ActivityFeed({ activities = [] }: ActivityFeedProps) {
   }
 
   return (
-    <div className="bg-card rounded-xl shadow-sm border border-border">
-      <div className="p-4 sm:p-6">
+    <div className="bg-card rounded-xl shadow-sm border border-border h-full flex flex-col">
+      <div className="p-4 sm:p-6 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <h3 className="text-base sm:text-lg font-semibold text-foreground">Neueste Aktivitäten</h3>
           <button className="text-primary hover:text-primary/80 text-xs sm:text-sm font-medium">
@@ -69,7 +69,7 @@ export default function ActivityFeed({ activities = [] }: ActivityFeedProps) {
           </button>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-80 overflow-y-auto">
           {activities.map((activity, index) => {
             const Icon = getActivityIcon(activity.icon);
             const iconClasses = getActivityIconBg(activity.icon);
@@ -80,8 +80,8 @@ export default function ActivityFeed({ activities = [] }: ActivityFeedProps) {
                   <Icon className="text-sm" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900">{activity.description}</p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-sm text-foreground">{activity.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {formatDistanceToNow(new Date(activity.timestamp), { 
                       addSuffix: true, 
                       locale: de 

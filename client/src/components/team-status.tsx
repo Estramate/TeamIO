@@ -56,10 +56,10 @@ export default function TeamStatus({ clubId }: TeamStatusProps) {
   ];
 
   return (
-    <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6">
+    <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 h-full flex flex-col">
       <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Team-Status</h3>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 flex-shrink-0">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           
@@ -76,7 +76,7 @@ export default function TeamStatus({ clubId }: TeamStatusProps) {
       </div>
 
       {activeTeams.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-6 flex-1 overflow-y-auto">
           <h4 className="text-sm font-medium text-foreground mb-3">Aktive Teams</h4>
           <div className="space-y-2">
             {activeTeams.slice(0, 3).map((team: any) => (

@@ -632,16 +632,19 @@ export class DatabaseStorage implements IStorage {
 
   // Dashboard operations
   async getDashboardStats(clubId: number): Promise<any> {
-    const [memberCount] = await db
-      .select({ count: members.id })
+    // Korrekte Anzahl der Mitglieder
+    const memberCount = await db
+      .select()
       .from(members)
       .where(eq(members.clubId, clubId));
 
-    const [teamCount] = await db
-      .select({ count: teams.id })
+    // Korrekte Anzahl der Teams
+    const teamCount = await db
+      .select()
       .from(teams)
       .where(eq(teams.clubId, clubId));
 
+    // Heutige Buchungen korrekt abfragen
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date();
@@ -653,11 +656,26 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(bookings.clubId, clubId),
-          eq(bookings.startTime, todayStart),
-          eq(bookings.endTime, todayEnd)
+          gte(bookings.startTime, todayStart),
+          gte(todayEnd, bookings.startTime)
         )
       );
 
+    // Events für heute ebenfalls berücksichtigen
+    const todayEvents = await db
+      .select()
+      .from(events)
+      .where(
+        and(
+          eq(events.clubId, clubId),
+          gte(events.startDate, todayStart),
+          gte(todayEnd, events.startDate)
+        )
+      );
+
+    const totalTodayActivities = todayBookings.length + todayEvents.length;
+
+    // Monatsfinanzen
     const thisMonth = new Date();
     thisMonth.setDate(1);
     thisMonth.setHours(0, 0, 0, 0);
@@ -681,30 +699,55 @@ export class DatabaseStorage implements IStorage {
       .reduce((sum, f) => sum + Number(f.amount), 0);
 
     return {
-      memberCount: memberCount?.count || 0,
-      teamCount: teamCount?.count || 0,
-      todayBookingsCount: todayBookings.length,
+      memberCount: memberCount.length,
+      teamCount: teamCount.length,
+      todayBookingsCount: totalTodayActivities,
       pendingBookingsCount: todayBookings.filter(b => b.status === 'pending').length,
       monthlyBudget: totalIncome - totalExpenses,
     };
   }
 
   async getRecentActivity(clubId: number): Promise<any[]> {
-    // This would typically be a more complex query joining multiple tables
-    // For now, return recent members and bookings
+    // Nur Aktivitäten der letzten 5 Tage
+    const fiveDaysAgo = new Date();
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+    fiveDaysAgo.setHours(0, 0, 0, 0);
+
     const recentMembers = await db
       .select()
       .from(members)
-      .where(eq(members.clubId, clubId))
+      .where(
+        and(
+          eq(members.clubId, clubId),
+          gte(members.createdAt, fiveDaysAgo)
+        )
+      )
       .orderBy(desc(members.createdAt))
-      .limit(5);
+      .limit(10);
 
     const recentBookings = await db
       .select()
       .from(bookings)
-      .where(eq(bookings.clubId, clubId))
+      .where(
+        and(
+          eq(bookings.clubId, clubId),
+          gte(bookings.createdAt, fiveDaysAgo)
+        )
+      )
       .orderBy(desc(bookings.createdAt))
-      .limit(5);
+      .limit(10);
+
+    const recentEvents = await db
+      .select()
+      .from(events)
+      .where(
+        and(
+          eq(events.clubId, clubId),
+          gte(events.createdAt, fiveDaysAgo)
+        )
+      )
+      .orderBy(desc(events.createdAt))
+      .limit(10);
 
     const activities = [
       ...recentMembers.map(m => ({
@@ -717,6 +760,12 @@ export class DatabaseStorage implements IStorage {
         type: 'booking_created',
         description: `${b.title} wurde gebucht`,
         timestamp: b.createdAt,
+        icon: 'calendar',
+      })),
+      ...recentEvents.map(e => ({
+        type: 'event_created',
+        description: `${e.title} wurde als neuer Termin hinzugefügt`,
+        timestamp: e.createdAt,
         icon: 'calendar',
       })),
     ];

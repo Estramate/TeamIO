@@ -21,7 +21,7 @@ import {
   Trash2,
   Eye
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -1003,9 +1003,8 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="h-80 overflow-x-auto">
-            <div style={{ minWidth: '1200px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={(() => {
                   console.log('=== CHART DATA GENERATION START ===');
                   console.log('Selected Year:', selectedChartYear);
@@ -1191,31 +1190,68 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                   console.log('Data keys sample:', data[0] ? Object.keys(data[0]) : 'No data');
                   console.log('=== CHART DATA GENERATION END ===');
                   
-                  return data;
-                })()}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  // Ensure all data values are numbers
+                  const cleanedData = data.map(item => ({
+                    month: item.month,
+                    mitgliedsbeiträge: Number(item.mitgliedsbeiträge) || 0,
+                    trainingsbeiträge: Number(item.trainingsbeiträge) || 0,
+                    gesamt: Number(item.gesamt) || 0
+                  }));
+                  
+                  console.log('Cleaned data for chart:', cleanedData);
+                  return cleanedData;
+                })()}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis 
                     dataKey="month" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    interval={0}
-                    fontSize={12}
+                    stroke="hsl(var(--foreground))"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
                   />
                   <YAxis 
+                    stroke="hsl(var(--foreground))"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
                     tickFormatter={(value) => `€${value}`}
-                    fontSize={12}
                   />
                   <Tooltip 
-                    formatter={(value, name) => [`€${Number(value).toLocaleString('de-DE')}`, name === 'mitgliedsbeiträge' ? 'Mitgliedsbeiträge' : 'Trainingsbeiträge']}
-                    labelFormatter={(label) => `${label}`}
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+                            <p className="font-medium">{label}</p>
+                            {payload.map((entry, index) => (
+                              <p key={index} style={{ color: entry.color }}>
+                                {entry.name}: €{Number(entry.value).toLocaleString('de-DE')}
+                              </p>
+                            ))}
+                            <p className="font-medium border-t border-border pt-1 mt-1">
+                              Gesamt: €{payload.reduce((sum, entry) => sum + Number(entry.value), 0).toLocaleString('de-DE')}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
                   />
-                  <Bar dataKey="mitgliedsbeiträge" fill="#3b82f6" name="Mitgliedsbeiträge" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="trainingsbeiträge" fill="#10b981" name="Trainingsbeiträge" radius={[2, 2, 0, 0]} />
+                  <Legend />
+                  <Bar 
+                    dataKey="mitgliedsbeiträge" 
+                    fill="#3b82f6" 
+                    name="Mitgliedsbeiträge"
+                    radius={[2, 2, 0, 0]}
+                  />
+                  <Bar 
+                    dataKey="trainingsbeiträge" 
+                    fill="#10b981" 
+                    name="Trainingsbeiträge"
+                    radius={[2, 2, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
           </div>
         </CardContent>
       </Card>

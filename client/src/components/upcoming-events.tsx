@@ -51,7 +51,7 @@ export default function UpcomingEvents({ clubId }: UpcomingEventsProps) {
           <p className="text-muted-foreground text-sm">Keine anstehenden Termine</p>
         </div>
       ) : (
-        <div className="space-y-4 flex-1 overflow-y-auto max-h-64">
+        <div className="space-y-4 flex-1 overflow-y-auto pr-2">
           {upcomingEvents.map((item: any, index: number) => {
             const itemDate = new Date(item.date);
             // Prüfe auf valides Datum

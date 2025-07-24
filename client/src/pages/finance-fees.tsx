@@ -974,20 +974,26 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                       const monthDate = new Date(year, index, 1);
                   
                       // Berechne Mitgliedsbeiträge für den Monat (berücksichtige Zeiträume)
-                      const memberRevenue = memberFees.filter((f: any) => f.status === 'active')
+                      const memberRevenue = safeMemberFees.filter((f: any) => f && f.status === 'active')
                         .reduce((sum: number, f: any) => {
-                          const startDate = new Date(f.startDate);
-                          const endDate = f.endDate ? new Date(f.endDate) : null;
-                          
-                          // Prüfe ob der Monat im Zeitraum liegt
-                          if (monthDate < startDate || (endDate && monthDate > endDate)) {
+                          try {
+                            const startDate = new Date(f.startDate);
+                            const endDate = f.endDate ? new Date(f.endDate) : null;
+                            
+                            // Prüfe ob der Monat im Zeitraum liegt
+                            if (monthDate < startDate || (endDate && monthDate > endDate)) {
+                              return sum;
+                            }
+                            
+                            const amount = Number(f.amount) || 0;
+                            if (f.period === 'monthly') return sum + amount;
+                            if (f.period === 'quarterly' && index % 3 === 0) return sum + amount;
+                            if (f.period === 'yearly' && index === 0) return sum + amount;
+                            return sum;
+                          } catch (e) {
+                            console.warn('Error processing member fee:', f, e);
                             return sum;
                           }
-                          
-                          if (f.period === 'monthly') return sum + Number(f.amount);
-                          if (f.period === 'quarterly' && index % 3 === 0) return sum + Number(f.amount);
-                          if (f.period === 'yearly' && index === 0) return sum + Number(f.amount);
-                          return sum;
                         }, 0);
                       
                       // Berechne Trainingsbeiträge für den Monat (berücksichtige Zeiträume)
@@ -1211,7 +1217,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                           step="0.01" 
                           placeholder="25.00" 
                           {...field} 
-                          defaultValue={editingMemberFee.amount} 
+                          value={field.value || editingMemberFee.amount}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1252,7 +1258,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                           <Input 
                             type="date" 
                             {...field} 
-                            defaultValue={editingMemberFee.startDate?.split('T')[0]} 
+                            value={field.value || editingMemberFee.startDate?.split('T')[0]} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -1269,7 +1275,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                           <Input 
                             type="date" 
                             {...field} 
-                            defaultValue={editingMemberFee.endDate?.split('T')[0] || ''} 
+                            value={field.value || editingMemberFee.endDate?.split('T')[0] || ''} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -1325,7 +1331,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="z.B. Ausbildungsbeitrag" {...field} defaultValue={editingTrainingFee.name} />
+                        <Input placeholder="z.B. Ausbildungsbeitrag" {...field} value={field.value || editingTrainingFee.name} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1338,7 +1344,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     <FormItem>
                       <FormLabel>Beschreibung (optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Zusätzliche Details..." {...field} defaultValue={editingTrainingFee.description || ''} />
+                        <Input placeholder="Zusätzliche Details..." {...field} value={field.value || editingTrainingFee.description || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1351,7 +1357,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     <FormItem>
                       <FormLabel>Betrag pro Ziel (€)</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.01" placeholder="25.00" {...field} defaultValue={editingTrainingFee.amount} />
+                        <Input type="number" step="0.01" placeholder="25.00" {...field} value={field.value || editingTrainingFee.amount} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

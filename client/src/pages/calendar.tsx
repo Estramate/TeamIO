@@ -820,7 +820,9 @@ export default function Calendar() {
                                 setEditingEvent(event);
                                 setShowEventModal(true);
                               } else if (event.source === 'booking') {
-                                // Reset form with booking data for day view too - safe date formatting
+                                // Reset form with booking data for day view too - safe date formatting with debug
+                                console.log('Day view event data:', event);
+                                
                                 const formatSafeDate = (dateValue: any) => {
                                   if (!dateValue) return '';
                                   try {
@@ -831,13 +833,16 @@ export default function Calendar() {
                                   }
                                 };
                                 
+                                // Check multiple possible endTime fields
+                                const endTimeValue = event.endTime || event.end || event.endDateTime;
+                                
                                 bookingForm.reset({
                                   title: event.title || '',
                                   description: event.description || '',
                                   facilityId: event.facilityId?.toString() || '',
                                   teamId: event.teamId?.toString() || '',
-                                  startTime: formatSafeDate(event.startTime),
-                                  endTime: formatSafeDate(event.endTime),
+                                  startTime: formatSafeDate(event.startTime || event.start || event.startDateTime),
+                                  endTime: formatSafeDate(endTimeValue),
                                   type: event.type || 'training',
                                   status: event.status || 'confirmed',
                                   participants: event.participants || 0,
@@ -965,7 +970,9 @@ export default function Calendar() {
                                     setEditingEvent(event);
                                     setShowEventModal(true);
                                   } else if (event.source === 'booking') {
-                                    // Reset form with booking data - safe date formatting
+                                    // Reset form with booking data - safe date formatting with debug
+                                    console.log('Event data:', event);
+                                    
                                     const formatSafeDate = (dateValue: any) => {
                                       if (!dateValue) return '';
                                       try {
@@ -976,13 +983,16 @@ export default function Calendar() {
                                       }
                                     };
                                     
+                                    // Check multiple possible endTime fields
+                                    const endTimeValue = event.endTime || event.end || event.endDateTime;
+                                    
                                     bookingForm.reset({
                                       title: event.title || '',
                                       description: event.description || '',
                                       facilityId: event.facilityId?.toString() || '',
                                       teamId: event.teamId?.toString() || '',
-                                      startTime: formatSafeDate(event.startTime),
-                                      endTime: formatSafeDate(event.endTime),
+                                      startTime: formatSafeDate(event.startTime || event.start || event.startDateTime),
+                                      endTime: formatSafeDate(endTimeValue),
                                       type: event.type || 'training',
                                       status: event.status || 'confirmed',
                                       participants: event.participants || 0,

@@ -1,0 +1,58 @@
+Console.js:61 DEBUG: Checking availability for: {facilityId: '5', startTime: '2025-07-22T18:30', endTime: '2025-07-22T20:00'}
+Console.js:61 DEBUG: Availability check result: {available: true, maxConcurrent: 1, currentBookings: 0, conflictingBookings: Array(0)}
+queryClient.ts:15  POST https://67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/api/clubs/1/bookings 500 (Internal Server Error)
+window.fetch @ Network.js:219
+apiRequest @ queryClient.ts:15
+mutationFn @ bookings.tsx:213
+fn @ @tanstack_react-query.js?v=69449193:1189
+run @ @tanstack_react-query.js?v=69449193:494
+start @ @tanstack_react-query.js?v=69449193:536
+execute @ @tanstack_react-query.js?v=69449193:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=69449193:2630
+(anonymous) @ @tanstack_react-query.js?v=69449193:3295
+onSubmit @ bookings.tsx:457
+(anonymous) @ chunk-4BFJKWC4.js?v=69449193:1465
+await in (anonymous)
+callCallback2 @ chunk-RPCDYKBN.js?v=69449193:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=69449193:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=69449193:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=69449193:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=69449193:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=69449193:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=69449193:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=69449193:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=69449193:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=69449193:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=69449193:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=69449193:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=69449193:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=69449193:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=69449193:5449
+Console.js:61 DEBUG: Create booking error: Error: 500: {"message":"Failed to create booking"}
+    at throwIfResNotOk (queryClient.ts:6:11)
+    at async apiRequest (queryClient.ts:22:3)
+Mt.forEach.n.<computed> @ Console.js:61
+onError @ bookings.tsx:232
+execute @ @tanstack_react-query.js?v=69449193:1254
+await in execute
+mutate @ @tanstack_react-query.js?v=69449193:2630
+(anonymous) @ @tanstack_react-query.js?v=69449193:3295
+onSubmit @ bookings.tsx:457
+(anonymous) @ chunk-4BFJKWC4.js?v=69449193:1465
+await in (anonymous)
+callCallback2 @ chunk-RPCDYKBN.js?v=69449193:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=69449193:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=69449193:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=69449193:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=69449193:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=69449193:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=69449193:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=69449193:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=69449193:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=69449193:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=69449193:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=69449193:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=69449193:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=69449193:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=69449193:5449

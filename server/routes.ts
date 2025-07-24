@@ -276,7 +276,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const booking = await storage.createBooking(bookingData);
+      // Ensure clubId and userId are included
+      const finalBookingData = {
+        ...bookingData,
+        clubId,
+        userId: req.user.id,
+      };
+      console.log("DEBUG Route: Final booking data with IDs:", finalBookingData);
+      
+      const booking = await storage.createBooking(finalBookingData);
       console.log("DEBUG Route: Created booking:", booking);
       res.json(booking);
     } catch (error) {

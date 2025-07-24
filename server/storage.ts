@@ -493,10 +493,14 @@ export class DatabaseStorage implements IStorage {
       available
     });
 
+    // For display purposes, show total conflicting bookings (including current booking being edited)
+    // But for availability calculation, use the filtered count (excluding current booking)
+    const displayBookings = allConflictingBookings.length;
+
     return {
       available,
       maxConcurrent,
-      currentBookings,
+      currentBookings: displayBookings, // Show total for user display
       conflictingBookings
     };
   }

@@ -1007,9 +1007,17 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
             <div style={{ minWidth: '1200px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={(() => {
+                  console.log('=== CHART DATA GENERATION START ===');
+                  console.log('Selected Year:', selectedChartYear);
+                  
                   // Sichere Datenverarbeitung
                   const safeMemberFees = Array.isArray(memberFees) ? memberFees : [];
                   const safeTrainingFees = Array.isArray(trainingFees) ? trainingFees : [];
+                  
+                  console.log('Member Fees Count:', safeMemberFees.length);
+                  console.log('Training Fees Count:', safeTrainingFees.length);
+                  console.log('All Member Fees:', safeMemberFees);
+                  console.log('All Training Fees:', safeTrainingFees);
                   
                   // Generiere Daten für das ausgewählte Jahr
                   const data = [];
@@ -1021,49 +1029,96 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     const month = months[monthIndex];
                     const monthKey = `${month} ${selectedChartYear}`;
                     
+                    console.log(`--- Processing Month ${monthIndex + 1}: ${monthKey} ---`);
+                    
                     // Berechne Mitgliedsbeiträge für diesen Monat
                     let memberRevenue = 0;
-                    safeMemberFees.forEach((fee: any) => {
+                    console.log(`Processing ${safeMemberFees.length} member fees for ${monthKey}`);
+                    
+                    safeMemberFees.forEach((fee: any, index: number) => {
+                      console.log(`  Member Fee ${index + 1}:`, {
+                        id: fee.id,
+                        amount: fee.amount,
+                        period: fee.period,
+                        status: fee.status,
+                        startDate: fee.startDate,
+                        endDate: fee.endDate
+                      });
+                      
                       if (fee && fee.status === 'active') {
                         try {
                           const startDate = new Date(fee.startDate);
                           const endDate = fee.endDate ? new Date(fee.endDate) : null;
                           
+                          console.log(`    Start: ${startDate.toISOString()}, End: ${endDate?.toISOString() || 'None'}, Checking: ${date.toISOString()}`);
+                          
                           // Prüfe ob der Monat im gültigen Zeitraum liegt
-                          if (date >= startDate && (!endDate || date <= endDate)) {
+                          const isInRange = date >= startDate && (!endDate || date <= endDate);
+                          console.log(`    Is in range: ${isInRange}`);
+                          
+                          if (isInRange) {
                             const amount = Number(fee.amount) || 0;
+                            let addAmount = 0;
                             
                             // Berechnung basierend auf Periode
                             if (fee.period === 'monthly') {
-                              memberRevenue += amount;
+                              addAmount = amount;
+                              console.log(`    Adding monthly: €${amount}`);
                             } else if (fee.period === 'quarterly' && monthIndex % 3 === 0) {
-                              memberRevenue += amount;
+                              addAmount = amount;
+                              console.log(`    Adding quarterly: €${amount} (quarter start month)`);
                             } else if (fee.period === 'yearly' && monthIndex === 0) {
-                              memberRevenue += amount;
+                              addAmount = amount;
+                              console.log(`    Adding yearly: €${amount} (January)`);
                             } else if (fee.period === 'one-time') {
-                              // Einmalige Zahlung nur im ersten Monat des Zeitraums
                               const feeStartDate = new Date(fee.startDate);
                               if (date.getMonth() === feeStartDate.getMonth() && date.getFullYear() === feeStartDate.getFullYear()) {
-                                memberRevenue += amount;
+                                addAmount = amount;
+                                console.log(`    Adding one-time: €${amount} (start month)`);
                               }
                             }
+                            
+                            memberRevenue += addAmount;
+                            console.log(`    Current member total: €${memberRevenue}`);
                           }
                         } catch (e) {
                           console.warn('Error processing member fee:', e);
                         }
+                      } else {
+                        console.log(`    Skipped: status = ${fee?.status}`);
                       }
                     });
                     
                     // Berechne Trainingsbeiträge für diesen Monat
                     let trainingRevenue = 0;
-                    safeTrainingFees.forEach((fee: any) => {
+                    console.log(`Processing ${safeTrainingFees.length} training fees for ${monthKey}`);
+                    
+                    safeTrainingFees.forEach((fee: any, index: number) => {
+                      console.log(`  Training Fee ${index + 1}:`, {
+                        id: fee.id,
+                        name: fee.name,
+                        amount: fee.amount,
+                        period: fee.period,
+                        status: fee.status,
+                        startDate: fee.startDate,
+                        endDate: fee.endDate,
+                        targetType: fee.targetType,
+                        teamIds: fee.teamIds,
+                        playerIds: fee.playerIds
+                      });
+                      
                       if (fee && fee.status === 'active') {
                         try {
                           const startDate = new Date(fee.startDate);
                           const endDate = fee.endDate ? new Date(fee.endDate) : null;
                           
+                          console.log(`    Start: ${startDate.toISOString()}, End: ${endDate?.toISOString() || 'None'}, Checking: ${date.toISOString()}`);
+                          
                           // Prüfe ob der Monat im gültigen Zeitraum liegt
-                          if (date >= startDate && (!endDate || date <= endDate)) {
+                          const isInRange = date >= startDate && (!endDate || date <= endDate);
+                          console.log(`    Is in range: ${isInRange}`);
+                          
+                          if (isInRange) {
                             const amount = Number(fee.amount) || 0;
                             
                             // Berechne Multiplikator basierend auf Targets
@@ -1073,48 +1128,69 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                                 const teamIds = Array.isArray(fee.teamIds) ? fee.teamIds : 
                                                typeof fee.teamIds === 'string' ? JSON.parse(fee.teamIds || '[]') : [];
                                 multiplier = Math.max(multiplier, teamIds.length);
+                                console.log(`    Team multiplier: ${teamIds.length} teams`);
                               }
                               if (fee.targetType === 'player' || fee.targetType === 'both') {
                                 const playerIds = Array.isArray(fee.playerIds) ? fee.playerIds : 
                                                  typeof fee.playerIds === 'string' ? JSON.parse(fee.playerIds || '[]') : [];
                                 multiplier += playerIds.length;
+                                console.log(`    Player multiplier: +${playerIds.length} players`);
                               }
                             } catch (e) {
                               console.warn('Error parsing target IDs:', e);
                               multiplier = 1;
                             }
                             
+                            console.log(`    Final multiplier: ${multiplier}`);
+                            
+                            let addAmount = 0;
                             // Berechnung basierend auf Periode
                             if (fee.period === 'monthly') {
-                              trainingRevenue += amount * multiplier;
+                              addAmount = amount * multiplier;
+                              console.log(`    Adding monthly: €${amount} x ${multiplier} = €${addAmount}`);
                             } else if (fee.period === 'quarterly' && monthIndex % 3 === 0) {
-                              trainingRevenue += amount * multiplier;
+                              addAmount = amount * multiplier;
+                              console.log(`    Adding quarterly: €${amount} x ${multiplier} = €${addAmount} (quarter start month)`);
                             } else if (fee.period === 'yearly' && monthIndex === 0) {
-                              trainingRevenue += amount * multiplier;
+                              addAmount = amount * multiplier;
+                              console.log(`    Adding yearly: €${amount} x ${multiplier} = €${addAmount} (January)`);
                             } else if (fee.period === 'one-time') {
-                              // Einmalige Zahlung nur im ersten Monat des Zeitraums
                               const feeStartDate = new Date(fee.startDate);
                               if (date.getMonth() === feeStartDate.getMonth() && date.getFullYear() === feeStartDate.getFullYear()) {
-                                trainingRevenue += amount * multiplier;
+                                addAmount = amount * multiplier;
+                                console.log(`    Adding one-time: €${amount} x ${multiplier} = €${addAmount} (start month)`);
                               }
                             }
+                            
+                            trainingRevenue += addAmount;
+                            console.log(`    Current training total: €${trainingRevenue}`);
                           }
                         } catch (e) {
                           console.warn('Error processing training fee:', e);
                         }
+                      } else {
+                        console.log(`    Skipped: status = ${fee?.status}`);
                       }
                     });
                     
                     // Füge Datenpunkt hinzu (auch bei 0-Werten für bessere Visualisierung)
-                    data.push({
+                    const dataPoint = {
                       month: monthKey,
                       mitgliedsbeiträge: Math.round(memberRevenue * 100) / 100,
                       trainingsbeiträge: Math.round(trainingRevenue * 100) / 100,
                       gesamt: Math.round((memberRevenue + trainingRevenue) * 100) / 100
-                    });
+                    };
+                    
+                    console.log(`Final data point for ${monthKey}:`, dataPoint);
+                    data.push(dataPoint);
                   }
                   
-                  console.log(`Chart data for year ${selectedChartYear}:`, data);
+                  console.log(`=== FINAL CHART DATA FOR YEAR ${selectedChartYear} ===`);
+                  console.log('Data array length:', data.length);
+                  console.log('Full data:', data);
+                  console.log('Data keys sample:', data[0] ? Object.keys(data[0]) : 'No data');
+                  console.log('=== CHART DATA GENERATION END ===');
+                  
                   return data;
                 })()}>
                   <CartesianGrid strokeDasharray="3 3" />

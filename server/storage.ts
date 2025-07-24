@@ -449,11 +449,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async checkBookingAvailability(facilityId: number, startTime: Date, endTime: Date, excludeBookingId?: number): Promise<{ available: boolean; maxConcurrent: number; currentBookings: number; conflictingBookings: any[] }> {
+    console.log('DEBUG Storage: Checking availability for facility', facilityId, 'from', startTime, 'to', endTime);
+    
     // Get facility to check maxConcurrentBookings
     const [facility] = await db.select().from(facilities).where(eq(facilities.id, facilityId));
     if (!facility) {
+      console.log('DEBUG Storage: Facility not found for ID', facilityId);
       throw new Error('Facility not found');
     }
+    
+    console.log('DEBUG Storage: Facility found:', facility);
 
     // Find overlapping bookings
     const overlappingBookings = await db
@@ -467,6 +472,8 @@ export class DatabaseStorage implements IStorage {
           excludeBookingId ? ne(bookings.id, excludeBookingId) : eq(1, 1) // Always true if no exclusion
         )
       );
+      
+    console.log('DEBUG Storage: Overlapping bookings from DB:', overlappingBookings);
 
     // Filter overlapping bookings in JavaScript for precise time comparison
     const conflictingBookings = overlappingBookings.filter(booking => {
@@ -474,17 +481,22 @@ export class DatabaseStorage implements IStorage {
       const bookingEnd = new Date(booking.endTime);
       return startTime < bookingEnd && endTime > bookingStart;
     });
+    
+    console.log('DEBUG Storage: Conflicting bookings after filtering:', conflictingBookings);
 
     const currentBookings = conflictingBookings.length;
     const maxConcurrent = facility.maxConcurrentBookings || 1;
     const available = currentBookings < maxConcurrent;
 
-    return {
+    const result = {
       available,
       maxConcurrent,
       currentBookings,
       conflictingBookings
     };
+    
+    console.log('DEBUG Storage: Final availability result:', result);
+    return result;
   }
 
   // Event operations

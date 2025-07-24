@@ -765,39 +765,82 @@ export default function Calendar() {
                 </div>
               )}
 
-              {/* Week/3-Day Views with improved layout */}
+              {/* Week/3-Day Views with Timeline */}
               {(calendarView === 'week' || calendarView === '3day') && (
-                <div className="space-y-4">
-                  <div className={`grid gap-4 ${calendarView === '3day' ? 'grid-cols-3' : 'grid-cols-7'}`}>
+                <div className="bg-card rounded-lg border">
+                  {/* Header with days */}
+                  <div className="flex border-b">
+                    <div className="w-20 border-r"></div>
+                    {getCalendarDays().map((day) => {
+                      const isToday = isSameDay(day, new Date());
+                      return (
+                        <div key={day.toISOString()} className={`flex-1 p-3 text-center border-r border-border ${isToday ? 'bg-primary/5' : ''}`}>
+                          <div className="text-sm font-medium">
+                            {format(day, 'EEE', { locale: de })}
+                          </div>
+                          <div className={`text-lg ${isToday ? 'font-bold text-primary' : ''}`}>
+                            {format(day, 'dd')}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Timeline grid */}
+                  <div className="flex h-[600px] overflow-y-auto">
+                    {/* Time column */}
+                    <div className="w-20 border-r bg-muted/20">
+                      {timeSlots.map((slot) => (
+                        <div
+                          key={slot.hour}
+                          className="h-12 border-b border-border/50 flex items-center justify-center text-xs text-muted-foreground"
+                        >
+                          {slot.label}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Days columns */}
                     {getCalendarDays().map((day) => {
                       const dayEvents = getEventsForDate(day);
-                      const isToday = isSameDay(day, new Date());
-                      
                       return (
-                        <div key={day.toISOString()} className="space-y-2">
-                          <div className={`p-3 text-center rounded-lg border ${isToday ? 'bg-primary/5 border-primary/30 font-semibold' : 'bg-card border-border'}`}>
-                            <div className="text-sm font-medium">
-                              {format(day, 'EEE', { locale: de })}
-                            </div>
-                            <div className="text-lg">
-                              {format(day, 'dd')}
-                            </div>
-                          </div>
+                        <div 
+                          key={day.toISOString()} 
+                          className="flex-1 relative border-r border-border"
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const y = e.clientY - rect.top;
+                            const hour = Math.floor((y / rect.height) * 18) + 6;
+                            handleDrop(e, day, hour);
+                          }}
+                        >
+                          {/* Hour grid lines */}
+                          {timeSlots.map((slot) => (
+                            <div
+                              key={slot.hour}
+                              className="absolute inset-x-0 h-12 border-b border-border/30"
+                              style={{ top: `${slot.position}%` }}
+                            />
+                          ))}
                           
-                          <div 
-                            className="space-y-2 min-h-[400px]"
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, day)}
-                          >
-                            {dayEvents.map((event, index) => (
+                          {/* Events */}
+                          {dayEvents.map((event, index) => {
+                            const { top, height } = getEventTimePosition(event);
+                            return (
                               <div
                                 key={index}
                                 draggable
                                 onDragStart={(e) => handleDragStart(event, e)}
                                 onDragEnd={handleDragEnd}
-                                className={`p-3 rounded-lg border-l-4 cursor-move hover:shadow-md transition-all ${event.color} border-l-current bg-card/50 ${
+                                className={`absolute inset-x-1 rounded-md p-1 text-white cursor-move hover:opacity-90 transition-all ${event.color} ${
                                   isDragging && draggedEvent?.id === event.id ? 'opacity-50' : ''
                                 }`}
+                                style={{
+                                  top: `${top}%`,
+                                  height: `${height}%`,
+                                  minHeight: '20px',
+                                }}
                                 onClick={() => {
                                   if (event.source === 'event') {
                                     setEditingEvent(event);
@@ -808,63 +851,21 @@ export default function Calendar() {
                                   }
                                 }}
                               >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-sm">{event.icon}</span>
-                                      <h4 className="text-sm font-medium truncate">
-                                        {event.source === 'booking' ? `${event.typeLabel}: ${event.title}` : (event.title || event.name)}
-                                      </h4>
-                                    </div>
-                                    {event.time && (
-                                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                        <Clock className="w-3 h-3" />
-                                        {event.time}
-                                        {event.endTime && ` - ${event.endTime}`}
-                                      </div>
-                                    )}
-                                    {event.source === 'booking' && event.facilityName && (
-                                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                        <MapPin className="w-3 h-3" />
-                                        {event.facilityName}
-                                      </div>
-                                    )}
+                                <div className="flex items-center gap-1 text-xs font-medium truncate">
+                                  <span>{event.icon}</span>
+                                  <span className="truncate">
+                                    {event.source === 'booking' ? `${event.typeLabel}: ${event.title}` : (event.title || event.name)}
+                                  </span>
+                                </div>
+                                {event.time && (
+                                  <div className="text-xs opacity-90 mt-1">
+                                    {event.time}
+                                    {event.endTime && ` - ${event.endTime}`}
                                   </div>
-                                  {(event.source === 'event' || event.source === 'booking') && (
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                          <MoreHorizontal className="h-3 w-3" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => event.source === 'event' ? openEventModal(event) : openBookingModal(event)}>
-                                          <Edit className="w-4 h-4 mr-2" />
-                                          Bearbeiten
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem 
-                                          onClick={() => event.source === 'event' ? deleteEventMutation.mutate(event.id) : deleteBookingMutation.mutate(event.id)}
-                                          className="text-red-600"
-                                        >
-                                          <Trash2 className="w-4 h-4 mr-2" />
-                                          Löschen
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  )}
-                                </div>
+                                )}
                               </div>
-                            ))}
-                            
-                            {dayEvents.length === 0 && (
-                              <div className="flex items-center justify-center h-32 text-muted-foreground">
-                                <div className="text-center">
-                                  <CalendarIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                  <p className="text-sm">Keine Termine</p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                            );
+                          })}
                         </div>
                       );
                     })}

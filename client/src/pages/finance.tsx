@@ -681,11 +681,10 @@ export default function Finance() {
     <div className="flex-1 overflow-y-auto bg-background">
       <div className="p-4 sm:p-6">
         <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-muted p-1 rounded-lg h-auto">
+          <TabsList className="grid w-full grid-cols-3 bg-muted p-1 rounded-lg h-auto">
             <TabsTrigger value="overview" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Übersicht</TabsTrigger>
             <TabsTrigger value="transactions" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Transaktionen</TabsTrigger>
             <TabsTrigger value="membership" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Beiträge</TabsTrigger>
-            <TabsTrigger value="reports" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Berichte</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 sm:space-y-6">
@@ -1332,22 +1331,7 @@ export default function Finance() {
 
           <FeesTabContent />
 
-          <TabsContent value="reports" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Finanzberichte</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Berichte kommen bald</h3>
-                  <p className="text-muted-foreground">
-                    Detaillierte Finanzberichte und Analysen werden in einer zukünftigen Version verfügbar sein.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+
         </Tabs>
 
         {/* Details Modal */}

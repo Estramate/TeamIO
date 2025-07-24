@@ -1092,20 +1092,22 @@ export default function Calendar() {
                               <>
                                 {/* Top resize handle */}
                                 <div
-                                  className="absolute inset-x-0 top-0 h-2 cursor-ns-resize bg-white/20 opacity-0 hover:opacity-100 transition-opacity"
+                                  className="absolute inset-x-0 top-0 h-3 cursor-ns-resize flex items-center justify-center group"
                                   onMouseDown={(e) => handleResizeStart(event, 'start', e)}
-                                  style={{ borderRadius: '4px 4px 0 0' }}
                                 >
-                                  <div className="absolute inset-x-0 top-0 h-0.5 bg-white/60 rounded-t"></div>
+                                  <div className="w-8 h-1 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
+                                    <div className="w-full h-full bg-white/60 rounded-full"></div>
+                                  </div>
                                 </div>
                                 
                                 {/* Bottom resize handle */}
                                 <div
-                                  className="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize bg-white/20 opacity-0 hover:opacity-100 transition-opacity"
+                                  className="absolute inset-x-0 bottom-0 h-3 cursor-ns-resize flex items-center justify-center group"
                                   onMouseDown={(e) => handleResizeStart(event, 'end', e)}
-                                  style={{ borderRadius: '0 0 4px 4px' }}
                                 >
-                                  <div className="absolute inset-x-0 bottom-0 h-0.5 bg-white/60 rounded-b"></div>
+                                  <div className="w-8 h-1 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
+                                    <div className="w-full h-full bg-white/60 rounded-full"></div>
+                                  </div>
                                 </div>
                               </>
                             )}
@@ -1310,20 +1312,22 @@ export default function Calendar() {
                                   <>
                                     {/* Top resize handle */}
                                     <div
-                                      className="absolute inset-x-0 top-0 h-1.5 cursor-ns-resize bg-white/20 opacity-0 hover:opacity-100 transition-opacity"
+                                      className="absolute inset-x-0 top-0 h-2 cursor-ns-resize flex items-center justify-center group"
                                       onMouseDown={(e) => handleResizeStart(event, 'start', e)}
-                                      style={{ borderRadius: '2px 2px 0 0' }}
                                     >
-                                      <div className="absolute inset-x-0 top-0 h-0.5 bg-white/60 rounded-t"></div>
+                                      <div className="w-6 h-0.5 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
+                                        <div className="w-full h-full bg-white/60 rounded-full"></div>
+                                      </div>
                                     </div>
                                     
                                     {/* Bottom resize handle */}
                                     <div
-                                      className="absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize bg-white/20 opacity-0 hover:opacity-100 transition-opacity"
+                                      className="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize flex items-center justify-center group"
                                       onMouseDown={(e) => handleResizeStart(event, 'end', e)}
-                                      style={{ borderRadius: '0 0 2px 2px' }}
                                     >
-                                      <div className="absolute inset-x-0 bottom-0 h-0.5 bg-white/60 rounded-b"></div>
+                                      <div className="w-6 h-0.5 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
+                                        <div className="w-full h-full bg-white/60 rounded-full"></div>
+                                      </div>
                                     </div>
                                   </>
                                 )}

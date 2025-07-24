@@ -682,45 +682,114 @@ export default function Calendar() {
                 ) : (
                   <div className="space-y-3">
                     {selectedDateEvents.map((event, index) => (
-                      <div key={index} className={`border-l-4 pl-3 py-2 rounded-r-lg bg-card/50 ${event.color} border-l-current`}>
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm">{event.icon}</span>
-                              <h4 className="text-sm font-medium truncate">
-                                {event.source === 'booking' ? `${event.typeLabel}: ${event.title}` : (event.title || event.name)}
-                              </h4>
+                      <div key={index} className="bg-card border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                        {/* Header with type badge - similar to booking cards */}
+                        <div className={`rounded-t-lg -m-4 mb-3 p-3 ${event.color}`}>
+                          <div className="flex items-center justify-between text-white">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{event.icon}</span>
+                              <span className="text-sm font-medium">
+                                {event.typeLabel || (event.source === 'event' ? 'Termin' : event.source === 'booking' ? 'Buchung' : 'Geburtstag')}
+                              </span>
                             </div>
                             {event.time && (
-                              <div className="flex items-center mt-1 text-xs text-muted-foreground">
-                                <Clock className="w-3 h-3 mr-1" />
+                              <div className="flex items-center gap-1 text-sm">
+                                <Clock className="w-4 h-4" />
                                 <span>
                                   {event.time}
                                   {event.endTime && ` - ${event.endTime}`}
                                 </span>
                               </div>
                             )}
-                            {event.facilityName && (
-                              <div className="flex items-center mt-1 text-xs text-muted-foreground">
-                                <MapPin className="w-3 h-3 mr-1" />
-                                <span>{event.facilityName}</span>
-                              </div>
-                            )}
-                            {event.location && (
-                              <div className="flex items-center mt-1 text-xs text-muted-foreground">
-                                <MapPin className="w-3 h-3 mr-1" />
-                                <span>{event.location}</span>
-                              </div>
-                            )}
                           </div>
-                          <div className={`px-2 py-1 rounded-full text-xs font-medium text-white ${event.color}`}>
-                            {event.typeLabel || (event.source === 'event' ? 'Termin' : event.source === 'booking' ? 'Buchung' : 'Geburtstag')}
-                          </div>
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-foreground">
+                            {event.source === 'booking' ? event.title : (event.title || event.name)}
+                          </h4>
+                          
+                          {event.facilityName && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <MapPin className="w-4 h-4" />
+                              <span>{event.facilityName}</span>
+                            </div>
+                          )}
+                          
+                          {event.location && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <MapPin className="w-4 h-4" />
+                              <span>{event.location}</span>
+                            </div>
+                          )}
+                          
+                          {event.description && (
+                            <p className="text-sm text-muted-foreground">{event.description}</p>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Upcoming Events */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Nächste Termine</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  const upcomingEvents = allEvents
+                    .filter(event => isAfter(event.date, new Date()) || isSameDay(event.date, new Date()))
+                    .sort((a, b) => compareAsc(a.date, b.date))
+                    .slice(0, 5);
+
+                  return upcomingEvents.length === 0 ? (
+                    <div className="text-center py-8">
+                      <CalendarIcon className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
+                      <p className="text-sm text-muted-foreground mt-2">Keine kommenden Termine</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {upcomingEvents.map((event, index) => (
+                        <div key={index} className="bg-card border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                          {/* Compact header */}
+                          <div className={`rounded-lg -m-3 mb-2 p-2 ${event.color}`}>
+                            <div className="flex items-center justify-between text-white">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">{event.icon}</span>
+                                <span className="text-xs font-medium">
+                                  {event.typeLabel || (event.source === 'event' ? 'Termin' : event.source === 'booking' ? 'Buchung' : 'Geburtstag')}
+                                </span>
+                              </div>
+                              <div className="text-xs">
+                                {format(event.date, 'dd.MM')}
+                                {event.time && ` • ${event.time}`}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Compact content */}
+                          <div className="space-y-1">
+                            <h5 className="text-sm font-medium text-foreground truncate">
+                              {event.source === 'booking' ? event.title : (event.title || event.name)}
+                            </h5>
+                            
+                            {event.facilityName && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <MapPin className="w-3 h-3" />
+                                <span className="truncate">{event.facilityName}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           </div>

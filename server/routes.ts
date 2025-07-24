@@ -312,9 +312,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const updates = { ...req.body };
       
+      console.log('Booking update request:', updates);
+      
+      // Ensure Date objects are properly converted
+      if (updates.startTime && !(updates.startTime instanceof Date)) {
+        updates.startTime = new Date(updates.startTime);
+      }
+      if (updates.endTime && !(updates.endTime instanceof Date)) {
+        updates.endTime = new Date(updates.endTime);
+      }
+      
       // Clean up cost field for proper decimal handling
-      if (updates.cost) {
-        updates.cost = parseFloat(updates.cost).toString();
+      if (updates.cost !== undefined && updates.cost !== null) {
+        updates.cost = typeof updates.cost === 'number' ? updates.cost.toString() : parseFloat(updates.cost).toString();
       }
       
       // Check availability if time or facility is being updated
@@ -325,8 +335,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         const facilityId = updates.facilityId || currentBooking.facilityId;
-        const startTime = updates.startTime ? new Date(updates.startTime) : new Date(currentBooking.startTime);
-        const endTime = updates.endTime ? new Date(updates.endTime) : new Date(currentBooking.endTime);
+        const startTime = updates.startTime || new Date(currentBooking.startTime);
+        const endTime = updates.endTime || new Date(currentBooking.endTime);
         
         const availability = await storage.checkBookingAvailability(
           facilityId, 

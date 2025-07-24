@@ -477,24 +477,27 @@ export default function Calendar() {
         description: draggedEvent.description || '',
         facilityId: draggedEvent.facilityId,
         teamId: draggedEvent.teamId,
-        startTime: newStartTime.toISOString(),
-        endTime: newEndTime.toISOString(),
+        startTime: newStartTime,
+        endTime: newEndTime,
         type: draggedEvent.type,
         status: draggedEvent.status || 'confirmed',
         participants: draggedEvent.participants || 0,
-        cost: draggedEvent.cost || 0,
+        cost: draggedEvent.cost || null,
         contactPerson: draggedEvent.contactPerson || '',
-        contactEmail: draggedEvent.contactEmail || '',
+        contactEmail: draggedEvent.contactEmail || null,
         contactPhone: draggedEvent.contactPhone || '',
         notes: draggedEvent.notes || '',
+        recurring: draggedEvent.recurring || false,
+        recurringPattern: draggedEvent.recurringPattern || null,
+        recurringUntil: draggedEvent.recurringUntil || null
       };
       updateBookingMutation.mutate({ id: draggedEvent.id, data: updateData });
     } else {
       const updateData = {
         title: draggedEvent.title,
         description: draggedEvent.description || '',
-        startDate: newStartTime.toISOString(),
-        endDate: newEndTime.toISOString(),
+        startDate: newStartTime,
+        endDate: newEndTime,
         location: draggedEvent.location || '',
       };
       updateEventMutation.mutate({ id: draggedEvent.id, data: updateData });
@@ -835,8 +838,9 @@ export default function Calendar() {
                         const totalHours = (y / rect.height) * 18;
                         // Snap to 30-minute intervals
                         const snappedHours = Math.round(totalHours * 2) / 2;
-                        const hour = snappedHours + 6;
-                        handleDrop(e, currentDate, hour);
+                        const finalHour = snappedHours + 6;
+                        console.log('Day view drop - totalHours:', totalHours, 'snapped:', snappedHours, 'final:', finalHour);
+                        handleDrop(e, currentDate, finalHour);
                       }}
                     >
                       {/* Hour grid lines */}
@@ -1014,8 +1018,9 @@ export default function Calendar() {
                             const totalHours = (y / rect.height) * 18;
                             // Snap to 30-minute intervals
                             const snappedHours = Math.round(totalHours * 2) / 2;
-                            const hour = snappedHours + 6;
-                            handleDrop(e, day, hour);
+                            const finalHour = snappedHours + 6;
+                            console.log('Week view drop - totalHours:', totalHours, 'snapped:', snappedHours, 'final:', finalHour);
+                            handleDrop(e, day, finalHour);
                           }}
                         >
                           {/* Hour grid lines */}

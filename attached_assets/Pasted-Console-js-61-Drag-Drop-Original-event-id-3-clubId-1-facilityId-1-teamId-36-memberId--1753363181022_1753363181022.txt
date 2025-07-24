@@ -1,0 +1,30 @@
+Console.js:61 Drag & Drop - Original event: {id: 3, clubId: 1, facilityId: 1, teamId: 36, memberId: null, …}clubId: 1color: "bg-blue-500"column: 0contactEmail: nullcontactPerson: ""contactPhone: ""cost: nullcreatedAt: "2025-07-24T11:46:17.897Z"date: Tue Jul 22 2025 18:00:00 GMT+0200 (Mitteleuropäische Sommerzeit) {}description: ""endTime: "20:00"facilityId: 1facilityName: "Hauptplatz SV Oberglan"height: 100icon: "⚽"id: 3left: 0memberId: nullnotes: ""participants: 25recurring: falserecurringPattern: nullrecurringUntil: nullsource: "booking"startTime: "2025-07-22T16:00:00.000Z"status: "confirmed"teamId: 36time: "18:00"title: "Training KM-Herren"top: 600totalColumns: 2type: "training"typeLabel: "Training"updatedAt: "2025-07-24T11:46:17.897Z"width: 50[[Prototype]]: Object
+Console.js:61 Drag & Drop - New times: {start: '2025-07-22T16:00:00.000Z', end: '2025-07-22T18:00:00.000Z', duration: '2 hours'}duration: "2 hours"end: "2025-07-22T18:00:00.000Z"start: "2025-07-22T16:00:00.000Z"[[Prototype]]: Object
+queryClient.ts:15  PATCH https://67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/api/clubs/1/bookings/3 500 (Internal Server Error)
+window.fetch @ Network.js:219
+apiRequest @ queryClient.ts:15
+mutationFn @ calendar.tsx:230
+fn @ @tanstack_react-query.js?v=69449193:1189
+run @ @tanstack_react-query.js?v=69449193:494
+start @ @tanstack_react-query.js?v=69449193:536
+execute @ @tanstack_react-query.js?v=69449193:1225
+await in execute
+mutate @ @tanstack_react-query.js?v=69449193:2630
+(anonymous) @ @tanstack_react-query.js?v=69449193:3295
+handleDrop @ calendar.tsx:491
+onDrop @ calendar.tsx:1018
+callCallback2 @ chunk-RPCDYKBN.js?v=69449193:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=69449193:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=69449193:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=69449193:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=69449193:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=69449193:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=69449193:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=69449193:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=69449193:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=69449193:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=69449193:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=69449193:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=69449193:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=69449193:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=69449193:5449

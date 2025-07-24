@@ -42,6 +42,12 @@ const bookingFormSchema = z.object({
   endTime: z.string().min(1, "Endzeit ist erforderlich"),
   type: z.enum(["training", "game", "event", "maintenance"]),
   status: z.enum(["confirmed", "pending", "cancelled"]),
+  participants: z.number().optional(),
+  cost: z.number().optional(),
+  contactPerson: z.string().optional(),
+  contactEmail: z.string().optional(),
+  contactPhone: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 // Color schemes matching bookings page
@@ -84,6 +90,12 @@ export default function Calendar() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [editingBooking, setEditingBooking] = useState<any>(null);
+  
+  // Drag & Drop state
+  const [draggedEvent, setDraggedEvent] = useState<any>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [resizingEvent, setResizingEvent] = useState<any>(null);
+  const [resizeDirection, setResizeDirection] = useState<'start' | 'end' | null>(null);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -160,6 +172,12 @@ export default function Calendar() {
       endTime: "",
       type: "training" as const,
       status: "confirmed" as const,
+      participants: undefined,
+      cost: undefined,
+      contactPerson: "",
+      contactEmail: "",
+      contactPhone: "",
+      notes: "",
     },
   });
 
@@ -260,6 +278,98 @@ export default function Calendar() {
       case 'maintenance': return 'Wartung';
       default: return 'Sonstiges';
     }
+  };
+
+  // Generate time slots for daily views (6:00 - 24:00)
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 6; hour <= 23; hour++) {
+      slots.push({
+        hour,
+        label: `${hour.toString().padStart(2, '0')}:00`,
+        position: ((hour - 6) / 18) * 100 // Percentage position from 6:00 to 24:00
+      });
+    }
+    return slots;
+  };
+
+  const timeSlots = generateTimeSlots();
+
+  // Helper function to calculate event position and height in time grid
+  const getEventTimePosition = (event: any) => {
+    const startTime = new Date(event.startTime || event.date);
+    const endTime = new Date(event.endTime || event.date);
+    
+    const startHour = startTime.getHours() + startTime.getMinutes() / 60;
+    const endHour = endTime.getHours() + endTime.getMinutes() / 60;
+    
+    // Clamp to 6:00-24:00 range
+    const clampedStart = Math.max(6, Math.min(24, startHour));
+    const clampedEnd = Math.max(6, Math.min(24, endHour));
+    
+    const top = ((clampedStart - 6) / 18) * 100; // Percentage from top
+    const height = ((clampedEnd - clampedStart) / 18) * 100; // Percentage height
+    
+    return { top, height: Math.max(height, 2) }; // Minimum 2% height
+  };
+
+  // Drag & Drop handlers
+  const handleDragStart = (event: any, e: React.DragEvent) => {
+    setDraggedEvent(event);
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnd = () => {
+    setDraggedEvent(null);
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent, newDate: Date, newHour?: number) => {
+    e.preventDefault();
+    if (!draggedEvent) return;
+
+    const oldStartTime = new Date(draggedEvent.startTime || draggedEvent.date);
+    const oldEndTime = new Date(draggedEvent.endTime || draggedEvent.date);
+    const duration = oldEndTime.getTime() - oldStartTime.getTime();
+
+    let newStartTime: Date;
+    if (newHour !== undefined) {
+      // Time-based drop (day/week view)
+      newStartTime = new Date(newDate);
+      newStartTime.setHours(newHour, 0, 0, 0);
+    } else {
+      // Date-based drop (month view)
+      newStartTime = new Date(newDate);
+      newStartTime.setHours(oldStartTime.getHours(), oldStartTime.getMinutes());
+    }
+
+    const newEndTime = new Date(newStartTime.getTime() + duration);
+
+    // Update the event
+    if (draggedEvent.source === 'booking') {
+      const updateData = {
+        ...draggedEvent,
+        startTime: newStartTime.toISOString(),
+        endTime: newEndTime.toISOString(),
+      };
+      updateBookingMutation.mutate({ id: draggedEvent.id, data: updateData });
+    } else {
+      const updateData = {
+        ...draggedEvent,
+        startDate: newStartTime.toISOString(),
+        endDate: newEndTime.toISOString(),
+      };
+      updateEventMutation.mutate({ id: draggedEvent.id, data: updateData });
+    }
+
+    setDraggedEvent(null);
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
   };
 
   // Combine events, bookings and birthdays for calendar display
@@ -563,11 +673,108 @@ export default function Calendar() {
                 </>
               )}
 
-              {/* Week/3-Day/Day Views */}
-              {(calendarView === 'week' || calendarView === '3day' || calendarView === 'day') && (
+              {/* Day View with Timeline */}
+              {calendarView === 'day' && (
+                <div className="bg-card rounded-lg border">
+                  <div className="p-4 border-b">
+                    <h3 className="text-lg font-semibold text-center">
+                      {format(currentDate, 'EEEE, dd. MMMM yyyy', { locale: de })}
+                    </h3>
+                  </div>
+                  
+                  <div className="flex h-[600px]">
+                    {/* Time column */}
+                    <div className="w-20 border-r bg-muted/20">
+                      {timeSlots.map((slot) => (
+                        <div
+                          key={slot.hour}
+                          className="h-12 border-b border-border/50 flex items-center justify-center text-xs text-muted-foreground"
+                        >
+                          {slot.label}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Events column */}
+                    <div 
+                      className="flex-1 relative overflow-hidden"
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const y = e.clientY - rect.top;
+                        const hour = Math.floor((y / rect.height) * 18) + 6;
+                        handleDrop(e, currentDate, hour);
+                      }}
+                    >
+                      {/* Hour grid lines */}
+                      {timeSlots.map((slot) => (
+                        <div
+                          key={slot.hour}
+                          className="absolute inset-x-0 h-12 border-b border-border/30"
+                          style={{ top: `${slot.position}%` }}
+                        />
+                      ))}
+                      
+                      {/* Events */}
+                      {getEventsForDate(currentDate).map((event, index) => {
+                        const { top, height } = getEventTimePosition(event);
+                        return (
+                          <div
+                            key={index}
+                            draggable
+                            onDragStart={(e) => handleDragStart(event, e)}
+                            onDragEnd={handleDragEnd}
+                            className={`absolute inset-x-2 rounded-md p-2 text-white cursor-move hover:opacity-90 transition-all ${event.color} ${
+                              isDragging && draggedEvent?.id === event.id ? 'opacity-50' : ''
+                            }`}
+                            style={{
+                              top: `${top}%`,
+                              height: `${height}%`,
+                              minHeight: '20px',
+                            }}
+                            onClick={() => {
+                              if (event.source === 'event') {
+                                setEditingEvent(event);
+                                setShowEventModal(true);
+                              } else if (event.source === 'booking') {
+                                setEditingBooking(event);
+                                setShowBookingModal(true);
+                              }
+                            }}
+                          >
+                            <div className="flex items-center gap-2 text-xs font-medium">
+                              <span>{event.icon}</span>
+                              <span className="truncate">
+                                {event.source === 'booking' ? `${event.typeLabel}: ${event.title}` : (event.title || event.name)}
+                              </span>
+                            </div>
+                            {event.time && (
+                              <div className="text-xs opacity-90 mt-1">
+                                {event.time}
+                                {event.endTime && ` - ${event.endTime}`}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      
+                      {getEventsForDate(currentDate).length === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center">
+                            <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+                            <p className="text-muted-foreground mt-4">Keine Termine für diesen Tag</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Week/3-Day Views with improved layout */}
+              {(calendarView === 'week' || calendarView === '3day') && (
                 <div className="space-y-4">
-                  {/* Time slot grid for detailed views */}
-                  <div className={`grid gap-4 ${calendarView === 'day' ? 'grid-cols-1' : calendarView === '3day' ? 'grid-cols-3' : 'grid-cols-7'}`}>
+                  <div className={`grid gap-4 ${calendarView === '3day' ? 'grid-cols-3' : 'grid-cols-7'}`}>
                     {getCalendarDays().map((day) => {
                       const dayEvents = getEventsForDate(day);
                       const isToday = isSameDay(day, new Date());
@@ -583,14 +790,28 @@ export default function Calendar() {
                             </div>
                           </div>
                           
-                          <div className="space-y-2 min-h-[400px]">
+                          <div 
+                            className="space-y-2 min-h-[400px]"
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, day)}
+                          >
                             {dayEvents.map((event, index) => (
                               <div
                                 key={index}
-                                className={`p-3 rounded-lg border-l-4 cursor-pointer hover:shadow-md transition-all ${event.color} border-l-current bg-card/50`}
+                                draggable
+                                onDragStart={(e) => handleDragStart(event, e)}
+                                onDragEnd={handleDragEnd}
+                                className={`p-3 rounded-lg border-l-4 cursor-move hover:shadow-md transition-all ${event.color} border-l-current bg-card/50 ${
+                                  isDragging && draggedEvent?.id === event.id ? 'opacity-50' : ''
+                                }`}
                                 onClick={() => {
-                                  if (event.source === 'event') openEventModal(event);
-                                  else if (event.source === 'booking') openBookingModal(event);
+                                  if (event.source === 'event') {
+                                    setEditingEvent(event);
+                                    setShowEventModal(true);
+                                  } else if (event.source === 'booking') {
+                                    setEditingBooking(event);
+                                    setShowBookingModal(true);
+                                  }
                                 }}
                               >
                                 <div className="flex items-start justify-between">
@@ -1055,7 +1276,111 @@ export default function Calendar() {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={bookingForm.control}
+                  name="participants"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Teilnehmer</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="Anzahl Teilnehmer"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={bookingForm.control}
+                  name="cost"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kosten (€)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          placeholder="0.00"
+                          {...field}
+                          value={field.value?.toString() || ""}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
+
+              {/* Contact Information */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Kontaktinformationen</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={bookingForm.control}
+                    name="contactPerson"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ansprechpartner</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={bookingForm.control}
+                    name="contactEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>E-Mail</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="E-Mail Adresse" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={bookingForm.control}
+                    name="contactPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefon</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Telefonnummer" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Notes */}
+              <FormField
+                control={bookingForm.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notizen</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Zusätzliche Informationen..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setShowBookingModal(false)}>

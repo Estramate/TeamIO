@@ -10,6 +10,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Users,
   Plus,
@@ -100,6 +101,9 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
     enabled: !!selectedClub?.id,
   });
 
+  const memberFees = memberFeesQuery.data || [];
+  const trainingFees = trainingFeesQuery.data || [];
+
   const { data: members = [] } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'members'],
     enabled: !!selectedClub?.id,
@@ -180,22 +184,22 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
         <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Aktive Mitgliedsbeiträge</p>
           <p className="text-2xl font-bold text-blue-600">
-            {memberFeesQuery.data?.filter((f: any) => f.status === 'active').length || 0}
+            {memberFees.filter((f: any) => f.status === 'active').length || 0}
           </p>
         </div>
         <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
           <p className="text-sm font-medium text-green-700 dark:text-green-300">Aktive Trainingsbeiträge</p>
           <p className="text-2xl font-bold text-green-600">
-            {trainingFeesQuery.data?.filter((f: any) => f.status === 'active').length || 0}
+            {trainingFees.filter((f: any) => f.status === 'active').length || 0}
           </p>
         </div>
         <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
           <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Monatliche Einnahmen</p>
           <p className="text-2xl font-bold text-purple-600">
             {(() => {
-              const memberMonthly = memberFeesQuery.data?.filter((f: any) => f.status === 'active' && f.period === 'monthly')
+              const memberMonthly = memberFees.filter((f: any) => f.status === 'active' && f.period === 'monthly')
                 .reduce((sum: number, f: any) => sum + Number(f.amount), 0) || 0;
-              const trainingMonthly = trainingFeesQuery.data?.filter((f: any) => f.status === 'active' && f.period === 'monthly')
+              const trainingMonthly = trainingFees.filter((f: any) => f.status === 'active' && f.period === 'monthly')
                 .reduce((sum: number, f: any) => sum + Number(f.amount), 0) || 0;
               return (memberMonthly + trainingMonthly).toLocaleString('de-DE');
             })()} €
@@ -205,12 +209,12 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
           <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Jährliche Einnahmen</p>
           <p className="text-2xl font-bold text-orange-600">
             {(() => {
-              const memberYearly = memberFeesQuery.data?.filter((f: any) => f.status === 'active')
+              const memberYearly = memberFees.filter((f: any) => f.status === 'active')
                 .reduce((sum: number, f: any) => {
                   const multiplier = f.period === 'monthly' ? 12 : f.period === 'quarterly' ? 4 : 1;
                   return sum + (Number(f.amount) * multiplier);
                 }, 0) || 0;
-              const trainingYearly = trainingFeesQuery.data?.filter((f: any) => f.status === 'active')
+              const trainingYearly = trainingFees.filter((f: any) => f.status === 'active')
                 .reduce((sum: number, f: any) => {
                   const multiplier = f.period === 'monthly' ? 12 : f.period === 'quarterly' ? 4 : f.period === 'one-time' ? 0 : 1;
                   return sum + (Number(f.amount) * multiplier);
@@ -381,14 +385,14 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     </div>
                   ))}
                 </div>
-              ) : memberFeesQuery.data?.length === 0 ? (
+              ) : memberFees.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>Keine Mitgliedsbeiträge definiert</p>
                   <p className="text-sm mt-2">Erstellen Sie automatische Beitragszahlungen für Mitglieder</p>
                 </div>
               ) : (
-                memberFeesQuery.data?.map((fee: any) => (
+                memberFees.map((fee: any) => (
                   <div key={fee.id} className="p-4 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -523,8 +527,8 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="team">Nur Teams</SelectItem>
-                                <SelectItem value="player">Nur Spieler</SelectItem>
+                                <SelectItem value="team">Teams</SelectItem>
+                                <SelectItem value="player">Spieler</SelectItem>
                                 <SelectItem value="both">Teams und Spieler</SelectItem>
                               </SelectContent>
                             </Select>
@@ -532,6 +536,76 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                           </FormItem>
                         )}
                       />
+
+                      {/* Teams auswählen */}
+                      {(trainingFeeForm.watch('targetType') === 'team' || trainingFeeForm.watch('targetType') === 'both') && (
+                        <FormField
+                          control={trainingFeeForm.control}
+                          name="teamIds"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Teams auswählen *</FormLabel>
+                              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto border rounded p-2">
+                                {teams?.map((team: any) => (
+                                  <div key={team.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`team-${team.id}`}
+                                      checked={field.value?.includes(team.id.toString())}
+                                      onCheckedChange={(checked) => {
+                                        const currentIds = field.value || [];
+                                        if (checked) {
+                                          field.onChange([...currentIds, team.id.toString()]);
+                                        } else {
+                                          field.onChange(currentIds.filter((id: string) => id !== team.id.toString()));
+                                        }
+                                      }}
+                                    />
+                                    <label htmlFor={`team-${team.id}`} className="text-sm">
+                                      {team.name}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+
+                      {/* Spieler auswählen */}
+                      {(trainingFeeForm.watch('targetType') === 'player' || trainingFeeForm.watch('targetType') === 'both') && (
+                        <FormField
+                          control={trainingFeeForm.control}
+                          name="playerIds"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Spieler auswählen *</FormLabel>
+                              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border rounded p-2">
+                                {players?.map((player: any) => (
+                                  <div key={player.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`player-${player.id}`}
+                                      checked={field.value?.includes(player.id.toString())}
+                                      onCheckedChange={(checked) => {
+                                        const currentIds = field.value || [];
+                                        if (checked) {
+                                          field.onChange([...currentIds, player.id.toString()]);
+                                        } else {
+                                          field.onChange(currentIds.filter((id: string) => id !== player.id.toString()));
+                                        }
+                                      }}
+                                    />
+                                    <label htmlFor={`player-${player.id}`} className="text-sm">
+                                      {player.firstName} {player.lastName}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
 
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
@@ -597,14 +671,14 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     </div>
                   ))}
                 </div>
-              ) : trainingFeesQuery.data?.length === 0 ? (
+              ) : trainingFees.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Dumbbell className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>Keine Trainingsbeiträge definiert</p>
                   <p className="text-sm mt-2">Erstellen Sie automatische Trainingsbeiträge für Spieler</p>
                 </div>
               ) : (
-                trainingFeesQuery.data?.map((fee: any) => (
+                trainingFees.map((fee: any) => (
                   <div key={fee.id} className="p-4 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -622,11 +696,26 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                             fee.period === 'one-time' ? 'Einmalig' : fee.period
                           }
                         </p>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {fee.targetType === 'team' ? `Teams: ${fee.teamIds?.length || 0}` :
-                           fee.targetType === 'player' ? `Spieler: ${fee.playerIds?.length || 0}` :
-                           `Teams: ${fee.teamIds?.length || 0}, Spieler: ${fee.playerIds?.length || 0}`}
-                        </p>
+                        <div className="text-xs text-muted-foreground mb-1 space-y-1">
+                          {fee.targetType === 'team' || fee.targetType === 'both' ? (
+                            <div>
+                              Teams: {fee.teamIds?.map((teamId: number) => {
+                                const team = teams?.find((t: any) => t.id === teamId);
+                                return team?.name;
+                              }).filter(Boolean).join(', ') || 'Keine'}
+                            </div>
+                          ) : null}
+                          
+                          {fee.targetType === 'player' || fee.targetType === 'both' ? (
+                            <div>
+                              Spieler: {fee.playerIds?.map((playerId: number) => {
+                                const player = players?.find((p: any) => p.id === playerId);
+                                return player ? `${player.firstName} ${player.lastName}` : null;
+                              }).filter(Boolean).slice(0, 3).join(', ')}
+                              {fee.playerIds?.length > 3 ? ` und ${fee.playerIds.length - 3} weitere` : ''}
+                            </div>
+                          ) : null}
+                        </div>
                         <p className="text-xs text-muted-foreground">
                           {format(new Date(fee.startDate), 'dd.MM.yyyy', { locale: de })} 
                           {fee.endDate ? ` - ${format(new Date(fee.endDate), 'dd.MM.yyyy', { locale: de })}` : ' - unbegrenzt'}

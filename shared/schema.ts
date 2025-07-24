@@ -532,32 +532,33 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
 // Form schema for bookings
 export const bookingFormSchema = createInsertSchema(bookings, {
   title: z.string().min(1, "Titel ist erforderlich"),
-  startTime: z.string().min(1, "Startzeit ist erforderlich"),
-  endTime: z.string().min(1, "Endzeit ist erforderlich"),
+  startTime: z.union([z.string(), z.date()]).transform((val) => new Date(val)),
+  endTime: z.union([z.string(), z.date()]).transform((val) => new Date(val)),
   type: z.string().min(1, "Typ ist erforderlich"),
-  facilityId: z.string().min(1, "Anlage ist erforderlich"),
 }).omit({
   id: true,
   clubId: true,
   createdAt: true,
   updatedAt: true,
 }).extend({
-  facilityId: z.string().transform((val) => parseInt(val)),
-  startTime: z.string().transform((val) => new Date(val)),
-  endTime: z.string().transform((val) => new Date(val)),
-  teamId: z.string().optional().nullable().transform((val) => 
-    val === '' || val === undefined || val === null ? null : parseInt(val)
+  facilityId: z.union([z.string(), z.number()]).transform((val) => 
+    typeof val === 'string' ? parseInt(val) : val
   ),
-  memberId: z.string().optional().nullable().transform((val) => 
-    val === '' || val === undefined || val === null ? null : parseInt(val)
+  teamId: z.union([z.string(), z.number(), z.null()]).optional().nullable().transform((val) => 
+    val === '' || val === undefined || val === null ? null : 
+    typeof val === 'string' ? parseInt(val) : val
   ),
-  participants: z.string().optional().nullable().transform((val) => {
+  memberId: z.union([z.string(), z.number(), z.null()]).optional().nullable().transform((val) => 
+    val === '' || val === undefined || val === null ? null : 
+    typeof val === 'string' ? parseInt(val) : val
+  ),
+  participants: z.union([z.string(), z.number(), z.null()]).optional().nullable().transform((val) => {
     if (val === '' || val === undefined || val === null) return null;
-    const parsed = parseInt(val);
-    return isNaN(parsed) ? null : parsed;
+    return typeof val === 'string' ? parseInt(val) : val;
   }),
-  cost: z.string().optional().nullable().transform((val) => 
-    val === '' || val === undefined || val === null ? null : parseFloat(val)
+  cost: z.union([z.string(), z.number(), z.null()]).optional().nullable().transform((val) => 
+    val === '' || val === undefined || val === null ? null : 
+    typeof val === 'string' ? parseFloat(val) : val
   ),
 });
 

@@ -616,80 +616,67 @@ export default function Bookings() {
               : "Beginnen Sie mit dem Hinzufügen Ihrer ersten Buchung."}
           </p>
         </div>
-      ) : (
-        <div className="space-y-3 sm:space-y-4">
+      ) : viewMode === "cards" ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredBookings.map((booking: any) => {
             const facility = facilities.find((f: any) => f.id === booking.facilityId);
             const startTime = new Date(booking.startTime);
             const endTime = new Date(booking.endTime);
             
+            // Typ-spezifische Farben
+            const getTypeColor = (type: string) => {
+              switch (type) {
+                case 'training': return 'from-blue-500 to-blue-600';
+                case 'match': return 'from-green-500 to-green-600';
+                case 'event': return 'from-purple-500 to-purple-600';
+                case 'maintenance': return 'from-orange-500 to-orange-600';
+                default: return 'from-gray-500 to-gray-600';
+              }
+            };
+
+            const getTypeBadgeColor = (type: string) => {
+              switch (type) {
+                case 'training': return 'bg-blue-100 text-blue-800 border-blue-200';
+                case 'match': return 'bg-green-100 text-green-800 border-green-200';
+                case 'event': return 'bg-purple-100 text-purple-800 border-purple-200';
+                case 'maintenance': return 'bg-orange-100 text-orange-800 border-orange-200';
+                default: return 'bg-gray-100 text-gray-800 border-gray-200';
+              }
+            };
+
+            const getTypeIcon = (type: string) => {
+              switch (type) {
+                case 'training': return '🏃‍♀️';
+                case 'match': return '⚽';
+                case 'event': return '🎉';
+                case 'maintenance': return '🔧';
+                default: return '📅';
+              }
+            };
+            
             return (
-              <Card key={booking.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4">
+              <Card key={booking.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md overflow-hidden">
+                {/* Farbiger Header basierend auf Typ */}
+                <div className={`h-2 bg-gradient-to-r ${getTypeColor(booking.type)}`}></div>
+                
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 truncate">
-                        {booking.title}
-                      </h3>
-                      {booking.description && (
-                        <p className="text-xs sm:text-sm text-muted-foreground mb-3 line-clamp-2">{booking.description}</p>
-                      )}
-                      
-                      <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                        <div className="flex items-center">
-                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          <span>{format(startTime, 'dd.MM.yyyy', { locale: de })}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          <span>
-                            {format(startTime, 'HH:mm')} - {format(endTime, 'HH:mm')}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          <span className="truncate">{facility?.name || 'Unbekannte Anlage'}</span>
-                        </div>
-                        {booking.participants && (
-                          <div className="flex items-center">
-                            <span>{booking.participants} Teilnehmer</span>
-                          </div>
-                        )}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">{getTypeIcon(booking.type)}</span>
+                        <h3 className="text-lg font-semibold text-foreground truncate">
+                          {booking.title}
+                        </h3>
                       </div>
+                      
+                      {booking.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{booking.description}</p>
+                      )}
                     </div>
                     
-                    <div className="flex flex-col items-end gap-2">
-                      <Badge 
-                        variant={
-                          booking.status === 'confirmed' ? 'default' :
-                          booking.status === 'pending' ? 'secondary' : 'destructive'
-                        }
-                      >
-                        {booking.status === 'confirmed' ? 'Bestätigt' :
-                         booking.status === 'pending' ? 'Ausstehend' : 'Storniert'}
-                      </Badge>
-                      <Badge variant="outline">
-                        {booking.type === 'training' ? 'Training' :
-                         booking.type === 'match' ? 'Spiel' : 'Veranstaltung'}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  {booking.contactPerson && (
-                    <div className="border-t border-gray-200 pt-4 mt-4">
-                      <div className="text-sm text-gray-600">
-                        <span className="font-medium">Kontaktperson:</span> {booking.contactPerson}
-                        {booking.contactEmail && (
-                          <span className="ml-2">({booking.contactEmail})</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-end mt-4">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -722,10 +709,172 @@ export default function Bookings() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4 mr-2 text-primary" />
+                      <span className="font-medium">{format(startTime, 'dd.MM.yyyy', { locale: de })}</span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="w-4 h-4 mr-2 text-primary" />
+                      <span className="font-medium">
+                        {format(startTime, 'HH:mm')} - {format(endTime, 'HH:mm')}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4 mr-2 text-primary" />
+                      <span className="font-medium truncate">{facility?.name || 'Unbekannte Anlage'}</span>
+                    </div>
+                    
+                    {booking.participants && (
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Users className="w-4 h-4 mr-2 text-primary" />
+                        <span className="font-medium">{booking.participants} Teilnehmer</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                    <Badge 
+                      className={`${getTypeBadgeColor(booking.type)} font-medium`}
+                    >
+                      {booking.type === 'training' ? 'Training' :
+                       booking.type === 'match' ? 'Spiel' : 
+                       booking.type === 'event' ? 'Veranstaltung' : 'Wartung'}
+                    </Badge>
+                    
+                    <Badge 
+                      variant={
+                        booking.status === 'confirmed' ? 'default' :
+                        booking.status === 'pending' ? 'secondary' : 'destructive'
+                      }
+                      className="font-medium"
+                    >
+                      {booking.status === 'confirmed' ? 'Bestätigt' :
+                       booking.status === 'pending' ? 'Ausstehend' : 'Storniert'}
+                    </Badge>
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
+        </div>
+      ) : (
+        // Tabellenansicht
+        <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Titel</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Datum</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Zeit</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Anlage</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Typ</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Teilnehmer</th>
+                  <th className="text-right py-3 px-4 font-medium text-muted-foreground text-sm">Aktionen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBookings.map((booking: any, index: number) => {
+                  const facility = facilities.find((f: any) => f.id === booking.facilityId);
+                  const startTime = new Date(booking.startTime);
+                  const endTime = new Date(booking.endTime);
+                  
+                  const getTypeBadgeColor = (type: string) => {
+                    switch (type) {
+                      case 'training': return 'bg-blue-100 text-blue-800 border-blue-200';
+                      case 'match': return 'bg-green-100 text-green-800 border-green-200';
+                      case 'event': return 'bg-purple-100 text-purple-800 border-purple-200';
+                      case 'maintenance': return 'bg-orange-100 text-orange-800 border-orange-200';
+                      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+                    }
+                  };
+                  
+                  return (
+                    <tr key={booking.id} className={`hover:bg-muted/50 transition-colors ${index !== filteredBookings.length - 1 ? 'border-b' : ''}`}>
+                      <td className="py-3 px-4">
+                        <div className="font-medium text-foreground">{booking.title}</div>
+                        {booking.description && (
+                          <div className="text-sm text-muted-foreground truncate max-w-xs">{booking.description}</div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        {format(startTime, 'dd.MM.yyyy', { locale: de })}
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        {format(startTime, 'HH:mm')} - {format(endTime, 'HH:mm')}
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        {facility?.name || 'Unbekannte Anlage'}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge className={`${getTypeBadgeColor(booking.type)} text-xs`}>
+                          {booking.type === 'training' ? 'Training' :
+                           booking.type === 'match' ? 'Spiel' : 
+                           booking.type === 'event' ? 'Veranstaltung' : 'Wartung'}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge 
+                          variant={
+                            booking.status === 'confirmed' ? 'default' :
+                            booking.status === 'pending' ? 'secondary' : 'destructive'
+                          }
+                          className="text-xs"
+                        >
+                          {booking.status === 'confirmed' ? 'Bestätigt' :
+                           booking.status === 'pending' ? 'Ausstehend' : 'Storniert'}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        {booking.participants || '-'}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewBooking(booking)}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Details anzeigen
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditBooking(booking)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleToggleStatus(booking)}
+                              className={booking.status === 'confirmed' ? 'text-orange-600' : 'text-green-600'}
+                            >
+                              {booking.status === 'confirmed' ? (
+                                <><X className="mr-2 h-4 w-4" />Stornieren</>
+                              ) : (
+                                <><Check className="mr-2 h-4 w-4" />Bestätigen</>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteBooking(booking)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Löschen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

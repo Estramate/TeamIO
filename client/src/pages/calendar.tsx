@@ -740,13 +740,13 @@ export default function Calendar() {
                     </h3>
                   </div>
                   
-                  <div className="flex h-[600px]">
+                  <div className="flex h-[900px] overflow-y-auto">
                     {/* Time column */}
                     <div className="w-20 border-r bg-muted/20">
                       {timeSlots.map((slot) => (
                         <div
                           key={slot.hour}
-                          className="h-12 border-b border-border/50 flex items-center justify-center text-xs text-muted-foreground"
+                          className="h-[50px] border-b border-border/50 flex items-center justify-center text-xs text-muted-foreground"
                         >
                           {slot.label}
                         </div>
@@ -768,8 +768,8 @@ export default function Calendar() {
                       {timeSlots.map((slot) => (
                         <div
                           key={slot.hour}
-                          className="absolute inset-x-0 h-12 border-b border-border/30"
-                          style={{ top: `${slot.position}%` }}
+                          className="absolute inset-x-0 h-[50px] border-b border-border/30"
+                          style={{ top: `${((slot.hour - 6) / 18) * 100}%` }}
                         />
                       ))}
                       
@@ -851,7 +851,7 @@ export default function Calendar() {
                   </div>
                   
                   {/* Timeline grid */}
-                  <div className="flex h-[600px] overflow-y-auto">
+                  <div className="flex h-[900px] overflow-y-auto">
                     {/* Time column */}
                     <div className="w-20 border-r bg-muted/20">
                       {timeSlots.map((slot) => (
@@ -883,8 +883,8 @@ export default function Calendar() {
                           {timeSlots.map((slot) => (
                             <div
                               key={slot.hour}
-                              className="absolute inset-x-0 h-12 border-b border-border/30"
-                              style={{ top: `${slot.position}%` }}
+                              className="absolute inset-x-0 h-[50px] border-b border-border/30"
+                              style={{ top: `${((slot.hour - 6) / 18) * 100}%` }}
                             />
                           ))}
                           

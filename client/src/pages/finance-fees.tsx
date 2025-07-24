@@ -15,9 +15,14 @@ import {
   Users,
   Plus,
   Dumbbell,
-  BarChart3
+  BarChart3,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Eye
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { useForm } from "react-hook-form";
@@ -60,6 +65,9 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
 
   const [isMemberFeeDialogOpen, setIsMemberFeeDialogOpen] = useState(false);
   const [isTrainingFeeDialogOpen, setIsTrainingFeeDialogOpen] = useState(false);
+  const [editingMemberFee, setEditingMemberFee] = useState<any>(null);
+  const [editingTrainingFee, setEditingTrainingFee] = useState<any>(null);
+  const [viewingFee, setViewingFee] = useState<any>(null);
 
   // Form initialization
   const memberFeeForm = useForm({
@@ -148,6 +156,28 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
     },
     onError: (error: any) => {
       toast({ title: "Fehler", description: error?.message || "Fehler beim Erstellen des Beitrags", variant: "destructive" });
+    }
+  });
+
+  const deleteMemberFeeMutation = useMutation({
+    mutationFn: (feeId: number) => apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/member-fees/${feeId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'member-fees'] });
+      toast({ title: "Mitgliedsbeitrag gelöscht", description: "Der Beitrag wurde erfolgreich entfernt." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Fehler", description: error?.message || "Fehler beim Löschen des Beitrags", variant: "destructive" });
+    }
+  });
+
+  const deleteTrainingFeeMutation = useMutation({
+    mutationFn: (feeId: number) => apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/training-fees/${feeId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'training-fees'] });
+      toast({ title: "Trainingsbeitrag gelöscht", description: "Der Beitrag wurde erfolgreich entfernt." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Fehler", description: error?.message || "Fehler beim Löschen des Beitrags", variant: "destructive" });
     }
   });
 
@@ -459,13 +489,39 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                           {fee.endDate ? ` - ${format(new Date(fee.endDate), 'dd.MM.yyyy', { locale: de })}` : ' - unbegrenzt'}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-blue-600 text-lg">{Number(fee.amount).toLocaleString('de-DE')} €</p>
-                        <p className="text-xs text-muted-foreground">
-                          {fee.period === 'monthly' ? 'pro Monat' :
-                           fee.period === 'quarterly' ? 'pro Quartal' :
-                           fee.period === 'yearly' ? 'pro Jahr' : ''}
-                        </p>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <p className="font-bold text-blue-600 text-lg">{Number(fee.amount).toLocaleString('de-DE')} €</p>
+                          <p className="text-xs text-muted-foreground">
+                            {fee.period === 'monthly' ? 'pro Monat' :
+                             fee.period === 'quarterly' ? 'pro Quartal' :
+                             fee.period === 'yearly' ? 'pro Jahr' : ''}
+                          </p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setViewingFee(fee)}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Details anzeigen
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setEditingMemberFee(fee)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => deleteMemberFeeMutation.mutate(fee.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Löschen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   </div>
@@ -803,107 +859,143 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            Beiträge-Verlauf (Monatlich)
+            Beiträge-Verlauf (Jahres-Übersicht)
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={(() => {
-                const months = [
-                  'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'
-                ];
-                
-                const currentYear = new Date().getFullYear();
-                
-                return months.map((month, index) => {
-                  const monthDate = new Date(currentYear, index, 1);
+          <div className="h-80 overflow-x-auto">
+            <div style={{ minWidth: '1200px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={(() => {
+                  // Erstelle Daten für mehrere Jahre basierend auf den Beiträgen
+                  const years = [];
+                  const currentYear = new Date().getFullYear();
                   
-                  // Berechne Mitgliedsbeiträge für den Monat (berücksichtige Zeiträume)
-                  const memberRevenue = memberFees.filter((f: any) => f.status === 'active')
-                    .reduce((sum: number, f: any) => {
-                      const startDate = new Date(f.startDate);
-                      const endDate = f.endDate ? new Date(f.endDate) : null;
-                      
-                      // Prüfe ob der Monat im Zeitraum liegt
-                      if (monthDate < startDate || (endDate && monthDate > endDate)) {
-                        return sum;
-                      }
-                      
-                      if (f.period === 'monthly') return sum + Number(f.amount);
-                      if (f.period === 'quarterly' && index % 3 === 0) return sum + Number(f.amount);
-                      if (f.period === 'yearly' && index === 0) return sum + Number(f.amount);
-                      return sum;
-                    }, 0);
+                  // Sammle alle Jahre aus den Beiträgen
+                  [...memberFees, ...trainingFees].forEach((fee: any) => {
+                    if (fee.startDate) {
+                      const startYear = new Date(fee.startDate).getFullYear();
+                      if (!years.includes(startYear)) years.push(startYear);
+                    }
+                    if (fee.endDate) {
+                      const endYear = new Date(fee.endDate).getFullYear();
+                      if (!years.includes(endYear)) years.push(endYear);
+                    }
+                  });
                   
-                  // Berechne Trainingsbeiträge für den Monat (berücksichtige Zeiträume)
-                  const trainingRevenue = trainingFees.filter((f: any) => f.status === 'active')
-                    .reduce((sum: number, f: any) => {
-                      const startDate = new Date(f.startDate);
-                      const endDate = f.endDate ? new Date(f.endDate) : null;
-                      
-                      // Prüfe ob der Monat im Zeitraum liegt
-                      if (monthDate < startDate || (endDate && monthDate > endDate)) {
-                        return sum;
-                      }
-                      
-                      const amount = Number(f.amount);
-                      let multiplier = 0;
-                      
-                      if (f.period === 'monthly') multiplier = 1;
-                      else if (f.period === 'quarterly' && index % 3 === 0) multiplier = 1;
-                      else if (f.period === 'yearly' && index === 0) multiplier = 1;
-                      
-                      if (multiplier > 0) {
-                        let teamCount = 0;
-                        let playerCount = 0;
-                        
-                        try {
-                          if (f.targetType === 'team' || f.targetType === 'both') {
-                            const teamIds = Array.isArray(f.teamIds) ? f.teamIds : 
-                                           typeof f.teamIds === 'string' ? JSON.parse(f.teamIds) : [];
-                            teamCount = teamIds.length;
+                  // Füge aktuelles Jahr hinzu falls nicht vorhanden
+                  if (!years.includes(currentYear)) years.push(currentYear);
+                  
+                  // Sortiere Jahre
+                  years.sort();
+                  
+                  const data = [];
+                  
+                  for (const year of years) {
+                    const months = [
+                      'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+                      'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'
+                    ];
+                    
+                    months.forEach((month, index) => {
+                      const monthDate = new Date(year, index, 1);
+                  
+                      // Berechne Mitgliedsbeiträge für den Monat (berücksichtige Zeiträume)
+                      const memberRevenue = memberFees.filter((f: any) => f.status === 'active')
+                        .reduce((sum: number, f: any) => {
+                          const startDate = new Date(f.startDate);
+                          const endDate = f.endDate ? new Date(f.endDate) : null;
+                          
+                          // Prüfe ob der Monat im Zeitraum liegt
+                          if (monthDate < startDate || (endDate && monthDate > endDate)) {
+                            return sum;
                           }
-                          if (f.targetType === 'player' || f.targetType === 'both') {
-                            const playerIds = Array.isArray(f.playerIds) ? f.playerIds : 
-                                             typeof f.playerIds === 'string' ? JSON.parse(f.playerIds) : [];
-                            playerCount = playerIds.length;
+                          
+                          if (f.period === 'monthly') return sum + Number(f.amount);
+                          if (f.period === 'quarterly' && index % 3 === 0) return sum + Number(f.amount);
+                          if (f.period === 'yearly' && index === 0) return sum + Number(f.amount);
+                          return sum;
+                        }, 0);
+                      
+                      // Berechne Trainingsbeiträge für den Monat (berücksichtige Zeiträume)
+                      const trainingRevenue = trainingFees.filter((f: any) => f.status === 'active')
+                        .reduce((sum: number, f: any) => {
+                          const startDate = new Date(f.startDate);
+                          const endDate = f.endDate ? new Date(f.endDate) : null;
+                          
+                          // Prüfe ob der Monat im Zeitraum liegt
+                          if (monthDate < startDate || (endDate && monthDate > endDate)) {
+                            return sum;
                           }
-                        } catch (e) {
-                          // Fallback für fehlerhafte JSON-Daten
-                          teamCount = 0;
-                          playerCount = 0;
-                        }
-                        
-                        const totalTargets = teamCount + playerCount;
-                        return sum + (amount * Math.max(1, totalTargets));
-                      }
-                      return sum;
-                    }, 0);
+                          
+                          const amount = Number(f.amount);
+                          let multiplier = 0;
+                          
+                          if (f.period === 'monthly') multiplier = 1;
+                          else if (f.period === 'quarterly' && index % 3 === 0) multiplier = 1;
+                          else if (f.period === 'yearly' && index === 0) multiplier = 1;
+                          
+                          if (multiplier > 0) {
+                            let teamCount = 0;
+                            let playerCount = 0;
+                            
+                            try {
+                              if (f.targetType === 'team' || f.targetType === 'both') {
+                                const teamIds = Array.isArray(f.teamIds) ? f.teamIds : 
+                                               typeof f.teamIds === 'string' ? JSON.parse(f.teamIds) : [];
+                                teamCount = teamIds.length;
+                              }
+                              if (f.targetType === 'player' || f.targetType === 'both') {
+                                const playerIds = Array.isArray(f.playerIds) ? f.playerIds : 
+                                                 typeof f.playerIds === 'string' ? JSON.parse(f.playerIds) : [];
+                                playerCount = playerIds.length;
+                              }
+                            } catch (e) {
+                              // Fallback für fehlerhafte JSON-Daten
+                              teamCount = 0;
+                              playerCount = 0;
+                            }
+                            
+                            const totalTargets = teamCount + playerCount;
+                            return sum + (amount * Math.max(1, totalTargets));
+                          }
+                          return sum;
+                        }, 0);
+                      
+                      data.push({
+                        period: `${month} ${year}`,
+                        year: year,
+                        month: month,
+                        mitgliedsbeitraege: memberRevenue,
+                        trainingsbeitraege: trainingRevenue,
+                        gesamt: memberRevenue + trainingRevenue
+                      });
+                    });
+                  }
                   
-                  return {
-                    month,
-                    mitgliedsbeitraege: memberRevenue,
-                    trainingsbeitraege: trainingRevenue,
-                    gesamt: memberRevenue + trainingRevenue
-                  };
-                });
-              })()}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value: number, name: string) => [
-                    `${value.toLocaleString('de-DE')} €`, 
-                    name === 'mitgliedsbeitraege' ? 'Mitgliedsbeiträge' :
-                    name === 'trainingsbeitraege' ? 'Trainingsbeiträge' : 'Gesamt'
-                  ]}
-                />
-                <Bar dataKey="mitgliedsbeitraege" stackId="a" fill="#3b82f6" name="mitgliedsbeitraege" />
-                <Bar dataKey="trainingsbeitraege" stackId="a" fill="#10b981" name="trainingsbeitraege" />
-              </BarChart>
-            </ResponsiveContainer>
+                  return data;
+                })()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="period" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    interval={0}
+                  />
+                  <YAxis />
+                  <Tooltip 
+                    formatter={(value: number, name: string) => [
+                      `${value.toLocaleString('de-DE')} €`, 
+                      name === 'mitgliedsbeitraege' ? 'Mitgliedsbeiträge' :
+                      name === 'trainingsbeitraege' ? 'Trainingsbeiträge' : 'Gesamt'
+                    ]}
+                  />
+                  <Bar dataKey="mitgliedsbeitraege" stackId="a" fill="#3b82f6" name="mitgliedsbeitraege" />
+                  <Bar dataKey="trainingsbeitraege" stackId="a" fill="#10b981" name="trainingsbeitraege" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </CardContent>
       </Card>

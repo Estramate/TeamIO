@@ -894,6 +894,32 @@ export class DatabaseStorage implements IStorage {
     const [trainingFee] = await db.insert(trainingFees).values(trainingFeeData).returning();
     return trainingFee;
   }
+
+  async updateMemberFee(id: number, memberFeeData: Partial<InsertMemberFee>): Promise<MemberFee> {
+    const [memberFee] = await db
+      .update(memberFees)
+      .set({ ...memberFeeData, updatedAt: new Date() })
+      .where(eq(memberFees.id, id))
+      .returning();
+    return memberFee;
+  }
+
+  async deleteMemberFee(id: number): Promise<void> {
+    await db.delete(memberFees).where(eq(memberFees.id, id));
+  }
+
+  async updateTrainingFee(id: number, trainingFeeData: Partial<InsertTrainingFee>): Promise<TrainingFee> {
+    const [trainingFee] = await db
+      .update(trainingFees)
+      .set({ ...trainingFeeData, updatedAt: new Date() })
+      .where(eq(trainingFees.id, id))
+      .returning();
+    return trainingFee;
+  }
+
+  async deleteTrainingFee(id: number): Promise<void> {
+    await db.delete(trainingFees).where(eq(trainingFees.id, id));
+  }
 }
 
 export const storage = new DatabaseStorage();

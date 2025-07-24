@@ -1,0 +1,175 @@
+finance-fees.tsx:1010 === CHART DATA GENERATION START ===
+finance-fees.tsx:1011 Selected Year: 2026
+finance-fees.tsx:1017 Member Fees Count: 1
+finance-fees.tsx:1018 Training Fees Count: 1
+finance-fees.tsx:1019 All Member Fees: [{…}]
+finance-fees.tsx:1020 All Training Fees: [{…}]
+finance-fees.tsx:1032 --- Processing Month 1: Jan 2026 ---
+finance-fees.tsx:1036 Processing 1 member fees for Jan 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2025-12-31T23:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Jan 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2025-12-31T23:00:00.000Z
+     Is in range: false
+ Final data point for Jan 2026: {month: 'Jan 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+ --- Processing Month 2: Feb 2026 ---
+ Processing 1 member fees for Feb 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-01-31T23:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Feb 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-01-31T23:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+     Current training total: €275
+ Final data point for Feb 2026: {month: 'Feb 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+ --- Processing Month 3: Mär 2026 ---
+ Processing 1 member fees for Mär 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-02-28T23:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Mär 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-02-28T23:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+     Current training total: €275
+ Final data point for Mär 2026: {month: 'Mär 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+ --- Processing Month 4: Apr 2026 ---
+ Processing 1 member fees for Apr 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-03-31T22:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Apr 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-03-31T22:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+     Current training total: €275
+ Final data point for Apr 2026: {month: 'Apr 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+ --- Processing Month 5: Mai 2026 ---
+ Processing 1 member fees for Mai 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-04-30T22:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Mai 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-04-30T22:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+     Current training total: €275
+ Final data point for Mai 2026: {month: 'Mai 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+ --- Processing Month 6: Jun 2026 ---
+ Processing 1 member fees for Jun 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-05-31T22:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Jun 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-05-31T22:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+     Current training total: €275
+ Final data point for Jun 2026: {month: 'Jun 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+ --- Processing Month 7: Jul 2026 ---
+ Processing 1 member fees for Jul 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-06-30T22:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Jul 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-06-30T22:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+     Current training total: €275
+ Final data point for Jul 2026: {month: 'Jul 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+ --- Processing Month 8: Aug 2026 ---
+ Processing 1 member fees for Aug 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-07-31T22:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Aug 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-07-31T22:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+     Current training total: €275
+ Final data point for Aug 2026: {month: 'Aug 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+ --- Processing Month 9: Sep 2026 ---
+ Processing 1 member fees for Sep 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-08-31T22:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Sep 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-08-31T22:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+     Current training total: €275
+ Final data point for Sep 2026: {month: 'Sep 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+ --- Processing Month 10: Okt 2026 ---
+ Processing 1 member fees for Okt 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-09-30T22:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Okt 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-09-30T22:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+     Current training total: €275
+ Final data point for Okt 2026: {month: 'Okt 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+ --- Processing Month 11: Nov 2026 ---
+ Processing 1 member fees for Nov 2026
+   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-10-31T23:00:00.000Z
+     Is in range: false
+ Processing 1 training fees for Nov 2026
+   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-10-31T23:00:00.000Z
+     Is in range: true
+     Team multiplier: 11 teams
+     Final multiplier: 11
+     Adding monthly: €25 x 11 = €275
+finance-fees.tsx:1166     Current training total: €275
+finance-fees.tsx:1184 Final data point for Nov 2026: {month: 'Nov 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+finance-fees.tsx:1032 --- Processing Month 12: Dez 2026 ---
+finance-fees.tsx:1036 Processing 1 member fees for Dez 2026
+finance-fees.tsx:1039   Member Fee 1: {id: 2, amount: '25.00', period: 'monthly', status: 'active', startDate: '2025-07-01', …}
+finance-fees.tsx:1053     Start: 2025-07-01T00:00:00.000Z, End: 2025-12-31T00:00:00.000Z, Checking: 2026-11-30T23:00:00.000Z
+finance-fees.tsx:1057     Is in range: false
+finance-fees.tsx:1094 Processing 1 training fees for Dez 2026
+finance-fees.tsx:1097   Training Fee 1: {id: 1, name: 'Ausbildungsbeitrag', amount: '25.00', period: 'monthly', status: 'active', …}
+finance-fees.tsx:1115     Start: 2026-01-01T00:00:00.000Z, End: 2026-12-31T00:00:00.000Z, Checking: 2026-11-30T23:00:00.000Z
+finance-fees.tsx:1119     Is in range: true
+finance-fees.tsx:1131     Team multiplier: 11 teams
+finance-fees.tsx:1144     Final multiplier: 11
+finance-fees.tsx:1150     Adding monthly: €25 x 11 = €275
+finance-fees.tsx:1166     Current training total: €275
+finance-fees.tsx:1184 Final data point for Dez 2026: {month: 'Dez 2026', mitgliedsbeiträge: 0, trainingsbeiträge: 275, gesamt: 275}
+finance-fees.tsx:1188 === FINAL CHART DATA FOR YEAR 2026 ===
+finance-fees.tsx:1189 Data array length: 12
+finance-fees.tsx:1190 Full data: (12) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+finance-fees.tsx:1191 Data keys sample: (4) ['month', 'mitgliedsbeiträge', 'trainingsbeiträge', 'gesamt']
+finance-fees.tsx:1192 === CHART DATA GENERATION END ===

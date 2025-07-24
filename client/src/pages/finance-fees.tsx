@@ -317,19 +317,38 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                         />
                       </div>
 
-                      <FormField
-                        control={memberFeeForm.control}
-                        name="startDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Startdatum *</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={memberFeeForm.control}
+                          name="startDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Von (Startdatum) *</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={memberFeeForm.control}
+                          name="endDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Bis (Enddatum)</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Optional: Leer lassen für unbegrenzten Zeitraum
+                              </p>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
                       <div className="flex justify-end gap-2 pt-4">
                         <Button
@@ -387,7 +406,8 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                           }
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Start: {format(new Date(fee.startDate), 'dd.MM.yyyy', { locale: de })}
+                          {format(new Date(fee.startDate), 'dd.MM.yyyy', { locale: de })} 
+                          {fee.endDate ? ` - ${format(new Date(fee.endDate), 'dd.MM.yyyy', { locale: de })}` : ' - unbegrenzt'}
                         </p>
                       </div>
                       <div className="text-right">
@@ -513,19 +533,38 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                         )}
                       />
 
-                      <FormField
-                        control={trainingFeeForm.control}
-                        name="startDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Startdatum *</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={trainingFeeForm.control}
+                          name="startDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Von (Startdatum) *</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={trainingFeeForm.control}
+                          name="endDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Bis (Enddatum)</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Optional: Leer lassen für unbegrenzten Zeitraum
+                              </p>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
                       <div className="flex justify-end gap-2 pt-4">
                         <Button
@@ -583,10 +622,14 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                             fee.period === 'one-time' ? 'Einmalig' : fee.period
                           }
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground mb-1">
                           {fee.targetType === 'team' ? `Teams: ${fee.teamIds?.length || 0}` :
                            fee.targetType === 'player' ? `Spieler: ${fee.playerIds?.length || 0}` :
                            `Teams: ${fee.teamIds?.length || 0}, Spieler: ${fee.playerIds?.length || 0}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(fee.startDate), 'dd.MM.yyyy', { locale: de })} 
+                          {fee.endDate ? ` - ${format(new Date(fee.endDate), 'dd.MM.yyyy', { locale: de })}` : ' - unbegrenzt'}
                         </p>
                       </div>
                       <div className="text-right">

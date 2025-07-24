@@ -61,15 +61,15 @@ export default function ActivityFeed({ activities = [] }: ActivityFeedProps) {
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border h-full flex flex-col">
-      <div className="p-4 sm:p-6 flex-1 flex flex-col">
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
+      <div className="p-4 sm:p-6 h-full flex flex-col">
+        <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <h3 className="text-base sm:text-lg font-semibold text-foreground">Neueste Aktivitäten</h3>
           <button className="text-primary hover:text-primary/80 text-xs sm:text-sm font-medium">
             Alle anzeigen
           </button>
         </div>
         
-        <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+        <div className="space-y-4 flex-1 overflow-y-auto pr-2" style={{ minHeight: 0 }}>
           {activities.map((activity, index) => {
             const Icon = getActivityIcon(activity.icon);
             const iconClasses = getActivityIconBg(activity.icon);

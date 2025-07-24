@@ -83,9 +83,9 @@ export default function TeamStatus({ clubId }: TeamStatusProps) {
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 h-full flex flex-col">
-      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Team-Status</h3>
+      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 flex-shrink-0">Team-Status</h3>
       
-      <div className="grid grid-cols-2 gap-4 flex-shrink-0">
+      <div className="grid grid-cols-2 gap-4 flex-1">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           

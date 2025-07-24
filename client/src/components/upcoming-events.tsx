@@ -44,14 +44,14 @@ export default function UpcomingEvents({ clubId }: UpcomingEventsProps) {
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 h-full flex flex-col">
-      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Nächste Termine</h3>
+      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 flex-shrink-0">Nächste Termine</h3>
       
       {upcomingEvents.length === 0 ? (
         <div className="text-center py-4 flex-1 flex items-center justify-center">
           <p className="text-muted-foreground text-sm">Keine anstehenden Termine</p>
         </div>
       ) : (
-        <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+        <div className="space-y-4 flex-1 overflow-y-auto pr-2" style={{ minHeight: 0 }}>
           {upcomingEvents.map((item: any, index: number) => {
             const itemDate = new Date(item.date);
             // Prüfe auf valides Datum

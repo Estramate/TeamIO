@@ -354,17 +354,19 @@ export default function Bookings() {
     },
     onSuccess: (data: any) => {
       console.log("DEBUG: Availability check result:", data);
+      setIsCheckingAvailability(false);
       setAvailabilityStatus({
-        available: data.available,
-        maxConcurrent: data.maxConcurrent,
-        currentBookings: data.currentBookings,
+        available: data.available || false,
+        maxConcurrent: data.maxConcurrent || 1,
+        currentBookings: data.currentBookings || 0,
         message: data.available 
-          ? `Verfügbar (${data.currentBookings}/${data.maxConcurrent} Buchungen)`
-          : `Nicht verfügbar (${data.currentBookings}/${data.maxConcurrent} Buchungen)`
+          ? `Verfügbar (${data.currentBookings || 0}/${data.maxConcurrent || 1} Buchungen)`
+          : `Nicht verfügbar (${data.currentBookings || 0}/${data.maxConcurrent || 1} Buchungen)`
       });
     },
     onError: (error: any) => {
       console.error("DEBUG: Availability check error:", error);
+      setIsCheckingAvailability(false);
       setAvailabilityStatus({
         available: false,
         message: "Fehler bei der Verfügbarkeitsprüfung"
@@ -402,7 +404,6 @@ export default function Bookings() {
     } else {
       setAvailabilityStatus(null);
     }
-    setIsCheckingAvailability(false);
   };
 
   const handleCreateBooking = () => {

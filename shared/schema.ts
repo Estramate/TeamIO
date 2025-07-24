@@ -549,9 +549,11 @@ export const bookingFormSchema = createInsertSchema(bookings, {
   memberId: z.string().optional().nullable().transform((val) => 
     val === '' || val === undefined || val === null ? null : parseInt(val)
   ),
-  participants: z.string().optional().nullable().transform((val) => 
-    val === '' || val === undefined || val === null ? null : parseInt(val)
-  ),
+  participants: z.string().optional().nullable().transform((val) => {
+    if (val === '' || val === undefined || val === null) return null;
+    const parsed = parseInt(val);
+    return isNaN(parsed) ? null : parsed;
+  }),
   cost: z.string().optional().nullable().transform((val) => 
     val === '' || val === undefined || val === null ? null : parseFloat(val)
   ),

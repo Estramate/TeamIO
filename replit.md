@@ -11,6 +11,14 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 24, 2025 (Neueste)
+- **Umfassende Datumsvalidierung implementiert**: Verhindert unmögliche Datumseingaben in allen Formularen
+  - Finance-Fees: Enddatum darf nicht vor Startdatum liegen für Mitglieds- und Trainingsbeiträge
+  - Members: Geburtsdatum nicht in der Zukunft, Beitrittsdatum nicht vor Geburtsdatum
+  - Players: Geburtsdatum nicht in der Zukunft, Vertragsende nicht vor Vertragsbeginn, Vertragsbeginn nicht vor Geburtsdatum
+  - Finance: Fälligkeitsdatum nicht vor Transaktionsdatum für alle Finanz-Einträge
+  - Intelligente Fehlermeldungen leiten Benutzer zur korrekten Datumseingabe an
+  - Verhindert Datenbankfehler durch inkonsistente Datumsbereiche
+
 - **Umfassendes Finance-Dashboard**: Vollständig überarbeitete Finanz-Übersichtsseite mit reichhaltigen Informationen
   - Dashboard-Sektion mit Transaktionsverlauf-Diagramm und Monatsstatistiken hinzugefügt
   - "Neueste Transaktionen" Übersicht mit klickbaren Elementen für schnelle Details

@@ -50,6 +50,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useClubStore } from "@/lib/clubStore";
 import { usePage } from "@/contexts/PageContext";
 import { Player, insertPlayerSchema, type InsertPlayer, Team } from "@shared/schema";
+import { z } from "zod";
 import {
   Search,
   UserPlus,
@@ -71,6 +72,42 @@ const positionOptions = [
   { value: "Mittelfeld", label: "Mittelfeld" },
   { value: "Sturm", label: "Sturm" },
 ];
+
+// Erweiterte Spieler-Validierung mit Datumslogik
+const playerFormSchema = insertPlayerSchema.omit({ clubId: true }).refine((data) => {
+  // Prüfe dass Geburtsdatum nicht in der Zukunft liegt
+  if (data.birthDate) {
+    const birthDate = new Date(data.birthDate);
+    const today = new Date();
+    return birthDate <= today;
+  }
+  return true;
+}, {
+  message: "Geburtsdatum darf nicht in der Zukunft liegen",
+  path: ["birthDate"]
+}).refine((data) => {
+  // Prüfe dass Vertragsende nicht vor Vertragsbeginn liegt
+  if (data.contractEnd && data.contractStart) {
+    const contractStart = new Date(data.contractStart);
+    const contractEnd = new Date(data.contractEnd);
+    return contractEnd >= contractStart;
+  }
+  return true;
+}, {
+  message: "Vertragsende darf nicht vor dem Vertragsbeginn liegen",
+  path: ["contractEnd"]
+}).refine((data) => {
+  // Prüfe dass Vertragsbeginn nicht vor Geburtsdatum liegt
+  if (data.contractStart && data.birthDate) {
+    const birthDate = new Date(data.birthDate);
+    const contractStart = new Date(data.contractStart);
+    return contractStart >= birthDate;
+  }
+  return true;
+}, {
+  message: "Vertragsbeginn darf nicht vor dem Geburtsdatum liegen",
+  path: ["contractStart"]
+});
 
 const statusOptions = [
   { value: "active", label: "Aktiv" },
@@ -130,7 +167,7 @@ export default function Players() {
 
   // Form for creating/editing players
   const form = useForm<InsertPlayer>({
-    resolver: zodResolver(insertPlayerSchema.omit({ clubId: true })),
+    resolver: zodResolver(playerFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",

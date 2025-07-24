@@ -30,7 +30,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 
-// Form schemas
+// Form schemas mit Datumsvalidierung
 const memberFeeFormSchema = z.object({
   memberId: z.string().min(1, "Mitglied ist erforderlich"),
   feeType: z.enum(['membership', 'training', 'registration', 'equipment']),
@@ -39,6 +39,17 @@ const memberFeeFormSchema = z.object({
   startDate: z.string().min(1, "Startdatum ist erforderlich"),
   endDate: z.string().optional(),
   description: z.string().optional(),
+}).refine((data) => {
+  // Prüfe dass Enddatum nicht vor Startdatum liegt
+  if (data.endDate && data.startDate) {
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
+    return endDate >= startDate;
+  }
+  return true;
+}, {
+  message: "Enddatum darf nicht vor dem Startdatum liegen",
+  path: ["endDate"]
 });
 
 const trainingFeeFormSchema = z.object({
@@ -52,6 +63,17 @@ const trainingFeeFormSchema = z.object({
   targetType: z.enum(['team', 'player', 'both']),
   teamIds: z.array(z.string()).optional(),
   playerIds: z.array(z.string()).optional(),
+}).refine((data) => {
+  // Prüfe dass Enddatum nicht vor Startdatum liegt
+  if (data.endDate && data.startDate) {
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
+    return endDate >= startDate;
+  }
+  return true;
+}, {
+  message: "Enddatum darf nicht vor dem Startdatum liegen",
+  path: ["endDate"]
 });
 
 interface FeesTabContentProps {

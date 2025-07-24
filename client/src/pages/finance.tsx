@@ -60,7 +60,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 
-// Form schemas
+// Form schemas mit Datumsvalidierung
 const financeFormSchema = z.object({
   type: z.enum(['income', 'expense']),
   category: z.string().min(1, "Kategorie ist erforderlich"),
@@ -73,11 +73,19 @@ const financeFormSchema = z.object({
   status: z.enum(['pending', 'paid', 'overdue', 'cancelled']),
   priority: z.enum(['low', 'normal', 'high', 'urgent']),
   recurring: z.boolean().optional(),
-  recurringInterval: z.enum(['monthly', 'quarterly', 'yearly']).optional().or(z.literal('')),
+  recurringInterval: z.enum(['weekly', 'monthly', 'quarterly', 'yearly']).optional(),
   notes: z.string().optional(),
-  memberId: z.string().optional(),
-  playerId: z.string().optional(),
-  teamId: z.string().optional(),
+}).refine((data) => {
+  // Prüfe dass Fälligkeitsdatum nicht vor Transaktionsdatum liegt
+  if (data.dueDate && data.date) {
+    const transactionDate = new Date(data.date);
+    const dueDate = new Date(data.dueDate);
+    return dueDate >= transactionDate;
+  }
+  return true;
+}, {
+  message: "Fälligkeitsdatum darf nicht vor dem Transaktionsdatum liegen",
+  path: ["dueDate"]
 });
 
 const memberFeeFormSchema = z.object({
@@ -88,6 +96,17 @@ const memberFeeFormSchema = z.object({
   startDate: z.string().min(1, "Startdatum ist erforderlich"),
   endDate: z.string().optional(),
   notes: z.string().optional(),
+}).refine((data) => {
+  // Prüfe dass Enddatum nicht vor Startdatum liegt
+  if (data.endDate && data.startDate) {
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
+    return endDate >= startDate;
+  }
+  return true;
+}, {
+  message: "Enddatum darf nicht vor dem Startdatum liegen",
+  path: ["endDate"]
 });
 
 const trainingFeeFormSchema = z.object({
@@ -99,6 +118,17 @@ const trainingFeeFormSchema = z.object({
   startDate: z.string().min(1, "Startdatum ist erforderlich"),
   endDate: z.string().optional(),
   notes: z.string().optional(),
+}).refine((data) => {
+  // Prüfe dass Enddatum nicht vor Startdatum liegt
+  if (data.endDate && data.startDate) {
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
+    return endDate >= startDate;
+  }
+  return true;
+}, {
+  message: "Enddatum darf nicht vor dem Startdatum liegen",
+  path: ["endDate"]
 });
 
 export default function Finance() {

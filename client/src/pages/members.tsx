@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-// Form validation schema
+// Form validation schema mit Datumsvalidierung
 const memberFormSchema = z.object({
   firstName: z.string().min(1, "Vorname ist erforderlich"),
   lastName: z.string().min(1, "Nachname ist erforderlich"),
@@ -32,6 +32,28 @@ const memberFormSchema = z.object({
   status: z.enum(["active", "inactive", "suspended"]).default("active"),
   joinDate: z.string().optional(),
   notes: z.string().optional(),
+}).refine((data) => {
+  // Prüfe dass Geburtsdatum nicht in der Zukunft liegt
+  if (data.birthDate) {
+    const birthDate = new Date(data.birthDate);
+    const today = new Date();
+    return birthDate <= today;
+  }
+  return true;
+}, {
+  message: "Geburtsdatum darf nicht in der Zukunft liegen",
+  path: ["birthDate"]
+}).refine((data) => {
+  // Prüfe dass Beitrittsdatum nicht vor Geburtsdatum liegt
+  if (data.joinDate && data.birthDate) {
+    const birthDate = new Date(data.birthDate);
+    const joinDate = new Date(data.joinDate);
+    return joinDate >= birthDate;
+  }
+  return true;
+}, {
+  message: "Beitrittsdatum darf nicht vor dem Geburtsdatum liegen",
+  path: ["joinDate"]
 });
 
 type MemberFormData = z.infer<typeof memberFormSchema>;

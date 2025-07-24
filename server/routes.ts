@@ -9,6 +9,7 @@ import {
   insertTeamSchema,
   insertFacilitySchema,
   insertBookingSchema,
+  bookingFormSchema,
   insertEventSchema,
   insertFinanceSchema,
   insertPlayerSchema,

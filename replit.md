@@ -10,7 +10,23 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### January 23, 2025 (Latest)
+### Januar 24, 2025 (Neueste)
+- **Umfassendes Finance-Dashboard**: Vollständig überarbeitete Finanz-Übersichtsseite mit reichhaltigen Informationen
+  - Dashboard-Sektion mit Transaktionsverlauf-Diagramm und Monatsstatistiken hinzugefügt
+  - "Neueste Transaktionen" Übersicht mit klickbaren Elementen für schnelle Details
+  - Kategorie-Aufschlüsselung für Einnahmen und Ausgaben mit farbkodierten Bereichen
+  - Interaktive Statistiken: größte Einnahme/Ausgabe, Durchschnitt pro Transaktion, tägliche Aktivität
+  - Leere Zustände für neue Benutzer mit ansprechenden Platzhaltern und Handlungsaufforderungen
+  - Responsive Design mit adaptiven Grids für optimale Darstellung auf allen Geräten
+
+- **Finance-Module CRUD-Funktionalität komplett repariert**: Alle Erstellungs- und Bearbeitungsfunktionen funktionieren einwandfrei
+  - Edit-Modal Form-Validierungsfehler für recurringInterval Enum behoben (akzeptiert jetzt leere Strings)
+  - Separates editFinanceForm Schema implementiert zur Vermeidung von Konflikten zwischen Create und Edit
+  - Automatisches Form-Reset nach erfolgreichem Erstellen neuer Transaktionen
+  - Umfassende Console-Logging für Debugging und Fehlerverfolgung implementiert
+  - Alle CRUD-Operationen (Create, Read, Update, Delete) vollständig funktionsfähig
+
+### Januar 23, 2025 (Frühere Updates)
 - **Unified Filter Layout Implementation**: Applied consistent filter design across all management pages
   - Top row: Search field and filter dropdowns with rounded-xl styling and proper heights (h-10)
   - Bottom row: View toggle buttons (Cards/List) on left, blue "Hinzufügen" button on right with sm:ml-auto

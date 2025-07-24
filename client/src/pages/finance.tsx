@@ -712,6 +712,167 @@ export default function Finance() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Dashboard Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Transactions Chart */}
+              <div className="bg-card rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  Transaktionsverlauf (Letzte 30 Tage)
+                </h3>
+                <div className="h-64 flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Diagramm wird geladen...</p>
+                    <p className="text-sm">Zeigt Einnahmen vs. Ausgaben</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="bg-card rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-yellow-600" />
+                  Monatsstatistiken
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <span className="text-sm font-medium">Größte Einnahme</span>
+                    <span className="font-bold text-green-600">
+                      {Math.max(...finances.filter((f: any) => f.type === 'income').map((f: any) => f.amount), 0).toLocaleString('de-DE')} €
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <span className="text-sm font-medium">Größte Ausgabe</span>
+                    <span className="font-bold text-red-600">
+                      {Math.max(...finances.filter((f: any) => f.type === 'expense').map((f: any) => f.amount), 0).toLocaleString('de-DE')} €
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <span className="text-sm font-medium">Durchschnitt/Transaktion</span>
+                    <span className="font-bold text-blue-600">
+                      {finances.length > 0 ? (finances.reduce((sum: number, f: any) => sum + f.amount, 0) / finances.length).toFixed(0) : 0} €
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <span className="text-sm font-medium">Transaktionen heute</span>
+                    <span className="font-bold text-purple-600">
+                      {finances.filter((f: any) => new Date(f.date).toDateString() === new Date().toDateString()).length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Transactions Overview */}
+            <div className="bg-card rounded-xl shadow-sm border p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  Neueste Transaktionen
+                </h3>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    const transactionsTab = document.querySelector('[value="transactions"]') as HTMLElement;
+                    if (transactionsTab) transactionsTab.click();
+                  }}
+                  className="text-xs"
+                >
+                  Alle anzeigen
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {finances.slice(0, 5).map((finance: any) => (
+                  <div key={finance.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors cursor-pointer"
+                       onClick={() => handleViewDetails(finance)}>
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${finance.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+                        {finance.type === 'income' ? (
+                          <TrendingUpIcon className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <TrendingDownIcon className="h-4 w-4 text-red-600" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{finance.description}</p>
+                        <p className="text-xs text-muted-foreground">{finance.category}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-bold text-sm ${finance.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        {finance.type === 'income' ? '+' : '-'}{finance.amount.toLocaleString('de-DE')} €
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(finance.date), 'dd.MM.yyyy', { locale: de })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {finances.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Receipt className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>Noch keine Transaktionen vorhanden</p>
+                    <p className="text-sm">Erstellen Sie Ihre erste Finanztransaktion</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Category Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-card rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <PiggyBank className="h-5 w-5 text-green-600" />
+                  Einnahmen nach Kategorie
+                </h3>
+                <div className="space-y-3">
+                  {Object.entries(
+                    finances
+                      .filter((f: any) => f.type === 'income')
+                      .reduce((acc: any, f: any) => {
+                        acc[f.category] = (acc[f.category] || 0) + f.amount;
+                        return acc;
+                      }, {})
+                  ).map(([category, amount]: [string, any]) => (
+                    <div key={category} className="flex justify-between items-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
+                      <span className="text-sm font-medium">{category}</span>
+                      <span className="font-bold text-green-600">{amount.toLocaleString('de-DE')} €</span>
+                    </div>
+                  ))}
+                  {Object.keys(finances.filter((f: any) => f.type === 'income')).length === 0 && (
+                    <p className="text-center text-muted-foreground py-4">Keine Einnahmen vorhanden</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-card rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-red-600" />
+                  Ausgaben nach Kategorie
+                </h3>
+                <div className="space-y-3">
+                  {Object.entries(
+                    finances
+                      .filter((f: any) => f.type === 'expense')
+                      .reduce((acc: any, f: any) => {
+                        acc[f.category] = (acc[f.category] || 0) + f.amount;
+                        return acc;
+                      }, {})
+                  ).map(([category, amount]: [string, any]) => (
+                    <div key={category} className="flex justify-between items-center p-2 bg-red-50 dark:bg-red-900/20 rounded">
+                      <span className="text-sm font-medium">{category}</span>
+                      <span className="font-bold text-red-600">{amount.toLocaleString('de-DE')} €</span>
+                    </div>
+                  ))}
+                  {Object.keys(finances.filter((f: any) => f.type === 'expense')).length === 0 && (
+                    <p className="text-center text-muted-foreground py-4">Keine Ausgaben vorhanden</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="transactions" className="space-y-6">

@@ -98,6 +98,9 @@ export default function Calendar() {
   const [snapPreview, setSnapPreview] = useState<{ hour: number; visible: boolean }>({ hour: 0, visible: false });
   const [resizingEvent, setResizingEvent] = useState<any>(null);
   const [resizeDirection, setResizeDirection] = useState<'start' | 'end' | null>(null);
+  const [resizeStartY, setResizeStartY] = useState<number>(0);
+  const [resizeStartTime, setResizeStartTime] = useState<Date | null>(null);
+  const [resizeEndTime, setResizeEndTime] = useState<Date | null>(null);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -413,6 +416,108 @@ export default function Calendar() {
     setDraggedEvent(null);
     setIsDragging(false);
     setSnapPreview({ hour: 0, visible: false });
+  };
+
+  // Resize handlers
+  const handleResizeStart = (event: any, direction: 'start' | 'end', e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    setResizingEvent(event);
+    setResizeDirection(direction);
+    setResizeStartY(e.clientY);
+    setResizeStartTime(new Date(event.startTime));
+    
+    if (event.endTime) {
+      if (typeof event.endTime === 'string' && event.endTime.includes(':') && !event.endTime.includes('T')) {
+        const [hours, minutes] = event.endTime.split(':').map(Number);
+        const endDate = new Date(event.startTime);
+        endDate.setHours(hours, minutes || 0, 0, 0);
+        setResizeEndTime(endDate);
+      } else {
+        setResizeEndTime(new Date(event.endTime));
+      }
+    }
+    
+    document.addEventListener('mousemove', handleResizeMove);
+    document.addEventListener('mouseup', handleResizeEnd);
+  };
+
+  const handleResizeMove = (e: MouseEvent) => {
+    if (!resizingEvent || !resizeDirection) return;
+    
+    const deltaY = e.clientY - resizeStartY;
+    const hourDelta = deltaY / 50; // 50px per hour
+    const snappedHourDelta = Math.round(hourDelta * 2) / 2; // Snap to 30-minute intervals
+    
+    if (resizeDirection === 'start' && resizeStartTime) {
+      const newStartTime = new Date(resizeStartTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
+      const hour = newStartTime.getHours() + (newStartTime.getMinutes() / 60);
+      
+      if (hour >= 6 && hour <= 24) {
+        setSnapPreview({ hour, visible: true });
+      }
+    } else if (resizeDirection === 'end' && resizeEndTime) {
+      const newEndTime = new Date(resizeEndTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
+      const hour = newEndTime.getHours() + (newEndTime.getMinutes() / 60);
+      
+      if (hour >= 6 && hour <= 24) {
+        setSnapPreview({ hour, visible: true });
+      }
+    }
+  };
+
+  const handleResizeEnd = () => {
+    if (!resizingEvent || !resizeDirection) return;
+    
+    const deltaY = window.event ? (window.event as MouseEvent).clientY - resizeStartY : 0;
+    const hourDelta = deltaY / 50;
+    const snappedHourDelta = Math.round(hourDelta * 2) / 2;
+    
+    let newStartTime = resizeStartTime;
+    let newEndTime = resizeEndTime;
+    
+    if (resizeDirection === 'start' && resizeStartTime) {
+      newStartTime = new Date(resizeStartTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
+    } else if (resizeDirection === 'end' && resizeEndTime) {
+      newEndTime = new Date(resizeEndTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
+    }
+    
+    // Validate that start < end
+    if (newStartTime && newEndTime && newStartTime < newEndTime) {
+      const updateData = {
+        title: resizingEvent.title,
+        description: resizingEvent.description || '',
+        facilityId: resizingEvent.facilityId,
+        teamId: resizingEvent.teamId,
+        startTime: newStartTime,
+        endTime: newEndTime,
+        type: resizingEvent.type,
+        status: resizingEvent.status || 'confirmed',
+        participants: resizingEvent.participants || 0,
+        cost: resizingEvent.cost || null,
+        contactPerson: resizingEvent.contactPerson || '',
+        contactEmail: resizingEvent.contactEmail || null,
+        contactPhone: resizingEvent.contactPhone || '',
+        notes: resizingEvent.notes || '',
+        recurring: resizingEvent.recurring || false,
+        recurringPattern: resizingEvent.recurringPattern || null,
+        recurringUntil: resizingEvent.recurringUntil || null
+      };
+      
+      updateBookingMutation.mutate({ id: resizingEvent.id, data: updateData });
+    }
+    
+    // Clean up
+    setResizingEvent(null);
+    setResizeDirection(null);
+    setResizeStartY(0);
+    setResizeStartTime(null);
+    setResizeEndTime(null);
+    setSnapPreview({ hour: 0, visible: false });
+    
+    document.removeEventListener('mousemove', handleResizeMove);
+    document.removeEventListener('mouseup', handleResizeEnd);
   };
 
   const handleDrop = (e: React.DragEvent, newDate: Date, newHour?: number) => {
@@ -981,6 +1086,29 @@ export default function Calendar() {
                                 📍 {event.facilityName}
                               </div>
                             )}
+                            
+                            {/* Resize handles */}
+                            {event.source === 'booking' && event.height >= 40 && (
+                              <>
+                                {/* Top resize handle */}
+                                <div
+                                  className="absolute inset-x-0 top-0 h-2 cursor-ns-resize bg-white/20 opacity-0 hover:opacity-100 transition-opacity"
+                                  onMouseDown={(e) => handleResizeStart(event, 'start', e)}
+                                  style={{ borderRadius: '4px 4px 0 0' }}
+                                >
+                                  <div className="absolute inset-x-0 top-0 h-0.5 bg-white/60 rounded-t"></div>
+                                </div>
+                                
+                                {/* Bottom resize handle */}
+                                <div
+                                  className="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize bg-white/20 opacity-0 hover:opacity-100 transition-opacity"
+                                  onMouseDown={(e) => handleResizeStart(event, 'end', e)}
+                                  style={{ borderRadius: '0 0 4px 4px' }}
+                                >
+                                  <div className="absolute inset-x-0 bottom-0 h-0.5 bg-white/60 rounded-b"></div>
+                                </div>
+                              </>
+                            )}
                           </div>
                         );
                       })}
@@ -1175,6 +1303,29 @@ export default function Calendar() {
                                   <div className="text-xs opacity-80 mt-1 truncate">
                                     📍 {event.facilityName}
                                   </div>
+                                )}
+                                
+                                {/* Resize handles for week view */}
+                                {event.source === 'booking' && event.height >= 30 && (
+                                  <>
+                                    {/* Top resize handle */}
+                                    <div
+                                      className="absolute inset-x-0 top-0 h-1.5 cursor-ns-resize bg-white/20 opacity-0 hover:opacity-100 transition-opacity"
+                                      onMouseDown={(e) => handleResizeStart(event, 'start', e)}
+                                      style={{ borderRadius: '2px 2px 0 0' }}
+                                    >
+                                      <div className="absolute inset-x-0 top-0 h-0.5 bg-white/60 rounded-t"></div>
+                                    </div>
+                                    
+                                    {/* Bottom resize handle */}
+                                    <div
+                                      className="absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize bg-white/20 opacity-0 hover:opacity-100 transition-opacity"
+                                      onMouseDown={(e) => handleResizeStart(event, 'end', e)}
+                                      style={{ borderRadius: '0 0 2px 2px' }}
+                                    >
+                                      <div className="absolute inset-x-0 bottom-0 h-0.5 bg-white/60 rounded-b"></div>
+                                    </div>
+                                  </>
                                 )}
                               </div>
                             );

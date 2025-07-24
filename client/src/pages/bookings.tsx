@@ -900,8 +900,7 @@ export default function Bookings() {
                           type="number" 
                           placeholder="Anzahl Teilnehmer"
                           {...field}
-                          value={field.value?.toString() || ""}
-                          onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />

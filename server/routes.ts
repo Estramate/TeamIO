@@ -366,7 +366,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         excludeBookingId ? parseInt(excludeBookingId) : undefined
       );
       
-      console.log('DEBUG Route: Sending availability response:', availability);
       res.json(availability);
     } catch (error) {
       console.error("Error checking booking availability:", error);

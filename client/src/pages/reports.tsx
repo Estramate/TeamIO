@@ -404,8 +404,8 @@ export default function ReportsPage() {
         totalPlayers: totalPlayers,
         activePlayers: totalActivePlayers,
         inactivePlayers: totalInactivePlayers,
-        averagePlayersPerTeam: Math.round(totalPlayers / ((teams as any[])?.length || 1)),
-        averageActivePlayersPerTeam: Math.round(totalActivePlayers / ((teams as any[])?.length || 1))
+        averagePlayersPerTeam: totalPlayers > 0 ? Math.round(totalPlayers / ((teams as any[])?.length || 1)) : 0,
+        averageActivePlayersPerTeam: totalActivePlayers > 0 ? Math.round(totalActivePlayers / ((teams as any[])?.length || 1)) : 0
       },
       teamStats
     };

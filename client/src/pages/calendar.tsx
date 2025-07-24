@@ -560,14 +560,6 @@ export default function Calendar() {
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              onClick={() => openEventModal()}
-              className="h-10"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Termin
-            </Button>
-            <Button
               onClick={() => openBookingModal()}
               className="bg-blue-600 hover:bg-blue-700 h-10"
             >

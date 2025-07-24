@@ -462,11 +462,8 @@ export default function Facilities() {
             )}
           </CardContent>
         </Card>
-      ) : (
-        <div className={viewMode === 'grid' 
-          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" 
-          : "space-y-3 sm:space-y-4"
-        }>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {filteredFacilities.map((facility) => (
             <Card 
               key={facility.id} 
@@ -571,6 +568,132 @@ export default function Facilities() {
             </Card>
           ))}
         </div>
+      ) : (
+        <Card className="border-border">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-muted border-b border-border">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Typ
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Kapazität
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Standort
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-12">
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-card divide-y divide-border">
+                  {filteredFacilities.map((facility) => (
+                    <tr key={facility.id} className="group hover:bg-muted/50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          {getTypeIcon(facility.type || '')}
+                          <div className="ml-3">
+                            <div 
+                              className="text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors hover:underline"
+                              onClick={() => handleViewFacility(facility)}
+                            >
+                              {facility.name}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-foreground">{getTypeDisplayName(facility.type || '')}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-foreground flex items-center">
+                          {facility.capacity ? (
+                            <>
+                              <Users className="w-4 h-4 mr-1" />
+                              {facility.capacity}
+                            </>
+                          ) : (
+                            '-'
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-foreground flex items-center">
+                          {facility.location ? (
+                            <>
+                              <MapPin className="w-4 h-4 mr-1" />
+                              {facility.location}
+                            </>
+                          ) : (
+                            '-'
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(facility.status || 'active')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewFacility(facility)}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditFacility(facility)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleToggleStatus(facility)}
+                              disabled={toggleFacilityStatusMutation.isPending}
+                              className={(facility.status === 'active' || facility.status === 'available') ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                            >
+                              {(facility.status === 'active' || facility.status === 'available') ? (
+                                <>
+                                  <Building className="mr-2 h-4 w-4" />
+                                  Deaktivieren
+                                </>
+                              ) : (
+                                <>
+                                  <Building className="mr-2 h-4 w-4" />
+                                  Aktivieren
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteFacility(facility)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Löschen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Create/Edit Facility Dialog */}

@@ -385,6 +385,10 @@ export default function Finance() {
 
   const handleUpdateFinance = (data: any) => {
     if (!editingFinance) return;
+    
+    console.log('Update data received:', data);
+    console.log('Editing finance:', editingFinance);
+    
     const cleanedData = {
       ...data,
       date: cleanDateField(data.date),
@@ -405,6 +409,7 @@ export default function Finance() {
       }
     });
     
+    console.log('Cleaned data for update:', cleanedData);
     updateFinanceMutation.mutate({ id: editingFinance.id, data: cleanedData });
   };
 

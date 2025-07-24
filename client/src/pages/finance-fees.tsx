@@ -68,6 +68,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
   const [editingMemberFee, setEditingMemberFee] = useState<any>(null);
   const [editingTrainingFee, setEditingTrainingFee] = useState<any>(null);
   const [viewingFee, setViewingFee] = useState<any>(null);
+  const [selectedChartYear, setSelectedChartYear] = useState<number>(new Date().getFullYear());
 
   // Form hooks definiert NACH dem useState
   const memberFeeForm = useForm({
@@ -121,22 +122,26 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
       let playerIds = [];
       
       try {
-        teamIds = Array.isArray(editingTrainingFee.teamIds) 
-          ? editingTrainingFee.teamIds 
-          : typeof editingTrainingFee.teamIds === 'string' 
-            ? JSON.parse(editingTrainingFee.teamIds || '[]')
-            : [];
+        if (Array.isArray(editingTrainingFee.teamIds)) {
+          teamIds = editingTrainingFee.teamIds.map((id: any) => typeof id === 'string' ? parseInt(id) : id);
+        } else if (typeof editingTrainingFee.teamIds === 'string') {
+          const parsed = JSON.parse(editingTrainingFee.teamIds || '[]');
+          teamIds = Array.isArray(parsed) ? parsed.map((id: any) => typeof id === 'string' ? parseInt(id) : id) : [];
+        }
       } catch (e) {
+        console.warn('Error parsing teamIds:', e);
         teamIds = [];
       }
       
       try {
-        playerIds = Array.isArray(editingTrainingFee.playerIds) 
-          ? editingTrainingFee.playerIds 
-          : typeof editingTrainingFee.playerIds === 'string' 
-            ? JSON.parse(editingTrainingFee.playerIds || '[]')
-            : [];
+        if (Array.isArray(editingTrainingFee.playerIds)) {
+          playerIds = editingTrainingFee.playerIds.map((id: any) => typeof id === 'string' ? parseInt(id) : id);
+        } else if (typeof editingTrainingFee.playerIds === 'string') {
+          const parsed = JSON.parse(editingTrainingFee.playerIds || '[]');
+          playerIds = Array.isArray(parsed) ? parsed.map((id: any) => typeof id === 'string' ? parseInt(id) : id) : [];
+        }
       } catch (e) {
+        console.warn('Error parsing playerIds:', e);
         playerIds = [];
       }
 
@@ -970,66 +975,70 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
       {/* Beiträge-Verlauf Grafik */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Beiträge-Verlauf (Jahres-Übersicht)
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Beiträge-Verlauf
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">Jahr:</label>
+              <Select value={selectedChartYear.toString()} onValueChange={(value) => setSelectedChartYear(parseInt(value))}>
+                <SelectTrigger className="w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(() => {
+                    const currentYear = new Date().getFullYear();
+                    const years = [];
+                    for (let year = currentYear - 3; year <= currentYear + 1; year++) {
+                      years.push(year);
+                    }
+                    return years.map(year => (
+                      <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                    ));
+                  })()}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="h-80 overflow-x-auto">
             <div style={{ minWidth: '1200px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={(() => {
-                  console.log('=== CHART DEBUG START ===');
-                  console.log('memberFees:', memberFees);
-                  console.log('trainingFees:', trainingFees);
-                  
                   // Sichere Datenverarbeitung
                   const safeMemberFees = Array.isArray(memberFees) ? memberFees : [];
                   const safeTrainingFees = Array.isArray(trainingFees) ? trainingFees : [];
                   
-                  console.log('safeMemberFees:', safeMemberFees);
-                  console.log('safeTrainingFees:', safeTrainingFees);
-                  
-                  // Einfache Datengenerierung für die letzten 12 Monate
+                  // Generiere Daten für das ausgewählte Jahr
                   const data = [];
-                  const currentDate = new Date();
                   const months = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
                   
-                  // Generiere die letzten 12 Monate
-                  for (let i = 11; i >= 0; i--) {
-                    const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-                    const month = months[date.getMonth()];
-                    const year = date.getFullYear();
-                    const monthKey = `${month} ${year}`;
-                    
-                    console.log(`Processing month: ${monthKey}, date:`, date);
+                  // Generiere alle 12 Monate für das ausgewählte Jahr
+                  for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+                    const date = new Date(selectedChartYear, monthIndex, 1);
+                    const month = months[monthIndex];
+                    const monthKey = `${month} ${selectedChartYear}`;
                     
                     // Berechne Mitgliedsbeiträge für diesen Monat
                     let memberRevenue = 0;
                     safeMemberFees.forEach((fee: any) => {
-                      console.log('Processing member fee:', fee);
                       if (fee && fee.status === 'active') {
                         const startDate = new Date(fee.startDate);
                         const endDate = fee.endDate ? new Date(fee.endDate) : null;
                         
-                        console.log(`Fee period: ${startDate} to ${endDate}, checking against ${date}`);
-                        
                         // Prüfe ob der Monat im gültigen Zeitraum liegt
                         if (date >= startDate && (!endDate || date <= endDate)) {
                           const amount = Number(fee.amount) || 0;
-                          console.log(`Fee amount: ${amount}, period: ${fee.period}`);
                           
-                          // Einfache Berechnung basierend auf Periode
+                          // Berechnung basierend auf Periode
                           if (fee.period === 'monthly') {
                             memberRevenue += amount;
-                            console.log(`Added monthly: ${amount}, total now: ${memberRevenue}`);
-                          } else if (fee.period === 'quarterly' && date.getMonth() % 3 === 0) {
+                          } else if (fee.period === 'quarterly' && monthIndex % 3 === 0) {
                             memberRevenue += amount;
-                            console.log(`Added quarterly: ${amount}, total now: ${memberRevenue}`);
-                          } else if (fee.period === 'yearly' && date.getMonth() === 0) {
+                          } else if (fee.period === 'yearly' && monthIndex === 0) {
                             memberRevenue += amount;
-                            console.log(`Added yearly: ${amount}, total now: ${memberRevenue}`);
                           }
                         }
                       }
@@ -1038,7 +1047,6 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     // Berechne Trainingsbeiträge für diesen Monat
                     let trainingRevenue = 0;
                     safeTrainingFees.forEach((fee: any) => {
-                      console.log('Processing training fee:', fee);
                       if (fee && fee.status === 'active') {
                         const startDate = new Date(fee.startDate);
                         const endDate = fee.endDate ? new Date(fee.endDate) : null;
@@ -1055,7 +1063,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                                              typeof fee.teamIds === 'string' ? JSON.parse(fee.teamIds || '[]') : [];
                               multiplier = Math.max(multiplier, teamIds.length);
                             } catch (e) {
-                              console.warn('Error parsing teamIds:', e);
+                              multiplier = 1;
                             }
                           }
                           if (fee.targetType === 'player' || fee.targetType === 'both') {
@@ -1064,25 +1072,23 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                                                typeof fee.playerIds === 'string' ? JSON.parse(fee.playerIds || '[]') : [];
                               multiplier += playerIds.length;
                             } catch (e) {
-                              console.warn('Error parsing playerIds:', e);
+                              // Fehler beim Parsen, verwende Standard-Multiplikator
                             }
                           }
                           
-                          // Einfache Berechnung basierend auf Periode
+                          // Berechnung basierend auf Periode
                           if (fee.period === 'monthly') {
                             trainingRevenue += amount * multiplier;
-                          } else if (fee.period === 'quarterly' && date.getMonth() % 3 === 0) {
+                          } else if (fee.period === 'quarterly' && monthIndex % 3 === 0) {
                             trainingRevenue += amount * multiplier;
-                          } else if (fee.period === 'yearly' && date.getMonth() === 0) {
+                          } else if (fee.period === 'yearly' && monthIndex === 0) {
                             trainingRevenue += amount * multiplier;
                           }
                         }
                       }
                     });
                     
-                    console.log(`Month ${monthKey}: member=${memberRevenue}, training=${trainingRevenue}`);
-                    
-                    // Immer alle Monate hinzufügen (auch mit 0 Werten)
+                    // Füge Datenpunkt hinzu
                     data.push({
                       month: monthKey,
                       mitgliedsbeiträge: Math.round(memberRevenue * 100) / 100,
@@ -1090,9 +1096,6 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                       gesamt: Math.round((memberRevenue + trainingRevenue) * 100) / 100
                     });
                   }
-                  
-                  console.log('Final chart data:', data);
-                  console.log('=== CHART DEBUG END ===');
                   
                   return data;
                 })()}>

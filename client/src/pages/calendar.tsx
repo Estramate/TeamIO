@@ -1134,9 +1134,10 @@ export default function Calendar() {
 
       {/* Booking Modal */}
       <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingBooking ? 'Buchung bearbeiten' : 'Neue Buchung'}</DialogTitle>
+            <DialogTitle>{editingBooking ? 'Buchung bearbeiten' : 'Neue Buchung erstellen'}</DialogTitle>
+            <p className="text-sm text-muted-foreground">Erstellen Sie eine neue Buchung für eine Anlage.</p>
           </DialogHeader>
           <Form {...bookingForm}>
             <form onSubmit={bookingForm.handleSubmit(handleBookingSubmit)} className="space-y-4">

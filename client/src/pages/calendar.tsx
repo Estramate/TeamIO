@@ -820,9 +820,7 @@ export default function Calendar() {
                                 setEditingEvent(event);
                                 setShowEventModal(true);
                               } else if (event.source === 'booking') {
-                                // Reset form with booking data for day view too - safe date formatting with debug
-                                console.log('Day view event data:', event);
-                                
+                                // Reset form with booking data for day view - handle endTime correctly
                                 const formatSafeDate = (dateValue: any) => {
                                   if (!dateValue) return '';
                                   try {
@@ -833,8 +831,25 @@ export default function Calendar() {
                                   }
                                 };
                                 
-                                // Check multiple possible endTime fields
-                                const endTimeValue = event.endTime || event.end || event.endDateTime;
+                                // Handle endTime - if it's just time string, combine with startTime date
+                                let endTimeFormatted = '';
+                                if (event.endTime) {
+                                  if (event.endTime.includes('T') || event.endTime.includes('-')) {
+                                    // Full datetime
+                                    endTimeFormatted = formatSafeDate(event.endTime);
+                                  } else if (event.endTime.includes(':')) {
+                                    // Just time like "20:00", combine with startTime date
+                                    try {
+                                      const startDate = new Date(event.startTime);
+                                      const [hours, minutes] = event.endTime.split(':').map(Number);
+                                      const endDate = new Date(startDate);
+                                      endDate.setHours(hours, minutes || 0, 0, 0);
+                                      endTimeFormatted = format(endDate, 'yyyy-MM-dd\'T\'HH:mm');
+                                    } catch {
+                                      endTimeFormatted = '';
+                                    }
+                                  }
+                                }
                                 
                                 bookingForm.reset({
                                   title: event.title || '',
@@ -842,7 +857,7 @@ export default function Calendar() {
                                   facilityId: event.facilityId?.toString() || '',
                                   teamId: event.teamId?.toString() || '',
                                   startTime: formatSafeDate(event.startTime || event.start || event.startDateTime),
-                                  endTime: formatSafeDate(endTimeValue),
+                                  endTime: endTimeFormatted,
                                   type: event.type || 'training',
                                   status: event.status || 'confirmed',
                                   participants: event.participants || 0,
@@ -867,6 +882,11 @@ export default function Calendar() {
                               <div className="text-xs opacity-90 mt-1">
                                 {event.time}
                                 {event.endTime && ` - ${event.endTime}`}
+                              </div>
+                            )}
+                            {event.facilityName && (
+                              <div className="text-xs opacity-80 mt-1 truncate">
+                                📍 {event.facilityName}
                               </div>
                             )}
                           </div>
@@ -970,9 +990,7 @@ export default function Calendar() {
                                     setEditingEvent(event);
                                     setShowEventModal(true);
                                   } else if (event.source === 'booking') {
-                                    // Reset form with booking data - safe date formatting with debug
-                                    console.log('Event data:', event);
-                                    
+                                    // Reset form with booking data - handle endTime correctly
                                     const formatSafeDate = (dateValue: any) => {
                                       if (!dateValue) return '';
                                       try {
@@ -983,8 +1001,25 @@ export default function Calendar() {
                                       }
                                     };
                                     
-                                    // Check multiple possible endTime fields
-                                    const endTimeValue = event.endTime || event.end || event.endDateTime;
+                                    // Handle endTime - if it's just time string, combine with startTime date
+                                    let endTimeFormatted = '';
+                                    if (event.endTime) {
+                                      if (event.endTime.includes('T') || event.endTime.includes('-')) {
+                                        // Full datetime
+                                        endTimeFormatted = formatSafeDate(event.endTime);
+                                      } else if (event.endTime.includes(':')) {
+                                        // Just time like "20:00", combine with startTime date
+                                        try {
+                                          const startDate = new Date(event.startTime);
+                                          const [hours, minutes] = event.endTime.split(':').map(Number);
+                                          const endDate = new Date(startDate);
+                                          endDate.setHours(hours, minutes || 0, 0, 0);
+                                          endTimeFormatted = format(endDate, 'yyyy-MM-dd\'T\'HH:mm');
+                                        } catch {
+                                          endTimeFormatted = '';
+                                        }
+                                      }
+                                    }
                                     
                                     bookingForm.reset({
                                       title: event.title || '',
@@ -992,7 +1027,7 @@ export default function Calendar() {
                                       facilityId: event.facilityId?.toString() || '',
                                       teamId: event.teamId?.toString() || '',
                                       startTime: formatSafeDate(event.startTime || event.start || event.startDateTime),
-                                      endTime: formatSafeDate(endTimeValue),
+                                      endTime: endTimeFormatted,
                                       type: event.type || 'training',
                                       status: event.status || 'confirmed',
                                       participants: event.participants || 0,
@@ -1017,6 +1052,11 @@ export default function Calendar() {
                                   <div className="text-xs opacity-90 mt-1">
                                     {event.time}
                                     {event.endTime && ` - ${event.endTime}`}
+                                  </div>
+                                )}
+                                {event.facilityName && (
+                                  <div className="text-xs opacity-80 mt-1 truncate">
+                                    📍 {event.facilityName}
                                   </div>
                                 )}
                               </div>

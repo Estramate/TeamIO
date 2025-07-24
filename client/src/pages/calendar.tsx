@@ -331,6 +331,54 @@ export default function Calendar() {
     return { top, height: Math.max(height, 3) }; // Minimum 3% height for visibility
   };
 
+  // Helper function to calculate overlapping events layout
+  const calculateEventLayout = (events: any[]) => {
+    // Sort events by start time
+    const sortedEvents = [...events].sort((a, b) => {
+      const aPos = getEventTimePosition(a);
+      const bPos = getEventTimePosition(b);
+      return aPos.top - bPos.top;
+    });
+
+    const layoutEvents = sortedEvents.map((event, index) => {
+      const eventPos = getEventTimePosition(event);
+      
+      // Find overlapping events
+      const overlapping = sortedEvents.filter((otherEvent, otherIndex) => {
+        if (otherIndex === index) return false;
+        const otherPos = getEventTimePosition(otherEvent);
+        
+        // Check if events overlap in time
+        const eventEnd = eventPos.top + eventPos.height;
+        const otherEnd = otherPos.top + otherPos.height;
+        
+        return !(eventEnd <= otherPos.top || eventPos.top >= otherEnd);
+      });
+
+      // Calculate column position
+      let column = 0;
+      const existingColumns = overlapping.map(ov => ov.column || 0);
+      while (existingColumns.includes(column)) {
+        column++;
+      }
+
+      const totalColumns = Math.max(overlapping.length + 1, 1);
+      const width = 100 / totalColumns;
+      const left = column * width;
+
+      return {
+        ...event,
+        ...eventPos,
+        column,
+        totalColumns,
+        width,
+        left
+      };
+    });
+
+    return layoutEvents;
+  };
+
   // Drag & Drop handlers
   const handleDragStart = (event: any, e: React.DragEvent) => {
     setDraggedEvent(event);
@@ -840,22 +888,24 @@ export default function Calendar() {
                             />
                           ))}
                           
-                          {/* Events */}
-                          {dayEvents.map((event, index) => {
-                            const { top, height } = getEventTimePosition(event);
+                          {/* Events with overlap handling */}
+                          {calculateEventLayout(dayEvents).map((event, index) => {
                             return (
                               <div
                                 key={index}
                                 draggable
                                 onDragStart={(e) => handleDragStart(event, e)}
                                 onDragEnd={handleDragEnd}
-                                className={`absolute inset-x-1 rounded-md p-1 text-white cursor-move hover:opacity-90 transition-all ${event.color} ${
+                                className={`absolute rounded-md p-1 text-white cursor-move hover:opacity-90 transition-all ${event.color} ${
                                   isDragging && draggedEvent?.id === event.id ? 'opacity-50' : ''
                                 }`}
                                 style={{
-                                  top: `${top}%`,
-                                  height: `${height}%`,
+                                  top: `${event.top}%`,
+                                  height: `${event.height}%`,
+                                  left: `calc(${event.left}% + 2px)`,
+                                  width: `calc(${event.width}% - 4px)`,
                                   minHeight: '20px',
+                                  zIndex: 10 + index,
                                 }}
                                 onClick={() => {
                                   if (event.source === 'event') {

@@ -14,6 +14,7 @@ import {
   BookOpen,
   Euro,
   MessageCircle,
+  FileText,
   UserCog,
   Settings,
   X,
@@ -41,6 +42,7 @@ const navigation = [
   { name: "Anlagen", href: "/facilities", icon: MapPin },
   { name: "Buchungen", href: "/bookings", icon: BookOpen },
   { name: "Finanzen", href: "/finance", icon: Euro },
+  { name: "Berichte", href: "/reports", icon: FileText },
   { name: "Kommunikation", href: "/communication", icon: MessageCircle },
 ];
 

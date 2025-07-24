@@ -17,6 +17,7 @@ import Facilities from "@/pages/facilities";
 import Finance from "@/pages/finance";
 import Calendar from "@/pages/calendar";
 import Communication from "@/pages/communication";
+import Reports from "@/pages/reports";
 import Users from "@/pages/users";
 import Settings from "@/pages/settings";
 import Layout from "@/components/layout";
@@ -36,6 +37,7 @@ function AuthenticatedApp() {
           <Route path="/finance" component={Finance} />
           <Route path="/calendar" component={Calendar} />
           <Route path="/communication" component={Communication} />
+          <Route path="/reports" component={Reports} />
           <Route path="/users" component={Users} />
           <Route path="/settings" component={Settings} />
           <Route component={NotFound} />

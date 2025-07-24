@@ -33,6 +33,16 @@ Preferred communication style: Simple, everyday language.
   - Verbesserte Benutzerführung bei umfangreichen Beitragslisten
   - Optimierte Platznutzung auf der Finance-Fees Seite
 
+- **Automatisiertes Berichtssystem**: Umfassendes Reporting mit Ein-Klick-Generierung aller Berichte
+  - Vier Hauptberichttypen: Finanzübersicht, Mitgliederstatistik, Beitragsanalyse, Team-Übersicht
+  - "Alle Berichte generieren" Button für vollautomatische Berichtserstellung
+  - Jahr- und Monatsauswahl für flexible Berichtszeiträume
+  - Echtzeit-Status-Anzeige während der Berichtsgenerierung
+  - Download-Funktionalität für alle generierten Berichte (JSON-Format)
+  - Interaktive Progress-Anzeige mit Erfolgs- und Fehlerstatus
+  - Schnelle Statistik-Übersicht mit aktuellen Vereinszahlen
+  - Integration in Hauptnavigation mit eigenem Menüpunkt "Berichte"
+
 - **Umfassendes Finance-Dashboard**: Vollständig überarbeitete Finanz-Übersichtsseite mit reichhaltigen Informationen
   - Dashboard-Sektion mit Transaktionsverlauf-Diagramm und Monatsstatistiken hinzugefügt
   - "Neueste Transaktionen" Übersicht mit klickbaren Elementen für schnelle Details

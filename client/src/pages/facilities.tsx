@@ -444,7 +444,7 @@ export default function Facilities() {
                         handleViewFacility(facility);
                       }}>
                         <Eye className="mr-2 h-4 w-4" />
-                        Anzeigen
+                        Details
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={(e) => {
                         e.stopPropagation();
@@ -453,18 +453,22 @@ export default function Facilities() {
                         <Edit className="mr-2 h-4 w-4" />
                         Bearbeiten
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleStatus(facility);
-                      }}>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleStatus(facility);
+                        }}
+                        disabled={updateFacilityMutation.isPending}
+                        className={(facility.status === 'active' || facility.status === 'available') ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                      >
                         {(facility.status === 'active' || facility.status === 'available') ? (
                           <>
-                            <span className="mr-2 h-4 w-4 rounded-full bg-red-500"></span>
+                            <Building className="mr-2 h-4 w-4" />
                             Deaktivieren
                           </>
                         ) : (
                           <>
-                            <span className="mr-2 h-4 w-4 rounded-full bg-green-500"></span>
+                            <Building className="mr-2 h-4 w-4" />
                             Aktivieren
                           </>
                         )}
@@ -474,7 +478,7 @@ export default function Facilities() {
                           e.stopPropagation();
                           handleDeleteFacility(facility);
                         }}
-                        className="text-red-600 focus:text-red-600"
+                        className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Löschen

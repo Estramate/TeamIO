@@ -181,6 +181,32 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
     }
   });
 
+  const updateMemberFeeMutation = useMutation({
+    mutationFn: ({ feeId, data }: { feeId: number, data: any }) => 
+      apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/member-fees/${feeId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'member-fees'] });
+      setEditingMemberFee(null);
+      toast({ title: "Mitgliedsbeitrag aktualisiert", description: "Die Änderungen wurden gespeichert." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Fehler", description: error?.message || "Fehler beim Aktualisieren", variant: "destructive" });
+    }
+  });
+
+  const updateTrainingFeeMutation = useMutation({
+    mutationFn: ({ feeId, data }: { feeId: number, data: any }) => 
+      apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/training-fees/${feeId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'training-fees'] });
+      setEditingTrainingFee(null);
+      toast({ title: "Trainingsbeitrag aktualisiert", description: "Die Änderungen wurden gespeichert." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Fehler", description: error?.message || "Fehler beim Aktualisieren", variant: "destructive" });
+    }
+  });
+
   // Helper functions
   const cleanDateField = (dateString: string) => {
     return dateString && dateString.trim() !== '' ? dateString : null;
@@ -898,20 +924,32 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
             <div style={{ minWidth: '1200px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={(() => {
+                  // Sichere Datenverarbeitung
+                  const safeMemberFees = Array.isArray(memberFees) ? memberFees : [];
+                  const safeTrainingFees = Array.isArray(trainingFees) ? trainingFees : [];
+                  
                   // Erstelle Daten für mehrere Jahre basierend auf den Beiträgen
                   const years = [];
                   const currentYear = new Date().getFullYear();
                   
                   // Sammle alle Jahre aus den Beiträgen
-                  const allFees = [...(memberFees || []), ...(trainingFees || [])];
+                  const allFees = [...safeMemberFees, ...safeTrainingFees];
                   allFees.forEach((fee: any) => {
-                    if (fee.startDate) {
-                      const startYear = new Date(fee.startDate).getFullYear();
-                      if (!years.includes(startYear)) years.push(startYear);
+                    if (fee && fee.startDate) {
+                      try {
+                        const startYear = new Date(fee.startDate).getFullYear();
+                        if (!isNaN(startYear) && !years.includes(startYear)) years.push(startYear);
+                      } catch (e) {
+                        console.warn('Invalid startDate:', fee.startDate);
+                      }
                     }
-                    if (fee.endDate) {
-                      const endYear = new Date(fee.endDate).getFullYear();
-                      if (!years.includes(endYear)) years.push(endYear);
+                    if (fee && fee.endDate) {
+                      try {
+                        const endYear = new Date(fee.endDate).getFullYear();
+                        if (!isNaN(endYear) && !years.includes(endYear)) years.push(endYear);
+                      } catch (e) {
+                        console.warn('Invalid endDate:', fee.endDate);
+                      }
                     }
                   });
                   
@@ -922,7 +960,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                   if (years.length === 0) years.push(currentYear);
                   
                   // Sortiere Jahre
-                  years.sort();
+                  years.sort((a, b) => a - b);
                   
                   const data = [];
                   
@@ -953,48 +991,53 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                         }, 0);
                       
                       // Berechne Trainingsbeiträge für den Monat (berücksichtige Zeiträume)
-                      const trainingRevenue = trainingFees.filter((f: any) => f.status === 'active')
+                      const trainingRevenue = safeTrainingFees.filter((f: any) => f && f.status === 'active')
                         .reduce((sum: number, f: any) => {
-                          const startDate = new Date(f.startDate);
-                          const endDate = f.endDate ? new Date(f.endDate) : null;
-                          
-                          // Prüfe ob der Monat im Zeitraum liegt
-                          if (monthDate < startDate || (endDate && monthDate > endDate)) {
-                            return sum;
-                          }
-                          
-                          const amount = Number(f.amount);
-                          let multiplier = 0;
-                          
-                          if (f.period === 'monthly') multiplier = 1;
-                          else if (f.period === 'quarterly' && index % 3 === 0) multiplier = 1;
-                          else if (f.period === 'yearly' && index === 0) multiplier = 1;
-                          
-                          if (multiplier > 0) {
-                            let teamCount = 0;
-                            let playerCount = 0;
+                          try {
+                            const startDate = new Date(f.startDate);
+                            const endDate = f.endDate ? new Date(f.endDate) : null;
                             
-                            try {
-                              if (f.targetType === 'team' || f.targetType === 'both') {
-                                const teamIds = Array.isArray(f.teamIds) ? f.teamIds : 
-                                               typeof f.teamIds === 'string' ? JSON.parse(f.teamIds) : [];
-                                teamCount = teamIds.length;
-                              }
-                              if (f.targetType === 'player' || f.targetType === 'both') {
-                                const playerIds = Array.isArray(f.playerIds) ? f.playerIds : 
-                                                 typeof f.playerIds === 'string' ? JSON.parse(f.playerIds) : [];
-                                playerCount = playerIds.length;
-                              }
-                            } catch (e) {
-                              // Fallback für fehlerhafte JSON-Daten
-                              teamCount = 0;
-                              playerCount = 0;
+                            // Prüfe ob der Monat im Zeitraum liegt
+                            if (monthDate < startDate || (endDate && monthDate > endDate)) {
+                              return sum;
                             }
                             
-                            const totalTargets = teamCount + playerCount;
-                            return sum + (amount * Math.max(1, totalTargets));
+                            const amount = Number(f.amount) || 0;
+                            let multiplier = 0;
+                            
+                            if (f.period === 'monthly') multiplier = 1;
+                            else if (f.period === 'quarterly' && index % 3 === 0) multiplier = 1;
+                            else if (f.period === 'yearly' && index === 0) multiplier = 1;
+                            
+                            if (multiplier > 0) {
+                              let teamCount = 0;
+                              let playerCount = 0;
+                              
+                              try {
+                                if (f.targetType === 'team' || f.targetType === 'both') {
+                                  const teamIds = Array.isArray(f.teamIds) ? f.teamIds : 
+                                                 typeof f.teamIds === 'string' ? JSON.parse(f.teamIds) : [];
+                                  teamCount = teamIds.length;
+                                }
+                                if (f.targetType === 'player' || f.targetType === 'both') {
+                                  const playerIds = Array.isArray(f.playerIds) ? f.playerIds : 
+                                                   typeof f.playerIds === 'string' ? JSON.parse(f.playerIds) : [];
+                                  playerCount = playerIds.length;
+                                }
+                              } catch (e) {
+                                // Fallback für fehlerhafte JSON-Daten
+                                teamCount = 0;
+                                playerCount = 0;
+                              }
+                              
+                              const totalTargets = teamCount + playerCount;
+                              return sum + (amount * Math.max(1, totalTargets));
+                            }
+                            return sum;
+                          } catch (e) {
+                            console.warn('Error processing training fee:', f, e);
+                            return sum;
                           }
-                          return sum;
                         }, 0);
                       
                       data.push({
@@ -1076,6 +1119,39 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                   <p className="text-sm">{viewingFee.description}</p>
                 </div>
               )}
+              {viewingFee.targetType && (
+                <div>
+                  <label className="text-sm font-medium">Zuweisung:</label>
+                  <div className="text-sm space-y-1">
+                    {(viewingFee.targetType === 'team' || viewingFee.targetType === 'both') && (
+                      <div>
+                        <span className="font-medium">Teams:</span> {(() => {
+                          const teamIds = Array.isArray(viewingFee.teamIds) ? viewingFee.teamIds : 
+                                         typeof viewingFee.teamIds === 'string' ? JSON.parse(viewingFee.teamIds || '[]') : [];
+                          return teamIds.map((teamId: any) => {
+                            const id = typeof teamId === 'string' ? parseInt(teamId) : teamId;
+                            const team = teams?.find((t: any) => t.id === id);
+                            return team?.name;
+                          }).filter(Boolean).join(', ') || 'Keine';
+                        })()}
+                      </div>
+                    )}
+                    {(viewingFee.targetType === 'player' || viewingFee.targetType === 'both') && (
+                      <div>
+                        <span className="font-medium">Spieler:</span> {(() => {
+                          const playerIds = Array.isArray(viewingFee.playerIds) ? viewingFee.playerIds : 
+                                           typeof viewingFee.playerIds === 'string' ? JSON.parse(viewingFee.playerIds || '[]') : [];
+                          return playerIds.map((playerId: any) => {
+                            const id = typeof playerId === 'string' ? parseInt(playerId) : playerId;
+                            const player = players?.find((p: any) => p.id === id);
+                            return player ? `${player.firstName} ${player.lastName}` : null;
+                          }).filter(Boolean).join(', ') || 'Keine';
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
@@ -1083,21 +1159,244 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
 
       {/* Edit Member Fee Modal */}
       <Dialog open={!!editingMemberFee} onOpenChange={() => setEditingMemberFee(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Mitgliedsbeitrag bearbeiten</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">Bearbeitung wird in einer zukünftigen Version verfügbar sein.</p>
+          {editingMemberFee && (
+            <Form {...memberFeeForm}>
+              <form onSubmit={memberFeeForm.handleSubmit((data) => {
+                updateMemberFeeMutation.mutate({
+                  feeId: editingMemberFee.id,
+                  data: {
+                    ...data,
+                    amount: parseFloat(data.amount),
+                    endDate: data.endDate || null
+                  }
+                });
+              })} className="space-y-4">
+                <FormField
+                  control={memberFeeForm.control}
+                  name="memberId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mitglied</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={editingMemberFee.memberId?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Mitglied wählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {members?.map((member: any) => (
+                            <SelectItem key={member.id} value={member.id.toString()}>
+                              {member.firstName} {member.lastName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={memberFeeForm.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Betrag (€)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01" 
+                          placeholder="25.00" 
+                          {...field} 
+                          defaultValue={editingMemberFee.amount} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={memberFeeForm.control}
+                  name="period"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Zahlungsrhythmus</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={editingMemberFee.period}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="monthly">Monatlich</SelectItem>
+                          <SelectItem value="quarterly">Vierteljährlich</SelectItem>
+                          <SelectItem value="yearly">Jährlich</SelectItem>
+                          <SelectItem value="one-time">Einmalig</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={memberFeeForm.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Startdatum</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            defaultValue={editingMemberFee.startDate?.split('T')[0]} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={memberFeeForm.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Enddatum (optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            defaultValue={editingMemberFee.endDate?.split('T')[0] || ''} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditingMemberFee(null)}
+                  >
+                    Abbrechen
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={updateMemberFeeMutation.isPending}
+                  >
+                    {updateMemberFeeMutation.isPending ? 'Speichern...' : 'Speichern'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
         </DialogContent>
       </Dialog>
 
       {/* Edit Training Fee Modal */}
       <Dialog open={!!editingTrainingFee} onOpenChange={() => setEditingTrainingFee(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Trainingsbeitrag bearbeiten</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">Bearbeitung wird in einer zukünftigen Version verfügbar sein.</p>
+          {editingTrainingFee && (
+            <Form {...trainingFeeForm}>
+              <form onSubmit={trainingFeeForm.handleSubmit((data) => {
+                updateTrainingFeeMutation.mutate({
+                  feeId: editingTrainingFee.id,
+                  data: {
+                    ...data,
+                    amount: parseFloat(data.amount),
+                    endDate: data.endDate || null,
+                    teamIds: data.targetType === 'team' || data.targetType === 'both' ? data.teamIds : [],
+                    playerIds: data.targetType === 'player' || data.targetType === 'both' ? data.playerIds : []
+                  }
+                });
+              })} className="space-y-4">
+                <FormField
+                  control={trainingFeeForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="z.B. Ausbildungsbeitrag" {...field} defaultValue={editingTrainingFee.name} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={trainingFeeForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Beschreibung (optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Zusätzliche Details..." {...field} defaultValue={editingTrainingFee.description || ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={trainingFeeForm.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Betrag pro Ziel (€)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" placeholder="25.00" {...field} defaultValue={editingTrainingFee.amount} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={trainingFeeForm.control}
+                  name="targetType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Zielgruppe</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={editingTrainingFee.targetType}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="team">Teams</SelectItem>
+                          <SelectItem value="player">Einzelne Spieler</SelectItem>
+                          <SelectItem value="both">Teams und Spieler</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditingTrainingFee(null)}
+                  >
+                    Abbrechen
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={updateTrainingFeeMutation.isPending}
+                  >
+                    {updateTrainingFeeMutation.isPending ? 'Speichern...' : 'Speichern'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
         </DialogContent>
       </Dialog>
     </TabsContent>

@@ -790,6 +790,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const memberFee = await storage.updateMemberFee(id, req.body);
+      res.json(memberFee);
+    } catch (error) {
+      console.error("Error updating member fee:", error);
+      res.status(500).json({ message: "Failed to update member fee" });
+    }
+  });
+
   app.patch('/api/clubs/:clubId/training-fees/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);

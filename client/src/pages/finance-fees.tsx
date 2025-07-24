@@ -472,7 +472,12 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{fee.member?.firstName} {fee.member?.lastName}</p>
+                          <p className="font-medium">
+                            {(() => {
+                              const member = members?.find((m: any) => m.id === fee.memberId);
+                              return member ? `${member.firstName} ${member.lastName}` : 'Unbekanntes Mitglied';
+                            })()}
+                          </p>
                           <Badge variant={fee.status === 'active' ? 'default' : 'secondary'}>
                             {fee.status === 'active' ? 'Aktiv' : 'Inaktiv'}
                           </Badge>
@@ -836,14 +841,40 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                           {fee.endDate ? ` - ${format(new Date(fee.endDate), 'dd.MM.yyyy', { locale: de })}` : ' - unbegrenzt'}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600 text-lg">{Number(fee.amount).toLocaleString('de-DE')} €</p>
-                        <p className="text-xs text-muted-foreground">
-                          {fee.period === 'monthly' ? 'pro Monat' :
-                           fee.period === 'quarterly' ? 'pro Quartal' :
-                           fee.period === 'yearly' ? 'pro Jahr' :
-                           fee.period === 'one-time' ? 'einmalig' : ''}
-                        </p>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <p className="font-bold text-green-600 text-lg">{Number(fee.amount).toLocaleString('de-DE')} €</p>
+                          <p className="text-xs text-muted-foreground">
+                            {fee.period === 'monthly' ? 'pro Monat' :
+                             fee.period === 'quarterly' ? 'pro Quartal' :
+                             fee.period === 'yearly' ? 'pro Jahr' :
+                             fee.period === 'one-time' ? 'einmalig' : ''}
+                          </p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setViewingFee(fee)}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Details anzeigen
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setEditingTrainingFee(fee)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => deleteTrainingFeeMutation.mutate(fee.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Löschen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   </div>
@@ -872,7 +903,8 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                   const currentYear = new Date().getFullYear();
                   
                   // Sammle alle Jahre aus den Beiträgen
-                  [...memberFees, ...trainingFees].forEach((fee: any) => {
+                  const allFees = [...(memberFees || []), ...(trainingFees || [])];
+                  allFees.forEach((fee: any) => {
                     if (fee.startDate) {
                       const startYear = new Date(fee.startDate).getFullYear();
                       if (!years.includes(startYear)) years.push(startYear);
@@ -885,6 +917,9 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                   
                   // Füge aktuelles Jahr hinzu falls nicht vorhanden
                   if (!years.includes(currentYear)) years.push(currentYear);
+                  
+                  // Mindestens ein Jahr anzeigen
+                  if (years.length === 0) years.push(currentYear);
                   
                   // Sortiere Jahre
                   years.sort();
@@ -999,6 +1034,72 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Detail Modal */}
+      <Dialog open={!!viewingFee} onOpenChange={() => setViewingFee(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Beitrags-Details</DialogTitle>
+          </DialogHeader>
+          {viewingFee && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Name:</label>
+                <p className="text-sm">{viewingFee.name || (() => {
+                  const member = members?.find((m: any) => m.id === viewingFee.memberId);
+                  return member ? `${member.firstName} ${member.lastName}` : 'N/A';
+                })()}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Betrag:</label>
+                <p className="text-sm">{Number(viewingFee.amount).toLocaleString('de-DE')} € {
+                  viewingFee.period === 'monthly' ? 'pro Monat' :
+                  viewingFee.period === 'quarterly' ? 'pro Quartal' :
+                  viewingFee.period === 'yearly' ? 'pro Jahr' :
+                  viewingFee.period === 'one-time' ? 'einmalig' : ''
+                }</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Zeitraum:</label>
+                <p className="text-sm">
+                  {format(new Date(viewingFee.startDate), 'dd.MM.yyyy', { locale: de })} 
+                  {viewingFee.endDate ? ` - ${format(new Date(viewingFee.endDate), 'dd.MM.yyyy', { locale: de })}` : ' - unbegrenzt'}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Status:</label>
+                <p className="text-sm">{viewingFee.status === 'active' ? 'Aktiv' : 'Inaktiv'}</p>
+              </div>
+              {viewingFee.description && (
+                <div>
+                  <label className="text-sm font-medium">Beschreibung:</label>
+                  <p className="text-sm">{viewingFee.description}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Member Fee Modal */}
+      <Dialog open={!!editingMemberFee} onOpenChange={() => setEditingMemberFee(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mitgliedsbeitrag bearbeiten</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">Bearbeitung wird in einer zukünftigen Version verfügbar sein.</p>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Training Fee Modal */}
+      <Dialog open={!!editingTrainingFee} onOpenChange={() => setEditingTrainingFee(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Trainingsbeitrag bearbeiten</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">Bearbeitung wird in einer zukünftigen Version verfügbar sein.</p>
+        </DialogContent>
+      </Dialog>
     </TabsContent>
   );
 }

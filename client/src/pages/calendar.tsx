@@ -245,6 +245,23 @@ export default function Calendar() {
     return birthdays;
   };
 
+  // Get facility name for booking
+  const getFacilityName = (facilityId: number) => {
+    const facility = (facilities as any[]).find(f => f.id === facilityId);
+    return facility?.name || 'Unbekannte Anlage';
+  };
+
+  // Get booking type label
+  const getBookingTypeLabel = (type: string) => {
+    switch (type) {
+      case 'training': return 'Training';
+      case 'game': return 'Spiel';
+      case 'event': return 'Veranstaltung';
+      case 'maintenance': return 'Wartung';
+      default: return 'Sonstiges';
+    }
+  };
+
   // Combine events, bookings and birthdays for calendar display
   const allEvents = [
     ...(events as any[]).map((event: any) => ({
@@ -253,7 +270,9 @@ export default function Calendar() {
       time: format(new Date(event.startDate), 'HH:mm'),
       endTime: event.endDate ? format(new Date(event.endDate), 'HH:mm') : null,
       source: 'event',
-      color: 'bg-indigo-500'
+      color: 'bg-indigo-500',
+      icon: '📅',
+      typeLabel: 'Termin'
     })),
     ...(bookings as any[]).filter(b => b.status !== 'cancelled').map((booking: any) => ({
       ...booking,
@@ -262,7 +281,9 @@ export default function Calendar() {
       endTime: format(new Date(booking.endTime), 'HH:mm'),
       source: 'booking',
       color: getBookingTypeColor(booking.type),
-      icon: getBookingTypeIcon(booking.type)
+      icon: getBookingTypeIcon(booking.type),
+      typeLabel: getBookingTypeLabel(booking.type),
+      facilityName: getFacilityName(booking.facilityId)
     }))
   ];
 
@@ -521,10 +542,12 @@ export default function Calendar() {
                               <div
                                 key={index}
                                 className={`text-xs px-1.5 py-0.5 rounded-full truncate text-white font-medium flex items-center gap-1 ${event.color}`}
-                                title={`${event.icon || ''} ${event.time} ${event.title || event.name}`}
+                                title={`${event.icon || ''} ${event.typeLabel || event.source} - ${event.time} ${event.title || event.name}${event.facilityName ? ` (${event.facilityName})` : ''}`}
                               >
                                 <span className="text-xs">{event.icon}</span>
-                                <span className="truncate">{event.title || event.name}</span>
+                                <span className="truncate">
+                                  {event.source === 'booking' ? `${event.typeLabel}: ${event.title}` : (event.title || event.name)}
+                                </span>
                               </div>
                             ))}
                             {dayEvents.length > 3 && (
@@ -575,7 +598,7 @@ export default function Calendar() {
                                     <div className="flex items-center gap-2 mb-1">
                                       <span className="text-sm">{event.icon}</span>
                                       <h4 className="text-sm font-medium truncate">
-                                        {event.title || event.name}
+                                        {event.source === 'booking' ? `${event.typeLabel}: ${event.title}` : (event.title || event.name)}
                                       </h4>
                                     </div>
                                     {event.time && (
@@ -665,7 +688,7 @@ export default function Calendar() {
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm">{event.icon}</span>
                               <h4 className="text-sm font-medium truncate">
-                                {event.title || event.name}
+                                {event.source === 'booking' ? `${event.typeLabel}: ${event.title}` : (event.title || event.name)}
                               </h4>
                             </div>
                             {event.time && (
@@ -677,6 +700,12 @@ export default function Calendar() {
                                 </span>
                               </div>
                             )}
+                            {event.facilityName && (
+                              <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                                <MapPin className="w-3 h-3 mr-1" />
+                                <span>{event.facilityName}</span>
+                              </div>
+                            )}
                             {event.location && (
                               <div className="flex items-center mt-1 text-xs text-muted-foreground">
                                 <MapPin className="w-3 h-3 mr-1" />
@@ -684,12 +713,9 @@ export default function Calendar() {
                               </div>
                             )}
                           </div>
-                          <Badge 
-                            variant={event.source === 'event' ? 'default' : 'secondary'}
-                            className="ml-2"
-                          >
-                            {event.source === 'event' ? 'Termin' : event.source === 'booking' ? 'Buchung' : 'Geburtstag'}
-                          </Badge>
+                          <div className={`px-2 py-1 rounded-full text-xs font-medium text-white ${event.color}`}>
+                            {event.typeLabel || (event.source === 'event' ? 'Termin' : event.source === 'booking' ? 'Buchung' : 'Geburtstag')}
+                          </div>
                         </div>
                       </div>
                     ))}

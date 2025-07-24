@@ -713,45 +713,7 @@ export default function Finance() {
               </Card>
             </div>
 
-            {/* Quick Stats - Kompakte Version */}
-            <div className="bg-card rounded-xl shadow-sm border p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-yellow-600" />
-                Schnellstatistiken  
-              </h3>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <p className="text-xs font-medium text-green-700 dark:text-green-300">Größte Einnahme</p>
-                  <p className="font-bold text-green-600 text-sm">
-                    {(() => {
-                      const incomes = finances.filter((f: any) => f.type === 'income');
-                      return incomes.length > 0 ? Math.max(...incomes.map((f: any) => Number(f.amount))).toLocaleString('de-DE') : '0'
-                    })()} €
-                  </p>
-                </div>
-                <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                  <p className="text-xs font-medium text-red-700 dark:text-red-300">Größte Ausgabe</p>
-                  <p className="font-bold text-red-600 text-sm">
-                    {(() => {
-                      const expenses = finances.filter((f: any) => f.type === 'expense');
-                      return expenses.length > 0 ? Math.max(...expenses.map((f: any) => Number(f.amount))).toLocaleString('de-DE') : '0'
-                    })()} €
-                  </p>
-                </div>
-                <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Durchschnitt</p>
-                  <p className="font-bold text-blue-600 text-sm">
-                    {finances.length > 0 ? Math.round(finances.reduce((sum: number, f: any) => sum + Number(f.amount), 0) / finances.length).toLocaleString('de-DE') : '0'} €
-                  </p>
-                </div>
-                <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <p className="text-xs font-medium text-purple-700 dark:text-purple-300">Heute</p>
-                  <p className="font-bold text-purple-600 text-sm">
-                    {finances.filter((f: any) => new Date(f.date).toDateString() === new Date().toDateString()).length}
-                  </p>
-                </div>
-              </div>
-            </div>
+
 
             {/* Recent Transactions Overview - Kompakt */}
             <div className="bg-card rounded-xl shadow-sm border p-6">
@@ -772,39 +734,163 @@ export default function Finance() {
                   Alle anzeigen
                 </Button>
               </div>
-              <div className="space-y-2">
-                {finances.slice(0, 3).map((finance: any) => (
-                  <div key={finance.id} className="flex items-center justify-between p-2 bg-muted/30 rounded hover:bg-muted/50 transition-colors cursor-pointer"
+              <div className="space-y-3">
+                {finances.slice(0, 5).map((finance: any) => (
+                  <div key={finance.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors cursor-pointer"
                        onClick={() => handleViewDetails(finance)}>
-                    <div className="flex items-center gap-2">
-                      <div className={`p-1 rounded ${finance.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${finance.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
                         {finance.type === 'income' ? (
-                          <TrendingUpIcon className="h-3 w-3 text-green-600" />
+                          <TrendingUpIcon className="h-4 w-4 text-green-600" />
                         ) : (
-                          <TrendingDownIcon className="h-3 w-3 text-red-600" />
+                          <TrendingDownIcon className="h-4 w-4 text-red-600" />
                         )}
                       </div>
                       <div>
-                        <p className="font-medium text-xs">{finance.description}</p>
-                        <p className="text-xs text-muted-foreground opacity-75">{finance.category}</p>
+                        <p className="font-medium text-sm">{finance.description}</p>
+                        <p className="text-xs text-muted-foreground">{finance.category}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`font-bold text-xs ${finance.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                      <p className={`font-bold text-sm ${finance.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                         {finance.type === 'income' ? '+' : '-'}{Number(finance.amount || 0).toLocaleString('de-DE')} €
                       </p>
-                      <p className="text-xs text-muted-foreground opacity-75">
+                      <p className="text-xs text-muted-foreground">
                         {format(new Date(finance.date), 'dd.MM.yyyy', { locale: de })}
                       </p>
                     </div>
                   </div>
                 ))}
                 {finances.length === 0 && (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <Receipt className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Noch keine Transaktionen vorhanden</p>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Receipt className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>Noch keine Transaktionen vorhanden</p>
+                    <p className="text-sm">Erstellen Sie Ihre erste Finanztransaktion</p>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Status Overview */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-card rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                  Ausstehende Zahlungen
+                </h3>
+                <div className="space-y-3">
+                  {finances.filter((f: any) => f.status === 'pending' || f.status === 'overdue').slice(0, 3).map((finance: any) => (
+                    <div key={finance.id} className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                      <div>
+                        <p className="font-medium text-sm">{finance.description}</p>
+                        <p className="text-xs text-muted-foreground">{finance.category}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-orange-600 text-sm">
+                          {Number(finance.amount || 0).toLocaleString('de-DE')} €
+                        </p>
+                        <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                          finance.status === 'overdue' 
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                        }`}>
+                          {finance.status === 'pending' ? 'Ausstehend' : 
+                           finance.status === 'overdue' ? 'Überfällig' : finance.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {finances.filter((f: any) => f.status === 'pending' || f.status === 'overdue').length === 0 && (
+                    <div className="text-center py-4 text-muted-foreground">
+                      <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                      <p className="text-sm">Alle Zahlungen sind aktuell</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-card rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  Monatliche Übersicht
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm">Einnahmen diesen Monat</p>
+                      <p className="text-xs text-muted-foreground">
+                        {finances.filter((f: any) => 
+                          f.type === 'income' && 
+                          new Date(f.date).getMonth() === new Date().getMonth()
+                        ).length} Transaktionen
+                      </p>
+                    </div>
+                    <p className="font-bold text-green-600">
+                      {finances
+                        .filter((f: any) => 
+                          f.type === 'income' && 
+                          new Date(f.date).getMonth() === new Date().getMonth()
+                        )
+                        .reduce((sum: number, f: any) => sum + Number(f.amount || 0), 0)
+                        .toLocaleString('de-DE')} €
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm">Ausgaben diesen Monat</p>
+                      <p className="text-xs text-muted-foreground">
+                        {finances.filter((f: any) => 
+                          f.type === 'expense' && 
+                          new Date(f.date).getMonth() === new Date().getMonth()
+                        ).length} Transaktionen
+                      </p>
+                    </div>
+                    <p className="font-bold text-red-600">
+                      {finances
+                        .filter((f: any) => 
+                          f.type === 'expense' && 
+                          new Date(f.date).getMonth() === new Date().getMonth()
+                        )
+                        .reduce((sum: number, f: any) => sum + Number(f.amount || 0), 0)
+                        .toLocaleString('de-DE')} €
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm">Netto diesen Monat</p>
+                      <p className="text-xs text-muted-foreground">Einnahmen - Ausgaben</p>
+                    </div>
+                    <p className={`font-bold ${
+                      (finances
+                        .filter((f: any) => 
+                          f.type === 'income' && 
+                          new Date(f.date).getMonth() === new Date().getMonth()
+                        )
+                        .reduce((sum: number, f: any) => sum + Number(f.amount || 0), 0) -
+                      finances
+                        .filter((f: any) => 
+                          f.type === 'expense' && 
+                          new Date(f.date).getMonth() === new Date().getMonth()
+                        )
+                        .reduce((sum: number, f: any) => sum + Number(f.amount || 0), 0)) >= 0 
+                        ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {(finances
+                        .filter((f: any) => 
+                          f.type === 'income' && 
+                          new Date(f.date).getMonth() === new Date().getMonth()
+                        )
+                        .reduce((sum: number, f: any) => sum + Number(f.amount || 0), 0) -
+                      finances
+                        .filter((f: any) => 
+                          f.type === 'expense' && 
+                          new Date(f.date).getMonth() === new Date().getMonth()
+                        )
+                        .reduce((sum: number, f: any) => sum + Number(f.amount || 0), 0))
+                        .toLocaleString('de-DE')} €
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </TabsContent>

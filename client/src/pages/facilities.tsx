@@ -228,15 +228,48 @@ export default function Facilities() {
     setDeleteDialogOpen(true);
   };
 
+  const toggleFacilityStatusMutation = useMutation({
+    mutationFn: ({ facilityId, data }: { facilityId: number; data: FacilityFormData }) => 
+      apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/facilities/${facilityId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
+      toast({
+        title: "Erfolg",
+        description: "Anlagen-Status wurde erfolgreich aktualisiert",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized", 
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Fehler",
+        description: "Anlagen-Status konnte nicht aktualisiert werden",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleToggleStatus = (facility: Facility) => {
     const newStatus = (facility.status === 'active' || facility.status === 'available') ? 'inactive' : 'active';
-    updateFacilityMutation.mutate({
-      name: facility.name,
-      type: facility.type || '',
-      description: facility.description || undefined,
-      capacity: facility.capacity ? String(facility.capacity) : undefined,
-      location: facility.location || undefined,
-      status: newStatus,
+    toggleFacilityStatusMutation.mutate({
+      facilityId: facility.id,
+      data: {
+        name: facility.name,
+        type: facility.type || '',
+        description: facility.description || undefined,
+        capacity: facility.capacity ? String(facility.capacity) : undefined,
+        location: facility.location || undefined,
+        status: newStatus,
+      }
     });
   };
 
@@ -296,6 +329,24 @@ export default function Facilities() {
         return <Building className="w-4 h-4" />;
       default:
         return <Building className="w-4 h-4" />;
+    }
+  };
+
+  const getTypeDisplayName = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case 'field':
+        return 'Platz';
+      case 'gym':
+        return 'Halle';
+      case 'pool':
+        return 'Schwimmbad';
+      case 'facility':
+        return 'Anlage';
+      case 'clubhouse':
+      case 'clubhaus':
+        return 'Vereinsheim';  
+      default:
+        return type || 'Nicht angegeben';
     }
   };
 
@@ -433,7 +484,7 @@ export default function Facilities() {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-8 w-8 p-0"
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
@@ -458,7 +509,7 @@ export default function Facilities() {
                           e.stopPropagation();
                           handleToggleStatus(facility);
                         }}
-                        disabled={updateFacilityMutation.isPending}
+                        disabled={toggleFacilityStatusMutation.isPending}
                         className={(facility.status === 'active' || facility.status === 'available') ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
                       >
                         {(facility.status === 'active' || facility.status === 'available') ? (
@@ -491,7 +542,7 @@ export default function Facilities() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs sm:text-sm text-muted-foreground">Typ</span>
-                    <span className="text-xs sm:text-sm font-medium truncate max-w-[120px]">{facility.type || 'Nicht angegeben'}</span>
+                    <span className="text-xs sm:text-sm font-medium truncate max-w-[120px]">{getTypeDisplayName(facility.type || '')}</span>
                   </div>
                   {facility.capacity && (
                     <div className="flex items-center justify-between">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
@@ -7,15 +7,70 @@ import { usePage } from "@/contexts/PageContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, MapPin, Gift, Users, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, addDays, startOfWeek, endOfWeek, startOfDay, endOfDay, getMonth, getDate } from "date-fns";
 import { de } from "date-fns/locale";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { apiRequest } from "@/lib/queryClient";
+
+// Calendar view types
+type CalendarView = 'month' | 'week' | '3day' | 'day';
+
+// Form schemas
+const eventFormSchema = z.object({
+  title: z.string().min(1, "Titel ist erforderlich"),
+  description: z.string().optional(),
+  startDate: z.string().min(1, "Startdatum ist erforderlich"),
+  endDate: z.string().optional(),
+  teamId: z.union([z.string(), z.number()]).optional(),
+  location: z.string().optional(),
+});
+
+const bookingFormSchema = z.object({
+  title: z.string().min(1, "Titel ist erforderlich"),
+  description: z.string().optional(),
+  facilityId: z.string().min(1, "Anlage ist erforderlich"),
+  startTime: z.string().min(1, "Startzeit ist erforderlich"),
+  endTime: z.string().min(1, "Endzeit ist erforderlich"),
+  type: z.enum(["training", "game", "event", "maintenance"]),
+  status: z.enum(["confirmed", "pending", "cancelled"]),
+});
+
+// Color schemes matching bookings page
+const getBookingTypeColor = (type: string) => {
+  switch (type) {
+    case 'training': return 'bg-blue-500';
+    case 'game': return 'bg-green-500';
+    case 'event': return 'bg-purple-500';
+    case 'maintenance': return 'bg-orange-500';
+    default: return 'bg-gray-500';
+  }
+};
+
+const getBookingTypeIcon = (type: string) => {
+  switch (type) {
+    case 'training': return '⚽';
+    case 'game': return '🏆';
+    case 'event': return '🎉';
+    case 'maintenance': return '🔧';
+    default: return '📅';
+  }
+};
 
 export default function Calendar() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
   const { setPage } = usePage();
+  const queryClient = useQueryClient();
 
   // Set page title
   useEffect(() => {
@@ -24,6 +79,11 @@ export default function Calendar() {
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [calendarView, setCalendarView] = useState<CalendarView>('month');
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [editingBooking, setEditingBooking] = useState<any>(null);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -40,6 +100,7 @@ export default function Calendar() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  // Data fetching
   const { data: events = [], isLoading: isEventsLoading } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'events'],
     enabled: !!selectedClub?.id,
@@ -52,36 +113,276 @@ export default function Calendar() {
     retry: false,
   });
 
-  // Combine events and bookings for calendar display
+  const { data: members = [] } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'members'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
+  const { data: players = [] } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'players'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
+  const { data: facilities = [] } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'facilities'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
+  // Forms
+  const eventForm = useForm({
+    resolver: zodResolver(eventFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      startDate: "",
+      endDate: "",
+      teamId: "",
+      location: "",
+    },
+  });
+
+  const bookingForm = useForm({
+    resolver: zodResolver(bookingFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      facilityId: "",
+      startTime: "",
+      endTime: "",
+      type: "training" as const,
+      status: "confirmed" as const,
+    },
+  });
+
+  // Mutations
+  const createEventMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('POST', `/api/clubs/${selectedClub?.id}/events`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
+      setShowEventModal(false);
+      eventForm.reset();
+      toast({ title: "Termin erstellt", description: "Der Termin wurde erfolgreich erstellt." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Fehler", description: error.message || "Termin konnte nicht erstellt werden.", variant: "destructive" });
+    }
+  });
+
+  const updateEventMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/events/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
+      setShowEventModal(false);
+      setEditingEvent(null);
+      eventForm.reset();
+      toast({ title: "Termin aktualisiert", description: "Der Termin wurde erfolgreich aktualisiert." });
+    },
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/events/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
+      toast({ title: "Termin gelöscht", description: "Der Termin wurde erfolgreich gelöscht." });
+    },
+  });
+
+  const createBookingMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('POST', `/api/clubs/${selectedClub?.id}/bookings`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+      setShowBookingModal(false);
+      bookingForm.reset();
+      toast({ title: "Buchung erstellt", description: "Die Buchung wurde erfolgreich erstellt." });
+    },
+  });
+
+  const updateBookingMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/bookings/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+      setShowBookingModal(false);
+      setEditingBooking(null);
+      bookingForm.reset();
+      toast({ title: "Buchung aktualisiert", description: "Die Buchung wurde erfolgreich aktualisiert." });
+    },
+  });
+
+  const deleteBookingMutation = useMutation({
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/bookings/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+      toast({ title: "Buchung gelöscht", description: "Die Buchung wurde erfolgreich gelöscht." });
+    },
+  });
+
+  // Helper functions
+  const getBirthdays = (date: Date) => {
+    const birthdays: any[] = [];
+    
+    [...(members as any[]), ...(players as any[])].forEach(person => {
+      if (person.birthDate) {
+        const birthDate = new Date(person.birthDate);
+        if (getMonth(birthDate) === getMonth(date) && getDate(birthDate) === getDate(date)) {
+          birthdays.push({
+            name: `${person.firstName} ${person.lastName}`,
+            type: 'birthday',
+            isPlayer: !!(person as any).position
+          });
+        }
+      }
+    });
+    
+    return birthdays;
+  };
+
+  // Combine events, bookings and birthdays for calendar display
   const allEvents = [
-    ...events.map((event: any) => ({
+    ...(events as any[]).map((event: any) => ({
       ...event,
       date: new Date(event.startDate),
       time: format(new Date(event.startDate), 'HH:mm'),
       endTime: event.endDate ? format(new Date(event.endDate), 'HH:mm') : null,
-      source: 'event'
+      source: 'event',
+      color: 'bg-indigo-500'
     })),
-    ...bookings.map((booking: any) => ({
+    ...(bookings as any[]).filter(b => b.status !== 'cancelled').map((booking: any) => ({
       ...booking,
       date: new Date(booking.startTime),
       time: format(new Date(booking.startTime), 'HH:mm'),
       endTime: format(new Date(booking.endTime), 'HH:mm'),
-      source: 'booking'
+      source: 'booking',
+      color: getBookingTypeColor(booking.type),
+      icon: getBookingTypeIcon(booking.type)
     }))
   ];
 
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(currentDate);
-  const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  // Calendar navigation and event handling
+  const getCalendarDays = () => {
+    switch (calendarView) {
+      case 'day':
+        return [currentDate];
+      case '3day':
+        return [currentDate, addDays(currentDate, 1), addDays(currentDate, 2)];
+      case 'week':
+        const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+        return eachDayOfInterval({ start: weekStart, end: endOfWeek(weekStart, { weekStartsOn: 1 }) });
+      case 'month':
+      default:
+        const monthStart = startOfMonth(currentDate);
+        const monthEnd = endOfMonth(currentDate);
+        return eachDayOfInterval({ start: monthStart, end: monthEnd });
+    }
+  };
 
   const getEventsForDate = (date: Date) => {
-    return allEvents.filter(event => isSameDay(event.date, date));
+    const dayEvents = allEvents.filter(event => isSameDay(event.date, date));
+    const birthdays = getBirthdays(date);
+    
+    return [
+      ...dayEvents,
+      ...birthdays.map(birthday => ({
+        ...birthday,
+        date,
+        time: '',
+        endTime: '',
+        source: 'birthday',
+        color: 'bg-pink-500',
+        icon: '🎂'
+      }))
+    ];
   };
 
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentDate(direction === 'prev' ? subMonths(currentDate, 1) : addMonths(currentDate, 1));
+  const navigateCalendar = (direction: 'prev' | 'next') => {
+    switch (calendarView) {
+      case 'day':
+      case '3day':
+        setCurrentDate(addDays(currentDate, direction === 'prev' ? (calendarView === 'day' ? -1 : -3) : (calendarView === 'day' ? 1 : 3)));
+        break;
+      case 'week':
+        setCurrentDate(addDays(currentDate, direction === 'prev' ? -7 : 7));
+        break;
+      case 'month':
+        setCurrentDate(direction === 'prev' ? subMonths(currentDate, 1) : addMonths(currentDate, 1));
+        break;
+    }
+  };
+
+  // Form handlers
+  const handleEventSubmit = (data: any) => {
+    const processedData = {
+      ...data,
+      clubId: selectedClub?.id,
+      teamId: data.teamId ? Number(data.teamId) : null,
+    };
+
+    if (editingEvent) {
+      updateEventMutation.mutate({ id: editingEvent.id, data: processedData });
+    } else {
+      createEventMutation.mutate(processedData);
+    }
+  };
+
+  const handleBookingSubmit = (data: any) => {
+    const processedData = {
+      ...data,
+      clubId: selectedClub?.id,
+      facilityId: Number(data.facilityId),
+    };
+
+    if (editingBooking) {
+      updateBookingMutation.mutate({ id: editingBooking.id, data: processedData });
+    } else {
+      createBookingMutation.mutate(processedData);
+    }
+  };
+
+  const openEventModal = (event?: any) => {
+    if (event) {
+      setEditingEvent(event);
+      eventForm.reset({
+        title: event.title,
+        description: event.description || '',
+        startDate: format(new Date(event.startDate), 'yyyy-MM-dd\'T\'HH:mm'),
+        endDate: event.endDate ? format(new Date(event.endDate), 'yyyy-MM-dd\'T\'HH:mm') : '',
+        teamId: event.teamId || '',
+        location: event.location || '',
+      });
+    } else {
+      setEditingEvent(null);
+      eventForm.reset();
+    }
+    setShowEventModal(true);
+  };
+
+  const openBookingModal = (booking?: any) => {
+    if (booking) {
+      setEditingBooking(booking);
+      bookingForm.reset({
+        title: booking.title,
+        description: booking.description || '',
+        facilityId: booking.facilityId.toString(),
+        startTime: format(new Date(booking.startTime), 'yyyy-MM-dd\'T\'HH:mm'),
+        endTime: format(new Date(booking.endTime), 'yyyy-MM-dd\'T\'HH:mm'),
+        type: booking.type,
+        status: booking.status,
+      });
+    } else {
+      setEditingBooking(null);
+      bookingForm.reset();
+    }
+    setShowBookingModal(true);
   };
 
   if (!selectedClub) {
@@ -100,29 +401,70 @@ export default function Calendar() {
 
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6">
+      {/* Header with View Controls */}
       <div className="mb-6">
-        <div className="flex items-center justify-end">
-          <Button className="bg-primary hover:bg-primary/90">
-            <Plus className="w-4 h-4 mr-2" />
-            Termin hinzufügen
-          </Button>
+        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+          {/* View Buttons */}
+          <div className="flex items-center gap-2">
+            <div className="flex bg-card rounded-xl border p-1">
+              {([
+                { key: 'month', label: 'Monat' },
+                { key: 'week', label: 'Woche' },
+                { key: '3day', label: '3 Tage' },
+                { key: 'day', label: 'Tag' }
+              ] as const).map(({ key, label }) => (
+                <Button
+                  key={key}
+                  variant={calendarView === key ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setCalendarView(key)}
+                  className={calendarView === key ? "bg-primary text-primary-foreground" : ""}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => openEventModal()}
+              className="h-10"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Termin
+            </Button>
+            <Button
+              onClick={() => openBookingModal()}
+              className="bg-blue-600 hover:bg-blue-700 h-10"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Buchung
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Calendar */}
-        <div className="lg:col-span-3">
+      {/* Calendar Content */}
+      <div className={`grid gap-6 ${calendarView === 'month' ? 'lg:grid-cols-4' : ''}`}>
+        {/* Main Calendar */}
+        <div className={calendarView === 'month' ? 'lg:col-span-3' : ''}>
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
-                  {format(currentDate, 'MMMM yyyy', { locale: de })}
+                  {calendarView === 'month' && format(currentDate, 'MMMM yyyy', { locale: de })}
+                  {calendarView === 'week' && `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'dd.MM.', { locale: de })} - ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), 'dd.MM.yyyy', { locale: de })}`}
+                  {calendarView === '3day' && `${format(currentDate, 'dd.MM.', { locale: de })} - ${format(addDays(currentDate, 2), 'dd.MM.yyyy', { locale: de })}`}
+                  {calendarView === 'day' && format(currentDate, 'EEEE, dd. MMMM yyyy', { locale: de })}
                 </CardTitle>
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigateMonth('prev')}
+                    onClick={() => navigateCalendar('prev')}
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
@@ -136,7 +478,7 @@ export default function Calendar() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigateMonth('next')}
+                    onClick={() => navigateCalendar('next')}
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -144,162 +486,494 @@ export default function Calendar() {
               </div>
             </CardHeader>
             <CardContent>
-              {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-1 mb-4">
-                {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((day) => (
-                  <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
-                    {day}
+              {/* Render Calendar Based on View */}
+              {calendarView === 'month' && (
+                <>
+                  {/* Month View */}
+                  <div className="grid grid-cols-7 gap-1 mb-4">
+                    {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((day) => (
+                      <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
+                        {day}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              
-              <div className="grid grid-cols-7 gap-1">
-                {calendarDays.map((day) => {
-                  const dayEvents = getEventsForDate(day);
-                  const isSelected = selectedDate && isSameDay(day, selectedDate);
-                  const isToday = isSameDay(day, new Date());
                   
-                  return (
-                    <button
-                      key={day.toISOString()}
-                      onClick={() => setSelectedDate(day)}
-                      className={`
-                        relative p-2 min-h-[80px] text-left border border-gray-100 hover:bg-gray-50 transition-colors
-                        ${!isSameMonth(day, currentDate) ? 'text-gray-300 bg-gray-50' : ''}
-                        ${isSelected ? 'bg-blue-50 border-blue-200' : ''}
-                        ${isToday ? 'bg-blue-100 font-semibold' : ''}
-                      `}
-                    >
-                      <div className="text-sm">{format(day, 'd')}</div>
-                      <div className="mt-1 space-y-1">
-                        {dayEvents.slice(0, 2).map((event, index) => (
-                          <div
-                            key={index}
-                            className={`text-xs px-1 py-0.5 rounded truncate ${
-                              event.source === 'event' 
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-green-100 text-green-800'
-                            }`}
-                          >
-                            {event.time} {event.title}
-                          </div>
-                        ))}
-                        {dayEvents.length > 2 && (
-                          <div className="text-xs text-gray-500">
-                            +{dayEvents.length - 2} weitere
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Events Sidebar */}
-        <div className="space-y-6">
-          {/* Selected Date Events */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                {selectedDate 
-                  ? format(selectedDate, 'dd. MMMM yyyy', { locale: de })
-                  : 'Heute'
-                }
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedDateEvents.length === 0 ? (
-                <div className="text-center py-8">
-                  <CalendarIcon className="mx-auto h-8 w-8 text-gray-400" />
-                  <p className="text-sm text-gray-500 mt-2">Keine Termine</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {selectedDateEvents.map((event, index) => (
-                    <div key={index} className="border-l-4 border-l-blue-500 pl-3 py-2">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-gray-900 truncate">
-                            {event.title}
-                          </h4>
-                          <div className="flex items-center mt-1 text-xs text-gray-500">
-                            <Clock className="w-3 h-3 mr-1" />
-                            <span>
-                              {event.time}
-                              {event.endTime && ` - ${event.endTime}`}
-                            </span>
-                          </div>
-                          {event.location && (
-                            <div className="flex items-center mt-1 text-xs text-gray-500">
-                              <MapPin className="w-3 h-3 mr-1" />
-                              <span>{event.location}</span>
-                            </div>
-                          )}
-                        </div>
-                        <Badge 
-                          variant={event.source === 'event' ? 'default' : 'secondary'}
-                          className="ml-2"
+                  <div className="grid grid-cols-7 gap-1">
+                    {getCalendarDays().map((day) => {
+                      const dayEvents = getEventsForDate(day);
+                      const isSelected = selectedDate && isSameDay(day, selectedDate);
+                      const isToday = isSameDay(day, new Date());
+                      
+                      return (
+                        <button
+                          key={day.toISOString()}
+                          onClick={() => setSelectedDate(day)}
+                          className={`
+                            relative p-2 min-h-[80px] text-left border rounded-lg hover:bg-muted/50 transition-all duration-200
+                            ${!isSameMonth(day, currentDate) ? 'text-muted-foreground bg-muted/20' : ''}
+                            ${isSelected ? 'bg-primary/10 border-primary/30 ring-1 ring-primary/20' : 'border-border'}
+                            ${isToday ? 'bg-primary/5 font-semibold ring-1 ring-primary/30' : ''}
+                          `}
                         >
-                          {event.source === 'event' ? 'Termin' : 'Buchung'}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+                          <div className="text-sm mb-1">{format(day, 'd')}</div>
+                          <div className="space-y-1">
+                            {dayEvents.slice(0, 3).map((event, index) => (
+                              <div
+                                key={index}
+                                className={`text-xs px-1.5 py-0.5 rounded-full truncate text-white font-medium flex items-center gap-1 ${event.color}`}
+                                title={`${event.icon || ''} ${event.time} ${event.title || event.name}`}
+                              >
+                                <span className="text-xs">{event.icon}</span>
+                                <span className="truncate">{event.title || event.name}</span>
+                              </div>
+                            ))}
+                            {dayEvents.length > 3 && (
+                              <div className="text-xs text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full">
+                                +{dayEvents.length - 3} weitere
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* Week/3-Day/Day Views */}
+              {(calendarView === 'week' || calendarView === '3day' || calendarView === 'day') && (
+                <div className="space-y-4">
+                  {/* Time slot grid for detailed views */}
+                  <div className={`grid gap-4 ${calendarView === 'day' ? 'grid-cols-1' : calendarView === '3day' ? 'grid-cols-3' : 'grid-cols-7'}`}>
+                    {getCalendarDays().map((day) => {
+                      const dayEvents = getEventsForDate(day);
+                      const isToday = isSameDay(day, new Date());
+                      
+                      return (
+                        <div key={day.toISOString()} className="space-y-2">
+                          <div className={`p-3 text-center rounded-lg border ${isToday ? 'bg-primary/5 border-primary/30 font-semibold' : 'bg-card border-border'}`}>
+                            <div className="text-sm font-medium">
+                              {format(day, 'EEE', { locale: de })}
+                            </div>
+                            <div className="text-lg">
+                              {format(day, 'dd')}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2 min-h-[400px]">
+                            {dayEvents.map((event, index) => (
+                              <div
+                                key={index}
+                                className={`p-3 rounded-lg border-l-4 cursor-pointer hover:shadow-md transition-all ${event.color} border-l-current bg-card/50`}
+                                onClick={() => {
+                                  if (event.source === 'event') openEventModal(event);
+                                  else if (event.source === 'booking') openBookingModal(event);
+                                }}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-sm">{event.icon}</span>
+                                      <h4 className="text-sm font-medium truncate">
+                                        {event.title || event.name}
+                                      </h4>
+                                    </div>
+                                    {event.time && (
+                                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {event.time}
+                                        {event.endTime && ` - ${event.endTime}`}
+                                      </div>
+                                    )}
+                                    {event.source === 'booking' && event.facilityName && (
+                                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                        <MapPin className="w-3 h-3" />
+                                        {event.facilityName}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {(event.source === 'event' || event.source === 'booking') && (
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                          <MoreHorizontal className="h-3 w-3" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => event.source === 'event' ? openEventModal(event) : openBookingModal(event)}>
+                                          <Edit className="w-4 h-4 mr-2" />
+                                          Bearbeiten
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                          onClick={() => event.source === 'event' ? deleteEventMutation.mutate(event.id) : deleteBookingMutation.mutate(event.id)}
+                                          className="text-red-600"
+                                        >
+                                          <Trash2 className="w-4 h-4 mr-2" />
+                                          Löschen
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                            
+                            {dayEvents.length === 0 && (
+                              <div className="flex items-center justify-center h-32 text-muted-foreground">
+                                <div className="text-center">
+                                  <CalendarIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                  <p className="text-sm">Keine Termine</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
+        </div>
 
-          {/* Upcoming Events */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Nächste Termine</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isEventsLoading ? (
-                <div className="space-y-3">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {allEvents
-                    .filter(event => event.date >= new Date())
-                    .sort((a, b) => a.date.getTime() - b.date.getTime())
-                    .slice(0, 5)
-                    .map((event, index) => (
-                      <div key={index} className="pb-3 border-b border-gray-100 last:border-b-0">
+        {/* Events Sidebar - Only in month view */}
+        {calendarView === 'month' && (
+          <div className="space-y-6">
+            {/* Selected Date Events */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {selectedDate 
+                    ? format(selectedDate, 'dd. MMMM yyyy', { locale: de })
+                    : 'Heute'
+                  }
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedDateEvents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <CalendarIcon className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
+                    <p className="text-sm text-muted-foreground mt-2">Keine Termine</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedDateEvents.map((event, index) => (
+                      <div key={index} className={`border-l-4 pl-3 py-2 rounded-r-lg bg-card/50 ${event.color} border-l-current`}>
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-medium text-gray-900 truncate">
-                              {event.title}
-                            </h4>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {format(event.date, 'dd.MM.yyyy', { locale: de })} um {event.time}
-                            </p>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm">{event.icon}</span>
+                              <h4 className="text-sm font-medium truncate">
+                                {event.title || event.name}
+                              </h4>
+                            </div>
+                            {event.time && (
+                              <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                                <Clock className="w-3 h-3 mr-1" />
+                                <span>
+                                  {event.time}
+                                  {event.endTime && ` - ${event.endTime}`}
+                                </span>
+                              </div>
+                            )}
+                            {event.location && (
+                              <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                                <MapPin className="w-3 h-3 mr-1" />
+                                <span>{event.location}</span>
+                              </div>
+                            )}
                           </div>
                           <Badge 
                             variant={event.source === 'event' ? 'default' : 'secondary'}
                             className="ml-2"
                           >
-                            {event.source === 'event' ? 'Termin' : 'Buchung'}
+                            {event.source === 'event' ? 'Termin' : event.source === 'booking' ? 'Buchung' : 'Geburtstag'}
                           </Badge>
                         </div>
                       </div>
                     ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
+
+      {/* Event Modal */}
+      <Dialog open={showEventModal} onOpenChange={setShowEventModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingEvent ? 'Termin bearbeiten' : 'Neuer Termin'}</DialogTitle>
+          </DialogHeader>
+          <Form {...eventForm}>
+            <form onSubmit={eventForm.handleSubmit(handleEventSubmit)} className="space-y-4">
+              <FormField
+                control={eventForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Titel *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Titel eingeben" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={eventForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Beschreibung</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Beschreibung eingeben" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={eventForm.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Startdatum *</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={eventForm.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Enddatum</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={eventForm.control}
+                  name="teamId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Team</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Team auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="">Kein Team</SelectItem>
+                          {(teams as any[]).map((team) => (
+                            <SelectItem key={team.id} value={team.id.toString()}>
+                              {team.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={eventForm.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ort</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ort eingeben" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setShowEventModal(false)}>
+                  Abbrechen
+                </Button>
+                <Button type="submit" disabled={createEventMutation.isPending || updateEventMutation.isPending}>
+                  {editingEvent ? 'Aktualisieren' : 'Erstellen'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Booking Modal */}
+      <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingBooking ? 'Buchung bearbeiten' : 'Neue Buchung'}</DialogTitle>
+          </DialogHeader>
+          <Form {...bookingForm}>
+            <form onSubmit={bookingForm.handleSubmit(handleBookingSubmit)} className="space-y-4">
+              <FormField
+                control={bookingForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Titel *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Titel eingeben" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={bookingForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Beschreibung</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Beschreibung eingeben" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={bookingForm.control}
+                name="facilityId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Anlage *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Anlage auswählen" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {(facilities as any[]).map((facility) => (
+                          <SelectItem key={facility.id} value={facility.id.toString()}>
+                            {facility.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={bookingForm.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Startzeit *</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={bookingForm.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Endzeit *</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={bookingForm.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Typ *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Typ auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="training">⚽ Training</SelectItem>
+                          <SelectItem value="game">🏆 Spiel</SelectItem>
+                          <SelectItem value="event">🎉 Event</SelectItem>
+                          <SelectItem value="maintenance">🔧 Wartung</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={bookingForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Status auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="confirmed">Bestätigt</SelectItem>
+                          <SelectItem value="pending">Ausstehend</SelectItem>
+                          <SelectItem value="cancelled">Abgesagt</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setShowBookingModal(false)}>
+                  Abbrechen
+                </Button>
+                <Button type="submit" disabled={createBookingMutation.isPending || updateBookingMutation.isPending}>
+                  {editingBooking ? 'Aktualisieren' : 'Erstellen'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

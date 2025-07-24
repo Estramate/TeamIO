@@ -473,6 +473,24 @@ export default function Finance() {
 
   // Form handlers
   const handleCreateFinance = (data: any) => {
+    // Vollständigkeitsprüfung
+    if (!data.category || data.category.trim() === '') {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte wählen Sie eine Kategorie aus.", variant: "destructive" });
+      return;
+    }
+    if (!data.amount || parseFloat(data.amount) <= 0) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte geben Sie einen gültigen Betrag ein.", variant: "destructive" });
+      return;
+    }
+    if (!data.description || data.description.trim() === '') {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte geben Sie eine Beschreibung ein.", variant: "destructive" });
+      return;
+    }
+    if (!data.date) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte wählen Sie ein Datum.", variant: "destructive" });
+      return;
+    }
+
     const cleanedData = {
       ...data,
       amount: data.amount,  // Keep as string for Zod validation

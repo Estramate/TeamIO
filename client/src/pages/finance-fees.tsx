@@ -221,7 +221,16 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'member-fees'] });
       setIsMemberFeeDialogOpen(false);
-      memberFeeForm.reset();
+      // Formular komplett zurücksetzen mit Standardwerten
+      memberFeeForm.reset({
+        memberId: '',
+        feeType: 'membership',
+        amount: '',
+        period: 'monthly',
+        startDate: '',
+        endDate: '',
+        description: '',
+      });
       toast({ title: "Mitgliedsbeitrag erstellt", description: "Der Beitrag wurde erfolgreich hinzugefügt." });
     },
     onError: (error: any) => {
@@ -234,7 +243,19 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'training-fees'] });
       setIsTrainingFeeDialogOpen(false);
-      trainingFeeForm.reset();
+      // Formular komplett zurücksetzen mit Standardwerten
+      trainingFeeForm.reset({
+        name: '',
+        description: '',
+        feeType: 'training',
+        amount: '',
+        period: 'monthly',
+        startDate: '',
+        endDate: '',
+        targetType: 'team',
+        teamIds: [],
+        playerIds: [],
+      });
       toast({ title: "Trainingsbeitrag erstellt", description: "Der Beitrag wurde erfolgreich hinzugefügt." });
     },
     onError: (error: any) => {
@@ -296,6 +317,20 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
   };
 
   const handleCreateMemberFee = (data: any) => {
+    // Vollständigkeitsprüfung
+    if (!data.memberId) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte wählen Sie ein Mitglied aus.", variant: "destructive" });
+      return;
+    }
+    if (!data.amount || parseFloat(data.amount) <= 0) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte geben Sie einen gültigen Betrag ein.", variant: "destructive" });
+      return;
+    }
+    if (!data.startDate) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte wählen Sie ein Startdatum.", variant: "destructive" });
+      return;
+    }
+
     const cleanedData = {
       ...data,
       amount: String(data.amount),
@@ -308,6 +343,34 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
   };
 
   const handleCreateTrainingFee = (data: any) => {
+    // Vollständigkeitsprüfung
+    if (!data.name || data.name.trim() === '') {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte geben Sie einen Namen für den Beitrag ein.", variant: "destructive" });
+      return;
+    }
+    if (!data.amount || parseFloat(data.amount) <= 0) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte geben Sie einen gültigen Betrag ein.", variant: "destructive" });
+      return;
+    }
+    if (!data.startDate) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte wählen Sie ein Startdatum.", variant: "destructive" });
+      return;
+    }
+    if (data.targetType === 'team' && (!data.teamIds || data.teamIds.length === 0)) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte wählen Sie mindestens ein Team aus.", variant: "destructive" });
+      return;
+    }
+    if (data.targetType === 'player' && (!data.playerIds || data.playerIds.length === 0)) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte wählen Sie mindestens einen Spieler aus.", variant: "destructive" });
+      return;
+    }
+    if (data.targetType === 'both' && 
+        (!data.teamIds || data.teamIds.length === 0) && 
+        (!data.playerIds || data.playerIds.length === 0)) {
+      toast({ title: "Unvollständige Eingabe", description: "Bitte wählen Sie mindestens ein Team oder einen Spieler aus.", variant: "destructive" });
+      return;
+    }
+
     const cleanedData = {
       ...data,
       amount: String(data.amount),

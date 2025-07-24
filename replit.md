@@ -11,11 +11,13 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 24, 2025 (Neueste)
-- **Kalender Resize-Handling vollständig repariert**: Doppelklick-Problem beim Resize-Handle behoben
+- **Kalender-System vollständig optimiert**: Alle Interaktions-Probleme behoben für professionelle Benutzererfahrung
+  - Resize-Handling repariert: Doppelklick-Problem beim Resize-Handle eliminiert
   - Event-Cleanup verbessert mit korrekter addEventListener/removeEventListener Behandlung
   - isResizing State mit 50ms Verzögerung verhindert Modal-Öffnung nach Resize-Operationen
   - stopPropagation() und preventDefault() korrekt implementiert für saubere Event-Trennung
   - Resize funktioniert jetzt beim ersten Klick in allen Kalender-Ansichten (Tag, Woche, 3-Tage)
+  - Drag & Drop weiterhin voll funktional mit 30-Minuten-Snapping und visueller Vorschau
 - **Verfügbarkeitsprüfung im Kalender komplett implementiert**: Vollständige API-Integration mit korrekter Anzeige
   - checkCalendarAvailability Funktion von Buchungsseite übernommen und angepasst
   - State-Management mit isCheckingCalendarAvailability und calendarAvailabilityStatus
@@ -23,6 +25,7 @@ Preferred communication style: Simple, everyday language.
   - Automatisches State-Reset beim Öffnen/Schließen des Buchungsmodals
   - Backend-Logik korrigiert: Anzeige zeigt Gesamtzahl aller Buchungen, Verfügbarkeit verwendet gefilterte Anzahl
   - Bei bestehenden Buchungen wird korrekt "1/2 Buchungen" angezeigt statt "0/2"
+  - Echtzeit-Verfügbarkeitsprüfung funktioniert sowohl für neue als auch bestehende Buchungen
 - **Vollständiges Buchungssystem fertiggestellt**: Umfassendes Anlagenbuchungs-Management mit modernem Design
   - CRUD-Funktionalität komplett implementiert: Erstellen, Bearbeiten, Anzeigen, Löschen von Buchungen
   - Intelligente Verfügbarkeitsprüfung: Stornierte Buchungen blockieren Anlagen nicht mehr

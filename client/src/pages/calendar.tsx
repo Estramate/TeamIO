@@ -1199,15 +1199,14 @@ export default function Calendar() {
                   name="teamId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Team (optional)</FormLabel>
+                      <FormLabel>Team</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Kein Team" />
+                            <SelectValue placeholder="Team auswählen" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Kein Team</SelectItem>
                           {teams?.map((team) => (
                             <SelectItem key={team.id} value={team.id.toString()}>
                               {team.name}

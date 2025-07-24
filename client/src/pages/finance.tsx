@@ -72,7 +72,7 @@ const financeFormSchema = z.object({
   status: z.enum(['pending', 'paid', 'overdue', 'cancelled']),
   priority: z.enum(['low', 'normal', 'high', 'urgent']),
   recurring: z.boolean().optional(),
-  recurringInterval: z.enum(['monthly', 'quarterly', 'yearly']).optional(),
+  recurringInterval: z.enum(['monthly', 'quarterly', 'yearly']).optional().or(z.literal('')),
   notes: z.string().optional(),
   memberId: z.string().optional(),
   playerId: z.string().optional(),

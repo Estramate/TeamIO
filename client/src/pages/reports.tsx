@@ -378,9 +378,23 @@ export default function ReportsPage() {
       };
     }) || [];
 
-    const totalPlayers = teamStats.reduce((sum: number, team: any) => sum + team.totalPlayers, 0);
-    const totalActivePlayers = teamStats.reduce((sum: number, team: any) => sum + team.activePlayers, 0);
-    const totalInactivePlayers = teamStats.reduce((sum: number, team: any) => sum + team.inactivePlayers, 0);
+    // Eindeutige Spieler zählen (da Spieler in mehreren Teams sein können)
+    const allPlayerIds = new Set<number>();
+    const allActivePlayerIds = new Set<number>();
+    const allInactivePlayerIds = new Set<number>();
+    
+    (players as any[])?.forEach((player: any) => {
+      allPlayerIds.add(player.id);
+      if (player.status === 'active') {
+        allActivePlayerIds.add(player.id);
+      } else {
+        allInactivePlayerIds.add(player.id);
+      }
+    });
+    
+    const totalPlayers = allPlayerIds.size;
+    const totalActivePlayers = allActivePlayerIds.size;
+    const totalInactivePlayers = allInactivePlayerIds.size;
 
     return {
       title: `Team-Übersicht ${selectedYear}`,
@@ -611,6 +625,9 @@ export default function ReportsPage() {
     if (reportType === 'team-overview' && data.teamStats) {
       doc.setFontSize(14);
       doc.text('Team-Uebersicht mit Spielerstatistiken', 20, yPosition);
+      yPosition += 5;
+      doc.setFontSize(9);
+      doc.text('Hinweis: Spieler koennen in mehreren Teams aktiv sein', 20, yPosition);
       yPosition += 10;
       
       autoTable(doc, {

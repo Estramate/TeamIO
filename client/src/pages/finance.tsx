@@ -726,8 +726,11 @@ export default function Finance() {
                   variant="outline" 
                   size="sm"
                   onClick={() => {
-                    const transactionsTab = document.querySelector('[value="transactions"]') as HTMLElement;
-                    if (transactionsTab) transactionsTab.click();
+                    // Direkter Tab-Wechsel zu Transaktionen
+                    const transactionsTab = document.querySelector('[role="tab"][value="transactions"]') as HTMLElement;
+                    if (transactionsTab) {
+                      transactionsTab.click();
+                    }
                   }}
                   className="text-xs"
                 >

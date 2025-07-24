@@ -584,7 +584,7 @@ export default function Finance() {
                   </Select>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   {/* View Toggle */}
                   <div className="flex rounded-xl border bg-background p-1">
                     <Button
@@ -605,8 +605,8 @@ export default function Finance() {
                     </Button>
                   </div>
                   
-                  {/* Export and Add Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  {/* Export and Add Buttons - Right aligned with margin */}
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:mr-4">
                     <Button variant="outline" size="sm" className="w-full sm:w-auto h-10 rounded-xl">
                       <Download className="w-4 h-4 mr-2" />
                       Export

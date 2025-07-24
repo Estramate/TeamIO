@@ -432,30 +432,6 @@ export default function Finance() {
 
   return (
     <div className="flex-1 overflow-y-auto bg-background">
-      {/* Modern Header */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Finanzen</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Umfassende Vereins-Finanzverwaltung</p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="w-full sm:w-auto">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Transaktion
-                </Button>
-              </DialogTrigger>
-            </Dialog>
-          </div>
-        </div>
-      </div>
-
       <div className="p-4 sm:p-6">
         <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-muted p-1 rounded-lg h-auto">
@@ -629,17 +605,23 @@ export default function Finance() {
                     </Button>
                   </div>
                   
-                  {/* Add Button */}
-                  <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Transaktion hinzufügen
-                      </Button>
-                    </DialogTrigger>
-                  </Dialog>
+                  {/* Export and Add Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto h-10 rounded-xl">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export
+                    </Button>
+                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          className="w-full sm:w-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Transaktion hinzufügen
+                        </Button>
+                      </DialogTrigger>
+                    </Dialog>
+                  </div>
                 </div>
               </div>
             </div>

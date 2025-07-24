@@ -122,19 +122,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <div className="grid grid-cols-3 gap-2">
-                      <button className="flex items-center justify-center gap-1 p-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                        💬 Chat
-                      </button>
-                      <button className="flex items-center justify-center gap-1 p-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                        ✉️ E-Mail
-                      </button>
-                      <button className="flex items-center justify-center gap-1 p-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                        📞 Anrufen
-                      </button>
-                    </div>
-                  </div>
+
                 </div>
               </div>
             </div>

@@ -189,6 +189,7 @@ export const facilities = pgTable("facilities", {
   equipment: jsonb("equipment"),
   rules: text("rules"),
   maintenanceNotes: text("maintenance_notes"),
+  maxConcurrentBookings: integer("max_concurrent_bookings").notNull().default(1), // Maximum number of concurrent bookings allowed
   status: varchar("status", { length: 20 }).notNull().default("available"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -526,6 +527,34 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+// Form schema for bookings
+export const bookingFormSchema = createInsertSchema(bookings, {
+  title: z.string().min(1, "Titel ist erforderlich"),
+  startTime: z.string().min(1, "Startzeit ist erforderlich"),
+  endTime: z.string().min(1, "Endzeit ist erforderlich"),
+  type: z.string().min(1, "Typ ist erforderlich"),
+  facilityId: z.string().min(1, "Anlage ist erforderlich"),
+}).omit({
+  id: true,
+  clubId: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  facilityId: z.string().transform((val) => parseInt(val)),
+  teamId: z.string().optional().nullable().transform((val) => 
+    val === '' || val === undefined || val === null ? null : parseInt(val)
+  ),
+  memberId: z.string().optional().nullable().transform((val) => 
+    val === '' || val === undefined || val === null ? null : parseInt(val)
+  ),
+  participants: z.string().optional().nullable().transform((val) => 
+    val === '' || val === undefined || val === null ? null : parseInt(val)
+  ),
+  cost: z.string().optional().nullable().transform((val) => 
+    val === '' || val === undefined || val === null ? null : parseFloat(val)
+  ),
 });
 
 export const insertEventSchema = createInsertSchema(events).omit({

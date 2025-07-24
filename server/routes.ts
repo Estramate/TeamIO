@@ -258,6 +258,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const clubId = parseInt(req.params.clubId);
       const bookingData = insertBookingSchema.parse({ ...req.body, clubId });
+      
+      // Check availability before creating booking
+      const availability = await storage.checkBookingAvailability(
+        bookingData.facilityId, 
+        new Date(bookingData.startTime), 
+        new Date(bookingData.endTime)
+      );
+      
+      if (!availability.available) {
+        return res.status(400).json({ 
+          message: `Anlage ist zur gewählten Zeit nicht verfügbar. Maximal ${availability.maxConcurrent} Buchung(en) erlaubt, aktuell ${availability.currentBookings} Buchung(en) vorhanden.`,
+          conflictingBookings: availability.conflictingBookings
+        });
+      }
+      
       const booking = await storage.createBooking(bookingData);
       res.json(booking);
     } catch (error) {
@@ -290,6 +305,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updates.cost = parseFloat(updates.cost).toString();
       }
       
+      // Check availability if time or facility is being updated
+      if (updates.facilityId || updates.startTime || updates.endTime) {
+        const currentBooking = await storage.getBooking(id);
+        if (!currentBooking) {
+          return res.status(404).json({ message: "Booking not found" });
+        }
+        
+        const facilityId = updates.facilityId || currentBooking.facilityId;
+        const startTime = updates.startTime ? new Date(updates.startTime) : new Date(currentBooking.startTime);
+        const endTime = updates.endTime ? new Date(updates.endTime) : new Date(currentBooking.endTime);
+        
+        const availability = await storage.checkBookingAvailability(
+          facilityId, 
+          startTime, 
+          endTime,
+          id // Exclude current booking from check
+        );
+        
+        if (!availability.available) {
+          return res.status(400).json({ 
+            message: `Anlage ist zur gewählten Zeit nicht verfügbar. Maximal ${availability.maxConcurrent} Buchung(en) erlaubt, aktuell ${availability.currentBookings} Buchung(en) vorhanden.`,
+            conflictingBookings: availability.conflictingBookings
+          });
+        }
+      }
+      
       const booking = await storage.updateBooking(id, updates);
       res.json(booking);
     } catch (error) {
@@ -306,6 +347,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting booking:", error);
       res.status(500).json({ message: "Failed to delete booking" });
+    }
+  });
+
+  // Check booking availability route
+  app.post('/api/clubs/:clubId/bookings/check-availability', isAuthenticated, async (req: any, res) => {
+    try {
+      const { facilityId, startTime, endTime, excludeBookingId } = req.body;
+      
+      if (!facilityId || !startTime || !endTime) {
+        return res.status(400).json({ message: "facilityId, startTime und endTime sind erforderlich" });
+      }
+      
+      const availability = await storage.checkBookingAvailability(
+        parseInt(facilityId), 
+        new Date(startTime), 
+        new Date(endTime),
+        excludeBookingId ? parseInt(excludeBookingId) : undefined
+      );
+      
+      res.json(availability);
+    } catch (error) {
+      console.error("Error checking booking availability:", error);
+      res.status(500).json({ message: "Failed to check booking availability" });
     }
   });
 

@@ -46,7 +46,7 @@ import {
   type InsertTrainingFee,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, gte } from "drizzle-orm";
+import { eq, and, desc, asc, gte, ne } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -122,6 +122,7 @@ export interface IStorage {
   createBooking(booking: InsertBooking): Promise<Booking>;
   updateBooking(id: number, booking: Partial<InsertBooking>): Promise<Booking>;
   deleteBooking(id: number): Promise<void>;
+  checkBookingAvailability(facilityId: number, startTime: Date, endTime: Date, excludeBookingId?: number): Promise<{ available: boolean; maxConcurrent: number; currentBookings: number; conflictingBookings: any[] }>;
 
   // Event operations
   getEvents(clubId: number): Promise<Event[]>;
@@ -445,6 +446,45 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBooking(id: number): Promise<void> {
     await db.delete(bookings).where(eq(bookings.id, id));
+  }
+
+  async checkBookingAvailability(facilityId: number, startTime: Date, endTime: Date, excludeBookingId?: number): Promise<{ available: boolean; maxConcurrent: number; currentBookings: number; conflictingBookings: any[] }> {
+    // Get facility to check maxConcurrentBookings
+    const [facility] = await db.select().from(facilities).where(eq(facilities.id, facilityId));
+    if (!facility) {
+      throw new Error('Facility not found');
+    }
+
+    // Find overlapping bookings
+    const overlappingBookings = await db
+      .select()
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.facilityId, facilityId),
+          // Check for time overlap: (start1 < end2) AND (start2 < end1)
+          // SQL: startTime < booking.endTime AND endTime > booking.startTime
+          excludeBookingId ? ne(bookings.id, excludeBookingId) : eq(1, 1) // Always true if no exclusion
+        )
+      );
+
+    // Filter overlapping bookings in JavaScript for precise time comparison
+    const conflictingBookings = overlappingBookings.filter(booking => {
+      const bookingStart = new Date(booking.startTime);
+      const bookingEnd = new Date(booking.endTime);
+      return startTime < bookingEnd && endTime > bookingStart;
+    });
+
+    const currentBookings = conflictingBookings.length;
+    const maxConcurrent = facility.maxConcurrentBookings || 1;
+    const available = currentBookings < maxConcurrent;
+
+    return {
+      available,
+      maxConcurrent,
+      currentBookings,
+      conflictingBookings
+    };
   }
 
   // Event operations

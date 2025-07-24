@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Booking, Facility, Team } from "@shared/schema";
-import { insertBookingSchema } from "@shared/schema";
+import { bookingFormSchema } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -84,16 +84,6 @@ import {
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
-// Form Schema
-const bookingFormSchema = insertBookingSchema.extend({
-  facilityId: z.coerce.number().min(1, "Anlage ist erforderlich"),
-  teamId: z.coerce.number().optional(),
-  participants: z.coerce.number().optional(),
-  cost: z.coerce.number().optional(),
-  startTime: z.string().min(1, "Startzeit ist erforderlich"),
-  endTime: z.string().min(1, "Endzeit ist erforderlich"),
-});
-
 type BookingFormData = z.infer<typeof bookingFormSchema>;
 
 export default function Bookings() {
@@ -119,20 +109,24 @@ export default function Bookings() {
   const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [viewingBooking, setViewingBooking] = useState<Booking | null>(null);
+  const [availabilityStatus, setAvailabilityStatus] = useState<{ available: boolean; message?: string; maxConcurrent?: number; currentBookings?: number } | null>(null);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
       title: "",
-      description: "",
+      description: null,
       type: "training",
       status: "confirmed",
       startTime: "",
       endTime: "",
-      contactPerson: "",
-      contactEmail: "",
-      contactPhone: "",
-      notes: "",
+      contactPerson: null,
+      contactEmail: null,
+      contactPhone: null,
+      notes: null,
+      participants: null,
+      cost: null,
     },
   });
 
@@ -216,9 +210,11 @@ export default function Bookings() {
         window.location.href = "/api/login";
         return;
       }
+      console.error("DEBUG: Create booking error:", error);
+      const errorMessage = error.response?.data?.message || "Buchung konnte nicht erstellt werden.";
       toast({
         title: "Fehler",
-        description: "Buchung konnte nicht erstellt werden.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -256,9 +252,11 @@ export default function Bookings() {
         window.location.href = "/api/login";
         return;
       }
+      console.error("DEBUG: Update booking error:", error);
+      const errorMessage = error.response?.data?.message || "Buchung konnte nicht aktualisiert werden.";
       toast({
         title: "Fehler",
-        description: "Buchung konnte nicht aktualisiert werden.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -320,6 +318,41 @@ export default function Bookings() {
     },
   });
 
+  // Check availability mutation
+  const checkAvailabilityMutation = useMutation({
+    mutationFn: async ({ facilityId, startTime, endTime, excludeBookingId }: { 
+      facilityId: number; 
+      startTime: string; 
+      endTime: string; 
+      excludeBookingId?: number;
+    }) => {
+      return apiRequest("POST", `/api/clubs/${selectedClub?.id}/bookings/check-availability`, {
+        facilityId,
+        startTime,
+        endTime,
+        excludeBookingId
+      });
+    },
+    onSuccess: (data: any) => {
+      console.log("DEBUG: Availability check result:", data);
+      setAvailabilityStatus({
+        available: data.available,
+        maxConcurrent: data.maxConcurrent,
+        currentBookings: data.currentBookings,
+        message: data.available 
+          ? `Verfügbar (${data.currentBookings}/${data.maxConcurrent} Buchungen)`
+          : `Nicht verfügbar (${data.currentBookings}/${data.maxConcurrent} Buchungen)`
+      });
+    },
+    onError: (error: any) => {
+      console.error("DEBUG: Availability check error:", error);
+      setAvailabilityStatus({
+        available: false,
+        message: "Fehler bei der Verfügbarkeitsprüfung"
+      });
+    },
+  });
+
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch = 
       booking.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -332,8 +365,30 @@ export default function Bookings() {
     return matchesSearch && matchesStatus && matchesType && matchesFacility;
   });
 
+  // Function to check availability
+  const checkAvailability = () => {
+    const facilityId = form.getValues("facilityId");
+    const startTime = form.getValues("startTime");
+    const endTime = form.getValues("endTime");
+    
+    if (facilityId && startTime && endTime) {
+      console.log("DEBUG: Checking availability for:", { facilityId, startTime, endTime });
+      setIsCheckingAvailability(true);
+      checkAvailabilityMutation.mutate({ 
+        facilityId, 
+        startTime: new Date(startTime).toISOString(), 
+        endTime: new Date(endTime).toISOString(),
+        excludeBookingId: selectedBooking?.id
+      });
+    } else {
+      setAvailabilityStatus(null);
+    }
+    setIsCheckingAvailability(false);
+  };
+
   const handleCreateBooking = () => {
     setSelectedBooking(null);
+    setAvailabilityStatus(null);
     form.reset();
     setBookingModalOpen(true);
   };
@@ -698,7 +753,11 @@ export default function Bookings() {
                     <FormItem>
                       <FormLabel>Anlage *</FormLabel>
                       <Select 
-                        onValueChange={(value) => field.onChange(parseInt(value))}
+                        onValueChange={(value) => {
+                          field.onChange(parseInt(value));
+                          // Reset availability when facility changes
+                          setAvailabilityStatus(null);
+                        }}
                         value={field.value?.toString()}
                       >
                         <FormControl>
@@ -709,7 +768,7 @@ export default function Bookings() {
                         <SelectContent>
                           {facilities.map((facility) => (
                             <SelectItem key={facility.id} value={facility.id.toString()}>
-                              {facility.name}
+                              {facility.name} {facility.maxConcurrentBookings && `(Max ${facility.maxConcurrentBookings} Buchungen)`}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -780,7 +839,14 @@ export default function Bookings() {
                     <FormItem>
                       <FormLabel>Startzeit *</FormLabel>
                       <FormControl>
-                        <Input type="datetime-local" {...field} />
+                        <Input 
+                          type="datetime-local" 
+                          {...field} 
+                          onChange={(e) => {
+                            field.onChange(e);
+                            setAvailabilityStatus(null);
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -794,7 +860,14 @@ export default function Bookings() {
                     <FormItem>
                       <FormLabel>Endzeit *</FormLabel>
                       <FormControl>
-                        <Input type="datetime-local" {...field} />
+                        <Input 
+                          type="datetime-local" 
+                          {...field} 
+                          onChange={(e) => {
+                            field.onChange(e);
+                            setAvailabilityStatus(null);
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -839,6 +912,51 @@ export default function Bookings() {
                     </FormItem>
                   )}
                 />
+              </div>
+
+              {/* Availability Check Section */}
+              <div className="bg-muted/50 p-4 rounded-lg border">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-foreground">Verfügbarkeitsprüfung</h4>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={checkAvailability}
+                    disabled={isCheckingAvailability || checkAvailabilityMutation.isPending}
+                  >
+                    {isCheckingAvailability || checkAvailabilityMutation.isPending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                        Prüfe...
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="w-4 h-4 mr-2" />
+                        Verfügbarkeit prüfen
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                {availabilityStatus && (
+                  <div className={`p-3 rounded-md border ${
+                    availabilityStatus.available 
+                      ? 'bg-green-50 border-green-200 text-green-800' 
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}>
+                    <div className="flex items-center">
+                      {availabilityStatus.available ? (
+                        <Check className="w-4 h-4 mr-2" />
+                      ) : (
+                        <X className="w-4 h-4 mr-2" />
+                      )}
+                      <span className="text-sm font-medium">
+                        {availabilityStatus.message}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <FormField

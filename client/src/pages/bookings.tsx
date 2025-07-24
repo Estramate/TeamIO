@@ -115,7 +115,7 @@ export default function Bookings() {
     setPage("Buchungen", "Verwalten Sie Ihre Anlagenbuchungen und Termine");
   }, [setPage]);
   
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -564,9 +564,9 @@ export default function Bookings() {
             {/* View Toggle */}
             <div className="flex rounded-xl border bg-background p-1">
               <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
+                variant={viewMode === "cards" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setViewMode("grid")}
+                onClick={() => setViewMode("cards")}
                 className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
               >
                 <Grid3x3 className="h-4 w-4" />

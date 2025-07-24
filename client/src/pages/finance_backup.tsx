@@ -1294,7 +1294,7 @@ export default function Finance() {
               <form onSubmit={editFinanceForm.handleSubmit(handleUpdateFinance)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="type"
                     render={({ field }) => (
                       <FormItem>
@@ -1316,7 +1316,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="amount"
                     render={({ field }) => (
                       <FormItem>
@@ -1335,7 +1335,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="description"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
@@ -1352,7 +1352,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="category"
                     render={({ field }) => (
                       <FormItem>
@@ -1378,7 +1378,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="subcategory"
                     render={({ field }) => (
                       <FormItem>
@@ -1395,7 +1395,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="date"
                     render={({ field }) => (
                       <FormItem>
@@ -1412,7 +1412,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="dueDate"
                     render={({ field }) => (
                       <FormItem>
@@ -1429,7 +1429,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="status"
                     render={({ field }) => (
                       <FormItem>
@@ -1453,7 +1453,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="priority"
                     render={({ field }) => (
                       <FormItem>
@@ -1477,7 +1477,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="paymentMethod"
                     render={({ field }) => (
                       <FormItem>
@@ -1502,7 +1502,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="notes"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
@@ -1558,7 +1558,7 @@ export default function Finance() {
               <form onSubmit={financeForm.handleSubmit(handleCreateFinance)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="type"
                     render={({ field }) => (
                       <FormItem>
@@ -1580,7 +1580,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="amount"
                     render={({ field }) => (
                       <FormItem>
@@ -1599,7 +1599,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="description"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
@@ -1616,7 +1616,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="category"
                     render={({ field }) => (
                       <FormItem>
@@ -1642,7 +1642,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="subcategory"
                     render={({ field }) => (
                       <FormItem>
@@ -1659,7 +1659,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="date"
                     render={({ field }) => (
                       <FormItem>
@@ -1676,7 +1676,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="dueDate"
                     render={({ field }) => (
                       <FormItem>
@@ -1693,7 +1693,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="status"
                     render={({ field }) => (
                       <FormItem>
@@ -1717,7 +1717,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="priority"
                     render={({ field }) => (
                       <FormItem>
@@ -1741,7 +1741,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="paymentMethod"
                     render={({ field }) => (
                       <FormItem>
@@ -1766,7 +1766,7 @@ export default function Finance() {
                   />
 
                   <FormField
-                    control={editFinanceForm.control}
+                    control={financeForm.control}
                     name="notes"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">

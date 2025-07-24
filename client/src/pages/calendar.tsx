@@ -417,9 +417,37 @@ export default function Calendar() {
     e.preventDefault();
     if (!draggedEvent) return;
 
+    console.log('Drag & Drop - Original event:', draggedEvent);
+
     const oldStartTime = new Date(draggedEvent.startTime || draggedEvent.date);
-    const oldEndTime = new Date(draggedEvent.endTime || draggedEvent.date);
-    const duration = oldEndTime.getTime() - oldStartTime.getTime();
+    
+    // Handle different endTime formats for duration calculation
+    let duration = 2 * 60 * 60 * 1000; // Default 2 hours
+    
+    try {
+      let oldEndTime: Date;
+      
+      if (draggedEvent.endTime) {
+        if (typeof draggedEvent.endTime === 'string' && draggedEvent.endTime.includes(':') && !draggedEvent.endTime.includes('T')) {
+          // Handle time-only format like "20:00"
+          const [hours, minutes] = draggedEvent.endTime.split(':').map(Number);
+          oldEndTime = new Date(oldStartTime);
+          oldEndTime.setHours(hours, minutes || 0, 0, 0);
+        } else {
+          // Handle full datetime format
+          oldEndTime = new Date(draggedEvent.endTime);
+        }
+        
+        // Only use calculated duration if dates are valid
+        if (!isNaN(oldStartTime.getTime()) && !isNaN(oldEndTime.getTime())) {
+          duration = oldEndTime.getTime() - oldStartTime.getTime();
+        }
+      } else {
+        oldEndTime = new Date(draggedEvent.date);
+      }
+    } catch (error) {
+      console.warn('Error calculating duration, using default:', error);
+    }
 
     let newStartTime: Date;
     if (newHour !== undefined) {
@@ -433,6 +461,12 @@ export default function Calendar() {
     }
 
     const newEndTime = new Date(newStartTime.getTime() + duration);
+    
+    console.log('Drag & Drop - New times:', {
+      start: newStartTime.toISOString(),
+      end: newEndTime.toISOString(),
+      duration: duration / (60 * 60 * 1000) + ' hours'
+    });
 
     // Update the event
     if (draggedEvent.source === 'booking') {

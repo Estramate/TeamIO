@@ -250,7 +250,24 @@ export default function Finance() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'finances'] });
       setIsCreateDialogOpen(false);
-      financeForm.reset();
+      financeForm.reset({
+        type: 'income' as const,
+        category: '',
+        subcategory: '',
+        amount: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+        dueDate: '',
+        status: 'pending' as const,
+        priority: 'normal' as const,
+        paymentMethod: '',
+        recurring: false,
+        recurringInterval: '',
+        notes: '',
+        memberId: '',
+        playerId: '',
+        teamId: '',
+      });
       toast({ title: "Finanztransaktion erstellt", description: "Die Transaktion wurde erfolgreich hinzugefügt." });
     },
     onError: (error: any) => {
@@ -370,7 +387,24 @@ export default function Finance() {
 
   const handleCloseCreateModal = () => {
     setIsCreateDialogOpen(false);
-    financeForm.reset();
+    financeForm.reset({
+      type: 'income' as const,
+      category: '',
+      subcategory: '',
+      amount: '',
+      description: '',
+      date: new Date().toISOString().split('T')[0],
+      dueDate: '',
+      status: 'pending' as const,
+      priority: 'normal' as const,
+      paymentMethod: '',
+      recurring: false,
+      recurringInterval: '',
+      notes: '',
+      memberId: '',
+      playerId: '',
+      teamId: '',
+    });
   };
 
   // Helper function for date cleaning

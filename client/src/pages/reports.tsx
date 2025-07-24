@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { apiRequest } from "@/lib/queryClient";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function ReportsPage() {
   const { toast } = useToast();
@@ -25,7 +27,10 @@ export default function ReportsPage() {
 
   // Set page info
   const { setPage } = usePage();
-  setPage("Berichte", "Automatische Berichte und Analysen");
+  
+  useEffect(() => {
+    setPage("Berichte", "Automatische Berichte und Analysen");
+  }, [setPage]);
 
   // Data queries
   const { data: members } = useQuery({
@@ -101,8 +106,8 @@ export default function ReportsPage() {
       downloadReport(reportType, reportData);
       
       toast({
-        title: "Bericht erstellt",
-        description: `${reportTypes.find(r => r.id === reportType)?.title} wurde erfolgreich generiert.`
+        title: "PDF-Bericht erstellt",
+        description: `${reportTypes.find(r => r.id === reportType)?.title} wurde als PDF heruntergeladen.`
       });
     } catch (error) {
       setGenerationStatus(prev => ({ ...prev, [reportType]: 'error' }));
@@ -127,8 +132,8 @@ export default function ReportsPage() {
       }
       
       toast({
-        title: "Alle Berichte erstellt",
-        description: `${reportTypes.length} Berichte wurden erfolgreich generiert und heruntergeladen.`
+        title: "Alle PDF-Berichte erstellt",
+        description: `${reportTypes.length} PDF-Berichte wurden erfolgreich generiert und heruntergeladen.`
       });
     } catch (error) {
       toast({
@@ -267,13 +272,18 @@ export default function ReportsPage() {
       const amount = Number(f.amount);
       
       let targets = 1;
-      if (f.teamIds) {
-        const teamIds = Array.isArray(f.teamIds) ? f.teamIds : JSON.parse(f.teamIds);
-        targets = teamIds.length;
-      }
-      if (f.playerIds) {
-        const playerIds = Array.isArray(f.playerIds) ? f.playerIds : JSON.parse(f.playerIds);
-        targets += playerIds.length;
+      try {
+        if (f.teamIds && f.teamIds !== '[]') {
+          const teamIds = Array.isArray(f.teamIds) ? f.teamIds : JSON.parse(f.teamIds);
+          targets = teamIds.length;
+        }
+        if (f.playerIds && f.playerIds !== '[]') {
+          const playerIds = Array.isArray(f.playerIds) ? f.playerIds : JSON.parse(f.playerIds);
+          targets += playerIds.length;
+        }
+      } catch (error) {
+        console.error('Error parsing fee targets:', error);
+        targets = 1;
       }
       
       return sum + (amount * multiplier * Math.max(1, targets));
@@ -297,12 +307,28 @@ export default function ReportsPage() {
           period: f.period,
           annualAmount: Number(f.amount) * (f.period === 'monthly' ? 12 : f.period === 'quarterly' ? 4 : 1)
         })),
-        trainingFees: activeTrainingFees.map((f: any) => ({
-          name: f.name,
-          amount: Number(f.amount),
-          period: f.period,
-          targets: Math.max(1, (f.teamIds ? JSON.parse(f.teamIds).length : 0) + (f.playerIds ? JSON.parse(f.playerIds).length : 0))
-        }))
+        trainingFees: activeTrainingFees.map((f: any) => {
+          let targets = 1;
+          try {
+            if (f.teamIds && f.teamIds !== '[]') {
+              const teamIds = Array.isArray(f.teamIds) ? f.teamIds : JSON.parse(f.teamIds);
+              targets = teamIds.length;
+            }
+            if (f.playerIds && f.playerIds !== '[]') {
+              const playerIds = Array.isArray(f.playerIds) ? f.playerIds : JSON.parse(f.playerIds);
+              targets += playerIds.length;
+            }
+          } catch (error) {
+            console.error('Error parsing fee targets:', error);
+            targets = 1;
+          }
+          return {
+            name: f.name,
+            amount: Number(f.amount),
+            period: f.period,
+            targets: Math.max(1, targets)
+          };
+        })
       }
     };
   };
@@ -365,17 +391,120 @@ export default function ReportsPage() {
     }));
   };
 
-  // Download report as PDF/CSV
+  // Generate beautiful PDF reports
   const downloadReport = (reportType: string, data: any) => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${reportType}-${selectedYear}-${selectedMonth}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const doc = new jsPDF();
+    const reportTitle = reportTypes.find(r => r.id === reportType)?.title || 'Bericht';
+    const clubName = selectedClub?.name || 'Verein';
+    
+    // Header
+    doc.setFontSize(20);
+    doc.text(clubName, 20, 20);
+    doc.setFontSize(16);
+    doc.text(reportTitle, 20, 30);
+    doc.setFontSize(12);
+    doc.text(`Zeitraum: ${data.period}`, 20, 40);
+    doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm', { locale: de })}`, 20, 50);
+    
+    let yPosition = 70;
+    
+    // Summary section
+    if (data.summary) {
+      doc.setFontSize(14);
+      doc.text('Zusammenfassung', 20, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(10);
+      Object.entries(data.summary).forEach(([key, value]) => {
+        const label = formatSummaryLabel(key);
+        doc.text(`${label}: ${value}`, 20, yPosition);
+        yPosition += 6;
+      });
+      yPosition += 10;
+    }
+    
+    // Tables for detailed data
+    if (reportType === 'financial-overview' && data.monthlyData) {
+      autoTable(doc, {
+        head: [['Monat', 'Einnahmen', 'Ausgaben', 'Saldo']],
+        body: data.monthlyData.map((row: any) => [
+          row.month,
+          `€ ${row.income.toLocaleString('de-DE')}`,
+          `€ ${row.expenses.toLocaleString('de-DE')}`,
+          `€ ${row.balance.toLocaleString('de-DE')}`
+        ]),
+        startY: yPosition,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [59, 130, 246] }
+      });
+    }
+    
+    if (reportType === 'member-statistics' && data.ageDistribution) {
+      autoTable(doc, {
+        head: [['Altersgruppe', 'Anzahl']],
+        body: Object.entries(data.ageDistribution).map(([age, count]) => [age, count.toString()]),
+        startY: yPosition,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [34, 197, 94] }
+      });
+    }
+    
+    if (reportType === 'fee-analysis' && data.feeBreakdown) {
+      if (data.feeBreakdown.memberFees?.length > 0) {
+        autoTable(doc, {
+          head: [['Mitglied', 'Betrag', 'Zeitraum', 'Jahresbetrag']],
+          body: data.feeBreakdown.memberFees.map((fee: any) => [
+            fee.member || 'Unbekannt',
+            `€ ${fee.amount}`,
+            fee.period,
+            `€ ${fee.annualAmount}`
+          ]),
+          startY: yPosition,
+          styles: { fontSize: 8 },
+          headStyles: { fillColor: [168, 85, 247] }
+        });
+      }
+    }
+    
+    if (reportType === 'team-overview' && data.teamStats) {
+      autoTable(doc, {
+        head: [['Team', 'Kategorie', 'Mitglieder', 'Aktiv', 'Trainingsbeiträge']],
+        body: data.teamStats.map((team: any) => [
+          team.name,
+          team.category || '',
+          team.memberCount.toString(),
+          team.activeMembers.toString(),
+          team.trainingFees.toString()
+        ]),
+        startY: yPosition,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [249, 115, 22] }
+      });
+    }
+    
+    // Save PDF
+    doc.save(`${reportType}-${selectedYear}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+  };
+  
+  const formatSummaryLabel = (key: string): string => {
+    const labels: Record<string, string> = {
+      totalIncome: 'Gesamteinnahmen',
+      totalExpenses: 'Gesamtausgaben',
+      balance: 'Saldo',
+      totalMembers: 'Mitglieder gesamt',
+      activeMembers: 'Aktive Mitglieder',
+      payingMembers: 'Zahlende Mitglieder',
+      inactiveMembers: 'Inaktive Mitglieder',
+      memberFeeRevenue: 'Mitgliedsbeiträge',
+      trainingFeeRevenue: 'Trainingsbeiträge',
+      totalFeeRevenue: 'Beiträge gesamt',
+      activeMemberFees: 'Aktive Mitgliedsbeiträge',
+      activeTrainingFees: 'Aktive Trainingsbeiträge',
+      totalTeams: 'Teams gesamt',
+      totalPlayers: 'Spieler gesamt',
+      averageTeamSize: 'Durchschnittliche Teamgröße'
+    };
+    return labels[key] || key;
   };
 
   const getStatusIcon = (status: string) => {
@@ -401,7 +530,7 @@ export default function ReportsPage() {
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Berichte & Analysen</h1>
-            <p className="text-muted-foreground">Automatische Generierung von Vereinsberichten</p>
+            <p className="text-muted-foreground">Automatische PDF-Generierung von Vereinsberichten</p>
           </div>
           
           <div className="flex flex-wrap gap-3 items-center">
@@ -482,13 +611,13 @@ export default function ReportsPage() {
                   
                   {status === 'success' && (
                     <div className="mt-3 p-2 bg-green-50 dark:bg-green-900/20 rounded text-sm text-green-700 dark:text-green-300">
-                      Bericht erfolgreich erstellt und heruntergeladen
+                      PDF-Bericht erfolgreich erstellt und heruntergeladen
                     </div>
                   )}
                   
                   {status === 'error' && (
                     <div className="mt-3 p-2 bg-red-50 dark:bg-red-900/20 rounded text-sm text-red-700 dark:text-red-300">
-                      Fehler beim Erstellen des Berichts
+                      Fehler beim Erstellen des PDF-Berichts
                     </div>
                   )}
                 </CardContent>

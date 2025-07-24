@@ -1291,7 +1291,14 @@ export default function Finance() {
             </DialogHeader>
 
             <Form {...editFinanceForm}>
-              <form onSubmit={editFinanceForm.handleSubmit(handleUpdateFinance)} className="space-y-4">
+              <form 
+                onSubmit={(e) => {
+                  console.log('=== FORM SUBMIT EVENT ===');
+                  console.log('Form event:', e);
+                  return editFinanceForm.handleSubmit(handleUpdateFinance)(e);
+                }} 
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={editFinanceForm.control}
@@ -1532,6 +1539,12 @@ export default function Finance() {
                     type="submit"
                     disabled={updateFinanceMutation.isPending}
                     className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => {
+                      console.log('=== EDIT BUTTON CLICKED ===');
+                      console.log('editingFinance:', editingFinance);
+                      console.log('editFinanceForm values:', editFinanceForm.getValues());
+                      console.log('editFinanceForm errors:', editFinanceForm.formState.errors);
+                    }}
                   >
                     {updateFinanceMutation.isPending ? 'Speichern...' : 'Änderungen speichern'}
                   </Button>

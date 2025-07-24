@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Check, AlertTriangle, X } from "lucide-react";
+import { Users, Target, Trophy, TrendingUp } from "lucide-react";
 
 interface TeamStatusProps {
   clubId: number;
@@ -12,62 +12,89 @@ export default function TeamStatus({ clubId }: TeamStatusProps) {
     retry: false,
   }) as { data: any[] };
 
-  const getTeamStatus = (memberCount: number, maxMembers: number) => {
-    const percentage = (memberCount / maxMembers) * 100;
-    
-    if (percentage >= 90) {
-      return { icon: Check, color: "green", label: "Vollständig" };
-    } else if (percentage >= 70) {
-      return { icon: AlertTriangle, color: "yellow", label: "Gut besetzt" };
-    } else {
-      return { icon: X, color: "red", label: "Unterbesetzt" };
-    }
-  };
+  const { data: players = [] } = useQuery({
+    queryKey: ['/api/clubs', clubId, 'players'],
+    enabled: !!clubId,
+    retry: false,
+  }) as { data: any[] };
+
+  // Calculate team statistics
+  const activeTeams = teams.filter(team => team.status === 'active');
+  const activePlayers = players.filter(player => player.status === 'active');
+  const totalGoals = players.reduce((sum, player) => sum + (player.goals || 0), 0);
+  const totalAssists = players.reduce((sum, player) => sum + (player.assists || 0), 0);
+
+  const stats = [
+    {
+      title: "Aktive Teams",
+      value: activeTeams.length,
+      icon: Users,
+      color: "text-blue-500",
+      bg: "bg-blue-50",
+    },
+    {
+      title: "Aktive Spieler",
+      value: activePlayers.length,
+      icon: Target,
+      color: "text-green-500",
+      bg: "bg-green-50",
+    },
+    {
+      title: "Tore (Saison)",
+      value: totalGoals,
+      icon: Trophy,
+      color: "text-yellow-500",
+      bg: "bg-yellow-50",
+    },
+    {
+      title: "Assists (Saison)",
+      value: totalAssists,
+      icon: TrendingUp,
+      color: "text-purple-500",
+      bg: "bg-purple-50",
+    },
+  ];
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6">
-      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Team Status</h3>
+      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Team-Status</h3>
       
-      {teams.length === 0 ? (
-        <div className="text-center py-4">
-          <p className="text-muted-foreground text-sm">Keine Teams vorhanden</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {teams.slice(0, 5).map((team: any) => {
-            // Mock member count for demonstration
-            const memberCount = Math.floor(Math.random() * (team.maxMembers || 20)) + 1;
-            const status = getTeamStatus(memberCount, team.maxMembers || 20);
-            const StatusIcon = status.icon;
-            
-            return (
-              <div key={team.id} className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
-                    status.color === "green" ? "bg-green-100 dark:bg-green-900/30" :
-                    status.color === "yellow" ? "bg-yellow-100 dark:bg-yellow-900/30" :
-                    "bg-red-100 dark:bg-red-900/30"
-                  }`}>
-                    <StatusIcon className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                      status.color === "green" ? "text-green-500 dark:text-green-400" :
-                      status.color === "yellow" ? "text-yellow-500 dark:text-yellow-400" :
-                      "text-red-500 dark:text-red-400"
-                    }`} />
-                  </div>
-                  <span className="text-xs sm:text-sm font-medium text-foreground truncate">{team.name}</span>
-                </div>
-                <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                  {memberCount}/{team.maxMembers || 20}
+      <div className="grid grid-cols-2 gap-4">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
+          
+          return (
+            <div key={index} className="text-center">
+              <div className={`w-12 h-12 mx-auto ${stat.bg} rounded-full flex items-center justify-center mb-2`}>
+                <Icon className={`w-6 h-6 ${stat.color}`} />
+              </div>
+              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-xs text-muted-foreground">{stat.title}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {activeTeams.length > 0 && (
+        <div className="mt-6">
+          <h4 className="text-sm font-medium text-foreground mb-3">Aktive Teams</h4>
+          <div className="space-y-2">
+            {activeTeams.slice(0, 3).map((team: any) => (
+              <div key={team.id} className="flex items-center justify-between text-sm">
+                <span className="text-foreground">{team.name}</span>
+                <span className="text-muted-foreground">
+                  {team.category && `${team.category} • `}{team.ageGroup || 'Alle Altersgruppen'}
                 </span>
               </div>
-            );
-          })}
+            ))}
+            {activeTeams.length > 3 && (
+              <div className="text-xs text-muted-foreground text-center pt-2">
+                +{activeTeams.length - 3} weitere Teams
+              </div>
+            )}
+          </div>
         </div>
       )}
-      
-      <button className="w-full mt-4 text-center text-primary hover:text-primary/80 text-sm font-medium">
-        Team Management öffnen
-      </button>
     </div>
   );
 }

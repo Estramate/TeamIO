@@ -421,6 +421,15 @@ export default function Calendar() {
   // State to prevent modal opening during resize
   const [isResizing, setIsResizing] = useState(false);
 
+  // Calendar availability check state
+  const [isCheckingCalendarAvailability, setIsCheckingCalendarAvailability] = useState(false);
+  const [calendarAvailabilityStatus, setCalendarAvailabilityStatus] = useState<{
+    available: boolean;
+    message: string;
+    maxConcurrent?: number;
+    currentBookings?: number;
+  } | null>(null);
+
   // Resize handlers - only for end time (extending events)
   const handleResizeStart = (event: any, direction: 'end', e: React.MouseEvent) => {
     e.stopPropagation();
@@ -456,9 +465,14 @@ export default function Calendar() {
     document.addEventListener('mousemove', moveHandler);
     document.addEventListener('mouseup', upHandler);
     
-    // Store handlers for cleanup
-    (window as any).resizeMoveHandler = moveHandler;
-    (window as any).resizeUpHandler = upHandler;
+    // Store handlers on the event listeners directly for proper cleanup
+    const cleanup = () => {
+      document.removeEventListener('mousemove', moveHandler);
+      document.removeEventListener('mouseup', upHandler);
+    };
+    
+    // Store cleanup function
+    (window as any).resizeCleanup = cleanup;
   };
 
   const handleResizeMove = (e: MouseEvent) => {
@@ -532,7 +546,11 @@ export default function Calendar() {
       updateBookingMutation.mutate({ id: resizingEvent.id, data: updateData });
     }
     
-    // Clean up
+    // Clean up event listeners
+    const cleanup = (window as any).resizeCleanup;
+    if (cleanup) cleanup();
+    
+    // Clean up state
     setResizingEvent(null);
     setResizeDirection(null);
     setResizeStartY(0);
@@ -543,16 +561,58 @@ export default function Calendar() {
     // Delay to prevent modal opening after resize
     setTimeout(() => {
       setIsResizing(false);
-    }, 100);
-    
-    const moveHandler = (window as any).resizeMoveHandler;
-    const upHandler = (window as any).resizeUpHandler;
-    
-    if (moveHandler) document.removeEventListener('mousemove', moveHandler);
-    if (upHandler) document.removeEventListener('mouseup', upHandler);
+    }, 50);
     
     delete (window as any).resizeMoveHandler;
     delete (window as any).resizeUpHandler;
+  };
+
+  // Calendar availability check function
+  const checkCalendarAvailability = async () => {
+    const facilityId = bookingForm.getValues('facilityId');
+    const startTime = bookingForm.getValues('startTime');
+    const endTime = bookingForm.getValues('endTime');
+    
+    if (!facilityId || !startTime || !endTime) {
+      setCalendarAvailabilityStatus({
+        available: false,
+        message: "Bitte füllen Sie alle Felder aus"
+      });
+      return;
+    }
+    
+    setIsCheckingCalendarAvailability(true);
+    
+    try {
+      console.log('Checking availability...', { facilityId, startTime, endTime });
+      
+      const response = await apiRequest("POST", `/api/clubs/${selectedClub?.id}/bookings/check-availability`, {
+        facilityId: parseInt(facilityId),
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
+        excludeBookingId: editingBooking?.id
+      });
+      
+      const data = await response.json();
+      console.log('Availability check result:', data);
+      
+      setCalendarAvailabilityStatus({
+        available: data.available || false,
+        maxConcurrent: data.maxConcurrent || 1,
+        currentBookings: data.currentBookings || 0,
+        message: data.available 
+          ? `Verfügbar (${data.currentBookings || 0}/${data.maxConcurrent || 1} Buchungen)`
+          : `Nicht verfügbar (${data.currentBookings || 0}/${data.maxConcurrent || 1} Buchungen)`
+      });
+    } catch (error) {
+      console.error('Availability check error:', error);
+      setCalendarAvailabilityStatus({
+        available: false,
+        message: "Fehler bei der Verfügbarkeitsprüfung"
+      });
+    }
+    
+    setIsCheckingCalendarAvailability(false);
   };
 
   const handleDrop = (e: React.DragEvent, newDate: Date, newHour?: number) => {
@@ -819,6 +879,10 @@ export default function Calendar() {
   };
 
   const openBookingModal = (booking?: any) => {
+    // Reset availability status when opening modal
+    setCalendarAvailabilityStatus(null);
+    setIsCheckingCalendarAvailability(false);
+    
     if (booking) {
       setEditingBooking(booking);
       console.log('Opening booking modal with:', booking);
@@ -1652,7 +1716,14 @@ export default function Calendar() {
       </Dialog>
 
       {/* Booking Modal */}
-      <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
+      <Dialog open={showBookingModal} onOpenChange={(open) => {
+        setShowBookingModal(open);
+        if (!open) {
+          // Reset availability status when closing modal
+          setCalendarAvailabilityStatus(null);
+          setIsCheckingCalendarAvailability(false);
+        }
+      }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingBooking ? 'Buchung bearbeiten' : 'Neue Buchung erstellen'}</DialogTitle>
@@ -1868,24 +1939,40 @@ export default function Calendar() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      const facilityId = bookingForm.getValues('facilityId');
-                      const startTime = bookingForm.getValues('startTime');
-                      const endTime = bookingForm.getValues('endTime');
-                      
-                      if (!facilityId || !startTime || !endTime) {
-                        return;
-                      }
-                      
-                      // Hier würde die Verfügbarkeitsprüfung implementiert werden
-                      console.log('Checking availability...');
-                    }}
+                    onClick={checkCalendarAvailability}
+                    disabled={isCheckingCalendarAvailability}
                     className="gap-2"
                   >
-                    <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
-                    Verfügbarkeit prüfen
+                    {isCheckingCalendarAvailability ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                        Prüfe...
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-current" />
+                        Verfügbarkeit prüfen
+                      </>
+                    )}
                   </Button>
                 </div>
+                
+                {calendarAvailabilityStatus && (
+                  <div className={`mt-3 p-3 rounded-md border ${
+                    calendarAvailabilityStatus.available 
+                      ? 'bg-green-50 border-green-200 text-green-800' 
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        calendarAvailabilityStatus.available ? 'bg-green-500' : 'bg-red-500'
+                      }`} />
+                      <span className="text-sm font-medium">
+                        {calendarAvailabilityStatus.message}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <FormField

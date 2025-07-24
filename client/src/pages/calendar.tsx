@@ -38,6 +38,7 @@ const bookingFormSchema = z.object({
   title: z.string().min(1, "Titel ist erforderlich"),
   description: z.string().optional(),
   facilityId: z.string().min(1, "Anlage ist erforderlich"),
+  teamId: z.string().optional(),
   startTime: z.string().min(1, "Startzeit ist erforderlich"),
   endTime: z.string().min(1, "Endzeit ist erforderlich"),
   type: z.enum(["training", "game", "event", "maintenance"]),
@@ -168,6 +169,7 @@ export default function Calendar() {
       title: "",
       description: "",
       facilityId: "",
+      teamId: "",
       startTime: "",
       endTime: "",
       type: "training" as const,
@@ -1166,30 +1168,107 @@ export default function Calendar() {
                 )}
               />
 
-              <FormField
-                control={bookingForm.control}
-                name="facilityId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Anlage *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value?.toString()}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Anlage auswählen" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {(facilities as any[]).map((facility) => (
-                          <SelectItem key={facility.id} value={facility.id.toString()}>
-                            {facility.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={bookingForm.control}
+                  name="facilityId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Anlage *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Anlage auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {(facilities as any[]).map((facility) => (
+                            <SelectItem key={facility.id} value={facility.id.toString()}>
+                              {facility.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={bookingForm.control}
+                  name="teamId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Team (optional)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Kein Team" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="">Kein Team</SelectItem>
+                          {teams?.map((team) => (
+                            <SelectItem key={team.id} value={team.id.toString()}>
+                              {team.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={bookingForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Status auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="confirmed">Bestätigt</SelectItem>
+                          <SelectItem value="pending">Ausstehend</SelectItem>
+                          <SelectItem value="cancelled">Abgesagt</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={bookingForm.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Typ *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Typ auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="training">Training</SelectItem>
+                          <SelectItem value="game">Spiel</SelectItem>
+                          <SelectItem value="event">Event</SelectItem>
+                          <SelectItem value="maintenance">Wartung</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <FormField
@@ -1224,53 +1303,6 @@ export default function Calendar() {
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={bookingForm.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Typ *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Typ auswählen" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="training">⚽ Training</SelectItem>
-                          <SelectItem value="game">🏆 Spiel</SelectItem>
-                          <SelectItem value="event">🎉 Event</SelectItem>
-                          <SelectItem value="maintenance">🔧 Wartung</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={bookingForm.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Status auswählen" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="confirmed">Bestätigt</SelectItem>
-                          <SelectItem value="pending">Ausstehend</SelectItem>
-                          <SelectItem value="cancelled">Abgesagt</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={bookingForm.control}
                   name="participants"
                   render={({ field }) => (
                     <FormItem>
@@ -1278,9 +1310,8 @@ export default function Calendar() {
                       <FormControl>
                         <Input 
                           type="number" 
-                          placeholder="Anzahl Teilnehmer"
-                          {...field}
-                          value={field.value || ""}
+                          placeholder="Anzahl Teilnehmer" 
+                          {...field} 
                           onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                         />
                       </FormControl>
@@ -1299,9 +1330,8 @@ export default function Calendar() {
                         <Input 
                           type="number" 
                           step="0.01"
-                          placeholder="0.00"
-                          {...field}
-                          value={field.value?.toString() || ""}
+                          placeholder="0.00" 
+                          {...field} 
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
                         />
                       </FormControl>
@@ -1311,16 +1341,58 @@ export default function Calendar() {
                 />
               </div>
 
+              {/* Availability Check Section */}
+              <div className="bg-muted/20 rounded-lg p-4 border">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Verfügbarkeitsprüfung</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const facilityId = bookingForm.getValues('facilityId');
+                      const startTime = bookingForm.getValues('startTime');
+                      const endTime = bookingForm.getValues('endTime');
+                      
+                      if (!facilityId || !startTime || !endTime) {
+                        return;
+                      }
+                      
+                      // Hier würde die Verfügbarkeitsprüfung implementiert werden
+                      console.log('Checking availability...');
+                    }}
+                    className="gap-2"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+                    Verfügbarkeit prüfen
+                  </Button>
+                </div>
+              </div>
+
+              <FormField
+                control={bookingForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Beschreibung</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Zusätzliche Informationen zur Buchung..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Contact Information */}
               <div className="space-y-4">
-                <h4 className="text-sm font-medium">Kontaktinformationen</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h4 className="text-sm font-medium">Kontaktperson</h4>
+                <div className="grid grid-cols-3 gap-4">
                   <FormField
                     control={bookingForm.control}
                     name="contactPerson"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ansprechpartner</FormLabel>
+                        <FormLabel>Name</FormLabel>
                         <FormControl>
                           <Input placeholder="Name" {...field} />
                         </FormControl>
@@ -1328,7 +1400,7 @@ export default function Calendar() {
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={bookingForm.control}
                     name="contactEmail"
@@ -1336,13 +1408,13 @@ export default function Calendar() {
                       <FormItem>
                         <FormLabel>E-Mail</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="E-Mail Adresse" {...field} />
+                          <Input placeholder="email@beispiel.de" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={bookingForm.control}
                     name="contactPhone"
@@ -1350,7 +1422,7 @@ export default function Calendar() {
                       <FormItem>
                         <FormLabel>Telefon</FormLabel>
                         <FormControl>
-                          <Input placeholder="Telefonnummer" {...field} />
+                          <Input placeholder="+49 123 456789" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1359,7 +1431,6 @@ export default function Calendar() {
                 </div>
               </div>
 
-              {/* Notes */}
               <FormField
                 control={bookingForm.control}
                 name="notes"
@@ -1367,7 +1438,7 @@ export default function Calendar() {
                   <FormItem>
                     <FormLabel>Notizen</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Zusätzliche Informationen..." {...field} />
+                      <Textarea placeholder="Interne Notizen..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

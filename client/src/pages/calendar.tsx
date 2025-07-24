@@ -418,24 +418,31 @@ export default function Calendar() {
     setSnapPreview({ hour: 0, visible: false });
   };
 
-  // Resize handlers
-  const handleResizeStart = (event: any, direction: 'start' | 'end', e: React.MouseEvent) => {
+  // Resize handlers - only for end time (extending events)
+  const handleResizeStart = (event: any, direction: 'end', e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     
     setResizingEvent(event);
-    setResizeDirection(direction);
+    setResizeDirection('end');
     setResizeStartY(e.clientY);
     setResizeStartTime(new Date(event.startTime));
     
+    console.log('Resize start - original event:', event);
+    console.log('Original startTime:', event.startTime, 'endTime:', event.endTime);
+    
     if (event.endTime) {
       if (typeof event.endTime === 'string' && event.endTime.includes(':') && !event.endTime.includes('T')) {
+        // Time string like "20:00" - combine with start date but stay in local time
         const [hours, minutes] = event.endTime.split(':').map(Number);
-        const endDate = new Date(event.startTime);
-        endDate.setHours(hours, minutes || 0, 0, 0);
+        const startDate = new Date(event.startTime);
+        const endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), hours, minutes || 0, 0, 0);
         setResizeEndTime(endDate);
+        console.log('Parsed time string endTime:', endDate);
       } else {
-        setResizeEndTime(new Date(event.endTime));
+        const endDate = new Date(event.endTime);
+        setResizeEndTime(endDate);
+        console.log('Parsed ISO endTime:', endDate);
       }
     }
     
@@ -451,26 +458,17 @@ export default function Calendar() {
   };
 
   const handleResizeMove = (e: MouseEvent) => {
-    if (!resizingEvent || !resizeDirection) return;
+    if (!resizingEvent || resizeDirection !== 'end' || !resizeEndTime) return;
     
     const deltaY = e.clientY - resizeStartY;
     const hourDelta = deltaY / 50; // 50px per hour
     const snappedHourDelta = Math.round(hourDelta * 2) / 2; // Snap to 30-minute intervals
     
-    if (resizeDirection === 'start' && resizeStartTime) {
-      const newStartTime = new Date(resizeStartTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
-      const hour = newStartTime.getHours() + (newStartTime.getMinutes() / 60);
-      
-      if (hour >= 6 && hour <= 24) {
-        setSnapPreview({ hour, visible: true });
-      }
-    } else if (resizeDirection === 'end' && resizeEndTime) {
-      const newEndTime = new Date(resizeEndTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
-      const hour = newEndTime.getHours() + (newEndTime.getMinutes() / 60);
-      
-      if (hour >= 6 && hour <= 24) {
-        setSnapPreview({ hour, visible: true });
-      }
+    const newEndTime = new Date(resizeEndTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
+    const hour = newEndTime.getHours() + (newEndTime.getMinutes() / 60);
+    
+    if (hour >= 6 && hour <= 24) {
+      setSnapPreview({ hour, visible: true });
     }
   };
 
@@ -495,50 +493,39 @@ export default function Calendar() {
       console.log('New end time:', newEndTime);
     }
     
-    // Additional validation and auto-adjustment
-    if (newStartTime && newEndTime) {
-      // If start time becomes after end time when resizing start, adjust end time
-      if (resizeDirection === 'start' && newStartTime >= newEndTime) {
+    // Only handle end time resizing now
+    if (resizeDirection === 'end' && newStartTime && newEndTime) {
+      // Ensure minimum duration of 30 minutes
+      if (newEndTime <= newStartTime) {
         const minDuration = 30 * 60 * 1000; // 30 minutes minimum
         newEndTime = new Date(newStartTime.getTime() + minDuration);
         console.log('Auto-adjusted end time to maintain minimum duration:', newEndTime);
       }
       
-      // If end time becomes before start time when resizing end, adjust start time  
-      if (resizeDirection === 'end' && newEndTime <= newStartTime) {
-        const minDuration = 30 * 60 * 1000; // 30 minutes minimum
-        newStartTime = new Date(newEndTime.getTime() - minDuration);
-        console.log('Auto-adjusted start time to maintain minimum duration:', newStartTime);
-      }
+      console.log('Updating booking with new end time:', { start: newStartTime, end: newEndTime });
+      console.log('Timezone info - start offset:', newStartTime.getTimezoneOffset(), 'end offset:', newEndTime.getTimezoneOffset());
       
-      // Final validation
-      if (newStartTime < newEndTime) {
-        console.log('Updating booking with new times:', { start: newStartTime, end: newEndTime });
-        
-        const updateData = {
-          title: resizingEvent.title,
-          description: resizingEvent.description || '',
-          facilityId: resizingEvent.facilityId,
-          teamId: resizingEvent.teamId,
-          startTime: newStartTime.toISOString(),
-          endTime: newEndTime.toISOString(),
-          type: resizingEvent.type,
-          status: resizingEvent.status || 'confirmed',
-          participants: resizingEvent.participants || 0,
-          cost: resizingEvent.cost || null,
-          contactPerson: resizingEvent.contactPerson || '',
-          contactEmail: resizingEvent.contactEmail || null,
-          contactPhone: resizingEvent.contactPhone || '',
-          notes: resizingEvent.notes || '',
-          recurring: resizingEvent.recurring || false,
-          recurringPattern: resizingEvent.recurringPattern || null,
-          recurringUntil: resizingEvent.recurringUntil || null
-        };
-        
-        updateBookingMutation.mutate({ id: resizingEvent.id, data: updateData });
-      } else {
-        console.log('Invalid time range after adjustment - not updating');
-      }
+      const updateData = {
+        title: resizingEvent.title,
+        description: resizingEvent.description || '',
+        facilityId: resizingEvent.facilityId,
+        teamId: resizingEvent.teamId,
+        startTime: newStartTime.toISOString(),
+        endTime: newEndTime.toISOString(),
+        type: resizingEvent.type,
+        status: resizingEvent.status || 'confirmed',
+        participants: resizingEvent.participants || 0,
+        cost: resizingEvent.cost || null,
+        contactPerson: resizingEvent.contactPerson || '',
+        contactEmail: resizingEvent.contactEmail || null,
+        contactPhone: resizingEvent.contactPhone || '',
+        notes: resizingEvent.notes || '',
+        recurring: resizingEvent.recurring || false,
+        recurringPattern: resizingEvent.recurringPattern || null,
+        recurringUntil: resizingEvent.recurringUntil || null
+      };
+      
+      updateBookingMutation.mutate({ id: resizingEvent.id, data: updateData });
     }
     
     // Clean up
@@ -1126,29 +1113,16 @@ export default function Calendar() {
                               </div>
                             )}
                             
-                            {/* Resize handles */}
+                            {/* Resize handle - only bottom for extending end time */}
                             {event.source === 'booking' && event.height >= 40 && (
-                              <>
-                                {/* Top resize handle */}
-                                <div
-                                  className="absolute inset-x-0 top-0 h-3 cursor-ns-resize flex items-center justify-center group"
-                                  onMouseDown={(e) => handleResizeStart(event, 'start', e)}
-                                >
-                                  <div className="w-8 h-1 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
-                                    <div className="w-full h-full bg-white/60 rounded-full"></div>
-                                  </div>
+                              <div
+                                className="absolute inset-x-0 bottom-0 h-3 cursor-ns-resize flex items-center justify-center group"
+                                onMouseDown={(e) => handleResizeStart(event, 'end', e)}
+                              >
+                                <div className="w-8 h-1 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
+                                  <div className="w-full h-full bg-white/60 rounded-full"></div>
                                 </div>
-                                
-                                {/* Bottom resize handle */}
-                                <div
-                                  className="absolute inset-x-0 bottom-0 h-3 cursor-ns-resize flex items-center justify-center group"
-                                  onMouseDown={(e) => handleResizeStart(event, 'end', e)}
-                                >
-                                  <div className="w-8 h-1 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
-                                    <div className="w-full h-full bg-white/60 rounded-full"></div>
-                                  </div>
-                                </div>
-                              </>
+                              </div>
                             )}
                           </div>
                         );
@@ -1346,29 +1320,16 @@ export default function Calendar() {
                                   </div>
                                 )}
                                 
-                                {/* Resize handles for week view */}
+                                {/* Resize handle for week view - only bottom for extending end time */}
                                 {event.source === 'booking' && event.height >= 30 && (
-                                  <>
-                                    {/* Top resize handle */}
-                                    <div
-                                      className="absolute inset-x-0 top-0 h-2 cursor-ns-resize flex items-center justify-center group"
-                                      onMouseDown={(e) => handleResizeStart(event, 'start', e)}
-                                    >
-                                      <div className="w-6 h-0.5 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
-                                        <div className="w-full h-full bg-white/60 rounded-full"></div>
-                                      </div>
+                                  <div
+                                    className="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize flex items-center justify-center group"
+                                    onMouseDown={(e) => handleResizeStart(event, 'end', e)}
+                                  >
+                                    <div className="w-6 h-0.5 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
+                                      <div className="w-full h-full bg-white/60 rounded-full"></div>
                                     </div>
-                                    
-                                    {/* Bottom resize handle */}
-                                    <div
-                                      className="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize flex items-center justify-center group"
-                                      onMouseDown={(e) => handleResizeStart(event, 'end', e)}
-                                    >
-                                      <div className="w-6 h-0.5 bg-white/40 rounded-full group-hover:bg-white/80 transition-colors">
-                                        <div className="w-full h-full bg-white/60 rounded-full"></div>
-                                      </div>
-                                    </div>
-                                  </>
+                                  </div>
                                 )}
                               </div>
                             );

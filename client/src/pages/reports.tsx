@@ -725,20 +725,20 @@ export default function ReportsPage() {
                 ))}
               </SelectContent>
             </Select>
-            
-            <Button 
-              onClick={generateAllReports} 
-              disabled={isGeneratingAll}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isGeneratingAll ? (
-                <Settings className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Play className="w-4 h-4 mr-2" />
-              )}
-              Alle Berichte generieren
-            </Button>
           </div>
+          
+          <Button 
+            onClick={generateAllReports} 
+            disabled={isGeneratingAll}
+            className="bg-blue-600 hover:bg-blue-700 sm:ml-auto"
+          >
+            {isGeneratingAll ? (
+              <Settings className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4 mr-2" />
+            )}
+            Alle Berichte generieren
+          </Button>
         </div>
 
         {/* Report Cards */}

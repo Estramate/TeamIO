@@ -95,6 +95,7 @@ export default function Calendar() {
   // Drag & Drop state
   const [draggedEvent, setDraggedEvent] = useState<any>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [snapPreview, setSnapPreview] = useState<{ hour: number; visible: boolean }>({ hour: 0, visible: false });
   const [resizingEvent, setResizingEvent] = useState<any>(null);
   const [resizeDirection, setResizeDirection] = useState<'start' | 'end' | null>(null);
 
@@ -411,6 +412,7 @@ export default function Calendar() {
   const handleDragEnd = () => {
     setDraggedEvent(null);
     setIsDragging(false);
+    setSnapPreview({ hour: 0, visible: false });
   };
 
   const handleDrop = (e: React.DragEvent, newDate: Date, newHour?: number) => {
@@ -505,11 +507,22 @@ export default function Calendar() {
 
     setDraggedEvent(null);
     setIsDragging(false);
+    setSnapPreview({ hour: 0, visible: false });
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    
+    if (isDragging) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const totalHours = (y / rect.height) * 18;
+      const snappedHours = Math.round(totalHours * 2) / 2;
+      const finalHour = snappedHours + 6;
+      
+      setSnapPreview({ hour: finalHour, visible: true });
+    }
   };
 
   // Combine events, bookings and birthdays for calendar display
@@ -852,6 +865,23 @@ export default function Calendar() {
                         />
                       ))}
                       
+                      {/* Snap preview line for day view */}
+                      {snapPreview.visible && snapPreview.hour >= 6 && snapPreview.hour <= 24 && (
+                        <div
+                          className="absolute inset-x-0 border-t-2 border-red-500 border-dashed z-50 pointer-events-none"
+                          style={{ 
+                            top: `${(snapPreview.hour - 6) * 50}px`,
+                            boxShadow: '0 0 4px rgba(239, 68, 68, 0.5)'
+                          }}
+                        >
+                          <div className="absolute -left-2 -top-1 w-4 h-2 bg-red-500 rounded-sm"></div>
+                          <div className="absolute -right-2 -top-1 w-4 h-2 bg-red-500 rounded-sm"></div>
+                          <span className="absolute -top-6 left-4 text-xs font-medium text-red-500 bg-white dark:bg-gray-800 px-1 rounded shadow-sm">
+                            {String(Math.floor(snapPreview.hour)).padStart(2, '0')}:{snapPreview.hour % 1 === 0.5 ? '30' : '00'}
+                          </span>
+                        </div>
+                      )}
+                      
                       {/* Events with proper pixel positioning */}
                       {calculateEventLayout(getEventsForDate(currentDate)).map((event, index) => {
                         return (
@@ -1031,6 +1061,20 @@ export default function Calendar() {
                               style={{ top: `${(slot.hour - 6) * 50}px` }}
                             />
                           ))}
+                          
+                          {/* Snap preview line for week view */}
+                          {snapPreview.visible && snapPreview.hour >= 6 && snapPreview.hour <= 24 && (
+                            <div
+                              className="absolute inset-x-0 border-t-2 border-red-500 border-dashed z-50 pointer-events-none"
+                              style={{ 
+                                top: `${(snapPreview.hour - 6) * 50}px`,
+                                boxShadow: '0 0 4px rgba(239, 68, 68, 0.5)'
+                              }}
+                            >
+                              <div className="absolute -left-1 -top-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                              <div className="absolute -right-1 -top-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                            </div>
+                          )}
                           
                           {/* Events with overlap handling */}
                           {calculateEventLayout(dayEvents).map((event, index) => {

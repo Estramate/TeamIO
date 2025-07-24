@@ -1025,21 +1025,31 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     let memberRevenue = 0;
                     safeMemberFees.forEach((fee: any) => {
                       if (fee && fee.status === 'active') {
-                        const startDate = new Date(fee.startDate);
-                        const endDate = fee.endDate ? new Date(fee.endDate) : null;
-                        
-                        // Prüfe ob der Monat im gültigen Zeitraum liegt
-                        if (date >= startDate && (!endDate || date <= endDate)) {
-                          const amount = Number(fee.amount) || 0;
+                        try {
+                          const startDate = new Date(fee.startDate);
+                          const endDate = fee.endDate ? new Date(fee.endDate) : null;
                           
-                          // Berechnung basierend auf Periode
-                          if (fee.period === 'monthly') {
-                            memberRevenue += amount;
-                          } else if (fee.period === 'quarterly' && monthIndex % 3 === 0) {
-                            memberRevenue += amount;
-                          } else if (fee.period === 'yearly' && monthIndex === 0) {
-                            memberRevenue += amount;
+                          // Prüfe ob der Monat im gültigen Zeitraum liegt
+                          if (date >= startDate && (!endDate || date <= endDate)) {
+                            const amount = Number(fee.amount) || 0;
+                            
+                            // Berechnung basierend auf Periode
+                            if (fee.period === 'monthly') {
+                              memberRevenue += amount;
+                            } else if (fee.period === 'quarterly' && monthIndex % 3 === 0) {
+                              memberRevenue += amount;
+                            } else if (fee.period === 'yearly' && monthIndex === 0) {
+                              memberRevenue += amount;
+                            } else if (fee.period === 'one-time') {
+                              // Einmalige Zahlung nur im ersten Monat des Zeitraums
+                              const feeStartDate = new Date(fee.startDate);
+                              if (date.getMonth() === feeStartDate.getMonth() && date.getFullYear() === feeStartDate.getFullYear()) {
+                                memberRevenue += amount;
+                              }
+                            }
                           }
+                        } catch (e) {
+                          console.warn('Error processing member fee:', e);
                         }
                       }
                     });
@@ -1048,47 +1058,54 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     let trainingRevenue = 0;
                     safeTrainingFees.forEach((fee: any) => {
                       if (fee && fee.status === 'active') {
-                        const startDate = new Date(fee.startDate);
-                        const endDate = fee.endDate ? new Date(fee.endDate) : null;
-                        
-                        // Prüfe ob der Monat im gültigen Zeitraum liegt
-                        if (date >= startDate && (!endDate || date <= endDate)) {
-                          const amount = Number(fee.amount) || 0;
+                        try {
+                          const startDate = new Date(fee.startDate);
+                          const endDate = fee.endDate ? new Date(fee.endDate) : null;
                           
-                          // Berechne Multiplikator basierend auf Targets
-                          let multiplier = 1;
-                          if (fee.targetType === 'team' || fee.targetType === 'both') {
+                          // Prüfe ob der Monat im gültigen Zeitraum liegt
+                          if (date >= startDate && (!endDate || date <= endDate)) {
+                            const amount = Number(fee.amount) || 0;
+                            
+                            // Berechne Multiplikator basierend auf Targets
+                            let multiplier = 1;
                             try {
-                              const teamIds = Array.isArray(fee.teamIds) ? fee.teamIds : 
-                                             typeof fee.teamIds === 'string' ? JSON.parse(fee.teamIds || '[]') : [];
-                              multiplier = Math.max(multiplier, teamIds.length);
+                              if (fee.targetType === 'team' || fee.targetType === 'both') {
+                                const teamIds = Array.isArray(fee.teamIds) ? fee.teamIds : 
+                                               typeof fee.teamIds === 'string' ? JSON.parse(fee.teamIds || '[]') : [];
+                                multiplier = Math.max(multiplier, teamIds.length);
+                              }
+                              if (fee.targetType === 'player' || fee.targetType === 'both') {
+                                const playerIds = Array.isArray(fee.playerIds) ? fee.playerIds : 
+                                                 typeof fee.playerIds === 'string' ? JSON.parse(fee.playerIds || '[]') : [];
+                                multiplier += playerIds.length;
+                              }
                             } catch (e) {
+                              console.warn('Error parsing target IDs:', e);
                               multiplier = 1;
                             }
-                          }
-                          if (fee.targetType === 'player' || fee.targetType === 'both') {
-                            try {
-                              const playerIds = Array.isArray(fee.playerIds) ? fee.playerIds : 
-                                               typeof fee.playerIds === 'string' ? JSON.parse(fee.playerIds || '[]') : [];
-                              multiplier += playerIds.length;
-                            } catch (e) {
-                              // Fehler beim Parsen, verwende Standard-Multiplikator
+                            
+                            // Berechnung basierend auf Periode
+                            if (fee.period === 'monthly') {
+                              trainingRevenue += amount * multiplier;
+                            } else if (fee.period === 'quarterly' && monthIndex % 3 === 0) {
+                              trainingRevenue += amount * multiplier;
+                            } else if (fee.period === 'yearly' && monthIndex === 0) {
+                              trainingRevenue += amount * multiplier;
+                            } else if (fee.period === 'one-time') {
+                              // Einmalige Zahlung nur im ersten Monat des Zeitraums
+                              const feeStartDate = new Date(fee.startDate);
+                              if (date.getMonth() === feeStartDate.getMonth() && date.getFullYear() === feeStartDate.getFullYear()) {
+                                trainingRevenue += amount * multiplier;
+                              }
                             }
                           }
-                          
-                          // Berechnung basierend auf Periode
-                          if (fee.period === 'monthly') {
-                            trainingRevenue += amount * multiplier;
-                          } else if (fee.period === 'quarterly' && monthIndex % 3 === 0) {
-                            trainingRevenue += amount * multiplier;
-                          } else if (fee.period === 'yearly' && monthIndex === 0) {
-                            trainingRevenue += amount * multiplier;
-                          }
+                        } catch (e) {
+                          console.warn('Error processing training fee:', e);
                         }
                       }
                     });
                     
-                    // Füge Datenpunkt hinzu
+                    // Füge Datenpunkt hinzu (auch bei 0-Werten für bessere Visualisierung)
                     data.push({
                       month: monthKey,
                       mitgliedsbeiträge: Math.round(memberRevenue * 100) / 100,
@@ -1097,6 +1114,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     });
                   }
                   
+                  console.log(`Chart data for year ${selectedChartYear}:`, data);
                   return data;
                 })()}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -1106,14 +1124,19 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     textAnchor="end"
                     height={60}
                     interval={0}
+                    fontSize={12}
                   />
-                  <YAxis />
+                  <YAxis 
+                    tickFormatter={(value) => `€${value}`}
+                    fontSize={12}
+                  />
                   <Tooltip 
-                    formatter={(value, name) => [`€${value}`, name === 'mitgliedsbeiträge' ? 'Mitgliedsbeiträge' : name === 'trainingsbeiträge' ? 'Trainingsbeiträge' : 'Gesamt']}
-                    labelFormatter={(label) => `Monat: ${label}`}
+                    formatter={(value, name) => [`€${Number(value).toLocaleString('de-DE')}`, name === 'mitgliedsbeiträge' ? 'Mitgliedsbeiträge' : 'Trainingsbeiträge']}
+                    labelFormatter={(label) => `${label}`}
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
                   />
-                  <Bar dataKey="mitgliedsbeiträge" fill="#3b82f6" name="Mitgliedsbeiträge" />
-                  <Bar dataKey="trainingsbeiträge" fill="#10b981" name="Trainingsbeiträge" />
+                  <Bar dataKey="mitgliedsbeiträge" fill="#3b82f6" name="Mitgliedsbeiträge" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="trainingsbeiträge" fill="#10b981" name="Trainingsbeiträge" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

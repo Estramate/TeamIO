@@ -664,38 +664,22 @@ export default function Finance() {
                 </CardContent>
               </Card>
             ) : viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {filteredFinances.map((finance: any) => (
-                  <Card key={finance.id} className="group hover:shadow-lg transition-all duration-200 border border-border">
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                        <div className="flex items-start space-x-3 flex-1 min-w-0">
-                          <div className={`p-2 rounded-lg shrink-0 ${
+                  <Card key={finance.id} className="group hover:shadow-lg transition-all duration-200 border border-border min-w-0">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        {/* Header with Icon and Amount */}
+                        <div className="flex items-start justify-between">
+                          <div className={`p-2 rounded-lg ${
                             finance.type === 'income' 
                               ? 'bg-green-100 dark:bg-green-900/30' 
                               : 'bg-red-100 dark:bg-red-900/30'
                           }`}>
                             {getCategoryIcon(finance.category)}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">{finance.description}</h3>
-                              {getPriorityIcon(finance.priority)}
-                            </div>
-                            <p className="text-xs sm:text-sm text-muted-foreground mb-2">{finance.category}</p>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                              <span className="flex items-center">
-                                <Calendar className="w-3 h-3 mr-1" />
-                                {formatDate(finance.date)}
-                              </span>
-                              {getStatusBadge(finance.status, finance.isActive)}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between sm:justify-end space-x-3">
-                          <div className="text-left sm:text-right">
-                            <p className={`text-sm sm:text-base font-bold ${
+                          <div className="text-right">
+                            <p className={`text-lg font-bold ${
                               finance.type === 'income' 
                                 ? 'text-green-600 dark:text-green-400' 
                                 : 'text-red-600 dark:text-red-400'
@@ -703,13 +687,34 @@ export default function Finance() {
                               {finance.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(finance.amount))}
                             </p>
                           </div>
-                          
+                        </div>
+                        
+                        {/* Description and Priority */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-foreground text-base leading-tight">{finance.description}</h3>
+                            {getPriorityIcon(finance.priority)}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{finance.category}</p>
+                        </div>
+                        
+                        {/* Date and Status */}
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center text-muted-foreground">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {formatDate(finance.date)}
+                          </span>
+                          {getStatusBadge(finance.status, finance.isActive)}
+                        </div>
+                        
+                        {/* Actions */}
+                        <div className="flex justify-end pt-2 border-t border-border">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button 
                                 variant="ghost" 
                                 size="sm"
-                                className="h-8 w-8 p-0 opacity-100 transition-opacity"
+                                className="h-8 w-8 p-0"
                               >
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>

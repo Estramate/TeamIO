@@ -451,9 +451,11 @@ export default function Calendar() {
 
     let newStartTime: Date;
     if (newHour !== undefined) {
-      // Time-based drop (day/week view)
+      // Time-based drop (day/week view) with 30-minute snapping
       newStartTime = new Date(newDate);
-      newStartTime.setHours(newHour, 0, 0, 0);
+      const hours = Math.floor(newHour);
+      const minutes = (newHour % 1) * 60;
+      newStartTime.setHours(hours, minutes, 0, 0);
     } else {
       // Date-based drop (month view)
       newStartTime = new Date(newDate);
@@ -468,19 +470,32 @@ export default function Calendar() {
       duration: duration / (60 * 60 * 1000) + ' hours'
     });
 
-    // Update the event
+    // Update the event - ensure proper data structure for backend
     if (draggedEvent.source === 'booking') {
       const updateData = {
-        ...draggedEvent,
+        title: draggedEvent.title,
+        description: draggedEvent.description || '',
+        facilityId: draggedEvent.facilityId,
+        teamId: draggedEvent.teamId,
         startTime: newStartTime.toISOString(),
         endTime: newEndTime.toISOString(),
+        type: draggedEvent.type,
+        status: draggedEvent.status || 'confirmed',
+        participants: draggedEvent.participants || 0,
+        cost: draggedEvent.cost || 0,
+        contactPerson: draggedEvent.contactPerson || '',
+        contactEmail: draggedEvent.contactEmail || '',
+        contactPhone: draggedEvent.contactPhone || '',
+        notes: draggedEvent.notes || '',
       };
       updateBookingMutation.mutate({ id: draggedEvent.id, data: updateData });
     } else {
       const updateData = {
-        ...draggedEvent,
+        title: draggedEvent.title,
+        description: draggedEvent.description || '',
         startDate: newStartTime.toISOString(),
         endDate: newEndTime.toISOString(),
+        location: draggedEvent.location || '',
       };
       updateEventMutation.mutate({ id: draggedEvent.id, data: updateData });
     }
@@ -817,7 +832,10 @@ export default function Calendar() {
                       onDrop={(e) => {
                         const rect = e.currentTarget.getBoundingClientRect();
                         const y = e.clientY - rect.top;
-                        const hour = Math.floor((y / rect.height) * 18) + 6;
+                        const totalHours = (y / rect.height) * 18;
+                        // Snap to 30-minute intervals
+                        const snappedHours = Math.round(totalHours * 2) / 2;
+                        const hour = snappedHours + 6;
                         handleDrop(e, currentDate, hour);
                       }}
                     >
@@ -993,7 +1011,10 @@ export default function Calendar() {
                           onDrop={(e) => {
                             const rect = e.currentTarget.getBoundingClientRect();
                             const y = e.clientY - rect.top;
-                            const hour = Math.floor((y / rect.height) * 18) + 6;
+                            const totalHours = (y / rect.height) * 18;
+                            // Snap to 30-minute intervals
+                            const snappedHours = Math.round(totalHours * 2) / 2;
+                            const hour = snappedHours + 6;
                             handleDrop(e, day, hour);
                           }}
                         >

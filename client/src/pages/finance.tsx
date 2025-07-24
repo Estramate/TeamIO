@@ -118,6 +118,8 @@ export default function Finance() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isMemberFeeDialogOpen, setIsMemberFeeDialogOpen] = useState(false);
   const [isTrainingFeeDialogOpen, setIsTrainingFeeDialogOpen] = useState(false);
   const [editingFinance, setEditingFinance] = useState<any>(null);
@@ -232,6 +234,8 @@ export default function Finance() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'finances'] });
       setEditingFinance(null);
+      setIsEditDialogOpen(false);
+      financeForm.reset();
       toast({ title: "Transaktion aktualisiert", description: "Die Änderungen wurden gespeichert." });
     },
     onError: (error: any) => {
@@ -290,6 +294,54 @@ export default function Finance() {
       id: finance.id,
       data: { isActive: newStatus }
     });
+  };
+
+  // Modal handlers
+  const handleViewDetails = (finance: any) => {
+    setSelectedFinance(finance);
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleEditFinance = (finance: any) => {
+    setEditingFinance(finance);
+    
+    // Pre-populate form with existing data
+    financeForm.reset({
+      type: finance.type,
+      category: finance.category,
+      subcategory: finance.subcategory || '',
+      amount: finance.amount.toString(),
+      description: finance.description,
+      date: finance.date,
+      dueDate: finance.dueDate || '',
+      paymentMethod: finance.paymentMethod || '',
+      status: finance.status,
+      priority: finance.priority,
+      recurring: finance.recurring || false,
+      recurringInterval: finance.recurringInterval || '',
+      notes: finance.notes || '',
+      memberId: finance.memberId?.toString() || '',
+      playerId: finance.playerId?.toString() || '',
+      teamId: finance.teamId?.toString() || '',
+    });
+    
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsDialogOpen(false);
+    setSelectedFinance(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditDialogOpen(false);
+    setEditingFinance(null);
+    financeForm.reset();
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateDialogOpen(false);
+    financeForm.reset();
   };
 
   // Helper function for date cleaning
@@ -721,14 +773,14 @@ export default function Finance() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
                               <DropdownMenuItem 
-                                onClick={() => setSelectedFinance(finance)}
+                                onClick={() => handleViewDetails(finance)}
                                 className="flex items-center"
                               >
                                 <Eye className="mr-2 h-4 w-4" />
                                 Details anzeigen
                               </DropdownMenuItem>
                               <DropdownMenuItem 
-                                onClick={() => setEditingFinance(finance)}
+                                onClick={() => handleEditFinance(finance)}
                                 className="flex items-center"
                               >
                                 <Edit className="mr-2 h-4 w-4" />
@@ -849,14 +901,14 @@ export default function Finance() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48">
                                   <DropdownMenuItem 
-                                    onClick={() => setSelectedFinance(finance)}
+                                    onClick={() => handleViewDetails(finance)}
                                     className="flex items-center"
                                   >
                                     <Eye className="mr-2 h-4 w-4" />
                                     Details anzeigen
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
-                                    onClick={() => setEditingFinance(finance)}
+                                    onClick={() => handleEditFinance(finance)}
                                     className="flex items-center"
                                   >
                                     <Edit className="mr-2 h-4 w-4" />
@@ -1003,6 +1055,676 @@ export default function Finance() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Details Modal */}
+        <Dialog open={isDetailsDialogOpen} onOpenChange={handleCloseDetailsModal}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <Eye className="w-5 h-5 mr-2" />
+                Transaktionsdetails
+              </DialogTitle>
+              <DialogDescription>
+                Vollständige Informationen zur ausgewählten Finanztransaktion
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedFinance && (
+              <div className="space-y-6">
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Typ</Label>
+                    <div className="flex items-center space-x-2">
+                      <div className={`p-2 rounded-lg ${
+                        selectedFinance.type === 'income' 
+                          ? 'bg-green-100 dark:bg-green-900/30' 
+                          : 'bg-red-100 dark:bg-red-900/30'
+                      }`}>
+                        {selectedFinance.type === 'income' ? (
+                          <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        )}
+                      </div>
+                      <span className="font-medium">
+                        {selectedFinance.type === 'income' ? 'Einnahme' : 'Ausgabe'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Betrag</Label>
+                    <p className={`text-2xl font-bold ${
+                      selectedFinance.type === 'income' 
+                        ? 'text-green-600 dark:text-green-400' 
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {selectedFinance.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(selectedFinance.amount))}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Beschreibung</Label>
+                    <p className="text-foreground">{selectedFinance.description}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Kategorie</Label>
+                    <div className="flex items-center space-x-2">
+                      {getCategoryIcon(selectedFinance.category)}
+                      <span>{selectedFinance.category}</span>
+                      {selectedFinance.subcategory && (
+                        <Badge variant="outline">{selectedFinance.subcategory}</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Datum</Label>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span>{formatDate(selectedFinance.date)}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Status</Label>
+                    <div className="flex items-center space-x-2">
+                      {getStatusBadge(selectedFinance.status, selectedFinance.isActive)}
+                      <div className="flex items-center space-x-1">
+                        {getPriorityIcon(selectedFinance.priority)}
+                        <span className="text-sm text-muted-foreground capitalize">{selectedFinance.priority}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Information */}
+                {(selectedFinance.dueDate || selectedFinance.paymentMethod || selectedFinance.recurring) && (
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-3">Zusätzliche Informationen</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {selectedFinance.dueDate && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Fälligkeitsdatum</Label>
+                          <p>{formatDate(selectedFinance.dueDate)}</p>
+                        </div>
+                      )}
+
+                      {selectedFinance.paymentMethod && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Zahlungsmethode</Label>
+                          <p>{selectedFinance.paymentMethod}</p>
+                        </div>
+                      )}
+
+                      {selectedFinance.recurring && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Wiederkehrend</Label>
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                            <span>{selectedFinance.recurringInterval || 'Ja'}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Notes */}
+                {selectedFinance.notes && (
+                  <div className="border-t pt-4">
+                    <Label className="text-sm font-medium text-muted-foreground">Notizen</Label>
+                    <p className="mt-2 text-foreground whitespace-pre-wrap">{selectedFinance.notes}</p>
+                  </div>
+                )}
+
+                {/* Metadata */}
+                <div className="border-t pt-4 text-sm text-muted-foreground">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="font-medium">Erstellt:</span> {formatDate(selectedFinance.createdAt)}
+                    </div>
+                    {selectedFinance.updatedAt !== selectedFinance.createdAt && (
+                      <div>
+                        <span className="font-medium">Aktualisiert:</span> {formatDate(selectedFinance.updatedAt)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Modal */}
+        <Dialog open={isEditDialogOpen} onOpenChange={handleCloseEditModal}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <Edit className="w-5 h-5 mr-2" />
+                Transaktion bearbeiten
+              </DialogTitle>
+              <DialogDescription>
+                Ändern Sie die Details der ausgewählten Finanztransaktion
+              </DialogDescription>
+            </DialogHeader>
+
+            <Form {...financeForm}>
+              <form onSubmit={financeForm.handleSubmit(handleUpdateFinance)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={financeForm.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Typ</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Typ wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="income">Einnahme</SelectItem>
+                            <SelectItem value="expense">Ausgabe</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Betrag (€)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Beschreibung</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Beschreibung der Transaktion"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Kategorie</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Kategorie wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Mitgliedsbeitrag">Mitgliedsbeitrag</SelectItem>
+                            <SelectItem value="Trainingsbeitrag">Trainingsbeitrag</SelectItem>
+                            <SelectItem value="Ausrüstung">Ausrüstung</SelectItem>
+                            <SelectItem value="Anlage">Anlage</SelectItem>
+                            <SelectItem value="Veranstaltung">Veranstaltung</SelectItem>
+                            <SelectItem value="Sonstiges">Sonstiges</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="subcategory"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Unterkategorie (optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Unterkategorie"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Datum</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="dueDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fälligkeitsdatum (optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Status wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="pending">Ausstehend</SelectItem>
+                            <SelectItem value="paid">Bezahlt</SelectItem>
+                            <SelectItem value="overdue">Überfällig</SelectItem>
+                            <SelectItem value="cancelled">Storniert</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="priority"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Priorität</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Priorität wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="low">Niedrig</SelectItem>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="high">Hoch</SelectItem>
+                            <SelectItem value="urgent">Dringend</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Zahlungsmethode (optional)</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Zahlungsmethode wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="cash">Bargeld</SelectItem>
+                            <SelectItem value="bank_transfer">Banküberweisung</SelectItem>
+                            <SelectItem value="card">Karte</SelectItem>
+                            <SelectItem value="paypal">PayPal</SelectItem>
+                            <SelectItem value="other">Sonstiges</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Notizen (optional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Zusätzliche Notizen zur Transaktion"
+                            rows={3}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCloseEditModal}
+                  >
+                    Abbrechen
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={updateFinanceMutation.isPending}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {updateFinanceMutation.isPending ? 'Speichern...' : 'Änderungen speichern'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Create Modal */}
+        <Dialog open={isCreateDialogOpen} onOpenChange={handleCloseCreateModal}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <Plus className="w-5 h-5 mr-2" />
+                Neue Transaktion erstellen
+              </DialogTitle>
+              <DialogDescription>
+                Fügen Sie eine neue Finanztransaktion zu Ihrem Verein hinzu
+              </DialogDescription>
+            </DialogHeader>
+
+            <Form {...financeForm}>
+              <form onSubmit={financeForm.handleSubmit(handleCreateFinance)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={financeForm.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Typ</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Typ wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="income">Einnahme</SelectItem>
+                            <SelectItem value="expense">Ausgabe</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Betrag (€)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Beschreibung</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Beschreibung der Transaktion"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Kategorie</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Kategorie wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Mitgliedsbeitrag">Mitgliedsbeitrag</SelectItem>
+                            <SelectItem value="Trainingsbeitrag">Trainingsbeitrag</SelectItem>
+                            <SelectItem value="Ausrüstung">Ausrüstung</SelectItem>
+                            <SelectItem value="Anlage">Anlage</SelectItem>
+                            <SelectItem value="Veranstaltung">Veranstaltung</SelectItem>
+                            <SelectItem value="Sonstiges">Sonstiges</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="subcategory"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Unterkategorie (optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Unterkategorie"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Datum</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="dueDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fälligkeitsdatum (optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Status wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="pending">Ausstehend</SelectItem>
+                            <SelectItem value="paid">Bezahlt</SelectItem>
+                            <SelectItem value="overdue">Überfällig</SelectItem>
+                            <SelectItem value="cancelled">Storniert</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="priority"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Priorität</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Priorität wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="low">Niedrig</SelectItem>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="high">Hoch</SelectItem>
+                            <SelectItem value="urgent">Dringend</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Zahlungsmethode (optional)</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Zahlungsmethode wählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="cash">Bargeld</SelectItem>
+                            <SelectItem value="bank_transfer">Banküberweisung</SelectItem>
+                            <SelectItem value="card">Karte</SelectItem>
+                            <SelectItem value="paypal">PayPal</SelectItem>
+                            <SelectItem value="other">Sonstiges</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={financeForm.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Notizen (optional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Zusätzliche Notizen zur Transaktion"
+                            rows={3}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCloseCreateModal}
+                  >
+                    Abbrechen
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={createFinanceMutation.isPending}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {createFinanceMutation.isPending ? 'Erstellen...' : 'Transaktion erstellen'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

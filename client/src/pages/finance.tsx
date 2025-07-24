@@ -547,7 +547,7 @@ export default function Finance() {
           <TabsContent value="transactions" className="space-y-6">
             {/* Header Section with Search, Filters and Add Button */}
             <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6">
                 <div className="flex flex-col sm:flex-row gap-3 flex-1">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -584,7 +584,7 @@ export default function Finance() {
                   </Select>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   {/* View Toggle */}
                   <div className="flex rounded-xl border bg-background p-1">
                     <Button
@@ -605,23 +605,21 @@ export default function Finance() {
                     </Button>
                   </div>
                   
-                  {/* Export and Add Buttons - Right aligned with margin */}
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:mr-4">
-                    <Button variant="outline" size="sm" className="w-full sm:w-auto h-10 rounded-xl">
-                      <Download className="w-4 h-4 mr-2" />
-                      Export
-                    </Button>
-                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          className="w-full sm:w-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Transaktion hinzufügen
-                        </Button>
-                      </DialogTrigger>
-                    </Dialog>
-                  </div>
+                  {/* Export and Add Buttons - In line with other elements */}
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto h-10 rounded-xl">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                  <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        className="w-full sm:w-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Transaktion hinzufügen
+                      </Button>
+                    </DialogTrigger>
+                  </Dialog>
                 </div>
               </div>
             </div>

@@ -11,13 +11,14 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 24, 2025 (Neueste)
-- **Team-Übersicht Bericht korrigiert**: Spieler-Datenstruktur und Berechnungen vollständig behoben
+- **Team-Übersicht Bericht vollständig korrigiert**: Spieler-Datenstruktur und UI-Layout perfektioniert
   - Datenstruktur-Fix: Spieler verwenden `teams` Array mit Team-Objekten, nicht `teamIds`
-  - Eindeutige Spielerzählung implementiert: Berücksichtigt dass Spieler in mehreren Teams sein können
-  - Spalten angepasst: Entfernt "Mitglieder" (Teams haben keine direkten Mitglieder), hinzugefügt "Aktive/Inaktive Spieler"
-  - PDF-Layout optimiert: Neue Spaltenstruktur für bessere Übersichtlichkeit
-  - Korrekte Gesamtzahlen: 104 eindeutige Spieler statt 111 (Summe aller Team-Zuordnungen)
-  - Hinweis im PDF: "Spieler können in mehreren Teams aktiv sein" für besseres Verständnis
+  - Eindeutige Spielerzählung implementiert: Set() für korrekte Zählung (104 statt 111 Spieler)
+  - Multi-Team-Support: Berücksichtigt dass Spieler in mehreren Teams gleichzeitig sein können
+  - Spalten angepasst: Entfernt "Mitglieder", hinzugefügt "Aktive/Inaktive Spieler"
+  - UI-Layout optimiert: Labels gekürzt ("Ø Spieler pro Team" statt "Durchschn. Spieler pro Team")
+  - PDF-Hinweis: "Spieler können in mehreren Teams aktiv sein" für besseres Verständnis
+  - Alle Berechnungen korrekt: Division-by-zero vermieden, realistische Durchschnittswerte
 - **Umfassende Datumsvalidierung und Formularverbesserungen**: Vollständige Eingabekontrolle in allen Modulen
   - Finance-Fees: Enddatum darf nicht vor Startdatum liegen für Mitglieds- und Trainingsbeiträge
   - Members: Geburtsdatum nicht in der Zukunft, Beitrittsdatum nicht vor Geburtsdatum

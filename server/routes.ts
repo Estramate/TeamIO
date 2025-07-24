@@ -360,7 +360,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const financeData = insertFinanceSchema.parse({ ...req.body, clubId });
+      
+      // Clean and convert data types
+      const cleanedData = {
+        ...req.body,
+        clubId,
+        amount: req.body.amount ? parseFloat(req.body.amount) : null,
+        memberId: req.body.memberId && req.body.memberId !== '' ? parseInt(req.body.memberId) : null,
+        playerId: req.body.playerId && req.body.playerId !== '' ? parseInt(req.body.playerId) : null,
+        teamId: req.body.teamId && req.body.teamId !== '' ? parseInt(req.body.teamId) : null,
+        recurring: req.body.recurring === true || req.body.recurring === 'true',
+      };
+      
+      // Remove empty strings and undefined values
+      Object.keys(cleanedData).forEach(key => {
+        if (cleanedData[key] === '' || cleanedData[key] === undefined) {
+          cleanedData[key] = null;
+        }
+      });
+      
+      const financeData = insertFinanceSchema.parse(cleanedData);
       const finance = await storage.createFinance(financeData);
       res.json(finance);
     } catch (error) {
@@ -372,7 +391,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
-      const finance = await storage.updateFinance(id, req.body);
+      
+      // Clean and convert data types for update
+      const cleanedData = { ...req.body };
+      if (cleanedData.amount) cleanedData.amount = parseFloat(cleanedData.amount);
+      if (cleanedData.memberId && cleanedData.memberId !== '') cleanedData.memberId = parseInt(cleanedData.memberId);
+      if (cleanedData.playerId && cleanedData.playerId !== '') cleanedData.playerId = parseInt(cleanedData.playerId);
+      if (cleanedData.teamId && cleanedData.teamId !== '') cleanedData.teamId = parseInt(cleanedData.teamId);
+      if (cleanedData.recurring !== undefined) cleanedData.recurring = cleanedData.recurring === true || cleanedData.recurring === 'true';
+      
+      // Remove empty strings
+      Object.keys(cleanedData).forEach(key => {
+        if (cleanedData[key] === '') {
+          cleanedData[key] = null;
+        }
+      });
+      
+      const finance = await storage.updateFinance(id, cleanedData);
       res.json(finance);
     } catch (error) {
       console.error('Error updating finance:', error);

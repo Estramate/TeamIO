@@ -353,14 +353,26 @@ export default function Finance() {
   const handleCreateFinance = (data: any) => {
     const cleanedData = {
       ...data,
-      amount: parseFloat(data.amount),
+      amount: data.amount,  // Keep as string for Zod validation
       date: cleanDateField(data.date),
       dueDate: cleanDateField(data.dueDate),
       clubId: selectedClub?.id,
-      memberId: data.memberId ? parseInt(data.memberId) : null,
-      playerId: data.playerId ? parseInt(data.playerId) : null,
-      teamId: data.teamId ? parseInt(data.teamId) : null,
+      memberId: data.memberId || null,
+      playerId: data.playerId || null,
+      teamId: data.teamId || null,
+      subcategory: data.subcategory || null,
+      paymentMethod: data.paymentMethod || null,
+      notes: data.notes || null,
+      recurringInterval: data.recurringInterval || null,
     };
+    
+    // Remove empty string values and convert to appropriate types
+    Object.keys(cleanedData).forEach(key => {
+      if (cleanedData[key] === '') {
+        cleanedData[key] = null;
+      }
+    });
+    
     createFinanceMutation.mutate(cleanedData);
   };
 

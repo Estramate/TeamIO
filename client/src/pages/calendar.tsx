@@ -333,6 +333,8 @@ export default function Calendar() {
 
   // Helper function to calculate overlapping events layout
   const calculateEventLayout = (events: any[]) => {
+    if (events.length === 0) return [];
+    
     // Sort events by start time
     const sortedEvents = [...events].sort((a, b) => {
       const aPos = getEventTimePosition(a);
@@ -340,40 +342,59 @@ export default function Calendar() {
       return aPos.top - bPos.top;
     });
 
-    const layoutEvents = sortedEvents.map((event, index) => {
+    // Create groups of overlapping events
+    const groups: any[][] = [];
+    
+    sortedEvents.forEach(event => {
       const eventPos = getEventTimePosition(event);
+      const eventStart = eventPos.top;
+      const eventEnd = eventPos.top + eventPos.height;
       
-      // Find overlapping events
-      const overlapping = sortedEvents.filter((otherEvent, otherIndex) => {
-        if (otherIndex === index) return false;
-        const otherPos = getEventTimePosition(otherEvent);
+      // Find if this event overlaps with any existing group
+      let foundGroup = false;
+      
+      for (const group of groups) {
+        const groupOverlaps = group.some(groupEvent => {
+          const groupPos = getEventTimePosition(groupEvent);
+          const groupStart = groupPos.top;
+          const groupEnd = groupPos.top + groupPos.height;
+          
+          // Check for any overlap
+          return !(eventEnd <= groupStart || eventStart >= groupEnd);
+        });
         
-        // Check if events overlap in time
-        const eventEnd = eventPos.top + eventPos.height;
-        const otherEnd = otherPos.top + otherPos.height;
-        
-        return !(eventEnd <= otherPos.top || eventPos.top >= otherEnd);
-      });
-
-      // Calculate column position
-      let column = 0;
-      const existingColumns = overlapping.map(ov => ov.column || 0);
-      while (existingColumns.includes(column)) {
-        column++;
+        if (groupOverlaps) {
+          group.push(event);
+          foundGroup = true;
+          break;
+        }
       }
+      
+      if (!foundGroup) {
+        groups.push([event]);
+      }
+    });
 
-      const totalColumns = Math.max(overlapping.length + 1, 1);
-      const width = 100 / totalColumns;
-      const left = column * width;
-
-      return {
-        ...event,
-        ...eventPos,
-        column,
-        totalColumns,
-        width,
-        left
-      };
+    // Layout each group
+    const layoutEvents: any[] = [];
+    
+    groups.forEach(group => {
+      const groupSize = group.length;
+      
+      group.forEach((event, index) => {
+        const eventPos = getEventTimePosition(event);
+        const width = 100 / groupSize;
+        const left = index * width;
+        
+        layoutEvents.push({
+          ...event,
+          ...eventPos,
+          column: index,
+          totalColumns: groupSize,
+          width,
+          left
+        });
+      });
     });
 
     return layoutEvents;

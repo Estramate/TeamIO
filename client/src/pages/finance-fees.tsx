@@ -270,94 +270,6 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
         </div>
       </div>
 
-      {/* Beiträge-Verlauf Grafik */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Beiträge-Verlauf (Monatlich)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={(() => {
-                const months = [
-                  'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'
-                ];
-                
-                return months.map((month, index) => {
-                  // Berechne Mitgliedsbeiträge für den Monat
-                  const memberRevenue = memberFees.filter((f: any) => f.status === 'active')
-                    .reduce((sum: number, f: any) => {
-                      if (f.period === 'monthly') return sum + Number(f.amount);
-                      if (f.period === 'quarterly' && index % 3 === 0) return sum + Number(f.amount);
-                      if (f.period === 'yearly' && index === 0) return sum + Number(f.amount);
-                      return sum;
-                    }, 0);
-                  
-                  // Berechne Trainingsbeiträge für den Monat
-                  const trainingRevenue = trainingFees.filter((f: any) => f.status === 'active')
-                    .reduce((sum: number, f: any) => {
-                      const amount = Number(f.amount);
-                      let multiplier = 0;
-                      
-                      if (f.period === 'monthly') multiplier = 1;
-                      else if (f.period === 'quarterly' && index % 3 === 0) multiplier = 1;
-                      else if (f.period === 'yearly' && index === 0) multiplier = 1;
-                      
-                      if (multiplier > 0) {
-                        let teamCount = 0;
-                        let playerCount = 0;
-                        
-                        try {
-                          if (f.targetType === 'team' || f.targetType === 'both') {
-                            const teamIds = Array.isArray(f.teamIds) ? f.teamIds : 
-                                           typeof f.teamIds === 'string' ? JSON.parse(f.teamIds) : [];
-                            teamCount = teamIds.length;
-                          }
-                          if (f.targetType === 'player' || f.targetType === 'both') {
-                            const playerIds = Array.isArray(f.playerIds) ? f.playerIds : 
-                                             typeof f.playerIds === 'string' ? JSON.parse(f.playerIds) : [];
-                            playerCount = playerIds.length;
-                          }
-                        } catch (e) {
-                          console.warn('Error parsing team/player IDs:', e);
-                        }
-                        
-                        const totalTargets = teamCount + playerCount;
-                        return sum + (amount * Math.max(1, totalTargets));
-                      }
-                      return sum;
-                    }, 0);
-                  
-                  return {
-                    month,
-                    mitgliedsbeitraege: memberRevenue,
-                    trainingsbeitraege: trainingRevenue,
-                    gesamt: memberRevenue + trainingRevenue
-                  };
-                });
-              })()}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value: number, name: string) => [
-                    `${value.toLocaleString('de-DE')} €`, 
-                    name === 'mitgliedsbeitraege' ? 'Mitgliedsbeiträge' :
-                    name === 'trainingsbeitraege' ? 'Trainingsbeiträge' : 'Gesamt'
-                  ]}
-                />
-                <Bar dataKey="mitgliedsbeitraege" stackId="a" fill="#3b82f6" name="mitgliedsbeitraege" />
-                <Bar dataKey="trainingsbeitraege" stackId="a" fill="#10b981" name="trainingsbeitraege" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Beiträge-Verwaltung */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Mitgliedsbeiträge */}
@@ -885,6 +797,116 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Beiträge-Verlauf Grafik */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Beiträge-Verlauf (Monatlich)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={(() => {
+                const months = [
+                  'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'
+                ];
+                
+                const currentYear = new Date().getFullYear();
+                
+                return months.map((month, index) => {
+                  const monthDate = new Date(currentYear, index, 1);
+                  
+                  // Berechne Mitgliedsbeiträge für den Monat (berücksichtige Zeiträume)
+                  const memberRevenue = memberFees.filter((f: any) => f.status === 'active')
+                    .reduce((sum: number, f: any) => {
+                      const startDate = new Date(f.startDate);
+                      const endDate = f.endDate ? new Date(f.endDate) : null;
+                      
+                      // Prüfe ob der Monat im Zeitraum liegt
+                      if (monthDate < startDate || (endDate && monthDate > endDate)) {
+                        return sum;
+                      }
+                      
+                      if (f.period === 'monthly') return sum + Number(f.amount);
+                      if (f.period === 'quarterly' && index % 3 === 0) return sum + Number(f.amount);
+                      if (f.period === 'yearly' && index === 0) return sum + Number(f.amount);
+                      return sum;
+                    }, 0);
+                  
+                  // Berechne Trainingsbeiträge für den Monat (berücksichtige Zeiträume)
+                  const trainingRevenue = trainingFees.filter((f: any) => f.status === 'active')
+                    .reduce((sum: number, f: any) => {
+                      const startDate = new Date(f.startDate);
+                      const endDate = f.endDate ? new Date(f.endDate) : null;
+                      
+                      // Prüfe ob der Monat im Zeitraum liegt
+                      if (monthDate < startDate || (endDate && monthDate > endDate)) {
+                        return sum;
+                      }
+                      
+                      const amount = Number(f.amount);
+                      let multiplier = 0;
+                      
+                      if (f.period === 'monthly') multiplier = 1;
+                      else if (f.period === 'quarterly' && index % 3 === 0) multiplier = 1;
+                      else if (f.period === 'yearly' && index === 0) multiplier = 1;
+                      
+                      if (multiplier > 0) {
+                        let teamCount = 0;
+                        let playerCount = 0;
+                        
+                        try {
+                          if (f.targetType === 'team' || f.targetType === 'both') {
+                            const teamIds = Array.isArray(f.teamIds) ? f.teamIds : 
+                                           typeof f.teamIds === 'string' ? JSON.parse(f.teamIds) : [];
+                            teamCount = teamIds.length;
+                          }
+                          if (f.targetType === 'player' || f.targetType === 'both') {
+                            const playerIds = Array.isArray(f.playerIds) ? f.playerIds : 
+                                             typeof f.playerIds === 'string' ? JSON.parse(f.playerIds) : [];
+                            playerCount = playerIds.length;
+                          }
+                        } catch (e) {
+                          // Fallback für fehlerhafte JSON-Daten
+                          teamCount = 0;
+                          playerCount = 0;
+                        }
+                        
+                        const totalTargets = teamCount + playerCount;
+                        return sum + (amount * Math.max(1, totalTargets));
+                      }
+                      return sum;
+                    }, 0);
+                  
+                  return {
+                    month,
+                    mitgliedsbeitraege: memberRevenue,
+                    trainingsbeitraege: trainingRevenue,
+                    gesamt: memberRevenue + trainingRevenue
+                  };
+                });
+              })()}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number, name: string) => [
+                    `${value.toLocaleString('de-DE')} €`, 
+                    name === 'mitgliedsbeitraege' ? 'Mitgliedsbeiträge' :
+                    name === 'trainingsbeitraege' ? 'Trainingsbeiträge' : 'Gesamt'
+                  ]}
+                />
+                <Bar dataKey="mitgliedsbeitraege" stackId="a" fill="#3b82f6" name="mitgliedsbeitraege" />
+                <Bar dataKey="trainingsbeitraege" stackId="a" fill="#10b981" name="trainingsbeitraege" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
     </TabsContent>
   );
 }

@@ -101,26 +101,7 @@ export default function TeamStatus({ clubId }: TeamStatusProps) {
         })}
       </div>
 
-      {activeTeams.length > 0 && (
-        <div className="mt-6 flex-1 overflow-y-auto">
-          <h4 className="text-sm font-medium text-foreground mb-3">Aktive Teams</h4>
-          <div className="space-y-2">
-            {activeTeams.slice(0, 3).map((team: any) => (
-              <div key={team.id} className="flex items-center justify-between text-sm">
-                <span className="text-foreground">{team.name}</span>
-                <span className="text-muted-foreground">
-                  {team.category && `${team.category} • `}{team.ageGroup || 'Alle Altersgruppen'}
-                </span>
-              </div>
-            ))}
-            {activeTeams.length > 3 && (
-              <div className="text-xs text-muted-foreground text-center pt-2">
-                +{activeTeams.length - 3} weitere Teams
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

@@ -71,12 +71,12 @@ export default function Dashboard() {
         <>
           <StatsCards stats={dashboardData?.stats || {}} />
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8 h-[calc(100vh-320px)] mb-8">
-            <div className="lg:col-span-2 h-full flex flex-col gap-4">
-              <div className="flex-1">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8 mb-12">
+            <div className="lg:col-span-2 flex flex-col gap-4">
+              <div className="h-80">
                 <ActivityFeed activities={dashboardData?.activities || []} />
               </div>
-              <div className="flex-1">
+              <div className="h-80">
                 <div className="bg-card rounded-xl shadow-sm border border-border h-full flex flex-col p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
@@ -139,11 +139,11 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="space-y-4 sm:space-y-6 h-full flex flex-col">
-              <div className="flex-1">
+            <div className="space-y-4 sm:space-y-6 flex flex-col">
+              <div className="h-80">
                 <UpcomingEvents clubId={selectedClub.id} />
               </div>
-              <div className="flex-1">
+              <div className="h-80">
                 <TeamStatus clubId={selectedClub.id} />
               </div>
             </div>

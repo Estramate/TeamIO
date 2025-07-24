@@ -998,6 +998,29 @@ export default function Bookings() {
 
                 <FormField
                   control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Status auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="confirmed">Bestätigt</SelectItem>
+                          <SelectItem value="pending">Ausstehend</SelectItem>
+                          <SelectItem value="cancelled">Abgesagt</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="startTime"
                   render={({ field }) => (
                     <FormItem>

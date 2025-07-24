@@ -699,11 +699,6 @@ export default function ReportsPage() {
       <div className="flex-1 space-y-6 p-6">
         {/* Header Controls */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Berichte & Analysen</h1>
-            <p className="text-muted-foreground">Automatische PDF-Generierung von Vereinsberichten</p>
-          </div>
-          
           <div className="flex flex-wrap gap-3 items-center">
             <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
               <SelectTrigger className="w-32">

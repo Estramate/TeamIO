@@ -703,20 +703,34 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                         <div className="text-xs text-muted-foreground mb-1 space-y-1">
                           {fee.targetType === 'team' || fee.targetType === 'both' ? (
                             <div>
-                              Teams: {fee.teamIds?.map((teamId: number) => {
-                                const team = teams?.find((t: any) => t.id === teamId);
-                                return team?.name;
-                              }).filter(Boolean).join(', ') || 'Keine'}
+                              Teams: {(() => {
+                                const teamIds = Array.isArray(fee.teamIds) ? fee.teamIds : 
+                                               typeof fee.teamIds === 'string' ? JSON.parse(fee.teamIds) : [];
+                                return teamIds.map((teamId: any) => {
+                                  const id = typeof teamId === 'string' ? parseInt(teamId) : teamId;
+                                  const team = teams?.find((t: any) => t.id === id);
+                                  return team?.name;
+                                }).filter(Boolean).join(', ') || 'Keine';
+                              })()}
                             </div>
                           ) : null}
                           
                           {fee.targetType === 'player' || fee.targetType === 'both' ? (
                             <div>
-                              Spieler: {fee.playerIds?.map((playerId: number) => {
-                                const player = players?.find((p: any) => p.id === playerId);
-                                return player ? `${player.firstName} ${player.lastName}` : null;
-                              }).filter(Boolean).slice(0, 3).join(', ')}
-                              {fee.playerIds?.length > 3 ? ` und ${fee.playerIds.length - 3} weitere` : ''}
+                              Spieler: {(() => {
+                                const playerIds = Array.isArray(fee.playerIds) ? fee.playerIds : 
+                                                 typeof fee.playerIds === 'string' ? JSON.parse(fee.playerIds) : [];
+                                return playerIds.map((playerId: any) => {
+                                  const id = typeof playerId === 'string' ? parseInt(playerId) : playerId;
+                                  const player = players?.find((p: any) => p.id === id);
+                                  return player ? `${player.firstName} ${player.lastName}` : null;
+                                }).filter(Boolean).slice(0, 3).join(', ');
+                              })()}
+                              {(() => {
+                                const playerIds = Array.isArray(fee.playerIds) ? fee.playerIds : 
+                                                 typeof fee.playerIds === 'string' ? JSON.parse(fee.playerIds) : [];
+                                return playerIds.length > 3 ? ` und ${playerIds.length - 3} weitere` : '';
+                              })()}
                             </div>
                           ) : null}
                         </div>

@@ -353,7 +353,6 @@ export default function ReportsPage() {
         return false;
       }) || [];
       
-      const teamMembers = (members as any[])?.filter((m: any) => m.teamId === team.id) || [];
       const teamTrainingFees = (trainingFees as any[])?.filter((f: any) => {
         if (!f.teamIds) return false;
         try {
@@ -364,20 +363,24 @@ export default function ReportsPage() {
         }
       }) || [];
 
+      const activePlayers = teamPlayers.filter((p: any) => p.status === 'active');
+      const inactivePlayers = teamPlayers.filter((p: any) => p.status !== 'active');
+
       return {
         name: team.name,
         category: team.category,
         ageGroup: team.ageGroup,
-        playerCount: teamPlayers.length, // Spieler (players)
-        memberCount: teamMembers.length, // Mitglieder (members)
-        activeMembers: teamMembers.filter((m: any) => m.status === 'active').length,
+        totalPlayers: teamPlayers.length,
+        activePlayers: activePlayers.length,
+        inactivePlayers: inactivePlayers.length,
         trainingFees: teamTrainingFees.length,
         totalFees: teamTrainingFees.reduce((sum: number, f: any) => sum + Number(f.amount), 0)
       };
     }) || [];
 
-    const totalPlayers = teamStats.reduce((sum: number, team: any) => sum + team.playerCount, 0);
-    const totalMembers = teamStats.reduce((sum: number, team: any) => sum + team.memberCount, 0);
+    const totalPlayers = teamStats.reduce((sum: number, team: any) => sum + team.totalPlayers, 0);
+    const totalActivePlayers = teamStats.reduce((sum: number, team: any) => sum + team.activePlayers, 0);
+    const totalInactivePlayers = teamStats.reduce((sum: number, team: any) => sum + team.inactivePlayers, 0);
 
     return {
       title: `Team-Übersicht ${selectedYear}`,
@@ -385,9 +388,10 @@ export default function ReportsPage() {
       summary: {
         totalTeams: (teams as any[])?.length || 0,
         totalPlayers: totalPlayers,
-        totalMembers: totalMembers,
+        activePlayers: totalActivePlayers,
+        inactivePlayers: totalInactivePlayers,
         averagePlayersPerTeam: Math.round(totalPlayers / ((teams as any[])?.length || 1)),
-        averageMembersPerTeam: Math.round(totalMembers / ((teams as any[])?.length || 1))
+        averageActivePlayersPerTeam: Math.round(totalActivePlayers / ((teams as any[])?.length || 1))
       },
       teamStats
     };
@@ -610,13 +614,13 @@ export default function ReportsPage() {
       yPosition += 10;
       
       autoTable(doc, {
-        head: [['Team', 'Kategorie', 'Spieler', 'Mitglieder', 'Aktive Mitgl.', 'Trainingsbeiträge']],
+        head: [['Team', 'Kategorie', 'Spieler', 'Aktive', 'Inaktive', 'Trainingsbeiträge']],
         body: data.teamStats.map((team: any) => [
           team.name,
           team.category || '-',
-          team.playerCount.toString(),
-          team.memberCount.toString(),
-          team.activeMembers.toString(),
+          team.totalPlayers.toString(),
+          team.activePlayers.toString(),
+          team.inactivePlayers.toString(),
           team.trainingFees.toString()
         ]),
         startY: yPosition,
@@ -690,8 +694,10 @@ export default function ReportsPage() {
       activeTrainingFees: 'Aktive Trainingsbeiträge',
       totalTeams: 'Teams gesamt',
       totalPlayers: 'Spieler gesamt',
+      activePlayers: 'Aktive Spieler',
+      inactivePlayers: 'Inaktive Spieler',
       averagePlayersPerTeam: 'Durchschn. Spieler pro Team',
-      averageMembersPerTeam: 'Durchschn. Mitglieder pro Team',
+      averageActivePlayersPerTeam: 'Durchschn. aktive Spieler pro Team',
       averageTeamSize: 'Durchschnittliche Teamgröße',
       saldoStatus: 'Saldo-Status'
     };

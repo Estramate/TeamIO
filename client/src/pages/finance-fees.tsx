@@ -623,7 +623,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-48 overflow-y-auto">
               {memberFeesQuery.isLoading ? (
                 <div className="space-y-3">
                   {[...Array(3)].map((_, i) => (
@@ -940,7 +940,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-48 overflow-y-auto">
               {trainingFeesQuery.isLoading ? (
                 <div className="space-y-3">
                   {[...Array(3)].map((_, i) => (

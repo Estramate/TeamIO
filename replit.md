@@ -27,6 +27,12 @@ Preferred communication style: Simple, everyday language.
   - Benutzerfreundliche Fehlermeldungen bei unvollständigen Eingaben
   - Formulare setzen sich automatisch auf Standardwerte zurück für neue Eingaben
 
+- **UI-Container-Optimierung**: Begrenzung der Beitragslisten für bessere Übersichtlichkeit
+  - Mitgliedsbeiträge und Trainingsbeiträge Container auf max. 3 Einträge sichtbar begrenzt (max-h-48)
+  - Automatischer Scrollbalken bei mehr als 3 Einträgen verhindert übergroße Container
+  - Verbesserte Benutzerführung bei umfangreichen Beitragslisten
+  - Optimierte Platznutzung auf der Finance-Fees Seite
+
 - **Umfassendes Finance-Dashboard**: Vollständig überarbeitete Finanz-Übersichtsseite mit reichhaltigen Informationen
   - Dashboard-Sektion mit Transaktionsverlauf-Diagramm und Monatsstatistiken hinzugefügt
   - "Neueste Transaktionen" Übersicht mit klickbaren Elementen für schnelle Details

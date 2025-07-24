@@ -406,10 +406,14 @@ export default function Finance() {
   };
 
   const handleUpdateFinance = (data: any) => {
-    if (!editingFinance) return;
-    
+    console.log('=== HANDLE UPDATE FINANCE CALLED ===');
     console.log('Update data received:', data);
     console.log('Editing finance:', editingFinance);
+    
+    if (!editingFinance) {
+      console.log('ERROR: No editingFinance found!');
+      return;
+    }
     
     const cleanedData = {
       ...data,
@@ -432,6 +436,7 @@ export default function Finance() {
     });
     
     console.log('Cleaned data for update:', cleanedData);
+    console.log('About to call mutation with ID:', editingFinance.id);
     updateFinanceMutation.mutate({ id: editingFinance.id, data: cleanedData });
   };
 
@@ -1295,7 +1300,21 @@ export default function Finance() {
                 onSubmit={(e) => {
                   console.log('=== FORM SUBMIT EVENT ===');
                   console.log('Form event:', e);
-                  return editFinanceForm.handleSubmit(handleUpdateFinance)(e);
+                  console.log('Form values before submit:', editFinanceForm.getValues());
+                  console.log('Form errors before submit:', editFinanceForm.formState.errors);
+                  
+                  const handleSubmit = editFinanceForm.handleSubmit(
+                    (data) => {
+                      console.log('=== FORM VALIDATION PASSED ===');
+                      handleUpdateFinance(data);
+                    },
+                    (errors) => {
+                      console.log('=== FORM VALIDATION FAILED ===');
+                      console.log('Validation errors:', errors);
+                    }
+                  );
+                  
+                  return handleSubmit(e);
                 }} 
                 className="space-y-4"
               >

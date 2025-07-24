@@ -495,33 +495,50 @@ export default function Calendar() {
       console.log('New end time:', newEndTime);
     }
     
-    // Validate that start < end and times are reasonable
-    if (newStartTime && newEndTime && newStartTime < newEndTime) {
-      console.log('Updating booking with new times:', { start: newStartTime, end: newEndTime });
+    // Additional validation and auto-adjustment
+    if (newStartTime && newEndTime) {
+      // If start time becomes after end time when resizing start, adjust end time
+      if (resizeDirection === 'start' && newStartTime >= newEndTime) {
+        const minDuration = 30 * 60 * 1000; // 30 minutes minimum
+        newEndTime = new Date(newStartTime.getTime() + minDuration);
+        console.log('Auto-adjusted end time to maintain minimum duration:', newEndTime);
+      }
       
-      const updateData = {
-        title: resizingEvent.title,
-        description: resizingEvent.description || '',
-        facilityId: resizingEvent.facilityId,
-        teamId: resizingEvent.teamId,
-        startTime: newStartTime.toISOString(),
-        endTime: newEndTime.toISOString(),
-        type: resizingEvent.type,
-        status: resizingEvent.status || 'confirmed',
-        participants: resizingEvent.participants || 0,
-        cost: resizingEvent.cost || null,
-        contactPerson: resizingEvent.contactPerson || '',
-        contactEmail: resizingEvent.contactEmail || null,
-        contactPhone: resizingEvent.contactPhone || '',
-        notes: resizingEvent.notes || '',
-        recurring: resizingEvent.recurring || false,
-        recurringPattern: resizingEvent.recurringPattern || null,
-        recurringUntil: resizingEvent.recurringUntil || null
-      };
+      // If end time becomes before start time when resizing end, adjust start time  
+      if (resizeDirection === 'end' && newEndTime <= newStartTime) {
+        const minDuration = 30 * 60 * 1000; // 30 minutes minimum
+        newStartTime = new Date(newEndTime.getTime() - minDuration);
+        console.log('Auto-adjusted start time to maintain minimum duration:', newStartTime);
+      }
       
-      updateBookingMutation.mutate({ id: resizingEvent.id, data: updateData });
-    } else {
-      console.log('Invalid time range - not updating');
+      // Final validation
+      if (newStartTime < newEndTime) {
+        console.log('Updating booking with new times:', { start: newStartTime, end: newEndTime });
+        
+        const updateData = {
+          title: resizingEvent.title,
+          description: resizingEvent.description || '',
+          facilityId: resizingEvent.facilityId,
+          teamId: resizingEvent.teamId,
+          startTime: newStartTime.toISOString(),
+          endTime: newEndTime.toISOString(),
+          type: resizingEvent.type,
+          status: resizingEvent.status || 'confirmed',
+          participants: resizingEvent.participants || 0,
+          cost: resizingEvent.cost || null,
+          contactPerson: resizingEvent.contactPerson || '',
+          contactEmail: resizingEvent.contactEmail || null,
+          contactPhone: resizingEvent.contactPhone || '',
+          notes: resizingEvent.notes || '',
+          recurring: resizingEvent.recurring || false,
+          recurringPattern: resizingEvent.recurringPattern || null,
+          recurringUntil: resizingEvent.recurringUntil || null
+        };
+        
+        updateBookingMutation.mutate({ id: resizingEvent.id, data: updateData });
+      } else {
+        console.log('Invalid time range after adjustment - not updating');
+      }
     }
     
     // Clean up

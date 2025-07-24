@@ -1,0 +1,354 @@
+eruda.js:2 [vite] server connection lost. Polling for restart...
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'battery'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'layout-animations'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'navigation-override'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'oversized-images'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'publickey-credentials'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'speaker-selection'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'unoptimized-images'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'unsized-media'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Unrecognized feature: 'pointer-lock'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+ Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'battery'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'layout-animations'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'legacy-image-formats'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'navigation-override'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'oversized-images'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'publickey-credentials'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'speaker-selection'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'unoptimized-images'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Unrecognized feature: 'unsized-media'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+67edf1df-cba6-4d59-9187-b6aeac829386-00-2ah5tpwb3lrgq.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html:142  GET https://replit.com/public/js/beacon.js net::ERR_BLOCKED_BY_CLIENT
+onIframeLoad @ workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar73f%3A:142
+  POST https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820 net::ERR_BLOCKED_BY_CLIENT
+(anonymous) @ _app-846a738aed6931c5.js:38
+(anonymous) @ _app-846a738aed6931c5.js:38
+promise @ _app-846a738aed6931c5.js:6
+(anonymous) @ _app-846a738aed6931c5.js:6
+r.httpRequest @ _app-846a738aed6931c5.js:6
+t @ _app-846a738aed6931c5.js:6
+a.sendChunk @ _app-846a738aed6931c5.js:6
+a.sendEvents @ _app-846a738aed6931c5.js:6
+a.flush @ _app-846a738aed6931c5.js:6
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+  POST https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820 net::ERR_BLOCKED_BY_CLIENT
+(anonymous) @ _app-846a738aed6931c5.js:38
+(anonymous) @ _app-846a738aed6931c5.js:38
+promise @ _app-846a738aed6931c5.js:6
+(anonymous) @ _app-846a738aed6931c5.js:6
+r.httpRequest @ _app-846a738aed6931c5.js:6
+t @ _app-846a738aed6931c5.js:6
+(anonymous) @ _app-846a738aed6931c5.js:6
+Promise.catch
+t @ _app-846a738aed6931c5.js:6
+a.sendChunk @ _app-846a738aed6931c5.js:6
+a.sendEvents @ _app-846a738aed6931c5.js:6
+a.flush @ _app-846a738aed6931c5.js:6
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+setTimeout
+(anonymous) @ _app-846a738aed6931c5.js:38
+e @ _app-846a738aed6931c5.js:6
+n @ _app-846a738aed6931c5.js:38
+  POST https://o1151714.ingest.sentry.io/api/6318792/envelope/?sentry_key=8aa91189a4274b5a8c9b7b01d46ea360&sentry_version=7&sentry_client=sentry.javascript.browser%2F7.112.0 net::ERR_BLOCKED_BY_CLIENT
+(anonymous) @ _app-846a738aed6931c5.js:40
+(anonymous) @ _app-846a738aed6931c5.js:38
+add @ _app-846a738aed6931c5.js:38
+i @ _app-846a738aed6931c5.js:38
+_sendEnvelope @ _app-846a738aed6931c5.js:38
+_flushOutcomes @ _app-846a738aed6931c5.js:38
+(anonymous) @ _app-846a738aed6931c5.js:38
+  POST https://logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Abeacon%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ac96a1182&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=79c1d7f2-f85d-4b80-81fc-2b76d4bab251 net::ERR_BLOCKED_BY_CLIENT
+(anonymous) @ _app-846a738aed6931c5.js:26
+sendOnExit @ _app-846a738aed6931c5.js:26
+e.flush @ _app-846a738aed6931c5.js:11
+(anonymous) @ _app-846a738aed6931c5.js:11
+(anonymous) @ _app-846a738aed6931c5.js:11
+e.notify @ _app-846a738aed6931c5.js:11
+f @ _app-846a738aed6931c5.js:11
+(anonymous) @ _app-846a738aed6931c5.js:11
+(anonymous) @ _app-846a738aed6931c5.js:11
+e.notify @ _app-846a738aed6931c5.js:11
+r.capture @ _app-846a738aed6931c5.js:11
+d @ _app-846a738aed6931c5.js:6
+(anonymous) @ _app-846a738aed6931c5.js:6
+eruda.js:2 [vite] server connection lost. Polling for restart...
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-37cb1c0d1e14811e.js:1
+(anonymous) @ framework-37cb1c0d1e14811e.js:1
+uD @ framework-37cb1c0d1e14811e.js:1
+uI @ framework-37cb1c0d1e14811e.js:1
+uM @ framework-37cb1c0d1e14811e.js:1
+uS @ framework-37cb1c0d1e14811e.js:1
+C @ framework-37cb1c0d1e14811e.js:1
+z @ framework-37cb1c0d1e14811e.js:1
+workspace_iframe.html:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar759%3A:142  GET https://replit.com/public/js/beacon.js net::ERR_BLOCKED_BY_CLIENT
+onIframeLoad @ workspace_iframe.html?initialPath=%2Fcalendar&id=%3Ar759%3A:142
+Console.js:61 Resize end - deltaY: 100 hourDelta: 2 snappedHourDelta: 2
+Console.js:61 Resize direction: start resizeStartTime: Tue Jul 22 2025 18:00:00 GMT+0200 (Mitteleuropäische Sommerzeit) resizeEndTime: Tue Jul 22 2025 19:30:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+Console.js:61 New start time: Tue Jul 22 2025 20:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+Console.js:61 Invalid time range - not updating

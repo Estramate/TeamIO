@@ -104,20 +104,24 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
   const memberFees = memberFeesQuery.data || [];
   const trainingFees = trainingFeesQuery.data || [];
 
-  const { data: members = [] } = useQuery({
+  const membersQuery = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'members'],
     enabled: !!selectedClub?.id,
   });
 
-  const { data: players = [] } = useQuery({
+  const playersQuery = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'players'],
     enabled: !!selectedClub?.id,
   });
 
-  const { data: teams = [] } = useQuery({
+  const teamsQuery = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
     enabled: !!selectedClub?.id,
   });
+
+  const members = membersQuery.data || [];
+  const players = playersQuery.data || [];
+  const teams = teamsQuery.data || [];
 
   // Mutations
   const createMemberFeeMutation = useMutation({

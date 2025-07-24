@@ -288,18 +288,22 @@ export const memberFees = pgTable("member_fees", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Training fees for players
+// Training fees for teams and players
 export const trainingFees = pgTable("training_fees", {
   id: serial("id").primaryKey(),
   clubId: integer("club_id").notNull().references(() => clubs.id),
-  playerId: integer("player_id").notNull().references(() => players.id),
-  teamId: integer("team_id").references(() => teams.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
   feeType: varchar("fee_type", { length: 50 }).notNull(), // training, coaching, camp, equipment
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   period: varchar("period", { length: 20 }).notNull(), // monthly, quarterly, yearly, one-time
   startDate: date("start_date").notNull(),
   endDate: date("end_date"),
+  targetType: varchar("target_type", { length: 20 }).notNull(), // team, player, both
+  teamIds: jsonb("team_ids"),
+  playerIds: jsonb("player_ids"),
   status: varchar("status", { length: 20 }).notNull().default("active"),
+  autoGenerate: boolean("auto_generate").default(true),
   lastPayment: date("last_payment"),
   nextPayment: date("next_payment"),
   totalPaid: decimal("total_paid", { precision: 10, scale: 2 }).default("0"),
@@ -476,14 +480,6 @@ export const trainingFeesRelations = relations(trainingFees, ({ one }) => ({
   club: one(clubs, {
     fields: [trainingFees.clubId],
     references: [clubs.id],
-  }),
-  player: one(players, {
-    fields: [trainingFees.playerId],
-    references: [players.id],
-  }),
-  team: one(teams, {
-    fields: [trainingFees.teamId],
-    references: [teams.id],
   }),
 }));
 

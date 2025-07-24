@@ -447,6 +447,8 @@ export default function Finance() {
         return <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Überfällig</Badge>;
       case 'cancelled':
         return <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400">Storniert</Badge>;
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Abgeschlossen</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -483,6 +485,26 @@ export default function Finance() {
         return <Building className="w-4 h-4" />;
       default:
         return <Euro className="w-4 h-4" />;
+    }
+  };
+
+  const translatePriority = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'Dringend';
+      case 'high': return 'Hoch';
+      case 'normal': return 'Normal';
+      case 'low': return 'Niedrig';
+      default: return priority;
+    }
+  };
+
+  const translatePaymentMethod = (method: string) => {
+    switch (method) {
+      case 'cash': return 'Bargeld';
+      case 'bank': return 'Banküberweisung';
+      case 'card': return 'Karte';
+      case 'paypal': return 'PayPal';
+      default: return method;
     }
   };
 
@@ -1164,7 +1186,7 @@ export default function Finance() {
                       {getStatusBadge(selectedFinance.status, selectedFinance.isActive)}
                       <div className="flex items-center space-x-1">
                         {getPriorityIcon(selectedFinance.priority)}
-                        <span className="text-sm text-muted-foreground capitalize">{selectedFinance.priority}</span>
+                        <span className="text-sm text-muted-foreground capitalize">{translatePriority(selectedFinance.priority)}</span>
                       </div>
                     </div>
                   </div>
@@ -1185,7 +1207,7 @@ export default function Finance() {
                       {selectedFinance.paymentMethod && (
                         <div className="space-y-2">
                           <Label className="text-sm font-medium text-muted-foreground">Zahlungsmethode</Label>
-                          <p>{selectedFinance.paymentMethod}</p>
+                          <p>{translatePaymentMethod(selectedFinance.paymentMethod)}</p>
                         </div>
                       )}
 

@@ -18,40 +18,66 @@ export default function TeamStatus({ clubId }: TeamStatusProps) {
     retry: false,
   }) as { data: any[] };
 
-  // Calculate team statistics
+  const { data: bookings = [] } = useQuery({
+    queryKey: ['/api/clubs', clubId, 'bookings'],
+    enabled: !!clubId,
+    retry: false,
+  }) as { data: any[] };
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['/api/clubs', clubId, 'events'],
+    enabled: !!clubId,
+    retry: false,
+  }) as { data: any[] };
+
+  // Calculate meaningful statistics
   const activeTeams = teams.filter(team => team.status === 'active');
   const activePlayers = players.filter(player => player.status === 'active');
-  const totalGoals = players.reduce((sum, player) => sum + (player.goals || 0), 0);
-  const totalAssists = players.reduce((sum, player) => sum + (player.assists || 0), 0);
+  
+  // Nächste Woche berechnen
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  
+  const upcomingTrainings = bookings.filter(booking => 
+    booking.type === 'training' && 
+    new Date(booking.startTime) <= nextWeek && 
+    new Date(booking.startTime) >= new Date()
+  ).length;
+  
+  const upcomingMatches = [...bookings, ...events].filter(item => 
+    (item.type === 'match' || item.title?.toLowerCase().includes('spiel')) && 
+    new Date(item.startTime || item.startDate) <= nextWeek && 
+    new Date(item.startTime || item.startDate) >= new Date()
+  ).length;
 
   const stats = [
     {
-      title: "Aktive Teams",
-      value: activeTeams.length,
-      icon: Users,
+      title: "Trainings (7 Tage)",
+      value: upcomingTrainings,
+      icon: Target,
       color: "text-blue-500",
       bg: "bg-blue-50",
     },
     {
-      title: "Aktive Spieler",
-      value: activePlayers.length,
-      icon: Target,
+      title: "Spiele (7 Tage)",
+      value: upcomingMatches,
+      icon: Trophy,
       color: "text-green-500",
       bg: "bg-green-50",
     },
     {
-      title: "Tore (Saison)",
-      value: totalGoals,
-      icon: Trophy,
-      color: "text-yellow-500",
-      bg: "bg-yellow-50",
-    },
-    {
-      title: "Assists (Saison)",
-      value: totalAssists,
-      icon: TrendingUp,
+      title: "Aktive Spieler",
+      value: activePlayers.length,
+      icon: Users,
       color: "text-purple-500",
       bg: "bg-purple-50",
+    },
+    {
+      title: "Gesamt-Teams",
+      value: activeTeams.length,
+      icon: TrendingUp,
+      color: "text-orange-500",
+      bg: "bg-orange-50",
     },
   ];
 

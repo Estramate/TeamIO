@@ -10,6 +10,7 @@ import ActivityFeed from "@/components/activity-feed";
 import UpcomingEvents from "@/components/upcoming-events";
 import TeamStatus from "@/components/team-status";
 
+
 export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
@@ -70,9 +71,72 @@ export default function Dashboard() {
         <>
           <StatsCards stats={dashboardData?.stats || {}} />
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8 h-[calc(100vh-280px)]">
-            <div className="lg:col-span-2 h-full">
-              <ActivityFeed activities={dashboardData?.activities || []} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8 h-[calc(100vh-320px)] mb-8">
+            <div className="lg:col-span-2 h-full flex flex-col gap-4">
+              <div className="flex-1">
+                <ActivityFeed activities={dashboardData?.activities || []} />
+              </div>
+              <div className="flex-1">
+                <div className="bg-card rounded-xl shadow-sm border border-border h-full flex flex-col p-4 sm:p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                      Kommunikation
+                    </h3>
+                    <button className="text-primary hover:text-primary/80 text-xs sm:text-sm font-medium">
+                      Alle anzeigen
+                    </button>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto space-y-3">
+                    <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-50">
+                        <span className="w-5 h-5 text-blue-500">📅</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">Training-Erinnerung</p>
+                        <p className="text-xs text-muted-foreground">Nächstes Training heute um 18:30</p>
+                        <p className="text-xs text-muted-foreground mt-1">vor 2 Stunden</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-green-50">
+                        <span className="w-5 h-5 text-green-500">👥</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">Mitglieder-Updates</p>
+                        <p className="text-xs text-muted-foreground">19 aktive Mitglieder</p>
+                        <p className="text-xs text-muted-foreground mt-1">vor 4 Stunden</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-orange-50">
+                        <span className="w-5 h-5 text-orange-500">🔔</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">Vereinsmitteilung</p>
+                        <p className="text-xs text-muted-foreground">Neue Vereinsordnung verfügbar</p>
+                        <p className="text-xs text-muted-foreground mt-1">vor 1 Tag</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <div className="grid grid-cols-3 gap-2">
+                      <button className="flex items-center justify-center gap-1 p-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                        💬 Chat
+                      </button>
+                      <button className="flex items-center justify-center gap-1 p-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                        ✉️ E-Mail
+                      </button>
+                      <button className="flex items-center justify-center gap-1 p-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                        📞 Anrufen
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div className="space-y-4 sm:space-y-6 h-full flex flex-col">

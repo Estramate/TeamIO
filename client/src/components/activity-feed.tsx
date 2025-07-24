@@ -69,7 +69,7 @@ export default function ActivityFeed({ activities = [] }: ActivityFeedProps) {
           </button>
         </div>
         
-        <div className="space-y-4 max-h-80 overflow-y-auto">
+        <div className="space-y-4 flex-1 overflow-y-auto">
           {activities.map((activity, index) => {
             const Icon = getActivityIcon(activity.icon);
             const iconClasses = getActivityIconBg(activity.icon);

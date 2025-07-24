@@ -11,6 +11,16 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 24, 2025 (Neueste)
+- **Dashboard-Statistiken und Layout komplett überarbeitet**: Korrekte Datenabfragen und optimales Container-Design
+  - Statistik-Karten zeigen jetzt echte Datenbankzahlen: Mitglieder (19), Teams (16), heutige Buchungen (1), Monatsbudget (€2.000)
+  - Team-Status Widget umgestaltet: Anstatt Tore/Assists zeigt es sinnvolle Metriken (Trainings/Spiele nächste 7 Tage, aktive Spieler, Teams)
+  - Kommunikations-Widget hinzugefügt: Training-Erinnerungen, Mitglieder-Updates, Vereinsmitteilungen mit Chat/E-Mail/Telefon-Buttons
+  - Container-Layout verbessert: Aktivitäten und Kommunikation teilen sich linke Seite, Termine und Team-Status rechte Seite
+  - Abstände zum unteren Rand korrigiert (mb-8), Container nutzen verfügbare Höhe optimal (calc(100vh-320px))
+  - Aktivitäten-Container: Entfernte max-height Beschränkung, nutzt jetzt flex-1 für bessere Platzausnutzung
+  - Alle Container haben einheitliche Höhen mit overflow-y-auto für Scrollbalken bei Bedarf
+
+### Januar 24, 2025 (Frühere Updates)
 - **Kalender-System vollständig optimiert**: Alle Interaktions-Probleme behoben für professionelle Benutzererfahrung
   - Resize-Handling repariert: Doppelklick-Problem beim Resize-Handle eliminiert
   - Event-Cleanup verbessert mit korrekter addEventListener/removeEventListener Behandlung

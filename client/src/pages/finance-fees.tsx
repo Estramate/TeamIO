@@ -69,6 +69,62 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
   const [editingTrainingFee, setEditingTrainingFee] = useState<any>(null);
   const [viewingFee, setViewingFee] = useState<any>(null);
 
+  // Reset und vorbelegen der Formulare beim Öffnen der Edit-Modals
+  React.useEffect(() => {
+    if (editingMemberFee) {
+      memberFeeForm.reset({
+        memberId: editingMemberFee.memberId?.toString() || '',
+        feeType: 'membership',
+        amount: editingMemberFee.amount?.toString() || '',
+        period: editingMemberFee.period || 'monthly',
+        startDate: editingMemberFee.startDate?.split('T')[0] || '',
+        endDate: editingMemberFee.endDate?.split('T')[0] || '',
+        description: editingMemberFee.description || '',
+      });
+    }
+  }, [editingMemberFee, memberFeeForm]);
+
+  React.useEffect(() => {
+    if (editingTrainingFee) {
+      // Parse teamIds und playerIds falls sie als JSON gespeichert sind
+      let teamIds = [];
+      let playerIds = [];
+      
+      try {
+        teamIds = Array.isArray(editingTrainingFee.teamIds) 
+          ? editingTrainingFee.teamIds 
+          : typeof editingTrainingFee.teamIds === 'string' 
+            ? JSON.parse(editingTrainingFee.teamIds || '[]')
+            : [];
+      } catch (e) {
+        teamIds = [];
+      }
+      
+      try {
+        playerIds = Array.isArray(editingTrainingFee.playerIds) 
+          ? editingTrainingFee.playerIds 
+          : typeof editingTrainingFee.playerIds === 'string' 
+            ? JSON.parse(editingTrainingFee.playerIds || '[]')
+            : [];
+      } catch (e) {
+        playerIds = [];
+      }
+
+      trainingFeeForm.reset({
+        name: editingTrainingFee.name || '',
+        description: editingTrainingFee.description || '',
+        feeType: 'training',
+        amount: editingTrainingFee.amount?.toString() || '',
+        period: editingTrainingFee.period || 'monthly',
+        startDate: editingTrainingFee.startDate?.split('T')[0] || '',
+        endDate: editingTrainingFee.endDate?.split('T')[0] || '',
+        targetType: editingTrainingFee.targetType || 'team',
+        teamIds: teamIds,
+        playerIds: playerIds,
+      });
+    }
+  }, [editingTrainingFee, trainingFeeForm]);
+
   // Form initialization
   const memberFeeForm = useForm({
     resolver: zodResolver(memberFeeFormSchema),
@@ -1331,7 +1387,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="z.B. Ausbildungsbeitrag" {...field} value={field.value || editingTrainingFee.name} />
+                        <Input placeholder="z.B. Ausbildungsbeitrag" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1344,7 +1400,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     <FormItem>
                       <FormLabel>Beschreibung (optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Zusätzliche Details..." {...field} value={field.value || editingTrainingFee.description || ''} />
+                        <Input placeholder="Zusätzliche Details..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1357,7 +1413,7 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     <FormItem>
                       <FormLabel>Betrag pro Ziel (€)</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.01" placeholder="25.00" {...field} value={field.value || editingTrainingFee.amount} />
+                        <Input type="number" step="0.01" placeholder="25.00" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1365,14 +1421,65 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                 />
                 <FormField
                   control={trainingFeeForm.control}
+                  name="period"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Zahlungsrhythmus</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Rhythmus wählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="monthly">Monatlich</SelectItem>
+                          <SelectItem value="quarterly">Vierteljährlich</SelectItem>
+                          <SelectItem value="yearly">Jährlich</SelectItem>
+                          <SelectItem value="one-time">Einmalig</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={trainingFeeForm.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Startdatum</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={trainingFeeForm.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Enddatum (optional)</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={trainingFeeForm.control}
                   name="targetType"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Zielgruppe</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={editingTrainingFee.targetType}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue />
+                            <SelectValue placeholder="Zielgruppe wählen" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -1385,6 +1492,75 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                     </FormItem>
                   )}
                 />
+
+                {/* Team Auswahl */}
+                {(trainingFeeForm.watch('targetType') === 'team' || trainingFeeForm.watch('targetType') === 'both') && (
+                  <FormField
+                    control={trainingFeeForm.control}
+                    name="teamIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Teams auswählen</FormLabel>
+                        <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border rounded-md p-3">
+                          {teams?.map((team: any) => (
+                            <div key={team.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`team-${team.id}`}
+                                checked={field.value?.includes(team.id) || false}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    field.onChange([...(field.value || []), team.id]);
+                                  } else {
+                                    field.onChange((field.value || []).filter((id: number) => id !== team.id));
+                                  }
+                                }}
+                              />
+                              <label htmlFor={`team-${team.id}`} className="text-sm font-medium">
+                                {team.name}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {/* Spieler Auswahl */}
+                {(trainingFeeForm.watch('targetType') === 'player' || trainingFeeForm.watch('targetType') === 'both') && (
+                  <FormField
+                    control={trainingFeeForm.control}
+                    name="playerIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Spieler auswählen</FormLabel>
+                        <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border rounded-md p-3">
+                          {players?.map((player: any) => (
+                            <div key={player.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`player-${player.id}`}
+                                checked={field.value?.includes(player.id) || false}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    field.onChange([...(field.value || []), player.id]);
+                                  } else {
+                                    field.onChange((field.value || []).filter((id: number) => id !== player.id));
+                                  }
+                                }}
+                              />
+                              <label htmlFor={`player-${player.id}`} className="text-sm font-medium">
+                                {player.firstName} {player.lastName}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+                
                 <div className="flex justify-end gap-2">
                   <Button
                     type="button"

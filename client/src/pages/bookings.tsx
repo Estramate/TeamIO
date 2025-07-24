@@ -345,12 +345,13 @@ export default function Bookings() {
       endTime: string; 
       excludeBookingId?: number;
     }) => {
-      return apiRequest("POST", `/api/clubs/${selectedClub?.id}/bookings/check-availability`, {
+      const response = await apiRequest("POST", `/api/clubs/${selectedClub?.id}/bookings/check-availability`, {
         facilityId,
         startTime,
         endTime,
         excludeBookingId
       });
+      return response.json();
     },
     onSuccess: (data: any) => {
       console.log("DEBUG: Availability check result:", data);

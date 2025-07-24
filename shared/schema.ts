@@ -543,6 +543,8 @@ export const bookingFormSchema = createInsertSchema(bookings, {
   updatedAt: true,
 }).extend({
   facilityId: z.string().transform((val) => parseInt(val)),
+  startTime: z.string().transform((val) => new Date(val)),
+  endTime: z.string().transform((val) => new Date(val)),
   teamId: z.string().optional().nullable().transform((val) => 
     val === '' || val === undefined || val === null ? null : parseInt(val)
   ),

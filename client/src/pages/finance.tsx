@@ -603,7 +603,7 @@ export default function Finance() {
   return (
     <div className="flex-1 overflow-y-auto bg-background">
       <div className="p-4 sm:p-6">
-        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-muted p-1 rounded-lg h-auto">
             <TabsTrigger value="overview" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Übersicht</TabsTrigger>
             <TabsTrigger value="transactions" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Transaktionen</TabsTrigger>
@@ -727,10 +727,7 @@ export default function Finance() {
                   size="sm"
                   onClick={() => {
                     // Direkter Tab-Wechsel zu Transaktionen
-                    const transactionsTab = document.querySelector('[role="tab"][value="transactions"]') as HTMLElement;
-                    if (transactionsTab) {
-                      transactionsTab.click();
-                    }
+                    setActiveTab('transactions');
                   }}
                   className="text-xs"
                 >

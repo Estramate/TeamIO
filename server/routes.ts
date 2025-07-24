@@ -256,14 +256,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/clubs/:clubId/bookings', isAuthenticated, async (req: any, res) => {
     try {
+      console.log("DEBUG Route: Raw request body:", req.body);
       const clubId = parseInt(req.params.clubId);
-      const bookingData = insertBookingSchema.parse({ ...req.body, clubId });
+      const bookingData = bookingFormSchema.parse({ ...req.body, clubId });
+      console.log("DEBUG Route: Validated data:", bookingData);
       
       // Check availability before creating booking
       const availability = await storage.checkBookingAvailability(
         bookingData.facilityId, 
-        new Date(bookingData.startTime), 
-        new Date(bookingData.endTime)
+        bookingData.startTime, 
+        bookingData.endTime
       );
       
       if (!availability.available) {
@@ -274,9 +276,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const booking = await storage.createBooking(bookingData);
+      console.log("DEBUG Route: Created booking:", booking);
       res.json(booking);
     } catch (error) {
-      console.error("Error creating booking:", error);
+      console.error("DEBUG Route: Error creating booking:", error);
       res.status(500).json({ message: "Failed to create booking" });
     }
   });

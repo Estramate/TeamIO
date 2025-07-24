@@ -137,6 +137,18 @@ export interface IStorage {
   updateFinance(id: number, finance: Partial<InsertFinance>): Promise<Finance>;
   deleteFinance(id: number): Promise<void>;
 
+  // Member fees operations
+  getMemberFees(clubId: number): Promise<MemberFee[]>;
+  createMemberFee(memberFee: InsertMemberFee): Promise<MemberFee>;
+  updateMemberFee(id: number, memberFee: Partial<InsertMemberFee>): Promise<MemberFee>;
+  deleteMemberFee(id: number): Promise<void>;
+
+  // Training fees operations
+  getTrainingFees(clubId: number): Promise<TrainingFee[]>;
+  createTrainingFee(trainingFee: InsertTrainingFee): Promise<TrainingFee>;
+  updateTrainingFee(id: number, trainingFee: Partial<InsertTrainingFee>): Promise<TrainingFee>;
+  deleteTrainingFee(id: number): Promise<void>;
+
   // Member fee operations
   getMemberFees(clubId: number): Promise<any[]>;
   createMemberFee(memberFee: any): Promise<any>;
@@ -487,12 +499,119 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateFinance(id: number, finance: Partial<InsertFinance>): Promise<Finance> {
+    // Ensure amount is converted to string if it's a number
+    const updateData = {
+      ...finance,
+      updatedAt: new Date(),
+      ...(finance.amount !== undefined && { amount: String(finance.amount) })
+    };
+    
     const [updatedFinance] = await db
       .update(finances)
-      .set({ ...finance, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(finances.id, id))
       .returning();
     return updatedFinance;
+  }
+
+  // Member fees operations
+  async getMemberFees(clubId: number): Promise<any[]> {
+    return await db
+      .select({
+        id: memberFees.id,
+        clubId: memberFees.clubId,
+        memberId: memberFees.memberId,
+        feeType: memberFees.feeType,
+        amount: memberFees.amount,
+        period: memberFees.period,
+        startDate: memberFees.startDate,
+        endDate: memberFees.endDate,
+        status: memberFees.status,
+        nextDueDate: memberFees.nextDueDate,
+        autoGenerate: memberFees.autoGenerate,
+        description: memberFees.description,
+        createdAt: memberFees.createdAt,
+        updatedAt: memberFees.updatedAt,
+        member: {
+          id: members.id,
+          firstName: members.firstName,
+          lastName: members.lastName,
+          paysMembershipFee: members.paysMembershipFee,
+        },
+      })
+      .from(memberFees)
+      .leftJoin(members, eq(memberFees.memberId, members.id))
+      .where(eq(memberFees.clubId, clubId))
+      .orderBy(desc(memberFees.createdAt));
+  }
+
+  async createMemberFee(memberFee: InsertMemberFee): Promise<MemberFee> {
+    const [created] = await db
+      .insert(memberFees)
+      .values(memberFee)
+      .returning();
+    return created;
+  }
+
+  async updateMemberFee(id: number, memberFee: Partial<InsertMemberFee>): Promise<MemberFee> {
+    const [updated] = await db
+      .update(memberFees)
+      .set({ ...memberFee, updatedAt: new Date() })
+      .where(eq(memberFees.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMemberFee(id: number): Promise<void> {
+    await db.delete(memberFees).where(eq(memberFees.id, id));
+  }
+
+  // Training fees operations
+  async getTrainingFees(clubId: number): Promise<any[]> {
+    return await db
+      .select({
+        id: trainingFees.id,
+        clubId: trainingFees.clubId,
+        name: trainingFees.name,
+        description: trainingFees.description,
+        feeType: trainingFees.feeType,
+        amount: trainingFees.amount,
+        period: trainingFees.period,
+        startDate: trainingFees.startDate,
+        endDate: trainingFees.endDate,
+        status: trainingFees.status,
+        nextDueDate: trainingFees.nextDueDate,
+        autoGenerate: trainingFees.autoGenerate,
+        targetType: trainingFees.targetType,
+        teamIds: trainingFees.teamIds,
+        playerIds: trainingFees.playerIds,
+        createdAt: trainingFees.createdAt,
+        updatedAt: trainingFees.updatedAt,
+      })
+      .from(trainingFees)
+      .where(eq(trainingFees.clubId, clubId))
+      .orderBy(desc(trainingFees.createdAt));
+  }
+
+  async createTrainingFee(trainingFee: InsertTrainingFee): Promise<TrainingFee> {
+    const [created] = await db
+      .insert(trainingFees)
+      .values(trainingFee)
+      .returning();
+    return created;
+  }
+
+  async updateTrainingFee(id: number, trainingFee: Partial<InsertTrainingFee>): Promise<TrainingFee> {
+    const [updated] = await db
+      .update(trainingFees)
+      .set({ ...trainingFee, updatedAt: new Date() })
+      .where(eq(trainingFees.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteTrainingFee(id: number): Promise<void> {
+    await db.delete(trainingFees).where(eq(trainingFees.id, id));
   }
 
   async deleteFinance(id: number): Promise<void> {

@@ -13,6 +13,8 @@ import {
   insertFinanceSchema,
   insertPlayerSchema,
   insertPlayerTeamAssignmentSchema,
+  memberFeeFormSchema,
+  trainingFeeFormSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -691,6 +693,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error removing player from team:", error);
       res.status(500).json({ message: "Failed to remove player from team" });
+    }
+  });
+
+  // Member fees routes
+  app.get('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const memberFees = await storage.getMemberFees(clubId);
+      res.json(memberFees);
+    } catch (error) {
+      console.error("Error fetching member fees:", error);
+      res.status(500).json({ message: "Failed to fetch member fees" });
+    }
+  });
+
+  app.post('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      
+      // Parse and transform the form data
+      const formData = memberFeeFormSchema.parse(req.body);
+      const memberFeeData = {
+        ...formData,
+        clubId,
+        memberId: parseInt(formData.memberId),
+        amount: formData.amount,
+        // Calculate next due date based on start date and period
+        nextDueDate: formData.startDate,
+      };
+      
+      const memberFee = await storage.createMemberFee(memberFeeData);
+      res.json(memberFee);
+    } catch (error) {
+      console.error("Error creating member fee:", error);
+      res.status(500).json({ message: "Failed to create member fee" });
+    }
+  });
+
+  app.patch('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const memberFee = await storage.updateMemberFee(id, req.body);
+      res.json(memberFee);
+    } catch (error) {
+      console.error("Error updating member fee:", error);
+      res.status(500).json({ message: "Failed to update member fee" });
+    }  
+  });
+
+  app.delete('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteMemberFee(id);
+      res.json({ message: "Member fee deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting member fee:", error);
+      res.status(500).json({ message: "Failed to delete member fee" });
+    }
+  });
+
+  // Training fees routes
+  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const trainingFees = await storage.getTrainingFees(clubId);
+      res.json(trainingFees);
+    } catch (error) {
+      console.error("Error fetching training fees:", error);
+      res.status(500).json({ message: "Failed to fetch training fees" });
+    }
+  });
+
+  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      
+      // Parse and transform the form data
+      const formData = trainingFeeFormSchema.parse(req.body);
+      const trainingFeeData = {
+        ...formData,
+        clubId,
+        amount: formData.amount,
+        // Parse team and player IDs from arrays
+        teamIds: formData.teamIds || null,
+        playerIds: formData.playerIds || null,
+        // Calculate next due date based on start date and period
+        nextDueDate: formData.startDate,
+      };
+      
+      const trainingFee = await storage.createTrainingFee(trainingFeeData);
+      res.json(trainingFee);
+    } catch (error) {
+      console.error("Error creating training fee:", error);
+      res.status(500).json({ message: "Failed to create training fee" });
+    }
+  });
+
+  app.patch('/api/clubs/:clubId/training-fees/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const trainingFee = await storage.updateTrainingFee(id, req.body);
+      res.json(trainingFee);
+    } catch (error) {
+      console.error("Error updating training fee:", error);
+      res.status(500).json({ message: "Failed to update training fee" });
+    }
+  });
+
+  app.delete('/api/clubs/:clubId/training-fees/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteTrainingFee(id);
+      res.json({ message: "Training fee deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting training fee:", error);
+      res.status(500).json({ message: "Failed to delete training fee" });
     }
   });
 

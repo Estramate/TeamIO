@@ -52,6 +52,7 @@ import {
   Building,
   BarChart3
 } from "lucide-react";
+import { FeesTabContent } from "./finance-fees";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { useForm } from "react-hook-form";
@@ -243,6 +244,33 @@ export default function Finance() {
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
     enabled: !!selectedClub?.id,
     retry: false,
+  });
+
+  // Mutations
+  const createMemberFeeMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('POST', `/api/clubs/${selectedClub?.id}/member-fees`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'member-fees'] });
+      setIsMemberFeeDialogOpen(false);
+      memberFeeForm.reset();
+      toast({ title: "Mitgliedsbeitrag erstellt", description: "Der Beitrag wurde erfolgreich hinzugefügt." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Fehler", description: error?.message || "Fehler beim Erstellen des Beitrags", variant: "destructive" });
+    }
+  });
+
+  const createTrainingFeeMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('POST', `/api/clubs/${selectedClub?.id}/training-fees`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'training-fees'] });
+      setIsTrainingFeeDialogOpen(false);
+      trainingFeeForm.reset();
+      toast({ title: "Trainingsbeitrag erstellt", description: "Der Beitrag wurde erfolgreich hinzugefügt." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Fehler", description: error?.message || "Fehler beim Erstellen des Beitrags", variant: "destructive" });
+    }
   });
 
   // Mutations
@@ -1254,89 +1282,7 @@ export default function Finance() {
             )}
           </TabsContent>
 
-          <TabsContent value="membership" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Users className="w-5 h-5 mr-2" />
-                    Mitgliedsbeiträge
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Dialog open={isMemberFeeDialogOpen} onOpenChange={setIsMemberFeeDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button className="w-full">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Mitgliedsbeitrag hinzufügen
-                        </Button>
-                      </DialogTrigger>
-                    </Dialog>
-                    
-                    {memberFees.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Users className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                        <p className="text-muted-foreground">Keine Mitgliedsbeiträge definiert</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {memberFees.map((fee: any) => (
-                          <div key={fee.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                            <div>
-                              <p className="font-medium">{fee.feeType}</p>
-                              <p className="text-sm text-muted-foreground">{formatCurrency(fee.amount)} / {fee.period}</p>
-                            </div>
-                            {getStatusBadge(fee.status)}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Trophy className="w-5 h-5 mr-2" />
-                    Trainingsbeiträge
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Dialog open={isTrainingFeeDialogOpen} onOpenChange={setIsTrainingFeeDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button className="w-full">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Trainingsbeitrag hinzufügen
-                        </Button>
-                      </DialogTrigger>
-                    </Dialog>
-                    
-                    {trainingFees.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Trophy className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                        <p className="text-muted-foreground">Keine Trainingsbeiträge definiert</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {trainingFees.map((fee: any) => (
-                          <div key={fee.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                            <div>
-                              <p className="font-medium">{fee.feeType}</p>
-                              <p className="text-sm text-muted-foreground">{formatCurrency(fee.amount)} / {fee.period}</p>
-                            </div>
-                            {getStatusBadge(fee.status)}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+          <FeesTabContent />
 
           <TabsContent value="reports" className="space-y-6">
             <Card>

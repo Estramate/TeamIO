@@ -141,6 +141,7 @@ export const members = pgTable("members", {
   joinDate: date("join_date"),
   notes: text("notes"),
   emergencyContact: jsonb("emergency_contact"),
+  paysMembershipFee: boolean("pays_membership_fee").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -600,6 +601,35 @@ export const insertMemberFeeSchema = createInsertSchema(memberFees).omit({
 
 export const insertTrainingFeeSchema = createInsertSchema(trainingFees).omit({
   id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Form schemas for member fees
+export const memberFeeFormSchema = createInsertSchema(memberFees, {
+  amount: z.string().min(1, "Amount is required"),
+  memberId: z.string().min(1, "Member is required"),
+  feeType: z.string().min(1, "Fee type is required"),
+  period: z.enum(['monthly', 'quarterly', 'annually']),
+  startDate: z.string().min(1, "Start date is required"),
+}).omit({
+  id: true,
+  clubId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Form schemas for training fees  
+export const trainingFeeFormSchema = createInsertSchema(trainingFees, {
+  name: z.string().min(1, "Name is required"),
+  amount: z.string().min(1, "Amount is required"),
+  feeType: z.string().min(1, "Fee type is required"),
+  period: z.enum(['monthly', 'quarterly', 'annually', 'one-time']),
+  startDate: z.string().min(1, "Start date is required"),
+  targetType: z.enum(['team', 'player', 'both']),
+}).omit({
+  id: true,
+  clubId: true,
   createdAt: true,
   updatedAt: true,
 });

@@ -406,10 +406,14 @@ export default function ReportsPage() {
   // Generate beautiful PDF reports with German content
   const downloadReport = (reportType: string, data: any) => {
     const doc = new jsPDF();
+    
+    // Set UTF-8 encoding for German characters
+    doc.setFont('helvetica');
+    
     const reportTitle = reportTypes.find(r => r.id === reportType)?.title || 'Bericht';
     const clubName = selectedClub?.name || 'Verein';
     
-    // Header with club branding
+    // Header with club branding - use safe characters
     doc.setFontSize(22);
     doc.setTextColor(0, 0, 0);
     doc.text(clubName, 20, 25);
@@ -433,7 +437,7 @@ export default function ReportsPage() {
     if (data.summary) {
       doc.setFontSize(16);
       doc.setTextColor(0, 0, 0);
-      doc.text('📊 Zusammenfassung', 20, yPosition);
+      doc.text('Zusammenfassung', 20, yPosition);
       yPosition += 15;
       
       doc.setFontSize(11);
@@ -461,11 +465,11 @@ export default function ReportsPage() {
     
     if (reportType === 'financial-overview' && data.monthlyData) {
       doc.setFontSize(14);
-      doc.text('💰 Monatliche Finanzübersicht', 20, yPosition);
+      doc.text('Monatliche Finanzuebersicht', 20, yPosition);
       yPosition += 10;
       
       autoTable(doc, {
-        head: [['Monat', 'Einnahmen (€)', 'Ausgaben (€)', 'Saldo (€)']],
+        head: [['Monat', 'Einnahmen (Euro)', 'Ausgaben (Euro)', 'Saldo (Euro)']],
         body: data.monthlyData.map((row: any) => [
           row.month,
           row.income.toLocaleString('de-DE', { minimumFractionDigits: 2 }),
@@ -492,10 +496,10 @@ export default function ReportsPage() {
       if (data.categories && Object.keys(data.categories).length > 0) {
         const finalY = (doc as any).lastAutoTable.finalY + 15;
         doc.setFontSize(14);
-        doc.text('📈 Kategorien-Aufschlüsselung', 20, finalY);
+        doc.text('Kategorien-Aufschlueseselung', 20, finalY);
         
         autoTable(doc, {
-          head: [['Kategorie', 'Einnahmen (€)', 'Ausgaben (€)']],
+          head: [['Kategorie', 'Einnahmen (Euro)', 'Ausgaben (Euro)']],
           body: Object.entries(data.categories).map(([category, values]: [string, any]) => [
             category,
             values.income.toLocaleString('de-DE', { minimumFractionDigits: 2 }),
@@ -511,7 +515,7 @@ export default function ReportsPage() {
     
     if (reportType === 'member-statistics' && data.ageDistribution) {
       doc.setFontSize(14);
-      doc.text('👥 Altersverteilung der Mitglieder', 20, yPosition);
+      doc.text('Altersverteilung der Mitglieder', 20, yPosition);
       yPosition += 10;
       
       autoTable(doc, {
@@ -538,11 +542,11 @@ export default function ReportsPage() {
     if (reportType === 'fee-analysis' && data.feeBreakdown) {
       if (data.feeBreakdown.memberFees?.length > 0) {
         doc.setFontSize(14);
-        doc.text('💳 Mitgliedsbeiträge im Detail', 20, yPosition);
+        doc.text('Mitgliedsbeitraege im Detail', 20, yPosition);
         yPosition += 10;
         
         autoTable(doc, {
-          head: [['Mitglied', 'Monatsbeitrag (€)', 'Zeitraum', 'Jahresbeitrag (€)']],
+          head: [['Mitglied', 'Monatsbeitrag (Euro)', 'Zeitraum', 'Jahresbeitrag (Euro)']],
           body: data.feeBreakdown.memberFees.map((fee: any) => [
             fee.member || 'Unbekannt',
             fee.amount.toLocaleString('de-DE', { minimumFractionDigits: 2 }),
@@ -566,10 +570,10 @@ export default function ReportsPage() {
       if (data.feeBreakdown.trainingFees?.length > 0) {
         const finalY = data.feeBreakdown.memberFees?.length > 0 ? (doc as any).lastAutoTable.finalY + 15 : yPosition;
         doc.setFontSize(14);
-        doc.text('🏃 Trainingsbeiträge im Detail', 20, finalY);
+        doc.text('Trainingsbeitraege im Detail', 20, finalY);
         
         autoTable(doc, {
-          head: [['Trainingsart', 'Betrag (€)', 'Zeitraum', 'Zielgruppen', 'Jahresumsatz (€)']],
+          head: [['Trainingsart', 'Betrag (Euro)', 'Zeitraum', 'Zielgruppen', 'Jahresumsatz (Euro)']],
           body: data.feeBreakdown.trainingFees.map((fee: any) => [
             fee.name,
             fee.amount.toLocaleString('de-DE', { minimumFractionDigits: 2 }),
@@ -587,7 +591,7 @@ export default function ReportsPage() {
     
     if (reportType === 'team-overview' && data.teamStats) {
       doc.setFontSize(14);
-      doc.text('⚽ Team-Übersicht mit Spielerstatistiken', 20, yPosition);
+      doc.text('Team-Uebersicht mit Spielerstatistiken', 20, yPosition);
       yPosition += 10;
       
       autoTable(doc, {
@@ -625,7 +629,7 @@ export default function ReportsPage() {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.setTextColor(150, 150, 150);
-      doc.text(`${clubName} - ${reportTitle}`, 20, 285);
+      doc.text(`${clubName} - ${reportTitle.replace(/ü/g, 'ue').replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ß/g, 'ss')}`, 20, 285);
       doc.text(`Seite ${i} von ${pageCount}`, 170, 285);
     }
     
@@ -671,8 +675,8 @@ export default function ReportsPage() {
       activeTrainingFees: 'Aktive Trainingsbeiträge',
       totalTeams: 'Teams gesamt',
       totalPlayers: 'Spieler gesamt',
-      averagePlayersPerTeam: 'Ø Spieler pro Team',
-      averageMembersPerTeam: 'Ø Mitglieder pro Team',
+      averagePlayersPerTeam: 'Durchschn. Spieler pro Team',
+      averageMembersPerTeam: 'Durchschn. Mitglieder pro Team',
       averageTeamSize: 'Durchschnittliche Teamgröße'
     };
     return labels[key] || key;

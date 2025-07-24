@@ -679,11 +679,8 @@ export default function Finance() {
                   </Dialog>
                 </CardContent>
               </Card>
-            ) : (
-              <div className={viewMode === 'grid' 
-                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6' 
-                : 'space-y-3 sm:space-y-4'
-              }>
+            ) : viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                 {filteredFinances.map((finance: any) => (
                   <Card key={finance.id} className="group hover:shadow-lg transition-all duration-200 border border-border">
                     <CardContent className="p-4 sm:p-6">
@@ -728,7 +725,7 @@ export default function Finance() {
                               <Button 
                                 variant="ghost" 
                                 size="sm"
-                                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="h-8 w-8 p-0 opacity-100 transition-opacity"
                               >
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
@@ -783,6 +780,136 @@ export default function Finance() {
                   </Card>
                 ))}
               </div>
+            ) : (
+              // Table/List View
+              <Card className="overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-muted/50 border-b">
+                      <tr>
+                        <th className="text-left p-4 font-medium text-muted-foreground">Typ</th>
+                        <th className="text-left p-4 font-medium text-muted-foreground">Beschreibung</th>
+                        <th className="text-left p-4 font-medium text-muted-foreground">Kategorie</th>
+                        <th className="text-left p-4 font-medium text-muted-foreground">Datum</th>
+                        <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
+                        <th className="text-right p-4 font-medium text-muted-foreground">Betrag</th>
+                        <th className="text-center p-4 font-medium text-muted-foreground w-20">Aktionen</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {filteredFinances.map((finance: any) => (
+                        <tr key={finance.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="p-4">
+                            <div className="flex items-center space-x-2">
+                              <div className={`p-1.5 rounded-md ${
+                                finance.type === 'income' 
+                                  ? 'bg-green-100 dark:bg-green-900/30' 
+                                  : 'bg-red-100 dark:bg-red-900/30'
+                              }`}>
+                                {finance.type === 'income' ? (
+                                  <TrendingUp className="w-3 h-3 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <TrendingDown className="w-3 h-3 text-red-600 dark:text-red-400" />
+                                )}
+                              </div>
+                              <span className="text-sm font-medium">
+                                {finance.type === 'income' ? 'Einnahme' : 'Ausgabe'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium text-foreground">{finance.description}</span>
+                              {getPriorityIcon(finance.priority)}
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center space-x-2">
+                              {getCategoryIcon(finance.category)}
+                              <span className="text-sm text-muted-foreground">{finance.category}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span className="text-sm text-muted-foreground">
+                              {formatDate(finance.date)}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            {getStatusBadge(finance.status, finance.isActive)}
+                          </td>
+                          <td className="p-4 text-right">
+                            <span className={`font-bold ${
+                              finance.type === 'income' 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {finance.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(finance.amount))}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex justify-center">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                  <DropdownMenuItem 
+                                    onClick={() => setSelectedFinance(finance)}
+                                    className="flex items-center"
+                                  >
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    Details anzeigen
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => setEditingFinance(finance)}
+                                    className="flex items-center"
+                                  >
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Bearbeiten
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => toggleFinanceStatus(finance)}
+                                    className={`flex items-center ${
+                                      finance.isActive 
+                                        ? 'text-orange-600 dark:text-orange-400' 
+                                        : 'text-green-600 dark:text-green-400'
+                                    }`}
+                                  >
+                                    {finance.isActive ? (
+                                      <>
+                                        <XCircle className="mr-2 h-4 w-4" />
+                                        Deaktivieren
+                                      </>
+                                    ) : (
+                                      <>
+                                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                                        Aktivieren
+                                      </>
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleDeleteFinance(finance.id)}
+                                    className="flex items-center text-red-600 dark:text-red-400"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Löschen
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
             )}
           </TabsContent>
 

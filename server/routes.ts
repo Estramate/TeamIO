@@ -343,6 +343,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const finance = await storage.getFinance(id);
+      if (!finance) {
+        return res.status(404).json({ message: "Finance record not found" });
+      }
+      res.json(finance);
+    } catch (error) {
+      console.error("Error fetching finance:", error);
+      res.status(500).json({ message: "Failed to fetch finance" });
+    }
+  });
+
   app.post('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);

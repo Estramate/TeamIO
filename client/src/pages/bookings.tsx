@@ -785,8 +785,8 @@ export default function Bookings() {
                     <FormItem>
                       <FormLabel>Team (optional)</FormLabel>
                       <Select 
-                        onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
-                        value={field.value?.toString() || ""}
+                        onValueChange={(value) => field.onChange(value === "none" ? undefined : parseInt(value))}
+                        value={field.value?.toString() || "none"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -794,7 +794,7 @@ export default function Bookings() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Kein Team</SelectItem>
+                          <SelectItem value="none">Kein Team</SelectItem>
                           {teams.map((team) => (
                             <SelectItem key={team.id} value={team.id.toString()}>
                               {team.name}
@@ -885,6 +885,7 @@ export default function Bookings() {
                           type="number" 
                           placeholder="Anzahl Teilnehmer"
                           {...field}
+                          value={field.value?.toString() || ""}
                           onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                         />
                       </FormControl>
@@ -905,6 +906,7 @@ export default function Bookings() {
                           step="0.01"
                           placeholder="0.00"
                           {...field}
+                          value={field.value?.toString() || ""}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
                         />
                       </FormControl>
@@ -971,6 +973,7 @@ export default function Bookings() {
                         className="resize-none"
                         rows={3}
                         {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -986,7 +989,7 @@ export default function Bookings() {
                     <FormItem>
                       <FormLabel>Kontaktperson</FormLabel>
                       <FormControl>
-                        <Input placeholder="Name" {...field} />
+                        <Input placeholder="Name" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1000,7 +1003,7 @@ export default function Bookings() {
                     <FormItem>
                       <FormLabel>E-Mail</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="email@beispiel.de" {...field} />
+                        <Input type="email" placeholder="email@beispiel.de" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1014,7 +1017,7 @@ export default function Bookings() {
                     <FormItem>
                       <FormLabel>Telefon</FormLabel>
                       <FormControl>
-                        <Input placeholder="+49 123 456789" {...field} />
+                        <Input placeholder="+49 123 456789" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1034,6 +1037,7 @@ export default function Bookings() {
                         className="resize-none"
                         rows={2}
                         {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />

@@ -541,6 +541,37 @@ export const insertFinanceSchema = createInsertSchema(finances).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  amount: z.union([z.string(), z.number()]).transform((val) => 
+    typeof val === 'string' ? parseFloat(val) : val
+  ),
+  memberId: z.union([z.string(), z.number(), z.null()]).optional().transform((val) => 
+    val === '' || val === undefined || val === null ? null : 
+    typeof val === 'string' ? parseInt(val) : val
+  ),
+  playerId: z.union([z.string(), z.number(), z.null()]).optional().transform((val) => 
+    val === '' || val === undefined || val === null ? null : 
+    typeof val === 'string' ? parseInt(val) : val
+  ),
+  teamId: z.union([z.string(), z.number(), z.null()]).optional().transform((val) => 
+    val === '' || val === undefined || val === null ? null : 
+    typeof val === 'string' ? parseInt(val) : val
+  ),
+  subcategory: z.string().optional().nullable().transform((val) => 
+    val === '' || val === undefined ? null : val
+  ),
+  paymentMethod: z.string().optional().nullable().transform((val) => 
+    val === '' || val === undefined ? null : val
+  ),
+  notes: z.string().optional().nullable().transform((val) => 
+    val === '' || val === undefined ? null : val
+  ),
+  recurringInterval: z.string().optional().nullable().transform((val) => 
+    val === '' || val === undefined ? null : val
+  ),
+  dueDate: z.string().optional().nullable().transform((val) => 
+    val === '' || val === undefined ? null : val
+  ),
 });
 
 export const insertPlayerSchema = createInsertSchema(players).omit({

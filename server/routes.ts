@@ -360,26 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      
-      // Clean and convert data types
-      const cleanedData = {
-        ...req.body,
-        clubId,
-        amount: req.body.amount ? parseFloat(req.body.amount) : null,
-        memberId: req.body.memberId && req.body.memberId !== '' ? parseInt(req.body.memberId) : null,
-        playerId: req.body.playerId && req.body.playerId !== '' ? parseInt(req.body.playerId) : null,
-        teamId: req.body.teamId && req.body.teamId !== '' ? parseInt(req.body.teamId) : null,
-        recurring: req.body.recurring === true || req.body.recurring === 'true',
-      };
-      
-      // Remove empty strings and undefined values
-      Object.keys(cleanedData).forEach(key => {
-        if (cleanedData[key] === '' || cleanedData[key] === undefined) {
-          cleanedData[key] = null;
-        }
-      });
-      
-      const financeData = insertFinanceSchema.parse(cleanedData);
+      const financeData = insertFinanceSchema.parse({ ...req.body, clubId });
       const finance = await storage.createFinance(financeData);
       res.json(finance);
     } catch (error) {

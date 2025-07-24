@@ -135,9 +135,16 @@ export default function Finance() {
       amount: '',
       description: '',
       date: new Date().toISOString().split('T')[0],
+      dueDate: '',
       status: 'pending' as const,
       priority: 'normal' as const,
+      paymentMethod: '',
       recurring: false,
+      recurringInterval: '',
+      notes: '',
+      memberId: '',
+      playerId: '',
+      teamId: '',
     }
   });
 
@@ -380,13 +387,24 @@ export default function Finance() {
     if (!editingFinance) return;
     const cleanedData = {
       ...data,
-      amount: parseFloat(data.amount),
       date: cleanDateField(data.date),
       dueDate: cleanDateField(data.dueDate),
-      memberId: data.memberId ? parseInt(data.memberId) : null,
-      playerId: data.playerId ? parseInt(data.playerId) : null,
-      teamId: data.teamId ? parseInt(data.teamId) : null,
+      memberId: data.memberId || null,
+      playerId: data.playerId || null,
+      teamId: data.teamId || null,
+      subcategory: data.subcategory || null,
+      paymentMethod: data.paymentMethod || null,
+      notes: data.notes || null,
+      recurringInterval: data.recurringInterval || null,
     };
+    
+    // Remove empty string values
+    Object.keys(cleanedData).forEach(key => {
+      if (cleanedData[key] === '') {
+        cleanedData[key] = null;
+      }
+    });
+    
     updateFinanceMutation.mutate({ id: editingFinance.id, data: cleanedData });
   };
 

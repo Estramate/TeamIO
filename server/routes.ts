@@ -373,22 +373,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       
-      // Clean and convert data types for update
-      const cleanedData = { ...req.body };
-      if (cleanedData.amount) cleanedData.amount = parseFloat(cleanedData.amount);
-      if (cleanedData.memberId && cleanedData.memberId !== '') cleanedData.memberId = parseInt(cleanedData.memberId);
-      if (cleanedData.playerId && cleanedData.playerId !== '') cleanedData.playerId = parseInt(cleanedData.playerId);
-      if (cleanedData.teamId && cleanedData.teamId !== '') cleanedData.teamId = parseInt(cleanedData.teamId);
-      if (cleanedData.recurring !== undefined) cleanedData.recurring = cleanedData.recurring === true || cleanedData.recurring === 'true';
-      
-      // Remove empty strings
-      Object.keys(cleanedData).forEach(key => {
-        if (cleanedData[key] === '') {
-          cleanedData[key] = null;
-        }
-      });
-      
-      const finance = await storage.updateFinance(id, cleanedData);
+      // Use the same validation schema as create
+      const validatedData = insertFinanceSchema.partial().parse(req.body);
+      const finance = await storage.updateFinance(id, validatedData);
       res.json(finance);
     } catch (error) {
       console.error('Error updating finance:', error);

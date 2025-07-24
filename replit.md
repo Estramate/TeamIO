@@ -38,7 +38,7 @@ Preferred communication style: Simple, everyday language.
   - "Alle Berichte generieren" Button für vollautomatische Berichtserstellung
   - Jahr- und Monatsauswahl für flexible Berichtszeiträume
   - Echtzeit-Status-Anzeige während der Berichtsgenerierung
-  - Download-Funktionalität für alle generierten Berichte (PDF-Format mit professionellem Layout)
+  - Download-Funktionalität für alle generierten Berichte (PDF-Format mit deutschem Layout und Spielerstatistiken)
   - Interaktive Progress-Anzeige mit Erfolgs- und Fehlerstatus
   - Schnelle Statistik-Übersicht mit aktuellen Vereinszahlen
   - Integration in Hauptnavigation mit eigenem Menüpunkt "Berichte"

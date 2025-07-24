@@ -336,31 +336,43 @@ export default function ReportsPage() {
   // Team overview report
   const generateTeamOverview = () => {
     const teamStats = (teams as any[])?.map((team: any) => {
+      // Count players in this team
+      const teamPlayers = (players as any[])?.filter((p: any) => p.teamId === team.id) || [];
       const teamMembers = (members as any[])?.filter((m: any) => m.teamId === team.id) || [];
       const teamTrainingFees = (trainingFees as any[])?.filter((f: any) => {
         if (!f.teamIds) return false;
-        const teamIds = Array.isArray(f.teamIds) ? f.teamIds : JSON.parse(f.teamIds);
-        return teamIds.includes(team.id.toString());
+        try {
+          const teamIds = Array.isArray(f.teamIds) ? f.teamIds : JSON.parse(f.teamIds);
+          return teamIds.includes(team.id.toString());
+        } catch (error) {
+          return false;
+        }
       }) || [];
 
       return {
         name: team.name,
         category: team.category,
         ageGroup: team.ageGroup,
-        memberCount: teamMembers.length,
+        playerCount: teamPlayers.length, // Spieler (players)
+        memberCount: teamMembers.length, // Mitglieder (members)
         activeMembers: teamMembers.filter((m: any) => m.status === 'active').length,
         trainingFees: teamTrainingFees.length,
         totalFees: teamTrainingFees.reduce((sum: number, f: any) => sum + Number(f.amount), 0)
       };
     }) || [];
 
+    const totalPlayers = teamStats.reduce((sum: number, team: any) => sum + team.playerCount, 0);
+    const totalMembers = teamStats.reduce((sum: number, team: any) => sum + team.memberCount, 0);
+
     return {
       title: `Team-Übersicht ${selectedYear}`,
       period: `Stand: ${format(new Date(), 'dd.MM.yyyy', { locale: de })}`,
       summary: {
         totalTeams: (teams as any[])?.length || 0,
-        totalPlayers: teamStats.reduce((sum: number, team: any) => sum + team.memberCount, 0),
-        averageTeamSize: Math.round(teamStats.reduce((sum: number, team: any) => sum + team.memberCount, 0) / ((teams as any[])?.length || 1))
+        totalPlayers: totalPlayers,
+        totalMembers: totalMembers,
+        averagePlayersPerTeam: Math.round(totalPlayers / ((teams as any[])?.length || 1)),
+        averageMembersPerTeam: Math.round(totalMembers / ((teams as any[])?.length || 1))
       },
       teamStats
     };
@@ -391,99 +403,256 @@ export default function ReportsPage() {
     }));
   };
 
-  // Generate beautiful PDF reports
+  // Generate beautiful PDF reports with German content
   const downloadReport = (reportType: string, data: any) => {
     const doc = new jsPDF();
     const reportTitle = reportTypes.find(r => r.id === reportType)?.title || 'Bericht';
     const clubName = selectedClub?.name || 'Verein';
     
-    // Header
-    doc.setFontSize(20);
-    doc.text(clubName, 20, 20);
-    doc.setFontSize(16);
-    doc.text(reportTitle, 20, 30);
-    doc.setFontSize(12);
-    doc.text(`Zeitraum: ${data.period}`, 20, 40);
-    doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm', { locale: de })}`, 20, 50);
+    // Header with club branding
+    doc.setFontSize(22);
+    doc.setTextColor(0, 0, 0);
+    doc.text(clubName, 20, 25);
     
-    let yPosition = 70;
+    doc.setFontSize(18);
+    doc.setTextColor(59, 130, 246);
+    doc.text(reportTitle, 20, 40);
     
-    // Summary section
+    doc.setFontSize(11);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Berichtszeitraum: ${data.period}`, 20, 52);
+    doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy um HH:mm', { locale: de })} Uhr`, 20, 62);
+    
+    // Horizontal line
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, 70, 190, 70);
+    
+    let yPosition = 85;
+    
+    // Summary section with better formatting
     if (data.summary) {
-      doc.setFontSize(14);
-      doc.text('Zusammenfassung', 20, yPosition);
-      yPosition += 10;
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text('📊 Zusammenfassung', 20, yPosition);
+      yPosition += 15;
       
-      doc.setFontSize(10);
-      Object.entries(data.summary).forEach(([key, value]) => {
+      doc.setFontSize(11);
+      doc.setTextColor(60, 60, 60);
+      
+      const summaryEntries = Object.entries(data.summary);
+      const midpoint = Math.ceil(summaryEntries.length / 2);
+      
+      summaryEntries.forEach(([key, value], index) => {
         const label = formatSummaryLabel(key);
-        doc.text(`${label}: ${value}`, 20, yPosition);
-        yPosition += 6;
+        const xPos = index < midpoint ? 25 : 110;
+        const yPos = yPosition + (index % midpoint) * 8;
+        
+        doc.setFont(undefined, 'bold');
+        doc.text(`${label}:`, xPos, yPos);
+        doc.setFont(undefined, 'normal');
+        doc.text(`${value}`, xPos + 50, yPos);
       });
-      yPosition += 10;
+      
+      yPosition += Math.max(midpoint * 8, 40) + 10;
     }
     
-    // Tables for detailed data
+    // Detailed tables with German headers
+    doc.setTextColor(0, 0, 0);
+    
     if (reportType === 'financial-overview' && data.monthlyData) {
+      doc.setFontSize(14);
+      doc.text('💰 Monatliche Finanzübersicht', 20, yPosition);
+      yPosition += 10;
+      
       autoTable(doc, {
-        head: [['Monat', 'Einnahmen', 'Ausgaben', 'Saldo']],
+        head: [['Monat', 'Einnahmen (€)', 'Ausgaben (€)', 'Saldo (€)']],
         body: data.monthlyData.map((row: any) => [
           row.month,
-          `€ ${row.income.toLocaleString('de-DE')}`,
-          `€ ${row.expenses.toLocaleString('de-DE')}`,
-          `€ ${row.balance.toLocaleString('de-DE')}`
+          row.income.toLocaleString('de-DE', { minimumFractionDigits: 2 }),
+          row.expenses.toLocaleString('de-DE', { minimumFractionDigits: 2 }),
+          row.balance.toLocaleString('de-DE', { minimumFractionDigits: 2 })
         ]),
         startY: yPosition,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [59, 130, 246] }
+        styles: { 
+          fontSize: 9,
+          cellPadding: 4,
+          halign: 'center'
+        },
+        headStyles: { 
+          fillColor: [59, 130, 246],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        tableLineColor: [226, 232, 240],
+        tableLineWidth: 0.1
       });
+      
+      // Add category breakdown if available
+      if (data.categories && Object.keys(data.categories).length > 0) {
+        const finalY = (doc as any).lastAutoTable.finalY + 15;
+        doc.setFontSize(14);
+        doc.text('📈 Kategorien-Aufschlüsselung', 20, finalY);
+        
+        autoTable(doc, {
+          head: [['Kategorie', 'Einnahmen (€)', 'Ausgaben (€)']],
+          body: Object.entries(data.categories).map(([category, values]: [string, any]) => [
+            category,
+            values.income.toLocaleString('de-DE', { minimumFractionDigits: 2 }),
+            values.expenses.toLocaleString('de-DE', { minimumFractionDigits: 2 })
+          ]),
+          startY: finalY + 5,
+          styles: { fontSize: 9, cellPadding: 4 },
+          headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
+          alternateRowStyles: { fillColor: [240, 253, 244] }
+        });
+      }
     }
     
     if (reportType === 'member-statistics' && data.ageDistribution) {
+      doc.setFontSize(14);
+      doc.text('👥 Altersverteilung der Mitglieder', 20, yPosition);
+      yPosition += 10;
+      
       autoTable(doc, {
-        head: [['Altersgruppe', 'Anzahl']],
-        body: Object.entries(data.ageDistribution).map(([age, count]) => [age, count.toString()]),
+        head: [['Altersgruppe', 'Anzahl Mitglieder', 'Anteil (%)']],
+        body: Object.entries(data.ageDistribution).map(([age, count]) => {
+          const percentage = ((count as number) / data.summary.totalMembers * 100).toFixed(1);
+          return [age, (count as number).toString(), `${percentage}%`];
+        }),
         startY: yPosition,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [34, 197, 94] }
+        styles: { 
+          fontSize: 10,
+          cellPadding: 5,
+          halign: 'center'
+        },
+        headStyles: { 
+          fillColor: [34, 197, 94],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: { fillColor: [240, 253, 244] }
       });
     }
     
     if (reportType === 'fee-analysis' && data.feeBreakdown) {
       if (data.feeBreakdown.memberFees?.length > 0) {
+        doc.setFontSize(14);
+        doc.text('💳 Mitgliedsbeiträge im Detail', 20, yPosition);
+        yPosition += 10;
+        
         autoTable(doc, {
-          head: [['Mitglied', 'Betrag', 'Zeitraum', 'Jahresbetrag']],
+          head: [['Mitglied', 'Monatsbeitrag (€)', 'Zeitraum', 'Jahresbeitrag (€)']],
           body: data.feeBreakdown.memberFees.map((fee: any) => [
             fee.member || 'Unbekannt',
-            `€ ${fee.amount}`,
-            fee.period,
-            `€ ${fee.annualAmount}`
+            fee.amount.toLocaleString('de-DE', { minimumFractionDigits: 2 }),
+            getPeriodLabel(fee.period),
+            fee.annualAmount.toLocaleString('de-DE', { minimumFractionDigits: 2 })
           ]),
           startY: yPosition,
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [168, 85, 247] }
+          styles: { 
+            fontSize: 9,
+            cellPadding: 4
+          },
+          headStyles: { 
+            fillColor: [168, 85, 247],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: { fillColor: [250, 245, 255] }
+        });
+      }
+      
+      if (data.feeBreakdown.trainingFees?.length > 0) {
+        const finalY = data.feeBreakdown.memberFees?.length > 0 ? (doc as any).lastAutoTable.finalY + 15 : yPosition;
+        doc.setFontSize(14);
+        doc.text('🏃 Trainingsbeiträge im Detail', 20, finalY);
+        
+        autoTable(doc, {
+          head: [['Trainingsart', 'Betrag (€)', 'Zeitraum', 'Zielgruppen', 'Jahresumsatz (€)']],
+          body: data.feeBreakdown.trainingFees.map((fee: any) => [
+            fee.name,
+            fee.amount.toLocaleString('de-DE', { minimumFractionDigits: 2 }),
+            getPeriodLabel(fee.period),
+            fee.targets.toString(),
+            (fee.amount * fee.targets * (fee.period === 'monthly' ? 12 : fee.period === 'quarterly' ? 4 : 1)).toLocaleString('de-DE', { minimumFractionDigits: 2 })
+          ]),
+          startY: finalY + 5,
+          styles: { fontSize: 9, cellPadding: 4 },
+          headStyles: { fillColor: [245, 101, 101], textColor: [255, 255, 255] },
+          alternateRowStyles: { fillColor: [254, 242, 242] }
         });
       }
     }
     
     if (reportType === 'team-overview' && data.teamStats) {
+      doc.setFontSize(14);
+      doc.text('⚽ Team-Übersicht mit Spielerstatistiken', 20, yPosition);
+      yPosition += 10;
+      
       autoTable(doc, {
-        head: [['Team', 'Kategorie', 'Mitglieder', 'Aktiv', 'Trainingsbeiträge']],
+        head: [['Team', 'Kategorie', 'Spieler', 'Mitglieder', 'Aktive Mitgl.', 'Trainingsbeiträge']],
         body: data.teamStats.map((team: any) => [
           team.name,
-          team.category || '',
+          team.category || '-',
+          team.playerCount.toString(),
           team.memberCount.toString(),
           team.activeMembers.toString(),
           team.trainingFees.toString()
         ]),
         startY: yPosition,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [249, 115, 22] }
+        styles: { 
+          fontSize: 9,
+          cellPadding: 4,
+          halign: 'center'
+        },
+        headStyles: { 
+          fillColor: [249, 115, 22],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: { fillColor: [255, 247, 237] },
+        columnStyles: {
+          0: { halign: 'left' },
+          1: { halign: 'left' }
+        }
       });
     }
     
-    // Save PDF
-    doc.save(`${reportType}-${selectedYear}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+    // Footer with timestamp
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`${clubName} - ${reportTitle}`, 20, 285);
+      doc.text(`Seite ${i} von ${pageCount}`, 170, 285);
+    }
+    
+    // Save PDF with German filename
+    const germanDate = format(new Date(), 'yyyy-MM-dd', { locale: de });
+    const germanFileName = `${getGermanFileName(reportType)}-${selectedYear}-${germanDate}.pdf`;
+    doc.save(germanFileName);
+  };
+  
+  const getPeriodLabel = (period: string): string => {
+    const periods: Record<string, string> = {
+      'monthly': 'Monatlich',
+      'quarterly': 'Vierteljährlich',
+      'yearly': 'Jährlich',
+      'one-time': 'Einmalig'
+    };
+    return periods[period] || period;
+  };
+  
+  const getGermanFileName = (reportType: string): string => {
+    const fileNames: Record<string, string> = {
+      'financial-overview': 'Finanzuebersicht',
+      'member-statistics': 'Mitgliederstatistik',
+      'fee-analysis': 'Beitragsanalyse',
+      'team-overview': 'Team-Uebersicht'
+    };
+    return fileNames[reportType] || reportType;
   };
   
   const formatSummaryLabel = (key: string): string => {
@@ -502,6 +671,8 @@ export default function ReportsPage() {
       activeTrainingFees: 'Aktive Trainingsbeiträge',
       totalTeams: 'Teams gesamt',
       totalPlayers: 'Spieler gesamt',
+      averagePlayersPerTeam: 'Ø Spieler pro Team',
+      averageMembersPerTeam: 'Ø Mitglieder pro Team',
       averageTeamSize: 'Durchschnittliche Teamgröße'
     };
     return labels[key] || key;

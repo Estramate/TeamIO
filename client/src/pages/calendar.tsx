@@ -325,10 +325,11 @@ export default function Calendar() {
     const clampedStart = Math.max(6, Math.min(24, startHour));
     const clampedEnd = Math.max(clampedStart + 0.5, Math.min(24, endHour)); // Minimum 30min duration
     
-    const top = ((clampedStart - 6) / 18) * 100; // Percentage from top
-    const height = ((clampedEnd - clampedStart) / 18) * 100; // Percentage height
+    // Calculate pixel positions (each hour = 50px)
+    const top = (clampedStart - 6) * 50; // Pixels from top
+    const height = (clampedEnd - clampedStart) * 50; // Height in pixels
     
-    return { top, height: Math.max(height, 3) }; // Minimum 3% height for visibility
+    return { top, height: Math.max(height, 25) }; // Minimum 25px height for visibility
   };
 
   // Helper function to calculate overlapping events layout
@@ -789,33 +790,52 @@ export default function Calendar() {
                       {timeSlots.map((slot) => (
                         <div
                           key={slot.hour}
-                          className="absolute inset-x-0 h-[50px] border-b border-border/30"
-                          style={{ top: `${((slot.hour - 6) / 18) * 100}%` }}
+                          className="absolute inset-x-0 h-[1px] border-b border-border/30"
+                          style={{ top: `${(slot.hour - 6) * 50}px` }}
                         />
                       ))}
                       
-                      {/* Events */}
-                      {getEventsForDate(currentDate).map((event, index) => {
-                        const { top, height } = getEventTimePosition(event);
+                      {/* Events with proper pixel positioning */}
+                      {calculateEventLayout(getEventsForDate(currentDate)).map((event, index) => {
                         return (
                           <div
                             key={index}
                             draggable
                             onDragStart={(e) => handleDragStart(event, e)}
                             onDragEnd={handleDragEnd}
-                            className={`absolute inset-x-2 rounded-md p-2 text-white cursor-move hover:opacity-90 transition-all ${event.color} ${
+                            className={`absolute rounded-md p-2 text-white cursor-move hover:opacity-90 transition-all ${event.color} ${
                               isDragging && draggedEvent?.id === event.id ? 'opacity-50' : ''
                             }`}
                             style={{
-                              top: `${top}%`,
-                              height: `${height}%`,
-                              minHeight: '20px',
+                              top: `${event.top}px`,
+                              height: `${event.height}px`,
+                              left: `calc(${event.left}% + 8px)`,
+                              width: `calc(${event.width}% - 16px)`,
+                              minHeight: '25px',
+                              zIndex: 10 + index,
                             }}
                             onClick={() => {
                               if (event.source === 'event') {
                                 setEditingEvent(event);
                                 setShowEventModal(true);
                               } else if (event.source === 'booking') {
+                                // Reset form with booking data for day view too
+                                bookingForm.reset({
+                                  title: event.title || '',
+                                  description: event.description || '',
+                                  facilityId: event.facilityId?.toString() || '',
+                                  teamId: event.teamId?.toString() || '',
+                                  startTime: event.startTime ? format(new Date(event.startTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
+                                  endTime: event.endTime ? format(new Date(event.endTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
+                                  type: event.type || 'training',
+                                  status: event.status || 'confirmed',
+                                  participants: event.participants || 0,
+                                  cost: event.cost || 0,
+                                  contactPerson: event.contactPerson || '',
+                                  contactEmail: event.contactEmail || '',
+                                  contactPhone: event.contactPhone || '',
+                                  notes: event.notes || '',
+                                });
                                 setEditingBooking(event);
                                 setShowBookingModal(true);
                               }
@@ -921,11 +941,11 @@ export default function Calendar() {
                                   isDragging && draggedEvent?.id === event.id ? 'opacity-50' : ''
                                 }`}
                                 style={{
-                                  top: `${event.top}%`,
-                                  height: `${event.height}%`,
+                                  top: `${event.top}px`,
+                                  height: `${event.height}px`,
                                   left: `calc(${event.left}% + 2px)`,
                                   width: `calc(${event.width}% - 4px)`,
-                                  minHeight: '20px',
+                                  minHeight: '25px',
                                   zIndex: 10 + index,
                                 }}
                                 onClick={() => {
@@ -933,6 +953,23 @@ export default function Calendar() {
                                     setEditingEvent(event);
                                     setShowEventModal(true);
                                   } else if (event.source === 'booking') {
+                                    // Reset form with booking data
+                                    bookingForm.reset({
+                                      title: event.title || '',
+                                      description: event.description || '',
+                                      facilityId: event.facilityId?.toString() || '',
+                                      teamId: event.teamId?.toString() || '',
+                                      startTime: event.startTime ? format(new Date(event.startTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
+                                      endTime: event.endTime ? format(new Date(event.endTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
+                                      type: event.type || 'training',
+                                      status: event.status || 'confirmed',
+                                      participants: event.participants || 0,
+                                      cost: event.cost || 0,
+                                      contactPerson: event.contactPerson || '',
+                                      contactEmail: event.contactEmail || '',
+                                      contactPhone: event.contactPhone || '',
+                                      notes: event.notes || '',
+                                    });
                                     setEditingBooking(event);
                                     setShowBookingModal(true);
                                   }

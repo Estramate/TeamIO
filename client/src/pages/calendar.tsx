@@ -820,14 +820,24 @@ export default function Calendar() {
                                 setEditingEvent(event);
                                 setShowEventModal(true);
                               } else if (event.source === 'booking') {
-                                // Reset form with booking data for day view too
+                                // Reset form with booking data for day view too - safe date formatting
+                                const formatSafeDate = (dateValue: any) => {
+                                  if (!dateValue) return '';
+                                  try {
+                                    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+                                    return isNaN(date.getTime()) ? '' : format(date, 'yyyy-MM-dd\'T\'HH:mm');
+                                  } catch {
+                                    return '';
+                                  }
+                                };
+                                
                                 bookingForm.reset({
                                   title: event.title || '',
                                   description: event.description || '',
                                   facilityId: event.facilityId?.toString() || '',
                                   teamId: event.teamId?.toString() || '',
-                                  startTime: event.startTime ? format(new Date(event.startTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
-                                  endTime: event.endTime ? format(new Date(event.endTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
+                                  startTime: formatSafeDate(event.startTime),
+                                  endTime: formatSafeDate(event.endTime),
                                   type: event.type || 'training',
                                   status: event.status || 'confirmed',
                                   participants: event.participants || 0,
@@ -955,14 +965,24 @@ export default function Calendar() {
                                     setEditingEvent(event);
                                     setShowEventModal(true);
                                   } else if (event.source === 'booking') {
-                                    // Reset form with booking data
+                                    // Reset form with booking data - safe date formatting
+                                    const formatSafeDate = (dateValue: any) => {
+                                      if (!dateValue) return '';
+                                      try {
+                                        const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+                                        return isNaN(date.getTime()) ? '' : format(date, 'yyyy-MM-dd\'T\'HH:mm');
+                                      } catch {
+                                        return '';
+                                      }
+                                    };
+                                    
                                     bookingForm.reset({
                                       title: event.title || '',
                                       description: event.description || '',
                                       facilityId: event.facilityId?.toString() || '',
                                       teamId: event.teamId?.toString() || '',
-                                      startTime: event.startTime ? format(new Date(event.startTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
-                                      endTime: event.endTime ? format(new Date(event.endTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
+                                      startTime: formatSafeDate(event.startTime),
+                                      endTime: formatSafeDate(event.endTime),
                                       type: event.type || 'training',
                                       status: event.status || 'confirmed',
                                       participants: event.participants || 0,

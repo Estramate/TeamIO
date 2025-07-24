@@ -1024,11 +1024,13 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
                   
                   // Generiere alle 12 Monate für das ausgewählte Jahr
                   for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
-                    const date = new Date(selectedChartYear, monthIndex, 1);
+                    // WICHTIG: Datum für die MITTE des Monats verwenden, um Zeitzone-Probleme zu vermeiden
+                    const date = new Date(selectedChartYear, monthIndex, 15);
                     const month = months[monthIndex];
                     const monthKey = `${month} ${selectedChartYear}`;
                     
                     console.log(`--- Processing Month ${monthIndex + 1}: ${monthKey} ---`);
+                    console.log(`Date being checked: ${date.toISOString()} (15th of month)`);
                     
                     // Berechne Mitgliedsbeiträge für diesen Monat
                     let memberRevenue = 0;

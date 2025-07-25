@@ -11,6 +11,9 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Git-Konfiguration optimiert**: attached_assets Verzeichnis zur .gitignore hinzugefügt
+  - Verhindert Synchronisation temporärer Development-Assets ins Git-Repository
+  - Saubere Repository-Struktur ohne große Bild- und Asset-Dateien
 - **README.md vollständig überarbeitet**: Umfassende, professionelle Dokumentation ohne vereinsspezifische Verweise erstellt
   - Entfernt alle Bezüge zu SV Oberglan für generische Nutzbarkeit
   - Erweiterte Tech Stack-Dokumentation mit Frontend/Backend-Architektur

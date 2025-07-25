@@ -11,11 +11,17 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Authentische OEFB-Spielplan Buchungen implementiert**: Vollständiger Terminkalender von ligaportal.at integriert
+  - 14 Buchungen erstellt: 8 Heimspiele der Unterliga Mitte + 1 Cup-Spiel basierend auf offiziellem Spielplan
+  - 4 Trainingseinheiten für alle Teams (KM, KM 1b, KM-FR) mit korrekten Trainern zugeordnet
+  - 2 Vereinsevents: Mitgliederversammlung (15.08.) und Sommerfest (23.08.) mit authentischen Kontaktpersonen
+  - 2 Facilities erstellt: AMTMANN Arena Oberglan (Hauptplatz) und Trainingsplatz für optimale Buchungsverwaltung
+  - Alle Termine mit korrekten Uhrzeiten, Gegnern und Liga-Rundenbezug von ligaportal.at
 - **Multi-Team Spieler-Zuordnungen vollständig implementiert**: Realistische Kaderzuordnungen mit Überschneidungen
-  - 137 Spieler total mit 120 Team-Zuordnungen über 4 aktive Senior-Teams
-  - 25 Spieler in mehreren Teams (realistische Multi-Team-Struktur)
-  - Finale Team-Verteilung: KM (32), KM 1b (42), Frauen Kleinfeld (16), KM-FR (30)
-  - 91 von 137 Spielern aktiv in Teams zugeordnet, 46 Spieler als Reserve/Jugend
+  - 137 Spieler total mit 166 Team-Zuordnungen über 4 aktive Senior-Teams
+  - Alle 137 Spieler haben mindestens eine Team-Zuordnung (keine unzugeordneten Spieler)
+  - Finale Team-Verteilung: KM 1b (82), KM-FR (36), KM (32), Frauen Kleinfeld (16)
+  - Multi-Team-Spieler realistisch verteilt entsprechend österreichischer Vereinsstrukturen
   - Saubere Datenstruktur ohne Duplikate für optimale Performance
 - **Team-Mitgliedschaften vollständig implementiert**: Alle Trainer-Zuordnungen basierend auf OEFB-Website erstellt
   - 15 Team-Mitgliedschaften für 13 authentische Trainer von vereine.oefb.at/SVOberglanOmegaBittner/Verein/Trainer/

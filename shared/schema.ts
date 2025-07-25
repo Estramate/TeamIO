@@ -85,6 +85,7 @@ export const players = pgTable("players", {
   address: text("address"),
   nationality: varchar("nationality", { length: 50 }),
   profileImageUrl: varchar("profile_image_url", { length: 500 }),
+  oefbPlayerUrl: varchar("oefb_player_url", { length: 500 }), // OEFB official player page URL
   height: integer("height"), // in cm
   weight: integer("weight"), // in kg
   preferredFoot: varchar("preferred_foot", { length: 10 }), // left, right, both

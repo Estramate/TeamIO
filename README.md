@@ -309,5 +309,3 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 **TeamIO** - Empowering sports clubs with professional management tools.
-
-*Built with ❤️ for the sports community*

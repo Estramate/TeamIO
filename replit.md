@@ -11,6 +11,12 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **SV Oberglan 1975 Club erfolgreich hinzugefügt**: Authentische Vereinsdaten von OEFB-Website importiert
+  - Vollständige Club-Information mit korrekter Adresse (Falkenweg 6, Feldkirchen, Kärnten)
+  - Vereinsphilosophie und -ziele aus offizieller Website übernommen
+  - Originallogo und Vereinsfarben (Grün/Gold) korrekt hinterlegt
+  - Hauptsponsor Omega Bittner in Beschreibung berücksichtigt
+  - Club ist nun für alle Funktionen verfügbar (Teams, Spieler, Buchungen, etc.)
 - **Rollenbasierte Zugriffskontrolle vollständig implementiert**: Benutzer ohne Team-Zuordnung erhalten nur Leserechte
   - ProtectedButton-Komponente erstellt mit deaktivierten Zuständen und erklärenden Tooltips
   - ProtectedForm-Komponente implementiert für Nur-Lese-Modus bei fehlenden Berechtigungen

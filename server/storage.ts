@@ -10,7 +10,6 @@ import {
   playerStats,
   facilities,
   bookings,
-  events,
   finances,
   memberFees,
   trainingFees,
@@ -36,8 +35,6 @@ import {
   type InsertFacility,
   type Booking,
   type InsertBooking,
-  type Event,
-  type InsertEvent,
   type Finance,
   type InsertFinance,
   type MemberFee,
@@ -124,12 +121,7 @@ export interface IStorage {
   deleteBooking(id: number): Promise<void>;
   checkBookingAvailability(facilityId: number, startTime: Date, endTime: Date, excludeBookingId?: number): Promise<{ available: boolean; maxConcurrent: number; currentBookings: number; conflictingBookings: any[] }>;
 
-  // Event operations
-  getEvents(clubId: number): Promise<Event[]>;
-  getEvent(id: number): Promise<Event | undefined>;
-  createEvent(event: InsertEvent): Promise<Event>;
-  updateEvent(id: number, event: Partial<InsertEvent>): Promise<Event>;
-  deleteEvent(id: number): Promise<void>;
+
 
   // Finance operations
   getFinances(clubId: number): Promise<Finance[]>;
@@ -516,37 +508,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  // Event operations
-  async getEvents(clubId: number): Promise<Event[]> {
-    return await db
-      .select()
-      .from(events)
-      .where(eq(events.clubId, clubId))
-      .orderBy(desc(events.startDate));
-  }
 
-  async getEvent(id: number): Promise<Event | undefined> {
-    const [event] = await db.select().from(events).where(eq(events.id, id));
-    return event;
-  }
-
-  async createEvent(event: InsertEvent): Promise<Event> {
-    const [newEvent] = await db.insert(events).values(event).returning();
-    return newEvent;
-  }
-
-  async updateEvent(id: number, event: Partial<InsertEvent>): Promise<Event> {
-    const [updatedEvent] = await db
-      .update(events)
-      .set({ ...event, updatedAt: new Date() })
-      .where(eq(events.id, id))
-      .returning();
-    return updatedEvent;
-  }
-
-  async deleteEvent(id: number): Promise<void> {
-    await db.delete(events).where(eq(events.id, id));
-  }
 
   // Finance operations
   async getFinances(clubId: number): Promise<Finance[]> {
@@ -679,14 +641,16 @@ export class DatabaseStorage implements IStorage {
       );
 
     // Events für heute ebenfalls berücksichtigen
+    // Events are now part of bookings table with type = 'event'
     const todayEvents = await db
       .select()
-      .from(events)
+      .from(bookings)
       .where(
         and(
-          eq(events.clubId, clubId),
-          gte(events.startDate, todayStart.toISOString()),
-          gte(todayEnd.toISOString(), events.startDate)
+          eq(bookings.clubId, clubId),
+          eq(bookings.type, 'event'),
+          gte(bookings.startTime, todayStart.toISOString()),
+          gte(todayEnd.toISOString(), bookings.startTime)
         )
       );
 
@@ -754,16 +718,18 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(bookings.createdAt))
       .limit(10);
 
+    // Events are now part of bookings table
     const recentEvents = await db
       .select()
-      .from(events)
+      .from(bookings)
       .where(
         and(
-          eq(events.clubId, clubId),
-          gte(events.createdAt, fiveDaysAgo)
+          eq(bookings.clubId, clubId),
+          eq(bookings.type, 'event'),
+          gte(bookings.createdAt, fiveDaysAgo)
         )
       )
-      .orderBy(desc(events.createdAt))
+      .orderBy(desc(bookings.createdAt))
       .limit(10);
 
     const activities = [

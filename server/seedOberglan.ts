@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { clubs, members, teams, teamMemberships, facilities, finances, events } from "@shared/schema";
+import { clubs, members, teams, teamMemberships, facilities, finances, bookings } from "@shared/schema";
 
 export async function seedSVOberglan1975() {
   console.log("🌱 Seeding SV Oberglan 1975 with real data...");
@@ -303,39 +303,46 @@ export async function seedSVOberglan1975() {
       }
     ]);
 
-    // Add some events
-    await db.insert(events).values([
+    // Add some events (now as bookings with type 'event')
+    await db.insert(bookings).values([
       {
         clubId: club.id,
+        facilityId: mainField.id,
         teamId: herrenTeam.id,
         title: "Heimspiel vs. SV Feldkirchen",
         description: "1. Klasse C Meisterschaftsspiel",
-        startDate: new Date("2025-03-15T15:00:00"),
-        endDate: new Date("2025-03-15T17:00:00"),
+        startTime: new Date("2025-03-15T15:00:00"),
+        endTime: new Date("2025-03-15T17:00:00"),
         location: "Hauptplatz SV Oberglan",
         type: "match",
-        status: "scheduled"
+        status: "confirmed",
+        isPublic: true
       },
       {
         clubId: club.id,
+        facilityId: mainField.id,
         teamId: herrenTeam.id,
         title: "Training Herrenmannschaft",
         description: "Wöchentliches Training",
-        startDate: new Date("2025-01-28T19:00:00"),
-        endDate: new Date("2025-01-28T20:30:00"),
+        startTime: new Date("2025-01-28T19:00:00"),
+        endTime: new Date("2025-01-28T20:30:00"),
         location: "Hauptplatz SV Oberglan",
         type: "training",
-        status: "scheduled"
+        status: "confirmed",
+        isPublic: false
       },
       {
         clubId: club.id,
+        facilityId: null, // No facility needed for meeting
+        teamId: null,
         title: "Jahreshauptversammlung",
         description: "Ordentliche Jahreshauptversammlung des Vereins",
-        startDate: new Date("2025-02-20T19:00:00"),
-        endDate: new Date("2025-02-20T21:00:00"),
+        startTime: new Date("2025-02-20T19:00:00"),
+        endTime: new Date("2025-02-20T21:00:00"),
         location: "Vereinsheim",
-        type: "meeting",
-        status: "scheduled"
+        type: "event",
+        status: "confirmed",
+        isPublic: true
       }
     ]);
 

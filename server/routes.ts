@@ -10,7 +10,6 @@ import {
   insertFacilitySchema,
   insertBookingSchema,
   bookingFormSchema,
-  insertEventSchema,
   insertFinanceSchema,
   insertPlayerSchema,
   insertPlayerTeamAssignmentSchema,

@@ -11,6 +11,20 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Events-zu-Bookings Migration abgeschlossen**: Database-Schema-Konsolidierung erfolgreich durchgeführt
+  - Events-Tabelle vollständig in Bookings-Tabelle migriert mit erweiterten Feldern (location, isPublic, nullable facilityId)
+  - Alle bestehenden Event-Daten erfolgreich übertragen ohne Datenverlust (3 Events → 3 Bookings)
+  - Schema vereinfacht: Ein einheitliches System für sowohl Anlagenbuchungen als auch Vereinsevents
+  - Seeding-Dateien angepasst: Events werden jetzt als Bookings mit type='event' erstellt
+  - API-Konsistenz: Events und Bookings nutzen jetzt dieselben Backend-Routen und Frontend-Komponenten
+
+- **Umfassende Seeding-Datei erstellt**: Alle SV Oberglan 1975 Daten in einer konsolidierten Datei
+  - seedSVOberglan1975Complete.ts mit vollständigen Vereinsdaten (1 Verein, 10 Teams, 22 Spieler, 4 Funktionäre, 4 Trainer)
+  - Automatische Duplikats-Vermeidung und intelligente Datenbereinigung
+  - Authentische österreichische Vereinsstruktur (U6-U19, Herren, Damen) komplett abgebildet
+  - Realistische Finanz- und Event-Daten für produktionsbereite Demonstration
+
+### Januar 25, 2025 (Frühere Updates)
 - **Doppelte Team-Einträge bereinigt und Seeding-System repariert**: Datenbank-Duplikate entfernt und Seeding-Skripte verbessert
   - 16 doppelte Team-Einträge aus der Datenbank entfernt (von 35 auf 19 Teams reduziert)
   - Foreign Key Constraints korrekt behandelt durch Update der player_team_assignments

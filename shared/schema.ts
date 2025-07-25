@@ -195,25 +195,27 @@ export const facilities = pgTable("facilities", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Bookings table
+// Bookings/Events table - unified table for both bookings and events
 export const bookings = pgTable("bookings", {
   id: serial("id").primaryKey(),
   clubId: integer("club_id").notNull().references(() => clubs.id),
-  facilityId: integer("facility_id").notNull().references(() => facilities.id),
+  facilityId: integer("facility_id").references(() => facilities.id), // nullable for events without facility
   teamId: integer("team_id").references(() => teams.id),
   memberId: integer("member_id").references(() => members.id),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
-  type: varchar("type", { length: 50 }).notNull(), // training, match, event
+  type: varchar("type", { length: 50 }).notNull(), // training, match, event, meeting, booking
+  location: varchar("location", { length: 255 }), // for events without facility
+  isPublic: boolean("is_public").default(true), // for events visibility
   recurring: boolean("recurring").default(false),
   recurringPattern: varchar("recurring_pattern", { length: 50 }), // weekly, monthly
   recurringUntil: date("recurring_until"),
   contactPerson: varchar("contact_person", { length: 255 }),
   contactEmail: varchar("contact_email", { length: 255 }),
   contactPhone: varchar("contact_phone", { length: 50 }),
-  participants: integer("participants"),
+  participants: jsonb("participants"), // can store numbers or participant lists
   cost: decimal("cost", { precision: 10, scale: 2 }),
   status: varchar("status", { length: 20 }).notNull().default("confirmed"),
   notes: text("notes"),
@@ -221,23 +223,7 @@ export const bookings = pgTable("bookings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Events/Calendar table
-export const events = pgTable("events", {
-  id: serial("id").primaryKey(),
-  clubId: integer("club_id").notNull().references(() => clubs.id),
-  teamId: integer("team_id").references(() => teams.id),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: text("description"),
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date"),
-  location: varchar("location", { length: 255 }),
-  type: varchar("type", { length: 50 }).notNull(), // match, training, meeting, event
-  isPublic: boolean("is_public").default(true),
-  participants: jsonb("participants"),
-  status: varchar("status", { length: 20 }).notNull().default("scheduled"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+
 
 // Finance table - Complete club financial management
 export const finances = pgTable("finances", {
@@ -327,7 +313,6 @@ export const clubsRelations = relations(clubs, ({ many }) => ({
   teams: many(teams),
   facilities: many(facilities),
   bookings: many(bookings),
-  events: many(events),
   finances: many(finances),
   memberFees: many(memberFees),
   trainingFees: many(trainingFees),
@@ -394,7 +379,6 @@ export const teamsRelations = relations(teams, ({ one, many }) => ({
   playerAssignments: many(playerTeamAssignments),
   playerStats: many(playerStats),
   bookings: many(bookings),
-  events: many(events),
   finances: many(finances),
 }));
 
@@ -436,16 +420,7 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
   }),
 }));
 
-export const eventsRelations = relations(events, ({ one }) => ({
-  club: one(clubs, {
-    fields: [events.clubId],
-    references: [clubs.id],
-  }),
-  team: one(teams, {
-    fields: [events.teamId],
-    references: [teams.id],
-  }),
-}));
+
 
 export const financesRelations = relations(finances, ({ one }) => ({
   club: one(clubs, {
@@ -562,11 +537,7 @@ export const bookingFormSchema = createInsertSchema(bookings, {
   ),
 });
 
-export const insertEventSchema = createInsertSchema(events).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+
 
 export const insertFinanceSchema = createInsertSchema(finances).omit({
   id: true,
@@ -681,8 +652,7 @@ export type Facility = typeof facilities.$inferSelect;
 export type InsertFacility = z.infer<typeof insertFacilitySchema>;
 export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
-export type Event = typeof events.$inferSelect;
-export type InsertEvent = z.infer<typeof insertEventSchema>;
+
 export type Finance = typeof finances.$inferSelect;
 export type InsertFinance = z.infer<typeof insertFinanceSchema>;
 export type Player = typeof players.$inferSelect;

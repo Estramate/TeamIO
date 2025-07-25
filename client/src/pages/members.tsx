@@ -518,195 +518,350 @@ export default function Members() {
           )}
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          {filteredMembers.map((member: any) => (
-            <Card key={member.id} className="group hover:shadow-lg transition-all duration-300 border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:scale-[1.02] cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 
-                      className="text-base font-semibold text-foreground truncate cursor-pointer hover:text-primary transition-colors hover:underline"
-                      onClick={() => handleViewMember(member)}
-                    >
-                      {member.firstName} {member.lastName}
-                    </h3>
-                    {member.email && (
-                      <p className="text-xs text-muted-foreground flex items-center mt-1 truncate">
-                        <Mail className="w-3 h-3 mr-1 shrink-0" />
-                        {member.email}
-                      </p>
-                    )}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+          {filteredMembers.map((member: any) => {
+            // Get team memberships for this member
+            const memberTeams = teamMemberships
+              .filter((tm: any) => tm.memberId === member.id)
+              .map((tm: any) => {
+                const team = teams.find((t: any) => t.id === tm.teamId);
+                return team ? { ...team, role: tm.role } : null;
+              })
+              .filter(Boolean);
+
+            return (
+              <Card key={member.id} className="group hover:shadow-xl transition-all duration-300 border-border bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm hover:from-card hover:to-card/90 hover:scale-[1.02] cursor-pointer overflow-hidden">
+                <CardContent className="p-0">
+                  {/* Header with gradient */}
+                  <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 p-4 text-white">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 
+                          className="text-lg font-bold truncate cursor-pointer hover:underline transition-all"
+                          onClick={() => handleViewMember(member)}
+                          title={`${member.firstName} ${member.lastName}`}
+                        >
+                          {member.firstName} {member.lastName}
+                        </h3>
+                        {member.membershipNumber && (
+                          <p className="text-blue-100 text-sm font-medium">
+                            Mitglied #{member.membershipNumber}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 ml-3">
+                        <Badge 
+                          variant={getStatusBadgeVariant(member.status)} 
+                          className="text-xs font-semibold"
+                        >
+                          {getStatusLabel(member.status)}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <Badge variant={getStatusBadgeVariant(member.status)} className="text-xs">
-                      {getStatusLabel(member.status)}
-                    </Badge>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditMember(member)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Bearbeiten
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleToggleStatus(member)}
-                          disabled={toggleMemberStatusMutation.isPending}
-                          className={member.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
-                        >
-                          {member.status === 'active' ? (
-                            <>
-                              <User className="h-4 w-4 mr-2" />
-                              Deaktivieren
-                            </>
-                          ) : (
-                            <>
-                              <User className="h-4 w-4 mr-2" />
-                              Aktivieren
-                            </>
+
+                  {/* Content */}
+                  <div className="p-4 space-y-4">
+                    {/* Contact Information */}
+                    <div className="space-y-2">
+                      {member.email && (
+                        <div className="flex items-center text-sm text-foreground">
+                          <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3 shrink-0">
+                            <Mail className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <span className="truncate" title={member.email}>{member.email}</span>
+                        </div>
+                      )}
+                      {member.phone && (
+                        <div className="flex items-center text-sm text-foreground">
+                          <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 shrink-0">
+                            <Phone className="w-4 h-4 text-green-600" />
+                          </div>
+                          <span className="truncate" title={member.phone}>{member.phone}</span>
+                        </div>
+                      )}
+                      {member.joinDate && (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mr-3 shrink-0">
+                            <Calendar className="w-4 h-4 text-orange-600" />
+                          </div>
+                          <span>Beigetreten: {new Date(member.joinDate).toLocaleDateString('de-DE')}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Team Memberships */}
+                    {memberTeams.length > 0 && (
+                      <div className="border-t border-border pt-3">
+                        <div className="flex items-center mb-2">
+                          <Users className="w-4 h-4 text-blue-600 mr-2" />
+                          <span className="text-sm font-medium text-foreground">Teams ({memberTeams.length})</span>
+                        </div>
+                        <div className="space-y-1 max-h-20 overflow-y-auto">
+                          {memberTeams.slice(0, 3).map((team: any) => (
+                            <div key={team.id} className="flex items-center justify-between text-xs">
+                              <span className="text-foreground font-medium truncate flex-1">{team.name}</span>
+                              <Badge variant="outline" className="text-xs ml-2">
+                                {team.role === 'trainer' ? 'Trainer' : 
+                                 team.role === 'co-trainer' ? 'Co-Trainer' :
+                                 team.role === 'assistant' ? 'Assistenz' :
+                                 team.role === 'manager' ? 'Manager' :
+                                 team.role === 'physiotherapist' ? 'Physio' :
+                                 team.role === 'doctor' ? 'Arzt' : team.role}
+                              </Badge>
+                            </div>
+                          ))}
+                          {memberTeams.length > 3 && (
+                            <div className="text-xs text-muted-foreground">
+                              +{memberTeams.length - 3} weitere...
+                            </div>
                           )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleDeleteMember(member)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Löschen
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 pt-2 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewMember(member)}
+                        className="flex-1 h-9 text-xs"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Details
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditMember(member)}
+                        className="flex-1 h-9 text-xs"
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Bearbeiten
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-9 px-2"
+                          >
+                            <MoreVertical className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => handleToggleStatus(member)}
+                            disabled={toggleMemberStatusMutation.isPending}
+                            className={member.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                          >
+                            {member.status === 'active' ? (
+                              <>
+                                <User className="h-4 w-4 mr-2" />
+                                Deaktivieren
+                              </>
+                            ) : (
+                              <>
+                                <User className="h-4 w-4 mr-2" />
+                                Aktivieren
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteMember(member)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Löschen
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="text-xs text-muted-foreground space-y-1">
-                  {member.membershipNumber && (
-                    <p className="flex items-center truncate">
-                      <User className="w-3 h-3 mr-1 shrink-0" />
-                      Nr: {member.membershipNumber}
-                    </p>
-                  )}
-                  {member.phone && (
-                    <p className="flex items-center truncate">
-                      <Phone className="w-3 h-3 mr-1 shrink-0" />
-                      {member.phone}
-                    </p>
-                  )}
-                  {member.joinDate && (
-                    <p className="flex items-center truncate">
-                      <Calendar className="w-3 h-3 mr-1 shrink-0" />
-                      {new Date(member.joinDate).toLocaleDateString('de-DE')}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       ) : (
-        <Card className="border-border">
+        <Card className="border-border overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-muted border-b border-border">
+                <thead className="bg-gradient-to-r from-blue-600/10 to-blue-700/10 border-b border-border">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Name
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                      Mitglied
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Kontakt
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                      Kontakt & Details
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                      Teams & Rollen
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Beigetreten
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-12">
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">
+                      Aktionen
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-card divide-y divide-border">
-                  {filteredMembers.map((member: any) => (
-                    <tr key={member.id} className="group hover:bg-muted/50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div 
-                            className="text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors hover:underline"
-                            onClick={() => handleViewMember(member)}
-                          >
-                            {member.firstName} {member.lastName}
-                          </div>
-                          {member.membershipNumber && (
-                            <div className="text-sm text-muted-foreground">
-                              #{member.membershipNumber}
+                  {filteredMembers.map((member: any) => {
+                    // Get team memberships for this member
+                    const memberTeams = teamMemberships
+                      .filter((tm: any) => tm.memberId === member.id)
+                      .map((tm: any) => {
+                        const team = teams.find((t: any) => t.id === tm.teamId);
+                        return team ? { ...team, role: tm.role } : null;
+                      })
+                      .filter(Boolean);
+
+                    return (
+                      <tr key={member.id} className="group hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-blue-100/30 dark:hover:from-blue-950/30 dark:hover:to-blue-900/20 transition-all duration-200">
+                        <td className="px-6 py-5">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                              {member.firstName?.[0]}{member.lastName?.[0]}
                             </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-foreground">{member.email}</div>
-                        <div className="text-sm text-muted-foreground">{member.phone}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge variant={getStatusBadgeVariant(member.status)}>
-                          {getStatusLabel(member.status)}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                        {member.joinDate ? new Date(member.joinDate).toLocaleDateString('de-DE') : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 w-8 p-0"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditMember(member)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Bearbeiten
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleToggleStatus(member)}
-                              disabled={toggleMemberStatusMutation.isPending}
-                              className={member.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
-                            >
-                              {member.status === 'active' ? (
-                                <>
-                                  <User className="h-4 w-4 mr-2" />
-                                  Deaktivieren
-                                </>
-                              ) : (
-                                <>
-                                  <User className="h-4 w-4 mr-2" />
-                                  Aktivieren
-                                </>
+                            <div>
+                              <div 
+                                className="text-sm font-semibold text-foreground cursor-pointer hover:text-blue-600 transition-colors hover:underline"
+                                onClick={() => handleViewMember(member)}
+                                title="Details anzeigen"
+                              >
+                                {member.firstName} {member.lastName}
+                              </div>
+                              {member.membershipNumber && (
+                                <div className="text-xs text-muted-foreground font-medium">
+                                  Mitglied #{member.membershipNumber}
+                                </div>
                               )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteMember(member)}
-                              className="text-destructive focus:text-destructive"
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="space-y-1">
+                            {member.email && (
+                              <div className="flex items-center text-sm text-foreground">
+                                <Mail className="w-3 h-3 mr-2 text-purple-600" />
+                                <span className="truncate max-w-xs" title={member.email}>{member.email}</span>
+                              </div>
+                            )}
+                            {member.phone && (
+                              <div className="flex items-center text-sm text-foreground">
+                                <Phone className="w-3 h-3 mr-2 text-green-600" />
+                                <span>{member.phone}</span>
+                              </div>
+                            )}
+                            {member.joinDate && (
+                              <div className="flex items-center text-xs text-muted-foreground">
+                                <Calendar className="w-3 h-3 mr-2 text-orange-600" />
+                                <span>Seit {new Date(member.joinDate).toLocaleDateString('de-DE')}</span>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="space-y-1">
+                            {memberTeams.length > 0 ? (
+                              <div className="max-w-xs">
+                                {memberTeams.slice(0, 2).map((team: any) => (
+                                  <div key={team.id} className="flex items-center justify-between text-xs bg-blue-50 dark:bg-blue-950/30 rounded-md px-2 py-1 mb-1">
+                                    <span className="font-medium text-foreground truncate flex-1">{team.name}</span>
+                                    <Badge variant="outline" className="text-xs ml-2 shrink-0">
+                                      {team.role === 'trainer' ? 'Trainer' : 
+                                       team.role === 'co-trainer' ? 'Co-Trainer' :
+                                       team.role === 'assistant' ? 'Assistenz' :
+                                       team.role === 'manager' ? 'Manager' :
+                                       team.role === 'physiotherapist' ? 'Physio' :
+                                       team.role === 'doctor' ? 'Arzt' : team.role}
+                                    </Badge>
+                                  </div>
+                                ))}
+                                {memberTeams.length > 2 && (
+                                  <div className="text-xs text-muted-foreground text-center py-1">
+                                    +{memberTeams.length - 2} weitere Teams
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="text-xs text-muted-foreground italic">
+                                Keine Team-Zuordnungen
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <Badge variant={getStatusBadgeVariant(member.status)} className="font-medium">
+                            {getStatusLabel(member.status)}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-2 justify-end">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewMember(member)}
+                              className="h-8 px-2"
+                              title="Details anzeigen"
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Löschen
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))}
+                              <Eye className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditMember(member)}
+                              className="h-8 px-2"
+                              title="Bearbeiten"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-8 px-2"
+                                  title="Weitere Optionen"
+                                >
+                                  <MoreVertical className="h-3 w-3" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem 
+                                  onClick={() => handleToggleStatus(member)}
+                                  disabled={toggleMemberStatusMutation.isPending}
+                                  className={member.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                                >
+                                  {member.status === 'active' ? (
+                                    <>
+                                      <User className="h-4 w-4 mr-2" />
+                                      Deaktivieren
+                                    </>
+                                  ) : (
+                                    <>
+                                      <User className="h-4 w-4 mr-2" />
+                                      Aktivieren
+                                    </>
+                                  )}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteMember(member)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Löschen
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

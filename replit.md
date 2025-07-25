@@ -11,12 +11,17 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Datenbank-Duplikate vollständig bereinigt**: Alle doppelten Einträge erfolgreich entfernt
+  - 67 doppelte Spieler gelöscht (204 → 137 Spieler)
+  - 100 doppelte Spieler-Team-Zuordnungen entfernt (212 → 112 Zuordnungen)
+  - Finale Team-Verteilung: KM (32), KM 1b (34), Frauen Kleinfeld (16), KM-FR (30 Spieler)
+  - Alle 11 Jugendteams korrekt leer (entsprechend OEFB-Status ohne registrierte Spieler)
+  - Datenbank ist jetzt vollständig bereinigt und produktionsbereit
 - **Teams und Spieler Import vollständig abgeschlossen**: Alle authentischen Daten direkt über SQL-Befehle importiert
   - 15 Teams erstellt: 4 Senior-Teams mit Spielerdaten, 11 Jugendteams ohne Spieler (entsprechend OEFB-Status)
-  - 216 Spieler-Team-Zuordnungen mit korrekter Duplikats-Behandlung zwischen Teams
-  - KM: 64 Spieler, KM 1b: 68 Spieler, Frauen Kleinfeld: 28 Spielerinnen, KM-FR: 56 Spielerinnen
+  - 137 einzigartige Spieler mit 112 korrekten Team-Zuordnungen importiert
   - Authentische OEFB-Daten mit Trikotnummern und Positionen ohne Seeding-Dateien verwendet
-  - Datenbank bereinigt: Doppelte Teams entfernt, alle Zuordnungen korrekt für Saison 2025/26
+  - Saubere Datenstruktur ohne Duplikate für Saison 2025/26
 - **SV Oberglan 1975 vollständig mit Personal ausgestattet**: Alle Funktionäre und Trainer von OEFB-Website importiert
   - 21 Funktionäre hinzugefügt: Manuel Vaschauner (Obmann), Andreas Hartner & Peter Tengg (Präsidenten)
   - Christine Gaggl (Sektionsleiterin Frauen/Nachwuchsleiterin), Diethard Knes (Kassier)

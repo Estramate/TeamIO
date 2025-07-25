@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Users, Search, Plus, Edit, Trash2, LayoutGrid, List, Mail, Phone, Calendar, MapPin, User, AlertCircle, MoreHorizontal, Grid3X3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
@@ -73,6 +74,7 @@ export default function Members() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<any>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [selectedTeamMemberships, setSelectedTeamMemberships] = useState<{teamId: number, role: string}[]>([]);
   const [viewingMember, setViewingMember] = useState<any>(null);
 
   // Set page title and redirect if not authenticated
@@ -118,6 +120,20 @@ export default function Members() {
     retry: false,
   });
 
+  // Load teams for team assignments
+  const { data: teams = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
+  // Load team memberships
+  const { data: teamMemberships = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
   // Create member mutation
   const createMemberMutation = useMutation({
     mutationFn: async (memberData: MemberFormData) => {
@@ -157,6 +173,36 @@ export default function Members() {
   const updateMemberMutation = useMutation({
     mutationFn: async (memberData: MemberFormData) => {
       await apiRequest("PUT", `/api/clubs/${selectedClub?.id}/members/${selectedMember.id}`, memberData);
+      
+      // Update team memberships if any are selected
+      if (selectedTeamMemberships.length >= 0) {
+        // Remove existing trainer/co-trainer memberships for this member
+        const existingMemberships = teamMemberships.filter((tm: any) => 
+          tm.memberId === selectedMember.id && 
+          (tm.role === 'trainer' || tm.role === 'co-trainer')
+        );
+        
+        for (const membership of existingMemberships) {
+          await fetch(`/api/teams/${membership.teamId}/memberships/${membership.id}`, {
+            method: 'DELETE',
+          });
+        }
+
+        // Add new team memberships
+        for (const teamMembership of selectedTeamMemberships) {
+          await fetch(`/api/teams/${teamMembership.teamId}/memberships`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              memberId: selectedMember.id,
+              role: teamMembership.role,
+              status: 'active',
+            }),
+          });
+        }
+      }
     },
     onSuccess: () => {
       toast({
@@ -164,9 +210,11 @@ export default function Members() {
         description: "Mitglied wurde erfolgreich aktualisiert",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'members'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'] });
       setMemberModalOpen(false);
       form.reset();
       setSelectedMember(null);
+      setSelectedTeamMemberships([]);
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -271,6 +319,7 @@ export default function Members() {
   const handleAddMember = () => {
     setSelectedMember(null);
     form.reset();
+    setSelectedTeamMemberships([]);
     setMemberModalOpen(true);
   };
 
@@ -288,6 +337,16 @@ export default function Members() {
       joinDate: member.joinDate || "",
       notes: member.notes || "",
     });
+    
+    // Load current team memberships for this member (trainer/co-trainer roles only)
+    const currentMemberships = teamMemberships
+      .filter((tm: any) => 
+        tm.memberId === member.id && 
+        (tm.role === 'trainer' || tm.role === 'co-trainer')
+      )
+      .map((tm: any) => ({ teamId: tm.teamId, role: tm.role }));
+    setSelectedTeamMemberships(currentMemberships);
+    
     setMemberModalOpen(true);
   };
 
@@ -818,6 +877,75 @@ export default function Members() {
                   </FormItem>
                 )}
               />
+
+              {/* Team Assignments */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-muted-foreground" />
+                  <h4 className="text-sm font-medium text-foreground">Team-Zuordnungen (Trainer/Co-Trainer)</h4>
+                </div>
+                <div className="space-y-2">
+                  {teams.map((team: any) => {
+                    const isTrainer = selectedTeamMemberships.some(tm => tm.teamId === team.id && tm.role === 'trainer');
+                    const isCoTrainer = selectedTeamMemberships.some(tm => tm.teamId === team.id && tm.role === 'co-trainer');
+                    
+                    return (
+                      <div key={team.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm font-medium text-foreground">{team.name}</span>
+                        <div className="flex gap-2">
+                          <label className="flex items-center gap-2 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={isTrainer}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  // Add trainer role, remove co-trainer if exists
+                                  setSelectedTeamMemberships(prev => [
+                                    ...prev.filter(tm => tm.teamId !== team.id),
+                                    { teamId: team.id, role: 'trainer' }
+                                  ]);
+                                } else {
+                                  // Remove trainer role
+                                  setSelectedTeamMemberships(prev => 
+                                    prev.filter(tm => !(tm.teamId === team.id && tm.role === 'trainer'))
+                                  );
+                                }
+                              }}
+                              className="w-3 h-3"
+                            />
+                            Trainer
+                          </label>
+                          <label className="flex items-center gap-2 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={isCoTrainer}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  // Add co-trainer role, remove trainer if exists
+                                  setSelectedTeamMemberships(prev => [
+                                    ...prev.filter(tm => tm.teamId !== team.id),
+                                    { teamId: team.id, role: 'co-trainer' }
+                                  ]);
+                                } else {
+                                  // Remove co-trainer role
+                                  setSelectedTeamMemberships(prev => 
+                                    prev.filter(tm => !(tm.teamId === team.id && tm.role === 'co-trainer'))
+                                  );
+                                }
+                              }}
+                              className="w-3 h-3"
+                            />
+                            Co-Trainer
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {teams.length === 0 && (
+                    <p className="text-xs text-muted-foreground">Keine Teams verfügbar</p>
+                  )}
+                </div>
+              </div>
 
               <DialogFooter className="flex gap-2 pt-4">
                 <Button 

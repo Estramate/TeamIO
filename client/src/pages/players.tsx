@@ -453,7 +453,7 @@ export default function Players() {
                   onClick={() => setViewMode("grid")}
                   className="h-8 px-3 rounded-lg flex-1 sm:flex-none"
                 >
-                  <Grid3X3 className="h-4 w-4" />
+                  <LayoutGrid className="h-4 w-4" />
                 </Button>
                 <Button
                   variant={viewMode === "list" ? "default" : "ghost"}

@@ -656,53 +656,34 @@ export class DatabaseStorage implements IStorage {
       .from(teams)
       .where(eq(teams.clubId, clubId));
 
-    // Heutige Buchungen korrekt abfragen
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
-
-    const todayBookings = await db
+    // Alle Buchungen abrufen und clientseitig filtern
+    const allBookings = await db
       .select()
       .from(bookings)
-      .where(
-        and(
-          eq(bookings.clubId, clubId),
-          gte(bookings.startTime, todayStart.toISOString()),
-          gte(todayEnd.toISOString(), bookings.startTime)
-        )
-      );
+      .where(eq(bookings.clubId, clubId));
 
-    // Events für heute ebenfalls berücksichtigen
-    // Events are now part of bookings table with type = 'event'
-    const todayEvents = await db
-      .select()
-      .from(bookings)
-      .where(
-        and(
-          eq(bookings.clubId, clubId),
-          eq(bookings.type, 'event'),
-          gte(bookings.startTime, todayStart.toISOString()),
-          gte(todayEnd.toISOString(), bookings.startTime)
-        )
-      );
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
 
-    const totalTodayActivities = todayBookings.length + todayEvents.length;
+    const todayBookings = allBookings.filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= todayStart && bookingDate <= todayEnd;
+    });
 
     // Monatsfinanzen
-    const thisMonth = new Date();
-    thisMonth.setDate(1);
-    thisMonth.setHours(0, 0, 0, 0);
-
-    const monthlyFinances = await db
+    const allFinances = await db
       .select()
       .from(finances)
-      .where(
-        and(
-          eq(finances.clubId, clubId),
-          gte(finances.date, thisMonth.toISOString().split('T')[0])
-        )
-      );
+      .where(eq(finances.clubId, clubId));
+
+    const thisMonth = new Date();
+    const monthStart = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 1);
+
+    const monthlyFinances = allFinances.filter(finance => {
+      const financeDate = new Date(finance.date + 'T00:00:00');
+      return financeDate >= monthStart;
+    });
 
     const totalIncome = monthlyFinances
       .filter(f => f.type === 'income')
@@ -715,7 +696,7 @@ export class DatabaseStorage implements IStorage {
     return {
       memberCount: memberCount.length,
       teamCount: teamCount.length,
-      todayBookingsCount: totalTodayActivities,
+      todayBookingsCount: todayBookings.length,
       pendingBookingsCount: todayBookings.filter(b => b.status === 'pending').length,
       monthlyBudget: totalIncome - totalExpenses,
     };

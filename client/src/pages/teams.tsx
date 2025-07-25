@@ -500,7 +500,9 @@ export default function Teams() {
                         <div className="flex items-center gap-2 mt-2">
                           {team.category && (
                             <Badge variant="secondary" className="text-xs">
-                              {team.category}
+                              {team.category === 'youth' ? 'Jugend' :
+                               team.category === 'senior' ? 'Senioren' : 
+                               team.category === 'amateur' ? 'Amateur' : team.category}
                             </Badge>
                           )}
                           {team.ageGroup && (
@@ -620,7 +622,13 @@ export default function Teams() {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-foreground">{team.category || '-'}</div>
+                            <div className="text-sm text-foreground">
+                              {team.category ? 
+                                (team.category === 'youth' ? 'Jugend' :
+                                 team.category === 'senior' ? 'Senioren' : 
+                                 team.category === 'amateur' ? 'Amateur' : team.category) 
+                                : '-'}
+                            </div>
                             {team.gender && (
                               <div className="text-sm text-muted-foreground">{team.gender}</div>
                             )}

@@ -1300,18 +1300,11 @@ export default function Members() {
                   </div>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsDetailDialogOpen(false);
-                  handleEditMember(viewingMember);
-                }}
-                className="shrink-0"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Bearbeiten
-              </Button>
+              {viewingMember && (
+                <Badge variant="secondary" className={`${viewingMember.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} border-0`}>
+                  {viewingMember.status === 'active' ? 'Aktiv' : 'Inaktiv'}
+                </Badge>
+              )}
             </DialogTitle>
           </DialogHeader>
           
@@ -1409,6 +1402,25 @@ export default function Members() {
                   </div>
                 </div>
               )}
+              
+              <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+                <Button
+                  onClick={() => setIsDetailDialogOpen(false)}
+                  variant="outline"
+                >
+                  Schließen
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsDetailDialogOpen(false);
+                    handleEditMember(viewingMember);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Bearbeiten
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>

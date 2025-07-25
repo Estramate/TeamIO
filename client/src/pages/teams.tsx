@@ -1150,9 +1150,23 @@ export default function Teams() {
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              {viewingTeam?.name}
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-lg">🏆</span>
+                <div>
+                  <div className="text-xl font-bold">
+                    {viewingTeam?.name}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-normal">
+                    Teamdetails
+                  </div>
+                </div>
+              </div>
+              {viewingTeam && (
+                <Badge variant={getStatusBadgeVariant(viewingTeam.status)} className="border-0">
+                  {getStatusLabel(viewingTeam.status)}
+                </Badge>
+              )}
             </DialogTitle>
           </DialogHeader>
           
@@ -1197,23 +1211,22 @@ export default function Teams() {
                 </div>
               </div>
               
-              <div className="flex gap-2 pt-4">
-                <Button 
+              <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+                <Button
+                  onClick={() => setIsDetailDialogOpen(false)}
+                  variant="outline"
+                >
+                  Schließen
+                </Button>
+                <Button
                   onClick={() => {
                     setIsDetailDialogOpen(false);
                     handleEditTeam(viewingTeam);
                   }}
-                  className="flex-1"
+                  className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Bearbeiten
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => setIsDetailDialogOpen(false)}
-                  className="flex-1"
-                >
-                  Schließen
                 </Button>
               </div>
             </div>

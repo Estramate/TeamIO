@@ -971,9 +971,23 @@ export default function Facilities() {
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center">
-              {getTypeIcon(viewingFacility?.type || '')}
-              <span className="ml-2">{viewingFacility?.name}</span>
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {getTypeIcon(viewingFacility?.type || '')}
+                <div>
+                  <div className="text-xl font-bold">
+                    {viewingFacility?.name}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-normal">
+                    Anlagendetails
+                  </div>
+                </div>
+              </div>
+              {viewingFacility && (
+                <div className="mt-1">
+                  {getStatusBadge(viewingFacility.status || 'active')}
+                </div>
+              )}
             </DialogTitle>
           </DialogHeader>
           {viewingFacility && (
@@ -1023,18 +1037,24 @@ export default function Facilities() {
               )}
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
+          <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+            <Button
+              onClick={() => setIsDetailDialogOpen(false)}
+              variant="outline"
+            >
               Schließen
             </Button>
-            <Button onClick={() => {
-              setIsDetailDialogOpen(false);
-              if (viewingFacility) handleEditFacility(viewingFacility);
-            }}>
+            <Button
+              onClick={() => {
+                setIsDetailDialogOpen(false);
+                if (viewingFacility) handleEditFacility(viewingFacility);
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
               <Edit className="w-4 h-4 mr-2" />
               Bearbeiten
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

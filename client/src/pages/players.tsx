@@ -1213,22 +1213,22 @@ export default function Players() {
                     </div>
                   )}
 
-                  <div className="flex justify-end pt-4 border-t">
+                  <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+                    <Button
+                      onClick={() => setIsDetailDialogOpen(false)}
+                      variant="outline"
+                    >
+                      Schließen
+                    </Button>
                     <Button
                       onClick={() => {
                         setIsDetailDialogOpen(false);
                         handleEdit(viewingPlayer);
                       }}
-                      variant="outline"
-                      className="mr-2"
+                      className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Edit2 className="h-4 w-4 mr-2" />
                       Bearbeiten
-                    </Button>
-                    <Button
-                      onClick={() => setIsDetailDialogOpen(false)}
-                    >
-                      Schließen
                     </Button>
                   </div>
                 </div>

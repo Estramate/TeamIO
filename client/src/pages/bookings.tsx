@@ -163,6 +163,22 @@ export default function Bookings() {
     { value: "cancelled", label: "Abgesagt" },
   ];
 
+  // Helper function to get type icon
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'training':
+        return <span className="text-lg">🏃</span>;
+      case 'match':
+        return <span className="text-lg">⚽</span>;
+      case 'event':
+        return <span className="text-lg">🎉</span>;
+      case 'maintenance':
+        return <span className="text-lg">🔧</span>;
+      default:
+        return <span className="text-lg">📅</span>;
+    }
+  };
+
   // Redirect to home if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -427,8 +443,8 @@ export default function Bookings() {
     setSelectedBooking(booking);
     console.log('Editing booking with times:', { startTime: booking.startTime, endTime: booking.endTime });
     console.log('Formatted for form:', { 
-      startTime: formatForDateTimeLocal(booking.startTime), 
-      endTime: formatForDateTimeLocal(booking.endTime) 
+      startTime: formatForDateTimeLocal(String(booking.startTime)), 
+      endTime: formatForDateTimeLocal(String(booking.endTime)) 
     });
     
     form.reset({
@@ -438,8 +454,8 @@ export default function Bookings() {
       teamId: booking.teamId ? booking.teamId.toString() : undefined,
       type: booking.type,
       status: booking.status,
-      startTime: formatForDateTimeLocal(booking.startTime),
-      endTime: formatForDateTimeLocal(booking.endTime),
+      startTime: formatForDateTimeLocal(String(booking.startTime)),
+      endTime: formatForDateTimeLocal(String(booking.endTime)),
       contactPerson: booking.contactPerson || "",
       contactEmail: booking.contactEmail || "",
       contactPhone: booking.contactPhone || "",
@@ -1321,9 +1337,23 @@ export default function Bookings() {
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CalendarDays className="h-5 w-5" />
-              Buchungsdetails
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {viewingBooking && getTypeIcon(viewingBooking.type)}
+                <div>
+                  <div className="text-xl font-bold">
+                    {viewingBooking?.title}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-normal">
+                    Buchungsdetails
+                  </div>
+                </div>
+              </div>
+              {viewingBooking && (
+                <div className="mt-1">
+                  {getStatusBadge(viewingBooking.status)}
+                </div>
+              )}
             </DialogTitle>
           </DialogHeader>
           
@@ -1381,13 +1411,13 @@ export default function Bookings() {
                   {viewingBooking.participants && (
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Teilnehmer</Label>
-                      <p className="text-sm">{viewingBooking.participants}</p>
+                      <p className="text-sm">{String(viewingBooking.participants)}</p>
                     </div>
                   )}
                   {viewingBooking.cost && (
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Kosten</Label>
-                      <p className="text-sm">{viewingBooking.cost} €</p>
+                      <p className="text-sm">{String(viewingBooking.cost)} €</p>
                     </div>
                   )}
                 </div>
@@ -1425,19 +1455,26 @@ export default function Bookings() {
             </div>
           )}
           
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
+          <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+            <Button
+              onClick={() => setIsDetailDialogOpen(false)}
+              variant="outline"
+            >
               Schließen
             </Button>
             {viewingBooking && (
-              <Button onClick={() => {
-                setIsDetailDialogOpen(false);
-                handleEditBooking(viewingBooking);
-              }}>
+              <Button
+                onClick={() => {
+                  setIsDetailDialogOpen(false);
+                  handleEditBooking(viewingBooking);
+                }}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Edit className="h-4 w-4 mr-2" />
                 Bearbeiten
               </Button>
             )}
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

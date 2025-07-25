@@ -228,9 +228,19 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
     }, {
       onSuccess: (data: any) => {
         console.log('Availability check SUCCESS:', data);
+        
+        // Erweiterte Anzeige mit Buchungszählung
+        let message = data.message;
+        if (data.maxConcurrent && typeof data.currentBookings === 'number') {
+          const currentCount = editingBooking ? data.currentBookings : data.currentBookings + 1;
+          message = `${data.available ? 'Verfügbar' : 'Nicht verfügbar'} (${currentCount}/${data.maxConcurrent} Buchungen)`;
+        }
+        
         setAvailabilityStatus({
           available: data.available,
-          message: data.message
+          message: message,
+          maxConcurrent: data.maxConcurrent,
+          currentBookings: data.currentBookings
         });
         setIsCheckingAvailability(false);
       },
@@ -503,15 +513,22 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
                 ? 'bg-green-50 border-green-200 text-green-800' 
                 : 'bg-red-50 border-red-200 text-red-800'
             }`}>
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
                 {availabilityStatus.available ? (
-                  <Check className="w-4 h-4 mr-2" />
+                  <Check className="w-4 h-4" />
                 ) : (
-                  <X className="w-4 h-4 mr-2" />
+                  <X className="w-4 h-4" />
                 )}
-                <span className="text-sm font-medium">
-                  {availabilityStatus.message}
-                </span>
+                <div className="flex-1">
+                  <span className="text-sm font-medium">
+                    {availabilityStatus.message}
+                  </span>
+                  {availabilityStatus.maxConcurrent && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Maximale Buchungen: {availabilityStatus.maxConcurrent}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

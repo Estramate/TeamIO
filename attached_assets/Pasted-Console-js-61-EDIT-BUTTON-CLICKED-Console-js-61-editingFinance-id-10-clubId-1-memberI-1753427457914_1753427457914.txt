@@ -1,0 +1,82 @@
+Console.js:61 === EDIT BUTTON CLICKED ===
+Console.js:61 editingFinance: {id: 10, clubId: 1, memberId: null, playerId: null, teamId: null, …}
+Console.js:61 editFinanceForm values: {type: 'expense', category: 'veranstaltungen', subcategory: '', amount: '1800.00', description: 'Sommerfest SV Oberglan - Verpflegung und Organisation', …}
+Console.js:61 editFinanceForm errors: {recurringInterval: {…}}
+ === FORM SUBMIT EVENT ===
+ Form event: SyntheticBaseEvent {_reactName: 'onSubmit', _targetInst: null, type: 'submit', nativeEvent: SubmitEvent, target: form.space-y-4, …}
+ Form values before submit: {type: 'expense', category: 'veranstaltungen', subcategory: '', amount: '1800.00', description: 'Sommerfest SV Oberglan - Verpflegung und Organisation', …}
+ Form errors before submit: {recurringInterval: {…}}
+ === FORM VALIDATION FAILED ===
+ Validation errors: {recurringInterval: {…}}
+ === CHART DATA GENERATION START ===
+ Selected Year: 2025
+ Member Fees Count: 0
+ Training Fees Count: 0
+ All Member Fees: []
+ All Training Fees: []
+ --- Processing Month 1: Jan 2025 ---
+ Date being checked: 2025-01-14T23:00:00.000Z (15th of month)
+ Processing 0 member fees for Jan 2025
+ Processing 0 training fees for Jan 2025
+ Final data point for Jan 2025: {month: 'Jan 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+ --- Processing Month 2: Feb 2025 ---
+ Date being checked: 2025-02-14T23:00:00.000Z (15th of month)
+ Processing 0 member fees for Feb 2025
+ Processing 0 training fees for Feb 2025
+ Final data point for Feb 2025: {month: 'Feb 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+ --- Processing Month 3: Mär 2025 ---
+ Date being checked: 2025-03-14T23:00:00.000Z (15th of month)
+ Processing 0 member fees for Mär 2025
+ Processing 0 training fees for Mär 2025
+ Final data point for Mär 2025: {month: 'Mär 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+ --- Processing Month 4: Apr 2025 ---
+ Date being checked: 2025-04-14T22:00:00.000Z (15th of month)
+ Processing 0 member fees for Apr 2025
+ Processing 0 training fees for Apr 2025
+ Final data point for Apr 2025: {month: 'Apr 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+ --- Processing Month 5: Mai 2025 ---
+ Date being checked: 2025-05-14T22:00:00.000Z (15th of month)
+ Processing 0 member fees for Mai 2025
+ Processing 0 training fees for Mai 2025
+ Final data point for Mai 2025: {month: 'Mai 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+ --- Processing Month 6: Jun 2025 ---
+ Date being checked: 2025-06-14T22:00:00.000Z (15th of month)
+ Processing 0 member fees for Jun 2025
+ Processing 0 training fees for Jun 2025
+ Final data point for Jun 2025: {month: 'Jun 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+ --- Processing Month 7: Jul 2025 ---
+ Date being checked: 2025-07-14T22:00:00.000Z (15th of month)
+ Processing 0 member fees for Jul 2025
+ Processing 0 training fees for Jul 2025
+ Final data point for Jul 2025: {month: 'Jul 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+ --- Processing Month 8: Aug 2025 ---
+ Date being checked: 2025-08-14T22:00:00.000Z (15th of month)
+ Processing 0 member fees for Aug 2025
+ Processing 0 training fees for Aug 2025
+ Final data point for Aug 2025: {month: 'Aug 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+ --- Processing Month 9: Sep 2025 ---
+ Date being checked: 2025-09-14T22:00:00.000Z (15th of month)
+ Processing 0 member fees for Sep 2025
+ Processing 0 training fees for Sep 2025
+ Final data point for Sep 2025: {month: 'Sep 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+Console.js:61 --- Processing Month 10: Okt 2025 ---
+Console.js:61 Date being checked: 2025-10-14T22:00:00.000Z (15th of month)
+Console.js:61 Processing 0 member fees for Okt 2025
+Console.js:61 Processing 0 training fees for Okt 2025
+Console.js:61 Final data point for Okt 2025: {month: 'Okt 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+Console.js:61 --- Processing Month 11: Nov 2025 ---
+Console.js:61 Date being checked: 2025-11-14T23:00:00.000Z (15th of month)
+Console.js:61 Processing 0 member fees for Nov 2025
+Console.js:61 Processing 0 training fees for Nov 2025
+Console.js:61 Final data point for Nov 2025: {month: 'Nov 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+Console.js:61 --- Processing Month 12: Dez 2025 ---
+Console.js:61 Date being checked: 2025-12-14T23:00:00.000Z (15th of month)
+Console.js:61 Processing 0 member fees for Dez 2025
+Console.js:61 Processing 0 training fees for Dez 2025
+Console.js:61 Final data point for Dez 2025: {month: 'Dez 2025', mitgliedsbeiträge: 0, trainingsbeiträge: 0, gesamt: 0}
+Console.js:61 === FINAL CHART DATA FOR YEAR 2025 ===
+Console.js:61 Data array length: 12
+Console.js:61 Full data: (12) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+Console.js:61 Data keys sample: (4) ['month', 'mitgliedsbeiträge', 'trainingsbeiträge', 'gesamt']
+Console.js:61 === CHART DATA GENERATION END ===
+Console.js:61 Cleaned data for chart: (12) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]

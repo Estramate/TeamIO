@@ -11,6 +11,15 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Authentische OEFB-Spielerdaten mit Profilbildern vollständig implementiert**: 32 echte SV Oberglan 1975 Spieler importiert
+  - Alle Dummy-Spieler entfernt und durch authentische OEFB-Daten ersetzt
+  - 32 Spieler mit echten Profilbildern von vereine.oefb.at importiert: Martin Napetschnig (Tor), Anel Sandal, Martin Hinteregger, Denis Tomic etc.
+  - Vollständige Positionszuordnung: 2 Torwarte, 7 Verteidiger, 10 Mittelfeldspieler, 6 Stürmer, 7 ohne spezifische Position
+  - Alle Spieler mit authentischen Trikotnummern, Geburtsdaten und hochwertigen OEFB-Profilbildern
+  - KM-Team (Kampfmannschaft) komplett mit allen 32 authentischen Spielern besetzt
+- **SelectItem-Fehler kritisch behoben**: Leerer String value korrigiert für stabile Anwendung
+  - SelectItem value von "" auf "none" geändert um Runtime-Fehler zu vermeiden
+  - Kalender-System läuft jetzt fehlerfrei ohne Console-Errors
 - **Zeitzone-Problem in Buchungssystem behoben**: KFV Cup Spiel korrekt auf 17:00-19:00 Uhr korrigiert
   - Null-Pointer-Fehler beim Bearbeiten von Events ohne Facility-Zuordnung behoben
   - Zeitzone-Handling verstanden: PostgreSQL speichert lokale Zeit, Frontend interpretiert als UTC

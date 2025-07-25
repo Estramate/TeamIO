@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { seedPlayers } from "./seedPlayers";
+
 import {
   insertClubSchema,
   insertMemberSchema,
@@ -628,16 +628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Seed players route (for development)
-  app.post('/api/seed-players', isAuthenticated, async (req: any, res) => {
-    try {
-      await seedPlayers();
-      res.json({ message: "Player data seeded successfully" });
-    } catch (error) {
-      console.error("Error seeding player data:", error);
-      res.status(500).json({ message: "Failed to seed player data" });
-    }
-  });
+  // This route was removed as seedPlayers function no longer exists
 
   // Player routes
   app.get("/api/clubs/:clubId/players", isAuthenticated, async (req: any, res) => {

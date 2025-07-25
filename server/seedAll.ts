@@ -1,14 +1,24 @@
-import { seedTestData } from "./seedTestData";
+import { seedClean } from "./seedClean";
+import { seedPlayers } from "./seedPlayers";
+import { seedAllTeamsPlayers } from "./seedAllTeams";
 
 async function seedAll() {
   try {
-    console.log("🚀 Starting test data seeding process...");
+    console.log("🚀 Starting complete seeding process for SV Oberglan...");
     
-    // Seed with generic test data
-    console.log("Seeding with test club and sample data...");
-    await seedTestData();
+    // Clean team seeding (avoid duplicates)
+    console.log("Step 1: Clean team seeding...");
+    await seedClean();
     
-    console.log("✅ Test data seeding process finished successfully!");
+    // Seed KM players
+    console.log("Step 2: Seeding KM players...");
+    await seedPlayers();
+    
+    // Seed additional team players
+    console.log("Step 3: Seeding additional team players...");
+    await seedAllTeamsPlayers();
+    
+    console.log("✅ Complete seeding process finished successfully!");
     
   } catch (error) {
     console.error("❌ Seeding process failed:", error);

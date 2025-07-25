@@ -270,8 +270,15 @@ export default function Bookings() {
           description: "Buchung wurde erfolgreich erstellt",
         });
       }
+      // Invalidate alle booking-relevanten Queries
       queryClient.invalidateQueries({
         queryKey: ['/api/clubs', selectedClub?.id, 'bookings']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/clubs', selectedClub?.id, 'dashboard']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/clubs', selectedClub?.id, 'events']
       });
       setBookingModalOpen(false);
       setSelectedBooking(null);
@@ -312,8 +319,15 @@ export default function Bookings() {
       return apiRequest("PATCH", `/api/clubs/${selectedClub?.id}/bookings/${id}`, cleanedData);
     },
     onSuccess: () => {
+      // Invalidate alle booking-relevanten Queries
       queryClient.invalidateQueries({
         queryKey: ['/api/clubs', selectedClub?.id, 'bookings']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/clubs', selectedClub?.id, 'dashboard']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/clubs', selectedClub?.id, 'events']
       });
       setBookingModalOpen(false);
       setSelectedBooking(null);
@@ -344,8 +358,15 @@ export default function Bookings() {
       return apiRequest("DELETE", `/api/clubs/${selectedClub?.id}/bookings/${id}`);
     },
     onSuccess: () => {
+      // Invalidate alle booking-relevanten Queries
       queryClient.invalidateQueries({
         queryKey: ['/api/clubs', selectedClub?.id, 'bookings']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/clubs', selectedClub?.id, 'dashboard']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/clubs', selectedClub?.id, 'events']
       });
       setDeleteDialogOpen(false);
       setBookingToDelete(null);

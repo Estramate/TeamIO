@@ -135,8 +135,10 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
   const createBookingMutation = useMutation({
     mutationFn: (bookingData: any) => apiRequest('POST', `/api/clubs/${selectedClubId}/bookings`, bookingData),
     onSuccess: (data) => {
+      // Invalidate alle booking-relevanten Queries
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/bookings`] });
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/events`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/dashboard`] });
       
       if ((data as any).createdCount && (data as any).createdCount > 1) {
         toast({

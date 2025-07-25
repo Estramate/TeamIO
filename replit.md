@@ -11,6 +11,11 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Cache-Invalidierung systemweit implementiert**: Echtzeitdaten bei Navigation zwischen Seiten gewährleistet
+  - Alle CRUD-Operationen (Create, Update, Delete) invalidieren jetzt Dashboard-, Kalender- und Buchungs-Queries
+  - Verhindert veraltete Daten beim Seitenwechsel nach Buchungsänderungen
+  - TanStack Query Cache wird automatisch bei allen buchungsrelevanten Änderungen aktualisiert
+  - Dashboard und Kalender zeigen sofort aktuelle Daten nach Löschungen oder Änderungen
 - **UX-Verbesserung bei wiederkehrenden Buchungen**: Wiederkehrende Buchung-Option nur bei Neuanlage verfügbar
   - Beim Bearbeiten bestehender Buchungen ist die wiederkehrende Option ausgeblendet
   - Logische Trennung zwischen Erstellen (mit Wiederholung) und Bearbeiten (einzelne Buchung)

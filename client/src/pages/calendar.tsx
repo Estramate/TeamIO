@@ -235,7 +235,10 @@ export default function Calendar() {
   const createBookingMutation = useMutation({
     mutationFn: (data: any) => apiRequest('POST', `/api/clubs/${selectedClub?.id}/bookings`, data),
     onSuccess: (response: any) => {
+      // Invalidate alle booking-relevanten Queries
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
       setShowBookingModal(false);
       bookingForm.reset();
       
@@ -261,7 +264,10 @@ export default function Calendar() {
   const updateBookingMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/bookings/${id}`, data),
     onSuccess: () => {
+      // Invalidate alle booking-relevanten Queries
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
       setShowBookingModal(false);
       setEditingBooking(null);
       bookingForm.reset();
@@ -272,7 +278,10 @@ export default function Calendar() {
   const deleteBookingMutation = useMutation({
     mutationFn: (id: number) => apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/bookings/${id}`),
     onSuccess: () => {
+      // Invalidate alle booking-relevanten Queries
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
       toast({ title: "Buchung gelöscht", description: "Die Buchung wurde erfolgreich gelöscht." });
     },
   });

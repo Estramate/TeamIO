@@ -695,14 +695,17 @@ export default function Calendar() {
       };
       updateBookingMutation.mutate({ id: draggedEvent.id, data: updateData });
     } else {
+      // Events sind jetzt auch Bookings mit type='event'
       const updateData = {
         title: draggedEvent.title,
         description: draggedEvent.description || '',
-        startDate: newStartTime.toISOString(),
-        endDate: newEndTime.toISOString(),
+        startTime: newStartTime.toISOString(),
+        endTime: newEndTime.toISOString(),
         location: draggedEvent.location || '',
+        type: 'event',
+        status: 'confirmed'
       };
-      updateEventMutation.mutate({ id: draggedEvent.id, data: updateData });
+      updateBookingMutation.mutate({ id: draggedEvent.id, data: updateData });
     }
 
     setDraggedEvent(null);
@@ -729,9 +732,9 @@ export default function Calendar() {
   const allEvents = [
     ...(events as any[]).map((event: any) => ({
       ...event,
-      date: new Date(event.startDate),
-      time: format(new Date(event.startDate), 'HH:mm'),
-      endTime: event.endDate ? format(new Date(event.endDate), 'HH:mm') : null,
+      date: new Date(event.startTime), // Events haben startTime, nicht startDate
+      time: format(new Date(event.startTime), 'HH:mm'),
+      endTime: event.endTime ? format(new Date(event.endTime), 'HH:mm') : null,
       source: 'event',
       color: 'bg-indigo-500',
       icon: '📅',

@@ -37,9 +37,11 @@ export async function seedClean() {
 
     console.log(`📋 Processing ${officialTeams.length} official teams from OEFB...`);
     
+    // Get existing teams once to avoid multiple database calls
+    const existingTeams = await storage.getTeams(svOberglan.id);
+    
     // Teams nur erstellen wenn sie nicht existieren
     for (const teamData of officialTeams) {
-      const existingTeams = await storage.getTeams(svOberglan.id);
       const existingTeam = existingTeams.find(t => t.name === teamData.name);
       
       if (!existingTeam) {

@@ -497,9 +497,11 @@ export async function seedAllTeamsPlayers() {
       
       console.log(`Processing team: ${teamName} with ${players.length} players`);
       
+      // Get existing players once for this team to avoid repeated DB calls
+      const existingPlayers = await storage.getPlayers(svOberglan.id);
+      
       for (const playerData of players) {
         // Check if player already exists
-        const existingPlayers = await storage.getPlayers(svOberglan.id);
         const existingPlayer = existingPlayers.find(p => 
           p.firstName === playerData.firstName && p.lastName === playerData.lastName
         );

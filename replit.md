@@ -11,11 +11,18 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Doppelte Team-Einträge bereinigt und Seeding-System repariert**: Datenbank-Duplikate entfernt und Seeding-Skripte verbessert
+  - 16 doppelte Team-Einträge aus der Datenbank entfernt (von 35 auf 19 Teams reduziert)
+  - Foreign Key Constraints korrekt behandelt durch Update der player_team_assignments
+  - Alle Seeding-Skripte mit Duplikats-Prüfung ausgestattet (seedTeams.ts, seedClean.ts, seedPlayers.ts, seedAllTeams.ts)
+  - Database-Performance verbessert durch reduzierte DB-Aufrufe in Seeding-Prozessen
+  - Seeding läuft jetzt fehlerfrei und erkennt bestehende Einträge korrekt
+  - Finaler bereinigter Datenbestand: 1 Verein, 19 Teams, 76 Spieler ohne Duplikate
+
 - **Kompletter Datenbank-Reset und SV Oberglan 1975 Setup**: Gesamte Datenbank gelöscht und mit authentischen Vereinsdaten neu erstellt
   - Alle bestehenden Tabellen und Daten vollständig entfernt für sauberen Neustart
   - seedTestData.ts Datei permanent gelöscht wie gewünscht
   - Umfassende SV Oberglan 1975 Daten eingespielt mit seedOberglan.ts und seedAll.ts
-  - Finaler Datenbestand: 1 Verein, 35 Teams, 76 Spieler, 18 Mitglieder, 4 Finanzen, 3 Events
   - Alle Teams von U6 bis Kampfmannschaft inklusive Frauen Kleinfeld komplett verfügbar
   - Authentische Spielerdaten mit echten Namen, Trikotnummern und Positionen von OEFB-Website
   - Vereinsfarben und offizielle Kontaktdaten (Falkenweg 6, Feldkirchen, Kärnten) korrekt hinterlegt

@@ -131,20 +131,29 @@ export async function seedTeams() {
     // Clear existing teams - skip deletion to avoid FK constraints
     console.log("Skipping team deletion to preserve existing data integrity");
 
-    // Create teams
+    // Create teams only if they don't exist
     const createdTeams = [];
+    const existingTeams = await storage.getTeams(svOberglan.id);
+    
     for (const teamData of svOberglanTeams) {
-      const team = await storage.createTeam({
-        clubId: svOberglan.id,
-        name: teamData.name,
-        category: teamData.category,
-        ageGroup: teamData.ageGroup,
-        description: teamData.description,
-        season: "2024/25",
-        status: "active"
-      });
-      createdTeams.push({ ...team, shortName: teamData.shortName });
-      console.log(`Created team: ${team.name}`);
+      const existingTeam = existingTeams.find(t => t.name === teamData.name);
+      
+      if (!existingTeam) {
+        const team = await storage.createTeam({
+          clubId: svOberglan.id,
+          name: teamData.name,
+          category: teamData.category,
+          ageGroup: teamData.ageGroup,
+          description: teamData.description,
+          season: "2024/25",
+          status: "active"
+        });
+        createdTeams.push({ ...team, shortName: teamData.shortName });
+        console.log(`Created team: ${team.name}`);
+      } else {
+        console.log(`→ Team already exists: ${teamData.name}`);
+        createdTeams.push({ ...existingTeam, shortName: teamData.shortName });
+      }
     }
 
     console.log(`Successfully seeded ${createdTeams.length} teams for SV Oberglan`);

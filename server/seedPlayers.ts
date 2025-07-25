@@ -353,44 +353,49 @@ export async function seedPlayers() {
       throw new Error("Kampfmannschaft team not found");
     }
 
-    // Clear existing players
+    // Check existing players instead of deleting all
     const existingPlayers = await storage.getPlayers(svOberglan.id);
-    for (const player of existingPlayers) {
-      await storage.deletePlayer(player.id);
-    }
 
-    // Create players
+    // Create players only if they don't exist
     let createdCount = 0;
     for (const playerData of svOberglanPlayers) {
-      const player = await storage.createPlayer({
-        clubId: svOberglan.id,
-        firstName: playerData.firstName,
-        lastName: playerData.lastName,
-        jerseyNumber: playerData.jerseyNumber,
-        position: playerData.position,
-        nationality: playerData.nationality,
-        status: playerData.status,
-        profileImageUrl: playerData.profileImageUrl || null,
-        birthDate: null,
-        height: null,
-        weight: null,
-        preferredFoot: null,
-        contractStart: null,
-        contractEnd: null,
-        phone: null,
-        email: null
-      });
-
-      // Assign player to KM team
-      await storage.assignPlayerToTeam({
-        playerId: player.id,
-        teamId: kmTeam.id,
-        season: "2024/25",
-        isActive: true
-      });
+      const existingPlayer = existingPlayers.find(p => 
+        p.firstName === playerData.firstName && p.lastName === playerData.lastName
+      );
       
-      createdCount++;
-      console.log(`Created player: ${player.firstName} ${player.lastName}`);
+      if (!existingPlayer) {
+        const player = await storage.createPlayer({
+          clubId: svOberglan.id,
+          firstName: playerData.firstName,
+          lastName: playerData.lastName,
+          jerseyNumber: playerData.jerseyNumber,
+          position: playerData.position,
+          nationality: playerData.nationality,
+          status: playerData.status,
+          profileImageUrl: playerData.profileImageUrl || null,
+          birthDate: null,
+          height: null,
+          weight: null,
+          preferredFoot: null,
+          contractStart: null,
+          contractEnd: null,
+          phone: null,
+          email: null
+        });
+
+        // Assign player to KM team
+        await storage.assignPlayerToTeam({
+          playerId: player.id,
+          teamId: kmTeam.id,
+          season: "2024/25",
+          isActive: true
+        });
+        
+        createdCount++;
+        console.log(`Created player: ${player.firstName} ${player.lastName}`);
+      } else {
+        console.log(`→ Player already exists: ${playerData.firstName} ${playerData.lastName}`);
+      }
     }
 
     console.log(`Successfully seeded ${createdCount} players for SV Oberglan`);

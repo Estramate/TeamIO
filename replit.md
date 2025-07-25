@@ -16,6 +16,11 @@ Preferred communication style: Simple, everyday language.
   - Datenbank: 4 Teams (KM, KM 1b, Frauen Kleinfeld, KM-FR) von "senior" zu "erwachsene" geändert
   - Schema-Kommentare: Datenbankschema-Dokumentation entsprechend aktualisiert
   - Konsistente Darstellung: Icons zeigen jetzt "E" statt "S" für Erwachsenen-Teams
+- **UI-Konsistenz vollständig implementiert**: 3-Punkte-Menüs für alle Member-Aktionen einheitlich umgesetzt
+  - Kartenansicht: 3-Punkte-Menü im Header der Gradientenleiste mit weißen Icons und Hover-Effekten
+  - Listenansicht: Einheitliches 3-Punkte-Menü mit Hover-Anzeige und vollständigen Aktionsoptionen
+  - Alle sichtbaren Action-Buttons entfernt für konsistente Benutzerführung wie andere Seiten
+  - Dropdown-Menüs enthalten Details, Bearbeiten, Aktivieren/Deaktivieren und Löschen-Optionen
 - **Doppeltes Beschreibungsfeld in Kalender-Buchungsmodal entfernt**: Struktur bereinigt für bessere UX
   - Nur noch ein Beschreibungsfeld nach der Verfügbarkeitsprüfung (wie gewünscht)
   - Layout entspricht der optimalen Formular-Struktur ohne redundante Felder

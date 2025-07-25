@@ -532,7 +532,7 @@ export default function Members() {
             return (
               <Card key={member.id} className="group hover:shadow-xl transition-all duration-300 border-border bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm hover:from-card hover:to-card/90 hover:scale-[1.02] cursor-pointer overflow-hidden">
                 <CardContent className="p-0">
-                  {/* Header with gradient */}
+                  {/* Header with gradient and 3-dot menu */}
                   <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 p-4 text-white">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -556,6 +556,47 @@ export default function Members() {
                         >
                           {getStatusLabel(member.status)}
                         </Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/20">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewMember(member)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditMember(member)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleToggleStatus(member)}
+                              disabled={toggleMemberStatusMutation.isPending}
+                              className={member.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                            >
+                              {member.status === 'active' ? (
+                                <>
+                                  <AlertCircle className="h-4 w-4 mr-2" />
+                                  Deaktivieren
+                                </>
+                              ) : (
+                                <>
+                                  <User className="h-4 w-4 mr-2" />
+                                  Aktivieren
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteMember(member)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Löschen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   </div>
@@ -620,64 +661,7 @@ export default function Members() {
                       </div>
                     )}
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-2 border-t border-border">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewMember(member)}
-                        className="flex-1 h-9 text-xs"
-                      >
-                        <Eye className="w-3 h-3 mr-1" />
-                        Details
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditMember(member)}
-                        className="flex-1 h-9 text-xs"
-                      >
-                        <Edit className="w-3 h-3 mr-1" />
-                        Bearbeiten
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-9 px-2"
-                          >
-                            <MoreVertical className="h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem 
-                            onClick={() => handleToggleStatus(member)}
-                            disabled={toggleMemberStatusMutation.isPending}
-                            className={member.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
-                          >
-                            {member.status === 'active' ? (
-                              <>
-                                <User className="h-4 w-4 mr-2" />
-                                Deaktivieren
-                              </>
-                            ) : (
-                              <>
-                                <User className="h-4 w-4 mr-2" />
-                                Aktivieren
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleDeleteMember(member)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Löschen
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+
                   </div>
                 </CardContent>
               </Card>
@@ -800,37 +784,26 @@ export default function Members() {
                           </Badge>
                         </td>
                         <td className="px-6 py-5">
-                          <div className="flex items-center gap-2 justify-end">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewMember(member)}
-                              className="h-8 px-2"
-                              title="Details anzeigen"
-                            >
-                              <Eye className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditMember(member)}
-                              className="h-8 px-2"
-                              title="Bearbeiten"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </Button>
+                          <div className="flex items-center justify-end">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button 
-                                  variant="outline" 
+                                  variant="ghost" 
                                   size="sm" 
-                                  className="h-8 px-2"
-                                  title="Weitere Optionen"
+                                  className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
-                                  <MoreVertical className="h-3 w-3" />
+                                  <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleViewMember(member)}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEditMember(member)}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Bearbeiten
+                                </DropdownMenuItem>
                                 <DropdownMenuItem 
                                   onClick={() => handleToggleStatus(member)}
                                   disabled={toggleMemberStatusMutation.isPending}
@@ -838,7 +811,7 @@ export default function Members() {
                                 >
                                   {member.status === 'active' ? (
                                     <>
-                                      <User className="h-4 w-4 mr-2" />
+                                      <AlertCircle className="h-4 w-4 mr-2" />
                                       Deaktivieren
                                     </>
                                   ) : (

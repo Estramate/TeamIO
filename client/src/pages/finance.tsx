@@ -1373,13 +1373,26 @@ export default function Finance() {
         <Dialog open={isDetailsDialogOpen} onOpenChange={handleCloseDetailsModal}>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center">
-                <Eye className="w-5 h-5 mr-2" />
-                Transaktionsdetails
+              <DialogTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center">
+                    <Eye className="h-6 w-6 text-primary/60" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">
+                      {selectedFinance?.description || 'Transaktion'}
+                    </div>
+                    <div className="text-sm text-muted-foreground font-normal">
+                      Transaktionsdetails
+                    </div>
+                  </div>
+                </div>
+                {selectedFinance && (
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge(selectedFinance.status, selectedFinance.isActive)}
+                  </div>
+                )}
               </DialogTitle>
-              <DialogDescription>
-                Vollständige Informationen zur ausgewählten Finanztransaktion
-              </DialogDescription>
             </DialogHeader>
 
             {selectedFinance && (
@@ -1442,13 +1455,10 @@ export default function Finance() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Status</Label>
+                    <Label className="text-sm font-medium text-muted-foreground">Priorität</Label>
                     <div className="flex items-center space-x-2">
-                      {getStatusBadge(selectedFinance.status, selectedFinance.isActive)}
-                      <div className="flex items-center space-x-1">
-                        {getPriorityIcon(selectedFinance.priority)}
-                        <span className="text-sm text-muted-foreground capitalize">{translatePriority(selectedFinance.priority)}</span>
-                      </div>
+                      {getPriorityIcon(selectedFinance.priority)}
+                      <span className="text-sm text-muted-foreground capitalize">{translatePriority(selectedFinance.priority)}</span>
                     </div>
                   </div>
                 </div>

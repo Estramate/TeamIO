@@ -1364,12 +1364,7 @@ export default function Bookings() {
                   <Label className="text-sm font-medium text-muted-foreground">Titel</Label>
                   <p className="text-sm font-medium">{viewingBooking.title}</p>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Status</Label>
-                  <div className="mt-1">
-                    {getStatusBadge(viewingBooking.status)}
-                  </div>
-                </div>
+
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Typ</Label>
                   <div className="mt-1">

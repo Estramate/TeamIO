@@ -11,12 +11,13 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
-- **Doppelte Status-Anzeige in Detail-Dialogen entfernt**: Einheitliche Status-Darstellung nur im Header implementiert
-  - Members-, Facilities-, Teams- und Players-Detail-Dialoge bereinigt von redundanten Status-Sektionen
+- **Doppelte Status-Anzeige in Detail-Dialogen vollständig entfernt**: Einheitliche Status-Darstellung nur im Header implementiert
+  - Alle 6 Detail-Dialoge bereinigt: Members, Facilities, Teams, Players, Bookings und Finance
   - Konsistente Header-Layout mit Icon, Titel und Status-Badge rechts beibehalten
   - Players-Detail-Dialog Header-Layout standardisiert auf justify-between Layout
+  - Finance-Detail-Dialog Header neu gestaltet mit modernem Icon-Container
   - Keine doppelte Status-Information mehr im Content-Bereich der Detail-Dialoge
-  - Cleaner, minimalistischeres Design ohne ablenkende Wiederholungen
+  - Cleaner, minimalistischeres Design ohne ablenkende Wiederholungen systemweit
 - **Vollständig einheitliches Card-Design systemweit implementiert**: Alle Verwaltungsseiten mit identischem modernen Layout
   - Teams-, Members-, Players-, Bookings-, Facilities- und Finance-Karten komplett vereinheitlicht
   - Konsistente graue Header-Balken (from-muted to-muted/80) für minimalistisches Design

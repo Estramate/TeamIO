@@ -45,6 +45,47 @@ interface BookingFormProps {
 export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubId }: BookingFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Helper function to safely format date for datetime-local input
+  const formatDateForInput = (dateValue: any, baseDate?: any): string => {
+    if (!dateValue) return "";
+    
+    try {
+      // Handle different date formats
+      let date: Date;
+      
+      if (dateValue instanceof Date) {
+        date = dateValue;
+      } else if (typeof dateValue === 'string') {
+        // Handle time-only values (like "19:00")
+        if (dateValue.match(/^\d{2}:\d{2}$/)) {
+          console.log('Processing time-only value:', dateValue, 'baseDate:', baseDate);
+          // If we have a time-only value, we need to combine it with a date
+          const referenceDate = baseDate ? new Date(baseDate) : new Date();
+          const [hours, minutes] = dateValue.split(':');
+          date = new Date(referenceDate);
+          date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+          console.log('Formatted time-only:', date.toISOString().slice(0, 16));
+        } else {
+          date = new Date(dateValue);
+        }
+      } else {
+        return "";
+      }
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date value:', dateValue);
+        return "";
+      }
+      
+      const formatted = date.toISOString().slice(0, 16);
+      return formatted;
+    } catch (error) {
+      console.error('Error formatting date:', error, 'Input:', dateValue);
+      return "";
+    }
+  };
   
   // Availability check states
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
@@ -63,8 +104,8 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       teamId: editingBooking?.teamId?.toString() || "",
       type: editingBooking?.type || "training",
       status: editingBooking?.status || "confirmed",
-      startTime: editingBooking?.startTime ? new Date(editingBooking.startTime).toISOString().slice(0, 16) : "",
-      endTime: editingBooking?.endTime ? new Date(editingBooking.endTime).toISOString().slice(0, 16) : "",
+      startTime: formatDateForInput(editingBooking?.startTime),
+      endTime: formatDateForInput(editingBooking?.endTime, editingBooking?.startTime),
       participants: editingBooking?.participants?.toString() || "",
       cost: editingBooking?.cost?.toString() || "",
       description: editingBooking?.description || "",

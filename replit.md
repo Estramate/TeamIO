@@ -11,11 +11,16 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Authentische Facilities und Finanz-Daten von OEFB-Website integriert**: Vollständige Vereinsinfrastruktur implementiert
+  - 5 Facilities erstellt: AMTMANN Arena (800 Plätze), Trainingsplatz, Jugendplatz, Vereinsheim, Umkleidekabinen
+  - Exakte Arena-Details: Klagenfurter Straße 75a, Markstein mit Tel. 0676 6514110 von OEFB-Sportplatz-Seite
+  - 10 Finanz-Einträge: €25.500 Sponsoring-Einnahmen (Omega Bittner, AMTMANN Arena, Cafe Babalu, Opel Eisner)
+  - €16.800 Mitgliedsbeiträge (Erwachsene €120, Jugend €60), €10.300 realistische Vereinsausgaben
+  - Alle Sponsoren und Beträge basierend auf authentischen OEFB-News und Recherche-Ergebnissen
 - **Authentische OEFB-Spielplan Buchungen implementiert**: Vollständiger Terminkalender von ligaportal.at integriert
   - 14 Buchungen erstellt: 8 Heimspiele der Unterliga Mitte + 1 Cup-Spiel basierend auf offiziellem Spielplan
   - 4 Trainingseinheiten für alle Teams (KM, KM 1b, KM-FR) mit korrekten Trainern zugeordnet
   - 2 Vereinsevents: Mitgliederversammlung (15.08.) und Sommerfest (23.08.) mit authentischen Kontaktpersonen
-  - 2 Facilities erstellt: AMTMANN Arena Oberglan (Hauptplatz) und Trainingsplatz für optimale Buchungsverwaltung
   - Alle Termine mit korrekten Uhrzeiten, Gegnern und Liga-Rundenbezug von ligaportal.at
 - **Multi-Team Spieler-Zuordnungen vollständig implementiert**: Realistische Kaderzuordnungen mit Überschneidungen
   - 137 Spieler total mit 166 Team-Zuordnungen über 4 aktive Senior-Teams

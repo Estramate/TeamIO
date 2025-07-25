@@ -17,10 +17,11 @@ Preferred communication style: Simple, everyday language.
   - Schema-Kommentare: Datenbankschema-Dokumentation entsprechend aktualisiert
   - Konsistente Darstellung: Icons zeigen jetzt "E" statt "S" für Erwachsenen-Teams
 - **UI-Konsistenz vollständig implementiert**: 3-Punkte-Menüs für alle Member-Aktionen einheitlich umgesetzt
-  - Kartenansicht: 3-Punkte-Menü im Header der Gradientenleiste mit weißen Icons und Hover-Effekten
-  - Listenansicht: Einheitliches 3-Punkte-Menü mit Hover-Anzeige und vollständigen Aktionsoptionen
+  - Kartenansicht: 3-Punkte-Menü im Header der Gradientenleiste mit weißen Icons permanent sichtbar
+  - Listenansicht: Einheitliches 3-Punkte-Menü permanent sichtbar ohne Hover-Abhängigkeit
   - Alle sichtbaren Action-Buttons entfernt für konsistente Benutzerführung wie andere Seiten
   - Dropdown-Menüs enthalten Details, Bearbeiten, Aktivieren/Deaktivieren und Löschen-Optionen
+  - 3-Punkte-Menüs sind jetzt immer sichtbar in beiden Ansichten für bessere Benutzerfreundlichkeit
 - **Doppeltes Beschreibungsfeld in Kalender-Buchungsmodal entfernt**: Struktur bereinigt für bessere UX
   - Nur noch ein Beschreibungsfeld nach der Verfügbarkeitsprüfung (wie gewünscht)
   - Layout entspricht der optimalen Formular-Struktur ohne redundante Felder

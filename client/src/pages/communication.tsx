@@ -246,9 +246,9 @@ export default function Communication() {
   }
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 max-w-full overflow-x-hidden">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Search and Status Bar */}
-      <div className="flex flex-col gap-3 md:gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4">
           {wsConnected && (
             <div className="flex items-center gap-2">
@@ -258,33 +258,33 @@ export default function Communication() {
           )}
         </div>
         
-        {/* Mobile-optimized Search */}
-        <div className="flex gap-2 w-full">
-          <div className="relative flex-1">
+        {/* Search */}
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 min-w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Nachrichten durchsuchen..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 text-sm"
+              className="pl-10"
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
           </div>
-          <Button onClick={handleSearch} variant="outline" size="sm">
+          <Button onClick={handleSearch} variant="outline">
             <Search className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
-      {/* Mobile-optimized Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2">
-            <CardTitle className="text-xs md:text-sm font-medium">Nachrichten</CardTitle>
-            <MessageCircle className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Nachrichten</CardTitle>
+            <MessageCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="pt-1 md:pt-2">
-            <div className="text-lg md:text-2xl font-bold">{stats?.totalMessages || displayMessages.length}</div>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.totalMessages || displayMessages.length}</div>
             <p className="text-xs text-muted-foreground">
               {stats?.unreadMessages || displayMessages.length} ungelesen
             </p>
@@ -325,68 +325,63 @@ export default function Communication() {
         </Card>
       </div>
 
-      {/* Mobile-optimized Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 md:space-y-4">
-        <TabsList className="grid w-full grid-cols-3 h-10 md:h-auto">
-          <TabsTrigger value="messages" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
-            <MessageCircle className="w-3 h-3 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">Nachrichten</span>
-            <span className="sm:hidden">News</span>
+      {/* Main Content */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="messages" className="flex items-center gap-2">
+            <MessageCircle className="w-4 h-4" />
+            Nachrichten
           </TabsTrigger>
-          <TabsTrigger value="announcements" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
-            <Megaphone className="w-3 h-3 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">Ankündigungen</span>
-            <span className="sm:hidden">Info</span>
+          <TabsTrigger value="announcements" className="flex items-center gap-2">
+            <Megaphone className="w-4 h-4" />
+            Ankündigungen
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
-            <Settings className="w-3 h-3 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">Einstellungen</span>
-            <span className="sm:hidden">⚙️</span>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Einstellungen
           </TabsTrigger>
         </TabsList>
 
-        {/* Mobile-optimized Messages Tab */}
-        <TabsContent value="messages" className="space-y-3 md:space-y-4">
-          <div className="flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
-            <h2 className="text-lg md:text-xl font-semibold">Nachrichten</h2>
-            <Button onClick={() => setShowNewMessage(true)} size="sm" className="text-xs md:text-sm">
-              <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">Neue Nachricht</span>
-              <span className="sm:hidden">Neue</span>
+        {/* Messages Tab */}
+        <TabsContent value="messages" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Nachrichten</h2>
+            <Button onClick={() => setShowNewMessage(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Neue Nachricht
             </Button>
           </div>
 
-          <div className="grid gap-3 md:gap-4">
+          <div className="grid gap-4">
             {displayMessages.length > 0 ? (
               displayMessages.map((message) => (
                 <Card key={message.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-2 md:pb-4">
-                    <div className="flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-start">
-                      <div className="space-y-1 flex-1 min-w-0">
-                        <CardTitle className="text-sm md:text-lg truncate">{message.subject || "Kein Betreff"}</CardTitle>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs md:text-sm text-gray-600">
-                          <span className="truncate">Von: {message.sender?.firstName} {message.sender?.lastName}</span>
-                          <span className="hidden sm:inline">•</span>
-                          <span className="text-xs">{formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: de })}</span>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg">{message.subject || "Kein Betreff"}</CardTitle>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>Von: {message.sender?.firstName} {message.sender?.lastName}</span>
+                          <span>•</span>
+                          <span>{formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: de })}</span>
                         </div>
                       </div>
-                      <Badge variant={message.priority === 'high' ? 'destructive' : message.priority === 'medium' ? 'default' : 'secondary'} className="text-xs shrink-0">
+                      <Badge variant={message.priority === 'high' ? 'destructive' : message.priority === 'medium' ? 'default' : 'secondary'}>
                         {message.priority === 'high' ? 'Hoch' : message.priority === 'medium' ? 'Mittel' : 'Normal'}
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-gray-700 text-sm md:text-base line-clamp-3">{message.content.substring(0, 120)}...</p>
+                  <CardContent>
+                    <p className="text-gray-700">{message.content.substring(0, 150)}...</p>
                   </CardContent>
-                  <CardFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between pt-2">
-                    <Button variant="outline" size="sm" className="text-xs w-full sm:w-auto">
-                      <MessageCircle className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" size="sm">
+                      <MessageCircle className="w-4 h-4 mr-2" />
                       Antworten
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => markMessageAsRead(message.id)} className="text-xs w-full sm:w-auto">
-                      <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                      <span className="hidden sm:inline">Als gelesen markieren</span>
-                      <span className="sm:hidden">Gelesen</span>
+                    <Button variant="ghost" size="sm" onClick={() => markMessageAsRead(message.id)}>
+                      <Eye className="w-4 h-4 mr-2" />
+                      Als gelesen markieren
                     </Button>
                   </CardFooter>
                 </Card>
@@ -409,14 +404,13 @@ export default function Communication() {
           </div>
         </TabsContent>
 
-        {/* Mobile-optimized Announcements Tab */}
-        <TabsContent value="announcements" className="space-y-3 md:space-y-4">
-          <div className="flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
-            <h2 className="text-lg md:text-xl font-semibold">Ankündigungen</h2>
-            <Button onClick={() => setShowNewAnnouncement(true)} size="sm" className="text-xs md:text-sm">
-              <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">Neue Ankündigung</span>
-              <span className="sm:hidden">Neue</span>
+        {/* Announcements Tab */}
+        <TabsContent value="announcements" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Ankündigungen</h2>
+            <Button onClick={() => setShowNewAnnouncement(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Neue Ankündigung
             </Button>
           </div>
 
@@ -543,10 +537,10 @@ export default function Communication() {
 
       {/* New Message Dialog */}
       <Dialog open={showNewMessage} onOpenChange={setShowNewMessage}>
-        <DialogContent className="mobile-dialog mobile-scroll custom-scrollbar w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-lg">
-          <DialogHeader className="space-y-2">
-            <DialogTitle className="text-lg md:text-xl">Neue Nachricht</DialogTitle>
-            <DialogDescription className="text-sm">
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Neue Nachricht</DialogTitle>
+            <DialogDescription>
               Senden Sie eine Nachricht an Mitglieder, Teams oder alle Vereinsmitglieder
             </DialogDescription>
           </DialogHeader>
@@ -664,7 +658,7 @@ export default function Communication() {
                 {/* Recipients List */}
                 {recipientType !== "all" && (
                   <div className="space-y-2">
-                    <ScrollArea className="h-40 md:h-48 border rounded-md p-2 md:p-3 mobile-scroll touch-pan">
+                    <ScrollArea className="h-48 border rounded-md p-3">
                       <div className="space-y-2">
                         {recipientType === "teams" && teams.map((team: any) => (
                           <div key={team.id} className="flex items-center space-x-2">
@@ -788,7 +782,6 @@ export default function Communication() {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Betreff der Nachricht"
-                  className="text-sm md:text-base"
                 />
               </div>
               
@@ -798,17 +791,17 @@ export default function Communication() {
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   placeholder="Ihre Nachricht..."
-                  className="min-h-24 md:min-h-32 text-sm md:text-base resize-none touch-pan"
+                  className="min-h-32"
                   required
                 />
               </div>
               
-              <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 mobile-safe-area">
-                <Button type="button" variant="outline" onClick={() => setShowNewMessage(false)} className="w-full sm:w-auto">
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowNewMessage(false)}>
                   Abbrechen
                 </Button>
-                <Button type="submit" disabled={sendingMessage || !messageText.trim() || (recipientType !== "all" && selectedRecipients.length === 0)} className="w-full sm:w-auto">
-                  <Send className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                <Button type="submit" disabled={sendingMessage || !messageText.trim() || (recipientType !== "all" && selectedRecipients.length === 0)}>
+                  <Send className="w-4 h-4 mr-2" />
                   {sendingMessage ? "Wird gesendet..." : "Senden"}
                 </Button>
               </DialogFooter>
@@ -817,12 +810,12 @@ export default function Communication() {
         </DialogContent>
       </Dialog>
 
-      {/* Mobile-optimized New Announcement Dialog */}
+      {/* New Announcement Dialog */}
       <Dialog open={showNewAnnouncement} onOpenChange={setShowNewAnnouncement}>
-        <DialogContent className="mobile-dialog mobile-scroll custom-scrollbar w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-lg">
-          <DialogHeader className="space-y-2">
-            <DialogTitle className="text-lg md:text-xl">Neue Ankündigung</DialogTitle>
-            <DialogDescription className="text-sm">
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Neue Ankündigung</DialogTitle>
+            <DialogDescription>
               Erstellen Sie eine öffentliche Ankündigung für alle Vereinsmitglieder
             </DialogDescription>
           </DialogHeader>

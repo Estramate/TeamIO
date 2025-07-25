@@ -2,151 +2,217 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* TeamIO specific colors */
+  --primary-50: hsl(207, 90%, 97%);
+  --primary-100: hsl(207, 90%, 94%);
+  --primary-500: hsl(207, 90%, 54%);
+  --primary-600: hsl(207, 90%, 48%);
+  --primary-700: hsl(207, 90%, 42%);
+  
+  --secondary-50: hsl(120, 60%, 97%);
+  --secondary-100: hsl(120, 60%, 94%);
+  --secondary-500: hsl(120, 60%, 34%);
+  --secondary-600: hsl(120, 60%, 28%);
+  
+  --accent-100: hsl(35, 100%, 94%);
+  --accent-500: hsl(35, 100%, 50%);
+  --accent-600: hsl(35, 100%, 44%);
+  
+  --success: hsl(120, 60%, 34%);
+  --success-foreground: hsl(0, 0%, 100%);
+  --warning: hsl(35, 100%, 50%);
+  --warning-foreground: hsl(0, 0%, 100%);
+  --error: hsl(0, 84.2%, 60.2%);
+  --error-foreground: hsl(0, 0%, 100%);
+
+  /* Club-specific theme variables - can be overridden */
+  --club-primary: var(--primary);
+  --club-secondary: var(--secondary);
+  --club-accent: var(--accent);
+}
+
+.dark {
+  /* Modern dark mode with better contrast and readability */
+  --background: hsl(222, 47%, 11%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(220, 34%, 25%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(222, 47%, 11%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(225, 44%, 16%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(220, 34%, 25%);
+  --input: hsl(220, 34%, 25%);
+  --primary: hsl(207, 90%, 64%);
+  --primary-foreground: hsl(222, 47%, 11%);
+  --secondary: hsl(220, 34%, 25%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(220, 34%, 25%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(207, 90%, 64%);
+  
+  /* TeamIO specific colors for dark mode - enhanced visibility */
+  --primary-50: hsl(207, 90%, 15%);
+  --primary-100: hsl(207, 90%, 20%);
+  --primary-500: hsl(207, 90%, 64%);
+  --primary-600: hsl(207, 90%, 58%);
+  --primary-700: hsl(207, 90%, 52%);
+  
+  --secondary-50: hsl(120, 60%, 15%);
+  --secondary-100: hsl(120, 60%, 20%);
+  --secondary-500: hsl(120, 60%, 55%);
+  --secondary-600: hsl(120, 60%, 50%);
+  
+  --accent-100: hsl(35, 100%, 20%);
+  --accent-500: hsl(35, 100%, 60%);
+  --accent-600: hsl(35, 100%, 54%);
+  
+  --success: hsl(120, 60%, 55%);
+  --success-foreground: hsl(222, 47%, 11%);
+  --warning: hsl(35, 100%, 60%);
+  --warning-foreground: hsl(222, 47%, 11%);
+  --error: hsl(0, 63%, 50%);
+  --error-foreground: hsl(210, 40%, 98%);
+
+  /* Club-specific theme variables - brighter for dark mode */
+  --club-primary: hsl(207, 90%, 64%);
+  --club-secondary: hsl(220, 34%, 25%);
+  --club-accent: hsl(0, 84%, 70%);
+}
+
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
-
   * {
     @apply border-border;
   }
-  
+
   body {
-    @apply bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground;
   }
 }
 
-/* Mobile-specific optimizations for touch scrolling */
 @layer utilities {
-  .mobile-scroll {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-
-  .touch-pan {
-    touch-action: pan-y;
-  }
-
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* Improve touch targets on mobile */
-  @media (max-width: 640px) {
-    button, .clickable {
-      min-height: 44px;
-      min-width: 44px;
-    }
-    
-    input, textarea, select {
-      font-size: 16px; /* Prevents zoom on iOS */
-    }
-  }
-
-  /* Enhanced scrollable areas for mobile */
-  .mobile-safe-area {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* Optimize dialog for mobile */
-  .mobile-dialog {
-    max-height: calc(100vh - 2rem);
-    max-width: calc(100vw - 2rem);
-  }
-}
-
-/* Custom scrollbar styles */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-  border-radius: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground));
-  border-radius: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--foreground));
-}
-
-/* Ensure proper touch behavior on all interactive elements */
-button, a, [role="button"] {
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-  touch-action: manipulation;
-}
-
-/* Improve form inputs on mobile */
-input, textarea, select {
-  -webkit-appearance: none;
-  border-radius: 8px;
-}
-
-/* Better focus states for touch devices */
-@media (hover: none) {
-  button:hover {
-    transform: none;
+  .bg-primary-50 {
+    background-color: var(--primary-50);
   }
   
-  button:active {
-    transform: scale(0.98);
+  .bg-primary-100 {
+    background-color: var(--primary-100);
+  }
+  
+  .bg-primary-500 {
+    background-color: var(--primary-500);
+  }
+  
+  .bg-primary-600 {
+    background-color: var(--primary-600);
+  }
+  
+  .bg-primary-700 {
+    background-color: var(--primary-700);
+  }
+  
+  .text-primary-500 {
+    color: var(--primary-500);
+  }
+  
+  .text-primary-600 {
+    color: var(--primary-600);
+  }
+  
+  .text-primary-700 {
+    color: var(--primary-700);
+  }
+  
+  .bg-secondary-50 {
+    background-color: var(--secondary-50);
+  }
+  
+  .bg-secondary-100 {
+    background-color: var(--secondary-100);
+  }
+  
+  .bg-secondary-500 {
+    background-color: var(--secondary-500);
+  }
+  
+  .text-secondary-500 {
+    color: var(--secondary-500);
+  }
+  
+  .text-secondary-600 {
+    color: var(--secondary-600);
+  }
+  
+  .bg-accent-100 {
+    background-color: var(--accent-100);
+  }
+  
+  .bg-accent-500 {
+    background-color: var(--accent-500);
+  }
+  
+  .text-accent-500 {
+    color: var(--accent-500);
+  }
+  
+  .text-accent-600 {
+    color: var(--accent-600);
+  }
+
+  /* Club theme utilities */
+  .bg-club-primary {
+    background-color: var(--club-primary);
+  }
+  
+  .bg-club-secondary {
+    background-color: var(--club-secondary);
+  }
+  
+  .bg-club-accent {
+    background-color: var(--club-accent);
+  }
+  
+  .text-club-primary {
+    color: var(--club-primary);
+  }
+  
+  .text-club-secondary {
+    color: var(--club-secondary);
+  }
+  
+  .text-club-accent {
+    color: var(--club-accent);
+  }
+  
+  .border-club-primary {
+    border-color: var(--club-primary);
+  }
+  
+  .hover\:bg-club-primary:hover {
+    background-color: var(--club-primary);
   }
 }

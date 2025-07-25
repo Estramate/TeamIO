@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Search, Plus, Edit, Trash2, LayoutGrid, List, Mail, Phone, Calendar, MapPin, User, AlertCircle, MoreHorizontal, Grid3X3 } from "lucide-react";
+import { Users, Search, Plus, Edit, Trash2, LayoutGrid, List, Mail, Phone, Calendar, MapPin, User, AlertCircle, MoreHorizontal, Grid3X3, X, MoreVertical, Eye } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
@@ -716,42 +716,73 @@ export default function Members() {
 
       {/* Member Modal */}
       <Dialog open={memberModalOpen} onOpenChange={setMemberModalOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-background border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">
-              {selectedMember ? 'Mitglied bearbeiten' : 'Neues Mitglied'}
-            </DialogTitle>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-background border-border">
+          <DialogHeader className="pb-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
+                <User className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-semibold text-foreground">
+                  {selectedMember ? 'Mitglied bearbeiten' : 'Neues Mitglied'}
+                </DialogTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {selectedMember ? 'Bearbeiten Sie die Mitgliederdaten und Team-Zuordnungen' : 'Erstellen Sie ein neues Mitglied und ordnen Sie es Teams zu'}
+                </p>
+              </div>
+            </div>
           </DialogHeader>
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">Vorname *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Max" {...field} className="bg-background border-border text-foreground" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">Nachname *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Mustermann" {...field} className="bg-background border-border text-foreground" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+              {/* Personal Information Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 flex items-center justify-center">
+                    <User className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground">Persönliche Daten</h4>
+                    <p className="text-xs text-muted-foreground">Grundlegende Informationen des Mitglieds</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-xl bg-gradient-to-br from-muted/30 to-muted/20">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-foreground font-medium">Vorname *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Max" 
+                            {...field} 
+                            className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-foreground font-medium">Nachname *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Mustermann" 
+                            {...field} 
+                            className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -879,91 +910,187 @@ export default function Members() {
               />
 
               {/* Team Assignments */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <h4 className="text-sm font-medium text-foreground">Team-Zuordnungen (Trainer/Co-Trainer)</h4>
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground">Team-Zuordnungen</h4>
+                    <p className="text-xs text-muted-foreground">Wählen Sie Teams und Funktionen aus</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {teams.map((team: any) => {
-                    const isTrainer = selectedTeamMemberships.some(tm => tm.teamId === team.id && tm.role === 'trainer');
-                    const isCoTrainer = selectedTeamMemberships.some(tm => tm.teamId === team.id && tm.role === 'co-trainer');
-                    
-                    return (
-                      <div key={team.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm font-medium text-foreground">{team.name}</span>
-                        <div className="flex gap-2">
-                          <label className="flex items-center gap-2 text-xs">
-                            <input
-                              type="checkbox"
-                              checked={isTrainer}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  // Add trainer role, remove co-trainer if exists
-                                  setSelectedTeamMemberships(prev => [
-                                    ...prev.filter(tm => tm.teamId !== team.id),
-                                    { teamId: team.id, role: 'trainer' }
-                                  ]);
-                                } else {
-                                  // Remove trainer role
-                                  setSelectedTeamMemberships(prev => 
-                                    prev.filter(tm => !(tm.teamId === team.id && tm.role === 'trainer'))
-                                  );
-                                }
-                              }}
-                              className="w-3 h-3"
-                            />
-                            Trainer
-                          </label>
-                          <label className="flex items-center gap-2 text-xs">
-                            <input
-                              type="checkbox"
-                              checked={isCoTrainer}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  // Add co-trainer role, remove trainer if exists
-                                  setSelectedTeamMemberships(prev => [
-                                    ...prev.filter(tm => tm.teamId !== team.id),
-                                    { teamId: team.id, role: 'co-trainer' }
-                                  ]);
-                                } else {
-                                  // Remove co-trainer role
-                                  setSelectedTeamMemberships(prev => 
-                                    prev.filter(tm => !(tm.teamId === team.id && tm.role === 'co-trainer'))
-                                  );
-                                }
-                              }}
-                              className="w-3 h-3"
-                            />
-                            Co-Trainer
-                          </label>
-                        </div>
+                
+                <div className="space-y-3 max-h-64 overflow-y-auto border rounded-xl p-4 bg-gradient-to-br from-muted/30 to-muted/20">
+                  {teams.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
+                        <Users className="w-6 h-6 text-muted-foreground" />
                       </div>
-                    );
-                  })}
-                  {teams.length === 0 && (
-                    <p className="text-xs text-muted-foreground">Keine Teams verfügbar</p>
+                      <p className="text-sm text-muted-foreground">Keine Teams verfügbar</p>
+                    </div>
+                  ) : (
+                    teams.map((team: any) => {
+                      const currentAssignment = selectedTeamMemberships.find(tm => tm.teamId === team.id);
+                      const isAssigned = !!currentAssignment;
+                      const currentRole = currentAssignment?.role || 'trainer';
+                      
+                      return (
+                        <div key={team.id} className="group relative">
+                          <div className={`
+                            flex items-center justify-between p-4 rounded-xl border transition-all duration-200
+                            ${isAssigned 
+                              ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 shadow-sm' 
+                              : 'bg-card border-border hover:border-muted-foreground/30 hover:shadow-sm'
+                            }
+                          `}>
+                            <div className="flex items-center gap-3">
+                              <Button
+                                type="button"
+                                variant={isAssigned ? "default" : "outline"}
+                                size="sm"
+                                className={`
+                                  h-8 px-3 rounded-lg transition-all duration-200
+                                  ${isAssigned 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm' 
+                                    : 'hover:bg-muted'
+                                  }
+                                `}
+                                onClick={() => {
+                                  if (isAssigned) {
+                                    setSelectedTeamMemberships(prev => 
+                                      prev.filter(tm => tm.teamId !== team.id)
+                                    );
+                                  } else {
+                                    setSelectedTeamMemberships(prev => [
+                                      ...prev,
+                                      { teamId: team.id, role: 'trainer' }
+                                    ]);
+                                  }
+                                }}
+                              >
+                                {isAssigned ? 'Zugeordnet' : 'Zuordnen'}
+                              </Button>
+                              
+                              <div>
+                                <div className="font-medium text-sm text-foreground">{team.name}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {team.category && `${team.category} • `}
+                                  {team.ageGroup || 'Senioren'}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {isAssigned && (
+                              <div className="flex items-center gap-2">
+                                <Select
+                                  value={currentRole}
+                                  onValueChange={(role) => {
+                                    setSelectedTeamMemberships(prev => 
+                                      prev.map(tm => 
+                                        tm.teamId === team.id ? { ...tm, role } : tm
+                                      )
+                                    );
+                                  }}
+                                >
+                                  <SelectTrigger className="w-36 h-8 text-xs bg-white dark:bg-background border-blue-200 dark:border-blue-800">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="trainer">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                        Trainer
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="co-trainer">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                        Co-Trainer
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="assistant">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                        Assistenz
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="manager">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                                        Manager
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="physiotherapist">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                        Physiotherapeut
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="doctor">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+                                        Arzt
+                                      </div>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  
+                  {selectedTeamMemberships.length > 0 && (
+                    <div className="mt-4 pt-3 border-t border-border">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                          <span className="text-blue-600 font-semibold text-xs">{selectedTeamMemberships.length}</span>
+                        </div>
+                        Team{selectedTeamMemberships.length !== 1 ? 's' : ''} zugeordnet
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
 
-              <DialogFooter className="flex gap-2 pt-4">
+              <DialogFooter className="flex gap-3 pt-6 border-t border-border">
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={() => setMemberModalOpen(false)}
+                  className="flex-1 h-11 rounded-xl border-border hover:bg-muted/50"
                 >
+                  <X className="w-4 h-4 mr-2" />
                   Abbrechen
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-primary hover:bg-primary/90"
+                  className="flex-1 h-11 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-600/25"
                   disabled={createMemberMutation.isPending || updateMemberMutation.isPending}
                 >
-                  {createMemberMutation.isPending || updateMemberMutation.isPending 
-                    ? "Speichern..." 
-                    : selectedMember ? "Aktualisieren" : "Erstellen"
-                  }
+                  {createMemberMutation.isPending || updateMemberMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Speichern...
+                    </>
+                  ) : (
+                    <>
+                      {selectedMember ? (
+                        <>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Aktualisieren
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Erstellen
+                        </>
+                      )}
+                    </>
+                  )}
                 </Button>
               </DialogFooter>
             </form>

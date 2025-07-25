@@ -11,12 +11,13 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
-- **SV Oberglan 1975 Club erfolgreich hinzugefügt**: Authentische Vereinsdaten von OEFB-Website importiert
-  - Vollständige Club-Information mit korrekter Adresse (Falkenweg 6, Feldkirchen, Kärnten)
-  - Vereinsphilosophie und -ziele aus offizieller Website übernommen
-  - Originallogo und Vereinsfarben (Grün/Gold) korrekt hinterlegt
-  - Hauptsponsor Omega Bittner in Beschreibung berücksichtigt
-  - Club ist nun für alle Funktionen verfügbar (Teams, Spieler, Buchungen, etc.)
+- **SV Oberglan 1975 Club vollständig konfiguriert**: Authentische Vereinsdaten von OEFB-Website importiert
+  - Vollständige Kontaktdaten: Telefon (0676/651 41 10), E-Mail (manuel.vaschauner@gmx.at)
+  - Vereinsadresse (Falkenweg 6, Feldkirchen) und Sportplatz (AMTMANN Arena Oberglan, Markstein)
+  - Detaillierte Mannschaftsstruktur: 8 Teams (29 KM/Res Spieler: 19♂/10♀, 3 Nachwuchs: 1♂/2♀)
+  - ASVÖ Mitgliedschaft, Vereinsnummer 9143, Facebook-Seite integriert
+  - Originallogo und Vereinsfarben (Grün/Gold), Hauptsponsor Omega Bittner
+  - Club ist vollständig konfiguriert für alle Funktionen
 - **Rollenbasierte Zugriffskontrolle vollständig implementiert**: Benutzer ohne Team-Zuordnung erhalten nur Leserechte
   - ProtectedButton-Komponente erstellt mit deaktivierten Zuständen und erklärenden Tooltips
   - ProtectedForm-Komponente implementiert für Nur-Lese-Modus bei fehlenden Berechtigungen

@@ -549,12 +549,7 @@ export default function Finance() {
   };
 
   const handleUpdateFinance = (data: any) => {
-    console.log('=== HANDLE UPDATE FINANCE CALLED ===');
-    console.log('Update data received:', data);
-    console.log('Editing finance:', editingFinance);
-    
     if (!editingFinance) {
-      console.log('ERROR: No editingFinance found!');
       return;
     }
     
@@ -578,8 +573,6 @@ export default function Finance() {
       }
     });
     
-    console.log('Cleaned data for update:', cleanedData);
-    console.log('About to call mutation with ID:', editingFinance.id);
     updateFinanceMutation.mutate({ id: editingFinance.id, data: cleanedData });
   };
 
@@ -1581,25 +1574,7 @@ export default function Finance() {
 
             <Form {...editFinanceForm}>
               <form 
-                onSubmit={(e) => {
-                  console.log('=== FORM SUBMIT EVENT ===');
-                  console.log('Form event:', e);
-                  console.log('Form values before submit:', editFinanceForm.getValues());
-                  console.log('Form errors before submit:', editFinanceForm.formState.errors);
-                  
-                  const handleSubmit = editFinanceForm.handleSubmit(
-                    (data) => {
-                      console.log('=== FORM VALIDATION PASSED ===');
-                      handleUpdateFinance(data);
-                    },
-                    (errors) => {
-                      console.log('=== FORM VALIDATION FAILED ===');
-                      console.log('Validation errors:', errors);
-                    }
-                  );
-                  
-                  return handleSubmit(e);
-                }} 
+                onSubmit={editFinanceForm.handleSubmit(handleUpdateFinance)} 
                 className="space-y-4"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1842,12 +1817,6 @@ export default function Finance() {
                     type="submit"
                     disabled={updateFinanceMutation.isPending}
                     className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => {
-                      console.log('=== EDIT BUTTON CLICKED ===');
-                      console.log('editingFinance:', editingFinance);
-                      console.log('editFinanceForm values:', editFinanceForm.getValues());
-                      console.log('editFinanceForm errors:', editFinanceForm.formState.errors);
-                    }}
                   >
                     {updateFinanceMutation.isPending ? 'Speichern...' : 'Änderungen speichern'}
                   </Button>

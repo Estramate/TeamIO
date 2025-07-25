@@ -972,7 +972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(message);
   }));
 
-  app.post('/api/clubs/:clubId/messages', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/messages', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1081,7 +1081,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(announcement);
   }));
 
-  app.post('/api/clubs/:clubId/announcements', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/announcements', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     

@@ -131,8 +131,16 @@ export function useWebSocket(clubId: number, userId: string) {
     if (!clubId || !userId) return;
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-    const ws = new WebSocket(wsUrl);
+    const port = window.location.port || (protocol === "wss:" ? "443" : "80");
+    const wsUrl = `${protocol}//${window.location.hostname}:${port}/ws`;
+    
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(wsUrl);
+    } catch (error) {
+      console.warn('WebSocket connection failed:', error);
+      return;
+    }
 
     ws.onopen = () => {
       setIsConnected(true);

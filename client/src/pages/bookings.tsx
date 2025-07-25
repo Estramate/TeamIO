@@ -500,6 +500,12 @@ export default function Bookings() {
     setDeleteDialogOpen(true);
   };
 
+  const confirmDelete = () => {
+    if (bookingToDelete) {
+      deleteBookingMutation.mutate(bookingToDelete.id);
+    }
+  };
+
   const handleViewBooking = (booking: Booking) => {
     setViewingBooking(booking);
     setIsDetailDialogOpen(true);

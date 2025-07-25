@@ -183,7 +183,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
     const bookingData = {
       ...data,
       facilityId: data.facilityId ? parseInt(data.facilityId) : null,
-      teamId: data.teamId && data.teamId !== "" ? parseInt(data.teamId) : null,
+      teamId: data.teamId && data.teamId !== "" && data.teamId !== "none" ? parseInt(data.teamId) : null,
       participants: data.participants ? parseInt(data.participants) : undefined,
       cost: data.cost ? parseFloat(data.cost) : undefined,
       startTime: new Date(data.startTime).toISOString(),
@@ -256,7 +256,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Kein Team</SelectItem>
+                    <SelectItem value="none">Kein Team</SelectItem>
                     {teams?.map((team: any) => (
                       <SelectItem key={team.id} value={team.id.toString()}>
                         {team.name}

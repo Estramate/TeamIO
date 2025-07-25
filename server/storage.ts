@@ -322,7 +322,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteTeam(id: number): Promise<void> {
-    await db.delete(teams).where(eq(teams.id, id));
+    try {
+      // First, remove all player assignments for this team
+      await db.delete(playerTeamAssignments).where(eq(playerTeamAssignments.teamId, id));
+      
+      // Remove all player stats for this team  
+      await db.delete(playerStats).where(eq(playerStats.teamId, id));
+      
+      // Update any bookings that reference this team to set teamId to null
+      await db.update(bookings)
+        .set({ teamId: null })
+        .where(eq(bookings.teamId, id));
+      
+      // Finally, delete the team
+      await db.delete(teams).where(eq(teams.id, id));
+    } catch (error) {
+      console.error(`Error deleting team ${id}:`, error);
+      throw new Error(`Failed to delete team: ${error}`);
+    }
   }
 
   // Team membership operations
@@ -656,8 +673,8 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(bookings.clubId, clubId),
-          gte(bookings.startTime, todayStart),
-          gte(todayEnd, bookings.startTime)
+          gte(bookings.startTime, todayStart.toISOString()),
+          gte(todayEnd.toISOString(), bookings.startTime)
         )
       );
 
@@ -668,8 +685,8 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(events.clubId, clubId),
-          gte(events.startDate, todayStart),
-          gte(todayEnd, events.startDate)
+          gte(events.startDate, todayStart.toISOString()),
+          gte(todayEnd.toISOString(), events.startDate)
         )
       );
 

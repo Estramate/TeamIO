@@ -518,7 +518,7 @@ export default function Members() {
           )}
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredMembers.map((member: any) => {
             // Get team memberships for this member
             const memberTeams = teamMemberships
@@ -530,133 +530,156 @@ export default function Members() {
               .filter(Boolean);
 
             return (
-              <Card key={member.id} className="group hover:shadow-xl transition-all duration-300 border-border bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm hover:from-card hover:to-card/90 hover:scale-[1.02] cursor-pointer overflow-hidden">
-                <CardContent className="p-0">
-                  {/* Header with gradient and 3-dot menu */}
-                  <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 p-4 text-white">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
+              <Card key={member.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md overflow-hidden">
+                {/* Einfacher blauer Header - moderner Stil */}
+                <div className="h-2 bg-gradient-to-r from-blue-500 to-blue-600"></div>
+                
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">👤</span>
                         <h3 
-                          className="text-lg font-bold truncate cursor-pointer hover:underline transition-all"
+                          className="text-lg font-semibold text-foreground truncate cursor-pointer hover:underline"
                           onClick={() => handleViewMember(member)}
                           title={`${member.firstName} ${member.lastName}`}
                         >
                           {member.firstName} {member.lastName}
                         </h3>
-                        {member.membershipNumber && (
-                          <p className="text-blue-100 text-sm font-medium">
-                            Mitglied #{member.membershipNumber}
-                          </p>
-                        )}
                       </div>
-                      <div className="flex items-center gap-2 shrink-0 ml-3">
-                        <Badge 
-                          variant={getStatusBadgeVariant(member.status)} 
-                          className="text-xs font-semibold"
-                        >
-                          {getStatusLabel(member.status)}
-                        </Badge>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/20">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleViewMember(member)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditMember(member)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Bearbeiten
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleToggleStatus(member)}
-                              disabled={toggleMemberStatusMutation.isPending}
-                              className={member.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
-                            >
-                              {member.status === 'active' ? (
-                                <>
-                                  <AlertCircle className="h-4 w-4 mr-2" />
-                                  Deaktivieren
-                                </>
-                              ) : (
-                                <>
-                                  <User className="h-4 w-4 mr-2" />
-                                  Aktivieren
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteMember(member)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Löschen
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                      
+                      {member.membershipNumber && (
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Mitglied #{member.membershipNumber}
+                        </p>
+                      )}
                     </div>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleViewMember(member)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditMember(member)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Bearbeiten
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleToggleStatus(member)}
+                          disabled={toggleMemberStatusMutation.isPending}
+                          className={member.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                        >
+                          {member.status === 'active' ? (
+                            <>
+                              <AlertCircle className="h-4 w-4 mr-2" />
+                              Deaktivieren
+                            </>
+                          ) : (
+                            <>
+                              <User className="h-4 w-4 mr-2" />
+                              Aktivieren
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteMember(member)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Löschen
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
-                  {/* Content */}
-                  <div className="p-4 space-y-4">
-                    {/* Contact Information */}
-                    <div className="space-y-2">
-                      {member.email && (
-                        <div className="flex items-center text-sm text-foreground">
-                          <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3 shrink-0">
-                            <Mail className="w-4 h-4 text-purple-600" />
-                          </div>
-                          <span className="truncate" title={member.email}>{member.email}</span>
+                  {/* Status Badge */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <Badge 
+                      variant={getStatusBadgeVariant(member.status)} 
+                      className="text-xs font-medium"
+                    >
+                      {getStatusLabel(member.status)}
+                    </Badge>
+                  </div>
+
+                  {/* Contact Information - Kompakter Stil */}
+                  <div className="space-y-3 text-sm">
+                    {member.email && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                          <Mail className="h-3 w-3 text-purple-600" />
                         </div>
-                      )}
-                      {member.phone && (
-                        <div className="flex items-center text-sm text-foreground">
-                          <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 shrink-0">
-                            <Phone className="w-4 h-4 text-green-600" />
-                          </div>
-                          <span className="truncate" title={member.phone}>{member.phone}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-muted-foreground">E-Mail</div>
+                          <div className="font-medium truncate" title={member.email}>{member.email}</div>
                         </div>
-                      )}
-                      {member.joinDate && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mr-3 shrink-0">
-                            <Calendar className="w-4 h-4 text-orange-600" />
-                          </div>
-                          <span>Beigetreten: {new Date(member.joinDate).toLocaleDateString('de-DE')}</span>
+                      </div>
+                    )}
+                    
+                    {member.phone && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                          <Phone className="h-3 w-3 text-green-600" />
                         </div>
-                      )}
-                    </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-muted-foreground">Telefon</div>
+                          <div className="font-medium truncate" title={member.phone}>{member.phone}</div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {member.joinDate && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                          <Calendar className="h-3 w-3 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-muted-foreground">Beitritt</div>
+                          <div className="font-medium">
+                            {new Date(member.joinDate).toLocaleDateString('de-DE')}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {member.address && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                          <MapPin className="h-3 w-3 text-orange-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-muted-foreground">Adresse</div>
+                          <div className="font-medium line-clamp-2" title={member.address}>{member.address}</div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Team Memberships */}
                     {memberTeams.length > 0 && (
-                      <div className="border-t border-border pt-3">
-                        <div className="flex items-center mb-2">
-                          <Users className="w-4 h-4 text-blue-600 mr-2" />
-                          <span className="text-sm font-medium text-foreground">Teams ({memberTeams.length})</span>
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
+                          <Users className="h-3 w-3 text-primary" />
                         </div>
-                        <div className="space-y-1 max-h-20 overflow-y-auto">
-                          {memberTeams.slice(0, 3).map((team: any) => (
-                            <div key={team.id} className="flex items-center justify-between text-xs">
-                              <span className="text-foreground font-medium truncate flex-1">{team.name}</span>
-                              <Badge variant="outline" className="text-xs ml-2">
-                                {team.role === 'trainer' ? 'Trainer' : 
-                                 team.role === 'co-trainer' ? 'Co-Trainer' :
-                                 team.role === 'assistant' ? 'Assistenz' :
-                                 team.role === 'manager' ? 'Manager' :
-                                 team.role === 'physiotherapist' ? 'Physio' :
-                                 team.role === 'doctor' ? 'Arzt' : team.role}
-                              </Badge>
-                            </div>
-                          ))}
-                          {memberTeams.length > 3 && (
-                            <div className="text-xs text-muted-foreground">
-                              +{memberTeams.length - 3} weitere...
-                            </div>
-                          )}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-muted-foreground mb-1">Teams</div>
+                          <div className="flex flex-wrap gap-1">
+                            {memberTeams.slice(0, 2).map((team: any, idx: number) => (
+                              <span key={team.id} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md font-medium">
+                                {team.name}
+                              </span>
+                            ))}
+                            {memberTeams.length > 2 && (
+                              <span className="text-xs bg-muted/50 text-muted-foreground px-2 py-0.5 rounded-md">
+                                +{memberTeams.length - 2}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}

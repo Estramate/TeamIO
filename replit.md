@@ -11,6 +11,17 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Teams-Karten im schlichten modernen Stil refactoriert**: Blaue Gradient-Design durch minimalistisches Card-Layout ersetzt
+  - Konsistentes Design mit Members- und Players-Seiten für einheitliche Benutzerführung
+  - Schlichte weiße/Card-Hintergrund mit subtilen Hover-Effekten (hover:shadow-md)
+  - Kompakte 3-Punkte-Menüs immer sichtbar für bessere Usability
+  - Reduzierte Gap-Größe (gap-3 sm:gap-4) für dichtere, professionellere Darstellung
+  - Clean Layout: Icon im Primary-Theme, optimierte Typografie, minimale Farbpalette
+- **Dashboard-Aktivitätsfeed vollständig repariert**: Date-Handling-Probleme in PostgreSQL-Abfragen behoben
+  - getDashboardStats und getRecentActivity Methoden korrigiert für stabile Dashboard-Anzeige
+  - Client-seitige Date-Filterung implementiert um Drizzle-ORM Datums-Kompatibilitätsprobleme zu vermeiden
+  - Try-catch Error-Handling für robuste Dashboard-Performance hinzugefügt
+  - Alle Duplikate in Trainer-Zuordnungen bereinigt (7 doppelte Einträge entfernt)
 - **Globale Terminologie-Änderung abgeschlossen**: "Senior" zu "Erwachsene" systemweit umbenannt
   - Frontend: Alle UI-Komponenten, Dropdown-Menüs, Badges und Labels in Teams- und Members-Seiten aktualisiert
   - Datenbank: 4 Teams (KM, KM 1b, Frauen Kleinfeld, KM-FR) von "senior" zu "erwachsene" geändert

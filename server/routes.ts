@@ -458,27 +458,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Event routes
+  // Event routes (Events sind jetzt Teil der Bookings)
   app.get('/api/clubs/:clubId/events', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const events = await storage.getEvents(clubId);
-      res.json(events);
+      // Events sind jetzt Bookings mit type='event'
+      const events = await storage.getBookings(clubId);
+      const eventBookings = events.filter(booking => booking.type === 'event');
+      res.json(eventBookings);
     } catch (error) {
       console.error("Error fetching events:", error);
       res.status(500).json({ message: "Failed to fetch events" });
-    }
-  });
-
-  app.post('/api/clubs/:clubId/events', isAuthenticated, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const eventData = insertEventSchema.parse({ ...req.body, clubId });
-      const event = await storage.createEvent(eventData);
-      res.json(event);
-    } catch (error) {
-      console.error("Error creating event:", error);
-      res.status(500).json({ message: "Failed to create event" });
     }
   });
 

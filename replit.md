@@ -23,6 +23,12 @@ Preferred communication style: Simple, everyday language.
   - Projektstruktur-Übersicht und Architektur-Dokumentation
   - Contributing Guidelines und Entwicklungsrichtlinien
   - Feature-Roadmap und Support-Informationen
+- **Testdaten-Seeding implementiert**: Vollständiger Ersatz der SV Oberglan-spezifischen Daten
+  - Neues seedTestData.ts mit allgemeinen Testdaten erstellt
+  - Test Sports Club mit 5 Mitgliedern, 5 Spielern, 4 Teams und Anlagen
+  - Vollständige Testdaten: Buchungen, Events, Finanztransaktionen, Team-Zuordnungen
+  - Korrektes Schema-Management: PlayerTeamAssignments und TeamMemberships getrennt
+  - Ausführbar über: tsx server/seedTestData.ts für saubere Testumgebung
 
 ### Januar 24, 2025 (Frühere Updates)
 - **Kalender-System vollständig optimiert**: Alle Interaktions-Probleme behoben für professionelle Benutzererfahrung

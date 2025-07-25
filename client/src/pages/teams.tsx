@@ -558,152 +558,139 @@ export default function Teams() {
               {filteredTeams.map((team: any) => (
                 <Card 
                   key={team.id} 
-                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-muted/40 hover:border-primary/30 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm overflow-hidden"
+                  className="group hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white"
                 >
                   <CardContent className="p-0">
-                    {/* Card Header with Team Icon and Category */}
-                    <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6 pb-4">
-                      <div className="flex items-center justify-between">
-                        <div className="relative">
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/20 border-3 border-white shadow-lg flex items-center justify-center">
-                            <Trophy className="h-8 w-8 text-primary/80" />
-                          </div>
-                          {team.category && (
-                            <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs rounded-full px-2 py-1 font-bold shadow-lg ring-2 ring-white">
-                              {team.category === 'youth' ? 'J' :
-                               team.category === 'erwachsene' ? 'E' : 
-                               team.category === 'amateur' ? 'A' : team.category.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                    {/* Blue Header Section */}
+                    <div className="relative p-4 pb-3 flex justify-between items-start">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                          <Trophy className="h-5 w-5 text-white" />
                         </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditTeam(team)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Bearbeiten
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleToggleTeamStatus(team)}
-                              disabled={toggleTeamStatusMutation.isPending}
-                              className={team.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                        <div className="min-w-0 flex-1">
+                          <h3 
+                            className="font-semibold text-base text-white cursor-pointer hover:underline truncate"
+                            onClick={() => handleViewTeam(team)}
+                          >
+                            {team.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            {team.category && (
+                              <Badge 
+                                variant="secondary" 
+                                className="text-xs bg-white/20 text-white border-white/30 hover:bg-white/30"
+                              >
+                                {team.category === 'youth' ? 'Jugend' :
+                                 team.category === 'erwachsene' ? 'Erwachsene' : 
+                                 team.category === 'amateur' ? 'Amateur' : team.category}
+                              </Badge>
+                            )}
+                            <Badge 
+                              variant={getStatusBadgeVariant(team.status)}
+                              className="text-xs"
                             >
-                              {team.status === 'active' ? (
-                                <>
-                                  <Users className="h-4 w-4 mr-2" />
-                                  Deaktivieren
-                                </>
-                              ) : (
-                                <>
-                                  <Users className="h-4 w-4 mr-2" />
-                                  Aktivieren
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteTeam(team)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Löschen
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              {getStatusLabel(team.status)}
+                            </Badge>
+                          </div>
+                        </div>
                       </div>
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/20">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleViewTeam(team)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditTeam(team)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Bearbeiten
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleToggleTeamStatus(team)}
+                            disabled={toggleTeamStatusMutation.isPending}
+                            className={team.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                          >
+                            {team.status === 'active' ? (
+                              <>
+                                <Users className="h-4 w-4 mr-2" />
+                                Deaktivieren
+                              </>
+                            ) : (
+                              <>
+                                <Users className="h-4 w-4 mr-2" />
+                                Aktivieren
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteTeam(team)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Löschen
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
 
-                    {/* Team Info */}
-                    <div className="p-6 pt-2">
-                      <div className="mb-4">
-                        <h3 
-                          className="font-bold text-lg leading-tight text-foreground group-hover:text-primary transition-colors cursor-pointer hover:underline"
-                          onClick={() => handleViewTeam(team)}
-                        >
-                          {team.name}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          {team.category && (
-                            <Badge variant="secondary" className="text-xs shadow-sm">
-                              {team.category === 'youth' ? 'Jugend' :
-                               team.category === 'erwachsene' ? 'Erwachsene' : 
-                               team.category === 'amateur' ? 'Amateur' : team.category}
-                            </Badge>
-                          )}
-                          {team.ageGroup && (
-                            <Badge variant="outline" className="text-xs shadow-sm">
-                              {team.ageGroup}
-                            </Badge>
-                          )}
-                          <Badge variant={getStatusBadgeVariant(team.status)} className="shadow-sm">
-                            {getStatusLabel(team.status)}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {/* Team Details */}
+                    {/* White Content Section */}
+                    <div className="bg-white p-4 text-gray-700">
                       <div className="space-y-3 text-sm">
                         {/* Player Count */}
-                        <div className="flex items-start gap-3">
-                          <div className="w-5 h-5 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
-                            <Users className="h-3 w-3 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-medium text-muted-foreground mb-1">Spieler</div>
-                            <div className="font-medium">
-                              {(players as any[]).filter(p => p.teams?.some((t: any) => t.id === team.id)).length} Spieler
-                              {team.maxMembers && (
-                                <span className="text-muted-foreground text-xs ml-2">
-                                  / {team.maxMembers} max
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                        <div className="flex items-center gap-3">
+                          <Users className="h-4 w-4 text-blue-600" />
+                          <span className="text-gray-600">Spieler</span>
+                          <span className="font-medium ml-auto">
+                            {(players as any[]).filter(p => p.teams?.some((t: any) => t.id === team.id)).length} Spieler
+                          </span>
                         </div>
 
                         {/* Season */}
                         {team.season && (
                           <div className="flex items-center gap-3">
-                            <div className="w-5 h-5 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                              <Calendar className="h-3 w-3 text-green-600" />
-                            </div>
-                            <div>
-                              <div className="text-xs font-medium text-muted-foreground">Saison</div>
-                              <div className="font-medium">{team.season}</div>
-                            </div>
+                            <Calendar className="h-4 w-4 text-blue-600" />
+                            <span className="text-gray-600">Saison</span>
+                            <span className="font-medium ml-auto">{team.season}</span>
+                          </div>
+                        )}
+
+                        {/* Age Group */}
+                        {team.ageGroup && (
+                          <div className="flex items-center gap-3">
+                            <User className="h-4 w-4 text-blue-600" />
+                            <span className="text-gray-600">Altersgruppe</span>
+                            <span className="font-medium ml-auto">{team.ageGroup}</span>
                           </div>
                         )}
 
                         {/* Gender */}
                         {team.gender && (
                           <div className="flex items-center gap-3">
-                            <div className="w-5 h-5 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                              <User className="h-3 w-3 text-purple-600" />
-                            </div>
-                            <div>
-                              <div className="text-xs font-medium text-muted-foreground">Geschlecht</div>
-                              <div className="font-medium">
-                                {team.gender === 'male' ? 'Männlich' :
-                                 team.gender === 'female' ? 'Weiblich' :
-                                 team.gender === 'mixed' ? 'Gemischt' : team.gender}
-                              </div>
-                            </div>
+                            <Users className="h-4 w-4 text-blue-600" />
+                            <span className="text-gray-600">Geschlecht</span>
+                            <span className="font-medium ml-auto">
+                              {team.gender === 'male' ? 'Männlich' :
+                               team.gender === 'female' ? 'Weiblich' :
+                               team.gender === 'mixed' ? 'Gemischt' : team.gender}
+                            </span>
                           </div>
                         )}
 
                         {/* Description */}
                         {team.description && (
-                          <div className="flex items-start gap-3">
-                            <div className="w-5 h-5 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mt-0.5">
-                              <AlertCircle className="h-3 w-3 text-blue-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-xs font-medium text-muted-foreground mb-1">Beschreibung</div>
-                              <div className="text-xs text-muted-foreground line-clamp-2">
-                                {team.description}
+                          <div className="pt-2 border-t border-gray-100">
+                            <div className="flex items-start gap-3">
+                              <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                              <div className="min-w-0">
+                                <div className="text-gray-600 text-xs font-medium mb-1">Beschreibung</div>
+                                <div className="text-xs text-gray-500 line-clamp-2">
+                                  {team.description}
+                                </div>
                               </div>
                             </div>
                           </div>

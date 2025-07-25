@@ -16,7 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertCircle, Building, Users, MapPin, Plus, Search, Edit, Trash2, MoreHorizontal, LayoutGrid, List, Eye } from "lucide-react";
+import { AlertCircle, Building, Users, MapPin, Plus, Search, Edit, Trash2, MoreHorizontal, LayoutGrid, List, Eye, Car, Dumbbell, Home, Trees, Utensils } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertFacilitySchema, type Facility } from "@shared/schema";
@@ -335,6 +335,63 @@ export default function Facilities() {
     }
   };
 
+  const getFacilityIcon = (name: string) => {
+    const lowerName = name?.toLowerCase() || '';
+    
+    // Spezifische Arena/Stadion Icons
+    if (lowerName.includes('arena') || lowerName.includes('stadion')) {
+      return '🏟️';
+    }
+    
+    // Trainingsplatz/Platz Icons
+    if (lowerName.includes('trainingsplatz') || lowerName.includes('platz')) {
+      return '⚽';
+    }
+    
+    // Jugendplatz
+    if (lowerName.includes('jugend')) {
+      return '👶';
+    }
+    
+    // Vereinsheim/Clubhaus
+    if (lowerName.includes('vereinsheim') || lowerName.includes('clubhaus') || lowerName.includes('heim')) {
+      return '🏠';
+    }
+    
+    // Umkleidekabinen/Kabinen
+    if (lowerName.includes('umkleide') || lowerName.includes('kabine')) {
+      return '👕';
+    }
+    
+    // Parkplatz
+    if (lowerName.includes('parkplatz') || lowerName.includes('parking')) {
+      return '🅿️';
+    }
+    
+    // Kantine/Restaurant/Küche
+    if (lowerName.includes('kantine') || lowerName.includes('restaurant') || lowerName.includes('küche')) {
+      return '🍽️';
+    }
+    
+    // Fitness/Gym
+    if (lowerName.includes('fitness') || lowerName.includes('gym') || lowerName.includes('kraft')) {
+      return '💪';
+    }
+    
+    // Halle/Sporthalle
+    if (lowerName.includes('halle') || lowerName.includes('sport')) {
+      return '🏟️';
+    }
+    
+    // Büro/Verwaltung
+    if (lowerName.includes('büro') || lowerName.includes('verwaltung') || lowerName.includes('office')) {
+      return '🏢';
+    }
+    
+    // Default für alle anderen
+    return '🏢';
+  };
+
   const getTypeIcon = (type: string) => {
     switch (type?.toLowerCase()) {
       case 'field':
@@ -495,7 +552,7 @@ export default function Facilities() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-lg">🏢</span>
+                      <span className="text-lg">{getFacilityIcon(facility.name)}</span>
                       <h3 
                         className="text-lg font-semibold text-foreground truncate cursor-pointer hover:underline"
                         onClick={() => handleViewFacility(facility)}

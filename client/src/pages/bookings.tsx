@@ -682,8 +682,8 @@ export default function Bookings() {
             
             return (
               <Card key={booking.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md overflow-hidden">
-                {/* Farbiger Header basierend auf Typ */}
-                <div className={`h-2 bg-gradient-to-r ${getTypeColor(booking.type)}`}></div>
+                {/* Einfacher grauer Header - schlicht und modern */}
+                <div className="h-2 bg-gradient-to-r from-muted to-muted/80"></div>
                 
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-4">

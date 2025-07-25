@@ -560,8 +560,8 @@ export default function Teams() {
                   key={team.id} 
                   className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md overflow-hidden"
                 >
-                  {/* Einfacher blauer Header - moderner Stil wie bei Members */}
-                  <div className="h-2 bg-gradient-to-r from-blue-500 to-blue-600"></div>
+                  {/* Einfacher grauer Header - schlicht und modern */}
+                  <div className="h-2 bg-gradient-to-r from-muted to-muted/80"></div>
                   
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-4">

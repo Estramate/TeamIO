@@ -11,6 +11,12 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Team-Mitgliedschaften vollständig implementiert**: Alle Trainer-Zuordnungen basierend auf OEFB-Website erstellt
+  - 15 Team-Mitgliedschaften für 13 authentische Trainer von vereine.oefb.at/SVOberglanOmegaBittner/Verein/Trainer/
+  - Senior Teams vollständig besetzt: KM (3 Trainer), KM 1b, Frauen Kleinfeld, KM-FR (je 1-2 Trainer)
+  - Jugendteams: U15, U12A/B, U10A/B, U9, U6 mit zugewiesenen Trainern
+  - Lucas Londer und Bernhard Buttazoni in mehreren Teams (Co-Trainer KM & U15, U10A & U10B)
+  - Alle Kontaktdaten (E-Mail, Telefon) authentisch von OEFB-Website übernommen
 - **Datenbank-Duplikate vollständig bereinigt**: Alle doppelten Einträge erfolgreich entfernt
   - 67 doppelte Spieler gelöscht (204 → 137 Spieler)
   - 100 doppelte Spieler-Team-Zuordnungen entfernt (212 → 112 Zuordnungen)

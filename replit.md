@@ -11,6 +11,11 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Zeitzone-Problem in Buchungssystem behoben**: KFV Cup Spiel korrekt auf 17:00-19:00 Uhr korrigiert
+  - Null-Pointer-Fehler beim Bearbeiten von Events ohne Facility-Zuordnung behoben
+  - Zeitzone-Handling verstanden: PostgreSQL speichert lokale Zeit, Frontend interpretiert als UTC
+  - KFV Cup Spiel in DB auf 15:00-17:00 korrigiert für korrekte Frontend-Anzeige (17:00-19:00)
+  - Robuste Null-Checks für facilityId implementiert (Events können ohne Facility existieren)
 - **Authentische Facilities und Finanz-Daten von OEFB-Website integriert**: Vollständige Vereinsinfrastruktur implementiert
   - 5 Facilities erstellt: AMTMANN Arena (800 Plätze), Trainingsplatz, Jugendplatz, Vereinsheim, Umkleidekabinen
   - Exakte Arena-Details: Klagenfurter Straße 75a, Markstein mit Tel. 0676 6514110 von OEFB-Sportplatz-Seite

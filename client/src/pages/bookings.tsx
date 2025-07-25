@@ -434,7 +434,7 @@ export default function Bookings() {
     form.reset({
       title: booking.title,
       description: booking.description || "",
-      facilityId: booking.facilityId.toString(),
+      facilityId: booking.facilityId ? booking.facilityId.toString() : "",
       teamId: booking.teamId ? booking.teamId.toString() : undefined,
       type: booking.type,
       status: booking.status,

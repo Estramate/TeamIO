@@ -37,9 +37,12 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 
 ## User Preferences
 
-Preferred communication style: Simple, everyday language.
-Project Status: ALL enterprise improvements from detailed analysis successfully implemented and documented.
-Memory Note: User confirmed all 69 improvements are complete - TeamIO is now enterprise-ready with performance optimization, accessibility compliance, comprehensive testing, and professional documentation.
+- **Communication Style**: Simple, everyday language (German preferred)
+- **Documentation**: User wants settings and improvements documented in README
+- **Memory**: Always remember and document current project settings and state
+- **Project Management**: Systematic implementation of improvements with documentation
+
+**Latest User Request**: "merke dir die Einstellungen und ergänze die Readme" - Update README with current settings and improvements.
 
 ## System Architecture
 

@@ -124,6 +124,196 @@ TeamIO includes comprehensive API documentation powered by Swagger/OpenAPI:
 - **OpenAPI Spec**: Available at `/api-docs.json`
 - **Authentication**: All endpoints use session-based authentication with CSRF protection
 
+## 🏗️ Project Architecture
+
+### Database Schema (Modularized)
+The database schema has been modularized into domain-specific files for better maintainability:
+
+```
+shared/schemas/
+├── index.ts          # Central exports and enhanced relations
+├── core.ts           # Users, Clubs, Sessions, Club Memberships
+├── members.ts        # Members, Team Memberships
+├── teams.ts          # Teams, Players, Player Assignments, Statistics
+├── facilities.ts     # Facilities, Bookings, Events
+└── finances.ts       # Finances, Member Fees, Training Fees
+```
+
+### Code Quality & Standards
+- **ESLint v9**: Modern configuration with TypeScript and React support
+- **Prettier**: Consistent code formatting across the entire codebase
+- **TypeScript**: Strict mode with comprehensive type checking
+- **Accessibility**: WCAG 2.1 AA compliance with custom hooks and components
+
+### Security Features
+- **Enhanced Logging**: Automatic filtering of sensitive data (passwords, tokens, API keys)
+- **Request Security**: Helmet headers, rate limiting, CORS protection
+- **Session Management**: Secure session storage with PostgreSQL
+- **CSRF Protection**: Built-in protection against cross-site request forgery
+
+### Development Tools
+```bash
+# Code Quality
+npm run lint          # Run ESLint checks
+npm run lint:fix      # Fix ESLint issues automatically
+npm run format        # Format code with Prettier
+npm run format:check  # Check code formatting
+
+# Testing
+npm run test          # Run all tests
+npm run test:ui       # Run tests with UI
+npm run test:coverage # Generate test coverage report
+
+# Database
+npm run db:push       # Push schema changes to database
+npm run check         # TypeScript type checking
+```
+
+## 🎯 Recent Improvements (Latest Session)
+
+### ✅ Database Architecture Enhancement
+- Modularized large schema.ts (676 lines) into 5 domain-specific files
+- Improved maintainability and reduced complexity per file
+- Enhanced relations and cross-domain references
+
+### ✅ Code Quality & Tooling
+- ESLint v9 configuration with TypeScript and React support
+- Prettier formatting with consistent style guidelines
+- Enhanced environment configuration with comprehensive .env.example
+- Professional CONTRIBUTING.md with development guidelines
+
+### ✅ Security & Logging Enhancement
+- Enhanced logging security with sensitive data filtering
+- Automatic redaction of passwords, tokens, API keys from logs
+- Pattern-based detection of sensitive information
+- Improved request/response logging with privacy protection
+
+### ✅ Accessibility & WCAG 2.1 AA Compliance
+- Comprehensive accessibility hooks: `useFocusTrap`, `useScreenReaderAnnouncement`, `useKeyboardNavigation`
+- `AccessibleButton` component with loading states and confirmations
+- Accessibility testing suite with WCAG compliance tests
+- Focus management, keyboard navigation, and screen reader support
+
+## 🔧 Configuration
+
+### Environment Variables
+All configuration is managed through environment variables. See `.env.example` for a complete template:
+
+```env
+# Core Configuration
+DATABASE_URL=postgresql://username:password@host:port/database
+ISSUER_URL=https://your-auth-provider.com
+SESSION_SECRET=your-very-secure-session-secret-key-here
+NODE_ENV=development
+PORT=5000
+
+# Security Settings
+ALLOWED_DOMAINS=localhost:3000,localhost:5000
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+REQUEST_TIMEOUT_MS=30000
+MAX_REQUEST_SIZE_BYTES=10485760
+
+# Logging
+LOG_LEVEL=info
+```
+
+### Development Settings
+- **Hot Module Replacement**: Automatic reload during development
+- **TypeScript**: Strict mode with comprehensive error checking
+- **Database**: Automatic schema synchronization via Drizzle
+- **Testing**: Comprehensive test suite with coverage reporting
+
+## 🧪 Testing
+
+TeamIO includes comprehensive testing infrastructure:
+
+### Test Types
+- **Unit Tests**: Individual component and function testing
+- **Integration Tests**: API endpoint and database operation testing
+- **Accessibility Tests**: WCAG 2.1 AA compliance verification
+- **Component Tests**: React component behavior and rendering
+
+### Running Tests
+```bash
+# Run all tests
+npm run test
+
+# Run tests with UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+
+# Run specific test file
+npm run test src/components/ui/accessible-button.test.tsx
+```
+
+## 📈 Performance Features
+
+### Frontend Optimizations
+- **Code Splitting**: Automatic route-based code splitting
+- **Lazy Loading**: Components loaded on demand
+- **Virtualized Lists**: Efficient rendering of large datasets with TanStack Virtual
+- **Optimized Queries**: Smart caching and background refetching with TanStack Query
+
+### Backend Optimizations
+- **Database Indexing**: Optimized queries with proper database indices
+- **Request Timeout**: Configurable timeouts to prevent hanging requests
+- **Rate Limiting**: Protection against abuse with configurable limits
+- **Response Compression**: Automatic compression for better performance
+
+## 🔒 Security
+
+### Authentication & Authorization
+- **OpenID Connect**: Industry-standard authentication protocol
+- **Session-based Auth**: Secure session management with PostgreSQL storage
+- **Role-based Access**: Granular permissions per club and user role
+- **CSRF Protection**: Built-in protection against cross-site request forgery
+
+### Data Protection
+- **Sensitive Data Filtering**: Automatic removal of sensitive information from logs
+- **Security Headers**: Helmet.js for comprehensive security headers
+- **Input Validation**: Zod schema validation on all inputs
+- **SQL Injection Protection**: Drizzle ORM prevents SQL injection attacks
+
+## 📖 Contributing
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
+- Development setup and prerequisites
+- Code style and formatting requirements
+- Testing procedures and standards
+- Pull request process and requirements
+- Security considerations and best practices
+
+## 🚀 Deployment
+
+### Production Build
+```bash
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+### Environment Setup
+1. Set `NODE_ENV=production`
+2. Configure production database URL
+3. Set secure session secret
+4. Configure allowed domains for CORS
+5. Set up proper logging levels
+
+### Monitoring & Performance
+- API documentation available at `/api-docs`
+- Health check endpoint at `/health`
+- Performance monitoring built-in
+- Structured logging with Winston
+
+---
+
+**Enterprise-Ready**: TeamIO is production-ready with comprehensive testing, security, accessibility compliance, and professional documentation.
+
 ### Key API Endpoints
 
 - `GET /api/auth/user` - Get current authenticated user

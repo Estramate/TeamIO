@@ -1677,7 +1677,7 @@ export default function Calendar() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Kein Team</SelectItem>
+                          <SelectItem value="none">Kein Team</SelectItem>
                           {(teams as any[]).map((team) => (
                             <SelectItem key={team.id} value={team.id.toString()}>
                               {team.name}

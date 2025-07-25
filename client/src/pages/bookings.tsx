@@ -85,6 +85,22 @@ import { BookingForm } from "@/components/BookingForm";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
+// Badge color functions
+const getTypeBadgeColor = (type: string) => {
+  switch (type) {
+    case 'training':
+      return 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100';
+    case 'match':
+      return 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100';
+    case 'event':
+      return 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-100';
+    case 'maintenance':
+      return 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100';
+    default:
+      return 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100';
+  }
+};
+
 // Local form data type that matches the schema's string inputs before transformation
 interface BookingFormData {
   title: string;

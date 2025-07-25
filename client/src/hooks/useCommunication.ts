@@ -339,7 +339,7 @@ export function useCommunication(clubId: number) {
     
     try {
       const response = await apiRequest('GET', `/api/clubs/${clubId}/search/messages?q=${encodeURIComponent(query)}`);
-      return response;
+      return response.json ? await response.json() : response;
     } catch (error) {
       toast({
         title: "Fehler",
@@ -356,7 +356,7 @@ export function useCommunication(clubId: number) {
     
     try {
       const response = await apiRequest('GET', `/api/clubs/${clubId}/search/announcements?q=${encodeURIComponent(query)}`);
-      return response;
+      return response.json ? await response.json() : response;
     } catch (error) {
       toast({
         title: "Fehler",

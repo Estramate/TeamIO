@@ -678,11 +678,11 @@ export default function Bookings() {
 
             const getTypeBadgeColor = (type: string) => {
               switch (type) {
-                case 'training': return 'bg-blue-100 text-blue-800 border-blue-200';
-                case 'match': return 'bg-green-100 text-green-800 border-green-200';
-                case 'event': return 'bg-purple-100 text-purple-800 border-purple-200';
-                case 'maintenance': return 'bg-orange-100 text-orange-800 border-orange-200';
-                default: return 'bg-gray-100 text-gray-800 border-gray-200';
+                case 'training': return 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100';
+                case 'match': return 'bg-green-100 text-green-700 border-green-200 hover:bg-green-100';
+                case 'event': return 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-100';
+                case 'maintenance': return 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100';
+                default: return 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100';
               }
             };
 
@@ -698,8 +698,8 @@ export default function Bookings() {
             
             return (
               <Card key={booking.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md overflow-hidden">
-                {/* Einfacher grauer Header - schlicht und modern */}
-                <div className="h-2 bg-gradient-to-r from-muted to-muted/80"></div>
+                {/* Typ-spezifischer farbiger Header */}
+                <div className={`h-2 bg-gradient-to-r ${getTypeColor(booking.type)}`}></div>
                 
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-4">
@@ -792,11 +792,11 @@ export default function Bookings() {
                     </Badge>
                     
                     <Badge 
-                      variant={
-                        booking.status === 'confirmed' ? 'default' :
-                        booking.status === 'pending' ? 'secondary' : 'destructive'
+                      className={
+                        booking.status === 'confirmed' ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-100' :
+                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100' : 
+                        'bg-red-100 text-red-700 border-red-200 hover:bg-red-100'
                       }
-                      className="font-medium"
                     >
                       {booking.status === 'confirmed' ? 'Bestätigt' :
                        booking.status === 'pending' ? 'Ausstehend' : 'Storniert'}
@@ -872,11 +872,11 @@ export default function Bookings() {
                       </td>
                       <td className="py-3 px-4">
                         <Badge 
-                          variant={
-                            booking.status === 'confirmed' ? 'default' :
-                            booking.status === 'pending' ? 'secondary' : 'destructive'
-                          }
-                          className="text-xs"
+                          className={`text-xs ${
+                            booking.status === 'confirmed' ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-100' :
+                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100' : 
+                            'bg-red-100 text-red-700 border-red-200 hover:bg-red-100'
+                          }`}
                         >
                           {booking.status === 'confirmed' ? 'Bestätigt' :
                            booking.status === 'pending' ? 'Ausstehend' : 'Storniert'}

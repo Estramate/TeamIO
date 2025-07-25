@@ -20,6 +20,8 @@ Preferred communication style: Simple, everyday language.
   - SelectItem-Fehler durch value="none" statt leerem String behoben
   - TypeScript-Fehler bei facilities und teams durch Default-Arrays korrigiert
   - Verfügbarkeitsprüfung mit korrekter ISO-String-Konvertierung repariert
+  - Automatische Verfügbarkeitsprüfung vor dem Speichern implementiert (verhindert ungültige Buchungen)
+  - Erweiterte Buchungszählung: "Verfügbar (X/Y Buchungen)" mit Maximum-Anzeige
   - Code-Duplikation vollständig eliminiert (über 1000 Zeilen entfernt)
 - **Kalender-Duplikate und Ortsanzeige-Probleme behoben**: Events-Darstellung im Kalender korrigiert
   - Events-API-Route auf leeres Array gesetzt um Duplikate zu vermeiden (Events sind jetzt Bookings mit type='event')

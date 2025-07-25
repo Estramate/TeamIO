@@ -257,8 +257,39 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
     });
   };
 
-  // Form submit handler
-  const handleSubmit = (data: BookingFormData) => {
+  // Form submit handler with availability check
+  const handleSubmit = async (data: BookingFormData) => {
+    // Automatische Verfügbarkeitsprüfung vor dem Speichern
+    if (data.facilityId && data.startTime && data.endTime) {
+      try {
+        const response = await apiRequest('POST', `/api/clubs/${selectedClubId}/bookings/check-availability`, {
+          facilityId: parseInt(data.facilityId),
+          startTime: new Date(data.startTime).toISOString(),
+          endTime: new Date(data.endTime).toISOString(),
+          excludeBookingId: editingBooking?.id
+        });
+        
+        const availabilityData = await response.json();
+        
+        if (!availabilityData.available) {
+          toast({
+            title: "Buchung nicht möglich",
+            description: `Die Anlage ist zu diesem Zeitpunkt nicht verfügbar. ${availabilityData.message || ''}`,
+            variant: "destructive",
+          });
+          return; // Speichern abbrechen
+        }
+      } catch (error) {
+        console.error('Availability check failed:', error);
+        toast({
+          title: "Verfügbarkeitsprüfung fehlgeschlagen",
+          description: "Die Verfügbarkeit konnte nicht geprüft werden. Bitte versuchen Sie es erneut.",
+          variant: "destructive",
+        });
+        return; // Speichern abbrechen
+      }
+    }
+
     const bookingData = {
       ...data,
       facilityId: data.facilityId ? parseInt(data.facilityId) : null,

@@ -7,3 +7,6 @@ vite.config.ts.*
 
 # Attached assets - temporary files for development
 attached_assets/
+
+# Project documentation - keep local only
+replit.md

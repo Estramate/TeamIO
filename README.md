@@ -48,7 +48,7 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - **ESLint** for code quality and consistency
 - **Drizzle Kit** for database schema migrations
 - **Hot Module Replacement** for efficient development workflow
-- **Replit Deployments** for seamless production deployment
+- **Cloud Deployments** for seamless production deployment
 
 ## 📋 Prerequisites
 
@@ -74,10 +74,10 @@ DATABASE_URL=postgresql://username:password@host:port/database
 # Session Security
 SESSION_SECRET=your-secure-session-secret
 
-# Authentication (if using Replit Auth)
-REPL_ID=your-repl-id
-ISSUER_URL=https://replit.com/oidc
-REPLIT_DOMAINS=your-domain.replit.app
+# Authentication (OpenID Connect)
+CLIENT_ID=your-client-id
+ISSUER_URL=https://your-auth-provider.com/oidc
+ALLOWED_DOMAINS=your-domain.com
 ```
 
 ### 3. Database Setup
@@ -121,7 +121,7 @@ teamio/
 │   ├── db.ts                # Database connection and configuration
 │   ├── routes.ts            # API routes and middleware
 │   ├── storage.ts           # Data access layer
-│   ├── replitAuth.ts        # Authentication configuration
+│   ├── auth.ts             # Authentication configuration
 │   └── index.ts             # Server entry point
 ├── shared/                   # Shared types and schemas
 │   └── schema.ts            # Database schema with Zod validation
@@ -241,14 +241,7 @@ npm run clean          # Clean build artifacts
 
 ## 🚀 Deployment
 
-### Replit Deployment
-TeamIO is optimized for Replit Deployments with:
-- **Automatic SSL**: TLS certificates and secure connections
-- **Environment Management**: Secure environment variable handling
-- **Health Checks**: Automatic monitoring and restart capabilities
-- **Custom Domains**: Support for custom domain configuration
-
-### Alternative Deployments
+### Cloud Deployment Options
 - **Vercel**: Frontend deployment with serverless functions
 - **Railway**: Full-stack deployment with PostgreSQL
 - **DigitalOcean**: VPS deployment with Docker

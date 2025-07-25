@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, MapPin, Gift, Users, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, MapPin, Gift, Users, MoreHorizontal, Edit, Trash2, AlertCircle, Check, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, addDays, startOfWeek, endOfWeek, startOfDay, endOfDay, getMonth, getDate, isAfter, compareAsc } from "date-fns";
 import { de } from "date-fns/locale";
@@ -2135,7 +2135,11 @@ export default function Calendar() {
                 <Button type="button" variant="outline" onClick={() => setShowBookingModal(false)}>
                   Abbrechen
                 </Button>
-                <Button type="submit" disabled={createBookingMutation.isPending || updateBookingMutation.isPending}>
+                <Button 
+                  type="submit" 
+                  disabled={createBookingMutation.isPending || updateBookingMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
                   {editingBooking ? 'Aktualisieren' : 'Erstellen'}
                 </Button>
               </div>

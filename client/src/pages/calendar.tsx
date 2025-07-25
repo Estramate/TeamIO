@@ -1748,20 +1748,6 @@ export default function Calendar() {
                 )}
               />
 
-              <FormField
-                control={bookingForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Beschreibung</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Beschreibung eingeben" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={bookingForm.control}

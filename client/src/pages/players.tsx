@@ -299,18 +299,18 @@ export default function Players() {
     
     // Team filter
     const matchesTeam = selectedTeam === "all" || 
-      getPlayerTeams(player).some(team => team.id.toString() === selectedTeam);
+      getPlayerTeams(player).some((team: any) => team.id.toString() === selectedTeam);
     
     return matchesSearch && matchesPosition && matchesStatus && matchesTeam;
   });
 
   // Get unique teams that have players
-  const teamsWithPlayers = (teams as Team[]).map(team => {
+  const teamsWithPlayers = (teams as Team[]).map((team: Team) => {
     const playersInTeam = (players as Player[]).filter(player => 
-      getPlayerTeams(player).some(playerTeam => playerTeam.id === team.id)
+      getPlayerTeams(player).some((playerTeam: any) => playerTeam.id === team.id)
     );
     return { ...team, playerCount: playersInTeam.length };
-  }).filter(team => team.playerCount > 0);
+  }).filter((team: any) => team.playerCount > 0);
 
   const onSubmit = (data: InsertPlayer) => {
     if (editingPlayer) {
@@ -332,14 +332,14 @@ export default function Players() {
       email: player.email || "",
       address: player.address || "",
       nationality: player.nationality || "",
-      profileImageUrl: player.profileImageUrl || "",
+      profileImageUrl: player.profileImageUrl || undefined,
       height: player.height || undefined,
       weight: player.weight || undefined,
       preferredFoot: player.preferredFoot || "",
       status: player.status,
       contractStart: player.contractStart || "",
       contractEnd: player.contractEnd || "",
-      salary: player.salary ? Number(player.salary) : undefined,
+      salary: player.salary ? player.salary.toString() : undefined,
       notes: player.notes || "",
     });
     setIsCreateDialogOpen(true);
@@ -579,18 +579,22 @@ export default function Players() {
             )
           ) : filteredPlayers.length > 0 ? (
             viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 {filteredPlayers.map((player: Player) => (
-                  <Card key={player.id} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-muted/50 hover:border-muted">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-3 flex-1 min-w-0">
-                          <div className="relative shrink-0">
+                  <Card 
+                    key={player.id} 
+                    className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-muted/40 hover:border-primary/30 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm overflow-hidden"
+                  >
+                    <CardContent className="p-0">
+                      {/* Card Header with Avatar and Jersey */}
+                      <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6 pb-4">
+                        <div className="flex items-center justify-between">
+                          <div className="relative">
                             {player.profileImageUrl ? (
                               <img
                                 src={player.profileImageUrl}
                                 alt={`${player.firstName} ${player.lastName}`}
-                                className="w-12 h-12 rounded-full object-cover border-2 border-muted"
+                                className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg ring-2 ring-primary/20"
                                 onError={(e) => {
                                   const img = e.target as HTMLImageElement;
                                   img.style.display = 'none';
@@ -598,150 +602,175 @@ export default function Players() {
                                 }}
                               />
                             ) : null}
-                            <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center ${player.profileImageUrl ? 'hidden' : ''}`}>
-                              <Users className="h-5 w-5 text-primary/60" />
+                            <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/20 border-3 border-white shadow-lg flex items-center justify-center ${player.profileImageUrl ? 'hidden' : ''}`}>
+                              <Users className="h-7 w-7 text-primary/80" />
                             </div>
                             {player.jerseyNumber && (
-                              <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
+                              <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-sm rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg ring-2 ring-white">
                                 {player.jerseyNumber}
                               </div>
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 
-                              className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors cursor-pointer hover:underline"
-                              onClick={() => handleViewPlayer(player)}
-                            >
-                              {player.firstName} {player.lastName}
-                            </h3>
-                            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                              {player.position && (
-                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getPositionColor(player.position)}`}>
-                                  {player.position}
-                                </span>
-                              )}
-                              <Badge variant={getStatusBadgeVariant(player.status)}>
-                                {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                              </Badge>
-                            </div>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEdit(player)}>
+                                <Edit2 className="mr-2 h-4 w-4" />
+                                Bearbeiten
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleTogglePlayerStatus(player)}
+                                disabled={togglePlayerStatusMutation.isPending}
+                                className={player.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                              >
+                                {player.status === 'active' ? (
+                                  <>
+                                    <Users className="mr-2 h-4 w-4" />
+                                    Deaktivieren
+                                  </>
+                                ) : (
+                                  <>
+                                    <Users className="mr-2 h-4 w-4" />
+                                    Aktivieren
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(player)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Löschen
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEdit(player)}>
-                              <Edit2 className="mr-2 h-4 w-4" />
-                              Bearbeiten
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleTogglePlayerStatus(player)}
-                              disabled={togglePlayerStatusMutation.isPending}
-                              className={player.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
-                            >
-                              {player.status === 'active' ? (
-                                <>
-                                  <Users className="mr-2 h-4 w-4" />
-                                  Deaktivieren
-                                </>
-                              ) : (
-                                <>
-                                  <Users className="mr-2 h-4 w-4" />
-                                  Aktivieren
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(player)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Löschen
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </div>
 
-                      <div className="space-y-1.5 text-xs text-muted-foreground">
-                        {/* Teams */}
-                        {getPlayerTeams(player).length > 0 && (
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-primary/20 flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              {getPlayerTeams(player).slice(0, 2).map((team, idx) => (
-                                <span key={team.id} className="truncate">
-                                  {team.name}{idx < Math.min(getPlayerTeams(player).length - 1, 1) && ", "}
-                                </span>
-                              ))}
-                              {getPlayerTeams(player).length > 2 && (
-                                <span className="text-muted-foreground">+{getPlayerTeams(player).length - 2}</span>
-                              )}
-                            </div>
+                      {/* Player Info */}
+                      <div className="p-6 pt-2">
+                        <div className="mb-4">
+                          <h3 
+                            className="font-bold text-lg leading-tight text-foreground group-hover:text-primary transition-colors cursor-pointer hover:underline"
+                            onClick={() => handleViewPlayer(player)}
+                          >
+                            {player.firstName} {player.lastName}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-2 flex-wrap">
+                            {player.position && (
+                              <span className={`text-xs px-3 py-1 rounded-full font-semibold shadow-sm ${getPositionColor(player.position)}`}>
+                                {player.position}
+                              </span>
+                            )}
+                            <Badge variant={getStatusBadgeVariant(player.status)} className="shadow-sm">
+                              {statusOptions.find(s => s.value === player.status)?.label || player.status}
+                            </Badge>
                           </div>
-                        )}
-                        {player.nationality && (
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                        </div>
+
+                        {/* Player Details */}
+                        <div className="space-y-3 text-sm">
+                          {/* Teams */}
+                          {getPlayerTeams(player).length > 0 && (
+                            <div className="flex items-start gap-3">
+                              <div className="w-5 h-5 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
+                                <Users className="h-3 w-3 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-medium text-muted-foreground mb-1">Teams</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {getPlayerTeams(player).slice(0, 2).map((team: any, idx: number) => (
+                                    <span key={team.id} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md font-medium">
+                                      {team.name}
+                                    </span>
+                                  ))}
+                                  {getPlayerTeams(player).length > 2 && (
+                                    <span className="text-xs bg-muted/50 text-muted-foreground px-2 py-0.5 rounded-md">
+                                      +{getPlayerTeams(player).length - 2}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            <span className="truncate">{player.nationality}</span>
-                          </div>
-                        )}
-                        {(player.height || player.weight) && (
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                          )}
+
+                          {/* Age */}
+                          {player.birthDate && (
+                            <div className="flex items-center gap-3">
+                              <div className="w-5 h-5 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                <Calendar className="h-3 w-3 text-purple-600" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-medium text-muted-foreground">Alter</div>
+                                <div className="font-medium">
+                                  {new Date().getFullYear() - new Date(player.birthDate).getFullYear()} Jahre
+                                </div>
+                              </div>
                             </div>
-                            <span>
-                              {player.height && `${player.height}cm`}
-                              {player.height && player.weight && " • "}
-                              {player.weight && `${player.weight}kg`}
-                            </span>
-                          </div>
-                        )}
-                        {player.birthDate && (
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                          )}
+
+                          {/* Physical Stats */}
+                          {(player.height || player.weight) && (
+                            <div className="flex items-center gap-3">
+                              <div className="w-5 h-5 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                <div className="w-2 h-2 bg-green-600 rounded"></div>
+                              </div>
+                              <div>
+                                <div className="text-xs font-medium text-muted-foreground">Physik</div>
+                                <div className="font-medium">
+                                  {player.height && `${player.height}cm`}
+                                  {player.height && player.weight && " • "}
+                                  {player.weight && `${player.weight}kg`}
+                                </div>
+                              </div>
                             </div>
-                            <span>
-                              {new Date().getFullYear() - new Date(player.birthDate).getFullYear()} Jahre
-                            </span>
-                          </div>
-                        )}
+                          )}
+
+                          {/* Nationality */}
+                          {player.nationality && (
+                            <div className="flex items-center gap-3">
+                              <div className="w-5 h-5 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                <MapPin className="h-3 w-3 text-blue-600" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-medium text-muted-foreground">Nationalität</div>
+                                <div className="font-medium">{player.nationality}</div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             ) : (
-              <Card>
+              <Card className="overflow-hidden border-muted/50">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Spieler</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Kontakt</TableHead>
+                    <TableRow className="bg-muted/30">
+                      <TableHead className="font-semibold">Spieler</TableHead>
+                      <TableHead className="font-semibold">Position & Status</TableHead>
+                      <TableHead className="font-semibold">Teams & Details</TableHead>
+                      <TableHead className="font-semibold">Kontakt</TableHead>
                       <TableHead className="w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredPlayers.map((player: Player) => (
-                      <TableRow key={player.id} className="group hover:bg-muted/50">
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
+                      <TableRow key={player.id} className="group hover:bg-primary/5 transition-colors border-muted/30">
+                        <TableCell className="py-4">
+                          <div className="flex items-center space-x-4">
                             <div className="relative shrink-0">
                               {player.profileImageUrl ? (
                                 <img
                                   src={player.profileImageUrl}
                                   alt={`${player.firstName} ${player.lastName}`}
-                                  className="w-10 h-10 rounded-full object-cover border-2 border-muted"
+                                  className="w-12 h-12 rounded-full object-cover border-2 border-primary/20 shadow-sm"
                                   onError={(e) => {
                                     const img = e.target as HTMLImageElement;
                                     img.style.display = 'none';
@@ -749,76 +778,98 @@ export default function Players() {
                                   }}
                                 />
                               ) : null}
-                              <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center ${player.profileImageUrl ? 'hidden' : ''}`}>
-                                <Users className="h-4 w-4 text-primary/60" />
+                              <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center ${player.profileImageUrl ? 'hidden' : ''}`}>
+                                <Users className="h-5 w-5 text-primary/60" />
                               </div>
                               {player.jerseyNumber && (
-                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold shadow-sm">
+                                <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
                                   {player.jerseyNumber}
                                 </div>
                               )}
                             </div>
-                            <div>
+                            <div className="min-w-0 flex-1">
                               <div 
-                                className="font-medium text-sm cursor-pointer hover:text-primary hover:underline transition-colors"
+                                className="font-semibold text-base cursor-pointer hover:text-primary hover:underline transition-colors"
                                 onClick={() => handleViewPlayer(player)}
                               >
                                 {player.firstName} {player.lastName}
                               </div>
-                              <div className="text-xs text-muted-foreground">
-                                {player.nationality}
+                              <div className="text-sm text-muted-foreground mt-1">
+                                {player.nationality && `${player.nationality}`}
+                                {player.birthDate && (
+                                  <>
+                                    {player.nationality && " • "}
+                                    {new Date().getFullYear() - new Date(player.birthDate).getFullYear()} Jahre
+                                  </>
+                                )}
                               </div>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {player.position && (
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPositionColor(player.position)}`}>
-                              {player.position}
-                            </span>
-                          )}
+                        <TableCell className="py-4">
+                          <div className="space-y-2">
+                            {player.position && (
+                              <span className={`inline-block text-xs px-3 py-1 rounded-full font-semibold shadow-sm ${getPositionColor(player.position)}`}>
+                                {player.position}
+                              </span>
+                            )}
+                            <div>
+                              <Badge variant={getStatusBadgeVariant(player.status)} className="shadow-sm">
+                                {statusOptions.find(s => s.value === player.status)?.label || player.status}
+                              </Badge>
+                            </div>
+                          </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusBadgeVariant(player.status)}>
-                            {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1 text-xs text-muted-foreground">
-                            {/* Teams first */}
+                        <TableCell className="py-4">
+                          <div className="space-y-2">
+                            {/* Teams */}
                             {getPlayerTeams(player).length > 0 && (
-                              <div className="flex items-center gap-1 mb-1">
-                                <Users className="h-3 w-3" />
-                                <div className="flex flex-wrap gap-1">
-                                  {getPlayerTeams(player).slice(0, 2).map((team, idx) => (
-                                    <span key={team.id} className="font-medium text-primary">
-                                      {team.name}{idx < Math.min(getPlayerTeams(player).length - 1, 1) && ", "}
-                                    </span>
-                                  ))}
-                                  {getPlayerTeams(player).length > 2 && (
-                                    <span className="text-muted-foreground">+{getPlayerTeams(player).length - 2}</span>
-                                  )}
-                                </div>
+                              <div className="flex flex-wrap gap-1">
+                                {getPlayerTeams(player).slice(0, 3).map((team: any, idx: number) => (
+                                  <span key={team.id} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-md font-medium">
+                                    {team.name}
+                                  </span>
+                                ))}
+                                {getPlayerTeams(player).length > 3 && (
+                                  <span className="text-xs bg-muted/50 text-muted-foreground px-2 py-1 rounded-md">
+                                    +{getPlayerTeams(player).length - 3}
+                                  </span>
+                                )}
                               </div>
                             )}
-                            {player.phone && (
-                              <div className="flex items-center gap-1">
-                                <Phone className="h-3 w-3" />
-                                <span>{player.phone}</span>
-                              </div>
-                            )}
-                            {player.email && (
-                              <div className="flex items-center gap-1">
-                                <Mail className="h-3 w-3" />
-                                <span className="truncate max-w-32">{player.email}</span>
+                            {/* Physical Stats */}
+                            {(player.height || player.weight) && (
+                              <div className="text-xs text-muted-foreground">
+                                {player.height && `${player.height}cm`}
+                                {player.height && player.weight && " • "}
+                                {player.weight && `${player.weight}kg`}
                               </div>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-4">
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            {player.phone && (
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-3 w-3 text-primary" />
+                                <span>{player.phone}</span>
+                              </div>
+                            )}
+                            {player.email && (
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-3 w-3 text-primary" />
+                                <span className="truncate max-w-32">{player.email}</span>
+                              </div>
+                            )}
+                            {!player.phone && !player.email && (
+                              <span className="text-muted-foreground/60">Keine Kontaktdaten</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-4">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-70 hover:opacity-100 transition-opacity">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

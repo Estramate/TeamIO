@@ -11,6 +11,10 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Datenbank vollständig bereinigt**: Alle Datensätze gelöscht und Sequenzen zurückgesetzt
+  - Gelöscht: 22 Spieler-Team-Zuordnungen, 4 Team-Mitgliedschaften, 3 Buchungen, 4 Finanzen, 22 Spieler, 8 Mitglieder, 2 Anlagen, 10 Teams, 1 Verein, 1 Benutzer
+  - Zurückgesetzt: Alle 13 Auto-Increment-Sequenzen starten wieder bei 1
+  - Status: Datenbank ist jetzt komplett leer und bereit für neue Daten
 - **Alle Seeding-Dateien entfernt**: Vollständige Bereinigung der Projekt-Struktur
   - Entfernt: seedSVOberglan1975Complete.ts, seedAll.ts, seedTeams.ts, seedOberglan.ts, seedPlayers.ts, seedClean.ts
   - Entfernt: Alle Seeding-API-Routen (/api/seed-data, /api/seed-sv-oberglan)

@@ -11,6 +11,12 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **README.md vollständig überarbeitet**: Umfassende, professionelle Dokumentation ohne vereinsspezifische Verweise erstellt
+  - Entfernt alle Bezüge zu SV Oberglan für generische Nutzbarkeit
+  - Erweiterte Tech Stack-Dokumentation mit Frontend/Backend-Architektur
+  - Vollständige Installation-, Deployment- und Contributing-Guidelines hinzugefügt
+  - Database Design, Sicherheits-Features und Performance-Optimierungen dokumentiert
+  - Roadmap und Zukunftspläne für weitere Entwicklung integriert
 - **Projekt-Bereinigung abgeschlossen**: Alle Backup-Dateien (_backup, _old, _broken) entfernt für saubere Projektstruktur
   - Entfernt: players_old.tsx, landing_old.tsx, bookings_backup.tsx, facilities_backup.tsx, teams_backup.tsx, teams_broken.tsx, finance_backup.tsx
   - Projektstruktur ist jetzt vollständig bereinigt ohne veraltete Entwicklungsdateien

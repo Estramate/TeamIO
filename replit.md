@@ -11,6 +11,9 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Projekt-Bereinigung abgeschlossen**: Alle Backup-Dateien (_backup, _old, _broken) entfernt für saubere Projektstruktur
+  - Entfernt: players_old.tsx, landing_old.tsx, bookings_backup.tsx, facilities_backup.tsx, teams_backup.tsx, teams_broken.tsx, finance_backup.tsx
+  - Projektstruktur ist jetzt vollständig bereinigt ohne veraltete Entwicklungsdateien
 - **Cache-Invalidierung systemweit implementiert**: Echtzeitdaten bei Navigation zwischen Seiten gewährleistet
   - Alle CRUD-Operationen (Create, Update, Delete) invalidieren jetzt Dashboard-, Kalender- und Buchungs-Queries
   - Verhindert veraltete Daten beim Seitenwechsel nach Buchungsänderungen

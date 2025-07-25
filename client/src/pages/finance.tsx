@@ -50,7 +50,8 @@ import {
   Wallet,
   Trophy,
   Building,
-  BarChart3
+  BarChart3,
+  FileText
 } from "lucide-react";
 import { FeesTabContent } from "./finance-fees";
 import { format } from "date-fns";
@@ -1396,125 +1397,141 @@ export default function Finance() {
             </DialogHeader>
 
             {selectedFinance && (
-              <div className="space-y-6">
+              <div className="space-y-6 mt-6">
                 {/* Basic Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Typ</Label>
-                    <div className="flex items-center space-x-2">
-                      <div className={`p-2 rounded-lg ${
-                        selectedFinance.type === 'income' 
-                          ? 'bg-green-100 dark:bg-green-900/30' 
-                          : 'bg-red-100 dark:bg-red-900/30'
-                      }`}>
-                        {selectedFinance.type === 'income' ? (
-                          <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
-                        )}
-                      </div>
-                      <span className="font-medium">
+                    <label className="text-sm font-medium text-muted-foreground">Typ</label>
+                    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                      {selectedFinance.type === 'income' ? (
+                        <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      )}
+                      <span className="text-sm">
                         {selectedFinance.type === 'income' ? 'Einnahme' : 'Ausgabe'}
                       </span>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Betrag</Label>
-                    <p className={`text-2xl font-bold ${
-                      selectedFinance.type === 'income' 
-                        ? 'text-green-600 dark:text-green-400' 
-                        : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {selectedFinance.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(selectedFinance.amount))}
-                    </p>
+                    <label className="text-sm font-medium text-muted-foreground">Betrag</label>
+                    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                      <Euro className="h-4 w-4 text-muted-foreground" />
+                      <span className={`text-sm font-bold ${
+                        selectedFinance.type === 'income' 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {selectedFinance.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(selectedFinance.amount))}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Beschreibung</Label>
-                    <p className="text-foreground">{selectedFinance.description}</p>
+                    <label className="text-sm font-medium text-muted-foreground">Beschreibung</label>
+                    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{selectedFinance.description}</span>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Kategorie</Label>
-                    <div className="flex items-center space-x-2">
+                    <label className="text-sm font-medium text-muted-foreground">Kategorie</label>
+                    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
                       {getCategoryIcon(selectedFinance.category)}
-                      <span>{selectedFinance.category}</span>
+                      <span className="text-sm">{selectedFinance.category}</span>
                       {selectedFinance.subcategory && (
-                        <Badge variant="outline">{selectedFinance.subcategory}</Badge>
+                        <Badge variant="outline" className="ml-2">{selectedFinance.subcategory}</Badge>
                       )}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Datum</Label>
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span>{formatDate(selectedFinance.date)}</span>
+                    <label className="text-sm font-medium text-muted-foreground">Datum</label>
+                    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{formatDate(selectedFinance.date)}</span>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Priorität</Label>
-                    <div className="flex items-center space-x-2">
+                    <label className="text-sm font-medium text-muted-foreground">Priorität</label>
+                    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
                       {getPriorityIcon(selectedFinance.priority)}
-                      <span className="text-sm text-muted-foreground capitalize">{translatePriority(selectedFinance.priority)}</span>
+                      <span className="text-sm capitalize">{translatePriority(selectedFinance.priority)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Additional Information */}
                 {(selectedFinance.dueDate || selectedFinance.paymentMethod || selectedFinance.recurring) && (
-                  <div className="border-t pt-4">
-                    <h4 className="font-medium mb-3">Zusätzliche Informationen</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {selectedFinance.dueDate && (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Fälligkeitsdatum</Label>
-                          <p>{formatDate(selectedFinance.dueDate)}</p>
-                        </div>
-                      )}
-
-                      {selectedFinance.paymentMethod && (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Zahlungsmethode</Label>
-                          <p>{translatePaymentMethod(selectedFinance.paymentMethod)}</p>
-                        </div>
-                      )}
-
-                      {selectedFinance.recurring && (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Wiederkehrend</Label>
-                          <div className="flex items-center space-x-2">
-                            <CheckCircle2 className="w-4 h-4 text-green-500" />
-                            <span>{selectedFinance.recurringInterval || 'Ja'}</span>
+                  <>
+                    <div className="border-t pt-4">
+                      <h3 className="text-lg font-semibold border-b pb-2 mb-4">Zusätzliche Informationen</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {selectedFinance.dueDate && (
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Fälligkeitsdatum</label>
+                            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{formatDate(selectedFinance.dueDate)}</span>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+
+                        {selectedFinance.paymentMethod && (
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Zahlungsmethode</label>
+                            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                              <CreditCard className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{translatePaymentMethod(selectedFinance.paymentMethod)}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedFinance.recurring && (
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Wiederkehrend</label>
+                            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <span className="text-sm">{selectedFinance.recurringInterval || 'Ja'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
 
                 {/* Notes */}
                 {selectedFinance.notes && (
                   <div className="border-t pt-4">
-                    <Label className="text-sm font-medium text-muted-foreground">Notizen</Label>
-                    <p className="mt-2 text-foreground whitespace-pre-wrap">{selectedFinance.notes}</p>
+                    <h3 className="text-lg font-semibold border-b pb-2 mb-4">Notizen</h3>
+                    <div className="p-3 bg-muted/30 rounded-lg">
+                      <p className="text-sm whitespace-pre-wrap">{selectedFinance.notes}</p>
+                    </div>
                   </div>
                 )}
 
-                {/* Metadata */}
-                <div className="border-t pt-4 text-sm text-muted-foreground">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <span className="font-medium">Erstellt:</span> {formatDate(selectedFinance.createdAt)}
-                    </div>
-                    {selectedFinance.updatedAt !== selectedFinance.createdAt && (
-                      <div>
-                        <span className="font-medium">Aktualisiert:</span> {formatDate(selectedFinance.updatedAt)}
-                      </div>
-                    )}
-                  </div>
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+                  <Button
+                    onClick={() => setIsDetailsDialogOpen(false)}
+                    variant="outline"
+                  >
+                    Schließen
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsDetailsDialogOpen(false);
+                      handleEditFinance(selectedFinance);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Bearbeiten
+                  </Button>
                 </div>
               </div>
             )}

@@ -76,7 +76,7 @@ export default function Teams() {
   const [teamToDelete, setTeamToDelete] = useState<any>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [viewingTeam, setViewingTeam] = useState<any>(null);
-  const [selectedTrainers, setSelectedTrainers] = useState<number[]>([]);
+  const [selectedTrainers, setSelectedTrainers] = useState<{id: number, role: string}[]>([]);
 
   const form = useForm<TeamFormData>({
     resolver: zodResolver(teamFormSchema),
@@ -339,10 +339,13 @@ export default function Teams() {
       season: team.season || "2024/25",
     });
     
-    // Load current trainers for this team
+    // Load current trainers/staff for this team with their roles
     const currentTrainers = teamMemberships
-      .filter((tm: any) => tm.teamId === team.id && tm.role === 'trainer')
-      .map((tm: any) => tm.memberId);
+      .filter((tm: any) => 
+        tm.teamId === team.id && 
+        ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.role)
+      )
+      .map((tm: any) => ({ id: tm.memberId, role: tm.role }));
     setSelectedTrainers(currentTrainers);
     
     setTeamModalOpen(true);
@@ -368,22 +371,22 @@ export default function Teams() {
 
   // Update team memberships for trainers
   const updateTeamMembershipsMutation = useMutation({
-    mutationFn: async ({ teamId, trainerIds }: { teamId: number; trainerIds: number[] }) => {
-      // Remove existing trainer memberships for this team
+    mutationFn: async ({ teamId, trainers }: { teamId: number; trainers: {id: number, role: string}[] }) => {
+      // Remove existing trainer/staff memberships for this team
       await fetch(`/api/teams/${teamId}/trainers`, {
         method: 'DELETE',
       });
 
-      // Add new trainer memberships
-      for (const memberId of trainerIds) {
+      // Add new trainer memberships with specific roles
+      for (const trainer of trainers) {
         await fetch(`/api/teams/${teamId}/memberships`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            memberId,
-            role: 'trainer',
+            memberId: trainer.id,
+            role: trainer.role,
             status: 'active',
           }),
         });
@@ -408,7 +411,7 @@ export default function Teams() {
       if (teamId && selectedTrainers.length >= 0) {
         await updateTeamMembershipsMutation.mutateAsync({
           teamId,
-          trainerIds: selectedTrainers
+          trainers: selectedTrainers
         });
       }
     } catch (error) {
@@ -1050,30 +1053,59 @@ export default function Teams() {
                   ) : (
                     members
                       .filter((member: any) => member.status === 'active')
-                      .map((member: any) => (
-                        <div key={member.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`trainer-${member.id}`}
-                            checked={selectedTrainers.includes(member.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedTrainers([...selectedTrainers, member.id]);
-                              } else {
-                                setSelectedTrainers(selectedTrainers.filter(id => id !== member.id));
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`trainer-${member.id}`}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                          >
-                            {member.firstName} {member.lastName}
-                            {member.email && (
-                              <span className="text-muted-foreground ml-1">({member.email})</span>
+                      .map((member: any) => {
+                        const isSelected = selectedTrainers.some(t => t.id === member.id);
+                        const currentRole = selectedTrainers.find(t => t.id === member.id)?.role || 'trainer';
+                        
+                        return (
+                          <div key={member.id} className="flex items-center space-x-2 p-2 border rounded-md">
+                            <Checkbox
+                              id={`trainer-${member.id}`}
+                              checked={isSelected}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedTrainers([...selectedTrainers, { id: member.id, role: 'trainer' }]);
+                                } else {
+                                  setSelectedTrainers(selectedTrainers.filter(t => t.id !== member.id));
+                                }
+                              }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <label
+                                htmlFor={`trainer-${member.id}`}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer block"
+                              >
+                                {member.firstName} {member.lastName}
+                                {member.email && (
+                                  <span className="text-muted-foreground text-xs block">({member.email})</span>
+                                )}
+                              </label>
+                            </div>
+                            {isSelected && (
+                              <Select
+                                value={currentRole}
+                                onValueChange={(role) => {
+                                  setSelectedTrainers(prev => 
+                                    prev.map(t => t.id === member.id ? { ...t, role } : t)
+                                  );
+                                }}
+                              >
+                                <SelectTrigger className="w-32 h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="trainer">Trainer</SelectItem>
+                                  <SelectItem value="co-trainer">Co-Trainer</SelectItem>
+                                  <SelectItem value="assistant">Assistenz</SelectItem>
+                                  <SelectItem value="manager">Manager</SelectItem>
+                                  <SelectItem value="physiotherapist">Physiotherapeut</SelectItem>
+                                  <SelectItem value="doctor">Arzt</SelectItem>
+                                </SelectContent>
+                              </Select>
                             )}
-                          </label>
-                        </div>
-                      ))
+                          </div>
+                        );
+                      })
                   )}
                 </div>
                 {selectedTrainers.length > 0 && (

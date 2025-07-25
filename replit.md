@@ -11,13 +11,19 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **SV Oberglan 1975 vollständig mit Personal ausgestattet**: Alle Funktionäre und Trainer von OEFB-Website importiert
+  - 21 Funktionäre hinzugefügt: Manuel Vaschauner (Obmann), Andreas Hartner & Peter Tengg (Präsidenten)
+  - Christine Gaggl (Sektionsleiterin Frauen/Nachwuchsleiterin), Diethard Knes (Kassier)
+  - Ordnerdienst-Team: Andreas Gaggl (Obmann), Dietmar Pirmann, Günther Sulzgruber, Reinhard Kohlweg
+  - 10 Trainer integriert: Hans Florian Zuschlag (KM), Lucas Londer (Co-KM/U15), Patrick Salzmann (KM-FR)
+  - Jugendtrainer: Gerhard Tillinger (U15), Loren Mikitsch (U12A), Markus Kogler (U12B), Bernhard Buttazoni (U10)
+  - Alle Kontaktdaten (E-Mail, Telefon) und Funktionen korrekt erfasst mit authentischen OEFB-Daten
 - **SV Oberglan 1975 Club vollständig konfiguriert**: Authentische Vereinsdaten von OEFB-Website importiert
   - Vollständige Kontaktdaten: Telefon (0676/651 41 10), E-Mail (manuel.vaschauner@gmx.at)
   - Vereinsadresse (Falkenweg 6, Feldkirchen) und Sportplatz (AMTMANN Arena Oberglan, Markstein)
   - Detaillierte Mannschaftsstruktur: 8 Teams (29 KM/Res Spieler: 19♂/10♀, 3 Nachwuchs: 1♂/2♀)
   - ASVÖ Mitgliedschaft, Vereinsnummer 9143, Facebook-Seite integriert
   - Originallogo und Vereinsfarben (Grün/Gold), Hauptsponsor Omega Bittner
-  - Club ist vollständig konfiguriert für alle Funktionen
 - **Rollenbasierte Zugriffskontrolle vollständig implementiert**: Benutzer ohne Team-Zuordnung erhalten nur Leserechte
   - ProtectedButton-Komponente erstellt mit deaktivierten Zuständen und erklärenden Tooltips
   - ProtectedForm-Komponente implementiert für Nur-Lese-Modus bei fehlenden Berechtigungen

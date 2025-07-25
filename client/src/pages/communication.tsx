@@ -82,12 +82,12 @@ export default function Communication() {
   const { selectedClub } = useClub();
   
   // Get members and teams for recipient selection
-  const { data: members = [] } = useQuery({
+  const { data: members = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'members'],
     enabled: !!selectedClub?.id,
   });
   
-  const { data: teams = [] } = useQuery({
+  const { data: teams = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
     enabled: !!selectedClub?.id,
   });
@@ -123,7 +123,7 @@ export default function Communication() {
   // WebSocket connection
   const { isConnected: wsConnected, sendMessage: wsSendMessage } = useWebSocket(
     selectedClub?.id || 0, 
-    user?.id || ""
+    (user as any)?.id?.toString() || ""
   );
 
   // State management
@@ -186,9 +186,9 @@ export default function Communication() {
     if (!searchTerm.trim()) return;
     
     const filteredMessages = displayMessages.filter(msg => 
-      msg.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (msg.subject?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       msg.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      msg.sender.toLowerCase().includes(searchTerm.toLowerCase())
+      (msg.sender?.firstName + ' ' + msg.sender?.lastName).toLowerCase().includes(searchTerm.toLowerCase())
     );
     
     toast({
@@ -280,7 +280,7 @@ export default function Communication() {
           <CardContent>
             <div className="text-2xl font-bold">{stats?.totalMessages || displayMessages.length}</div>
             <p className="text-xs text-muted-foreground">
-              {stats?.unreadMessages || displayMessages.filter(m => m.type !== 'announcement').length} ungelesen
+              {stats?.unreadMessages || displayMessages.length} ungelesen
             </p>
           </CardContent>
         </Card>
@@ -291,7 +291,7 @@ export default function Communication() {
             <Megaphone className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalAnnouncements || displayMessages.filter(m => m.type === 'announcement').length}</div>
+            <div className="text-2xl font-bold">{stats?.totalAnnouncements || announcements?.length || 0}</div>
             <p className="text-xs text-muted-foreground">Diese Woche</p>
           </CardContent>
         </Card>
@@ -583,7 +583,7 @@ export default function Communication() {
                         setSelectedRecipients(["all"]);
                       }}
                     >
-                      Alle ({members.length})
+                      Alle ({(members as any[]).length})
                     </Button>
                     <Button
                       type="button"
@@ -594,7 +594,7 @@ export default function Communication() {
                         setSelectedRecipients([]);
                       }}
                     >
-                      Teams ({teams.length})
+                      Teams ({(teams as any[]).length})
                     </Button>
                     <Button
                       type="button"
@@ -615,7 +615,7 @@ export default function Communication() {
                   <div className="space-y-2">
                     <ScrollArea className="h-48 border rounded-md p-3">
                       <div className="space-y-2">
-                        {recipientType === "teams" && teams.map((team) => (
+                        {recipientType === "teams" && teams.map((team: any) => (
                           <div key={team.id} className="flex items-center space-x-2">
                             <Checkbox
                               id={`team_${team.id}`}
@@ -640,7 +640,7 @@ export default function Communication() {
                           </div>
                         ))}
                         
-                        {recipientType === "members" && members.map((member) => (
+                        {recipientType === "members" && members.map((member: any) => (
                           <div key={member.id} className="flex items-center space-x-2">
                             <Checkbox
                               id={`member_${member.id}`}
@@ -691,7 +691,7 @@ export default function Communication() {
                 {/* All Members Summary */}
                 {recipientType === "all" && (
                   <div className="text-sm text-gray-600 bg-blue-50 p-2 rounded">
-                    <strong>Alle Vereinsmitglieder:</strong> {members.length} Personen erhalten diese Nachricht
+                    <strong>Alle Vereinsmitglieder:</strong> {(members as any[]).length} Personen erhalten diese Nachricht
                   </div>
                 )}
               </div>

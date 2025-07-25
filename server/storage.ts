@@ -703,77 +703,54 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecentActivity(clubId: number): Promise<any[]> {
-    // Nur Aktivitäten der letzten 5 Tage
-    const fiveDaysAgo = new Date();
-    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-    fiveDaysAgo.setHours(0, 0, 0, 0);
+    try {
+      // Alle Aktivitäten ohne Datumsbeschränkung abrufen und clientseitig filtern
+      const allMembers = await db
+        .select()
+        .from(members)
+        .where(eq(members.clubId, clubId))
+        .orderBy(desc(members.createdAt))
+        .limit(20);
 
-    const recentMembers = await db
-      .select()
-      .from(members)
-      .where(
-        and(
-          eq(members.clubId, clubId),
-          gte(members.createdAt, fiveDaysAgo)
-        )
-      )
-      .orderBy(desc(members.createdAt))
-      .limit(10);
+      const allBookings = await db
+        .select()
+        .from(bookings)
+        .where(eq(bookings.clubId, clubId))
+        .orderBy(desc(bookings.createdAt))
+        .limit(20);
 
-    const recentBookings = await db
-      .select()
-      .from(bookings)
-      .where(
-        and(
-          eq(bookings.clubId, clubId),
-          gte(bookings.createdAt, fiveDaysAgo)
-        )
-      )
-      .orderBy(desc(bookings.createdAt))
-      .limit(10);
+      const activities = [
+        ...allMembers.map(m => ({
+          type: 'member_added',
+          description: `${m.firstName} ${m.lastName} wurde als neues Mitglied hinzugefügt`,
+          timestamp: m.createdAt,
+          icon: 'user-plus',
+        })),
+        ...allBookings.filter(b => b.type !== 'event').map(b => ({
+          type: 'booking_created',
+          description: `${b.title} wurde gebucht`,
+          timestamp: b.createdAt,
+          icon: 'calendar',
+        })),
+        ...allBookings.filter(b => b.type === 'event').map(e => ({
+          type: 'event_created',
+          description: `${e.title} wurde als neuer Termin hinzugefügt`,
+          timestamp: e.createdAt,
+          icon: 'calendar',
+        })),
+      ];
 
-    // Events are now part of bookings table
-    const recentEvents = await db
-      .select()
-      .from(bookings)
-      .where(
-        and(
-          eq(bookings.clubId, clubId),
-          eq(bookings.type, 'event'),
-          gte(bookings.createdAt, fiveDaysAgo)
-        )
-      )
-      .orderBy(desc(bookings.createdAt))
-      .limit(10);
-
-    const activities = [
-      ...recentMembers.map(m => ({
-        type: 'member_added',
-        description: `${m.firstName} ${m.lastName} wurde als neues Mitglied hinzugefügt`,
-        timestamp: m.createdAt,
-        icon: 'user-plus',
-      })),
-      ...recentBookings.map(b => ({
-        type: 'booking_created',
-        description: `${b.title} wurde gebucht`,
-        timestamp: b.createdAt,
-        icon: 'calendar',
-      })),
-      ...recentEvents.map(e => ({
-        type: 'event_created',
-        description: `${e.title} wurde als neuer Termin hinzugefügt`,
-        timestamp: e.createdAt,
-        icon: 'calendar',
-      })),
-    ];
-
-    return activities
-      .sort((a, b) => {
-        const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-        const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-        return bTime - aTime;
-      })
-      .slice(0, 10);
+      return activities
+        .sort((a, b) => {
+          const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+          const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+          return bTime - aTime;
+        })
+        .slice(0, 10);
+    } catch (error) {
+      console.error('Recent Activity Error:', error);
+      return [];
+    }
   }
 
   // Player operations

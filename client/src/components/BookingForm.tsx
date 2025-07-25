@@ -565,74 +565,76 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
           />
         </div>
 
-        {/* Wiederkehrende Buchungen Sektion */}
-        <div className="bg-muted/30 p-4 rounded-lg border">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="recurring"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base font-medium">Wiederkehrende Buchung</FormLabel>
-                    <div className="text-sm text-muted-foreground">
-                      Diese Buchung automatisch wiederholen
+        {/* Wiederkehrende Buchungen Sektion - nur bei Neuanlage */}
+        {!editingBooking && (
+          <div className="bg-muted/30 p-4 rounded-lg border">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="recurring"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base font-medium">Wiederkehrende Buchung</FormLabel>
+                      <div className="text-sm text-muted-foreground">
+                        Diese Buchung automatisch wiederholen
+                      </div>
                     </div>
-                  </div>
-                  <FormControl>
-                    <input
-                      type="checkbox"
-                      checked={field.value || false}
-                      onChange={field.onChange}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-            {form.watch('recurring') && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="recurringPattern"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Wiederholungsmuster *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
+              {form.watch('recurring') && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="recurringPattern"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Wiederholungsmuster *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Muster auswählen" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="daily">Täglich</SelectItem>
+                            <SelectItem value="weekly">Wöchentlich</SelectItem>
+                            <SelectItem value="monthly">Monatlich</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="recurringUntil"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Wiederholung bis *</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Muster auswählen" />
-                          </SelectTrigger>
+                          <Input type="date" {...field} value={field.value || ""} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="daily">Täglich</SelectItem>
-                          <SelectItem value="weekly">Wöchentlich</SelectItem>
-                          <SelectItem value="monthly">Monatlich</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="recurringUntil"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Wiederholung bis *</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} value={field.value || ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         <FormField
           control={form.control}

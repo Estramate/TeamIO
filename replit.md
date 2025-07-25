@@ -11,6 +11,16 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **UX-Verbesserung bei wiederkehrenden Buchungen**: Wiederkehrende Buchung-Option nur bei Neuanlage verfügbar
+  - Beim Bearbeiten bestehender Buchungen ist die wiederkehrende Option ausgeblendet
+  - Logische Trennung zwischen Erstellen (mit Wiederholung) und Bearbeiten (einzelne Buchung)
+  - Verbesserte Benutzerführung verhindert Verwirrung bei der Buchungsbearbeitung
+- **BookingForm-Komponente vollständig stabilisiert**: Alle Runtime-Fehler und Zeitzone-Probleme behoben
+  - Robuste Datumsbehandlung mit lokaler Zeitkonvertierung implementiert
+  - SelectItem-Fehler durch value="none" statt leerem String behoben
+  - TypeScript-Fehler bei facilities und teams durch Default-Arrays korrigiert
+  - Verfügbarkeitsprüfung mit korrekter ISO-String-Konvertierung repariert
+  - Code-Duplikation vollständig eliminiert (über 1000 Zeilen entfernt)
 - **Kalender-Duplikate und Ortsanzeige-Probleme behoben**: Events-Darstellung im Kalender korrigiert
   - Events-API-Route auf leeres Array gesetzt um Duplikate zu vermeiden (Events sind jetzt Bookings mit type='event')
   - Doppelte Ortsanzeige behoben: Einheitliche Anzeige von facilityName oder location (nicht beide)

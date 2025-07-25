@@ -1188,9 +1188,7 @@ export default function Teams() {
                      viewingTeam.gender === 'female' ? 'Damen' : 'Mixed'}
                   </Badge>
                 )}
-                <Badge variant={getStatusBadgeVariant(viewingTeam.status)}>
-                  {getStatusLabel(viewingTeam.status)}
-                </Badge>
+
               </div>
               
               {viewingTeam.description && (

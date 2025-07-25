@@ -1001,37 +1001,44 @@ export default function Players() {
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-3">
-                  <div className="relative">
-                    {viewingPlayer?.profileImageUrl ? (
-                      <img
-                        src={viewingPlayer.profileImageUrl}
-                        alt={`${viewingPlayer.firstName} ${viewingPlayer.lastName}`}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-muted"
-                        onError={(e) => {
-                          const img = e.target as HTMLImageElement;
-                          img.style.display = 'none';
-                          img.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                    ) : null}
-                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center ${viewingPlayer?.profileImageUrl ? 'hidden' : ''}`}>
-                      <Users className="h-6 w-6 text-primary/60" />
-                    </div>
-                    {viewingPlayer?.jerseyNumber && (
-                      <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
-                        {viewingPlayer.jerseyNumber}
+                <DialogTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      {viewingPlayer?.profileImageUrl ? (
+                        <img
+                          src={viewingPlayer.profileImageUrl}
+                          alt={`${viewingPlayer.firstName} ${viewingPlayer.lastName}`}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-muted"
+                          onError={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            img.style.display = 'none';
+                            img.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center ${viewingPlayer?.profileImageUrl ? 'hidden' : ''}`}>
+                        <Users className="h-6 w-6 text-primary/60" />
                       </div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold">
-                      {viewingPlayer?.firstName} {viewingPlayer?.lastName}
+                      {viewingPlayer?.jerseyNumber && (
+                        <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
+                          {viewingPlayer.jerseyNumber}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-sm text-muted-foreground font-normal">
-                      Spielerdetails
+                    <div>
+                      <div className="text-xl font-bold">
+                        {viewingPlayer?.firstName} {viewingPlayer?.lastName}
+                      </div>
+                      <div className="text-sm text-muted-foreground font-normal">
+                        Spielerdetails
+                      </div>
                     </div>
                   </div>
+                  {viewingPlayer && (
+                    <Badge variant={getStatusBadgeVariant(viewingPlayer.status)} className="border-0">
+                      {statusOptions.find(s => s.value === viewingPlayer.status)?.label || viewingPlayer.status}
+                    </Badge>
+                  )}
                 </DialogTitle>
               </DialogHeader>
               
@@ -1065,12 +1072,7 @@ export default function Players() {
                             </span>
                           </div>
                         )}
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Status:</span>
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(viewingPlayer.status)}`}>
-                            {statusOptions.find(s => s.value === viewingPlayer.status)?.label || viewingPlayer.status}
-                          </span>
-                        </div>
+
                       </div>
                     </div>
 

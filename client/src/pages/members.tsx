@@ -1310,13 +1310,7 @@ export default function Members() {
           
           {viewingMember && (
             <div className="space-y-6 mt-6">
-              {/* Status */}
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                <span className="text-sm font-medium text-muted-foreground">Status</span>
-                <Badge variant={getStatusBadgeVariant(viewingMember.status)}>
-                  {getStatusLabel(viewingMember.status)}
-                </Badge>
-              </div>
+
 
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -997,12 +997,7 @@ export default function Facilities() {
                   <h4 className="font-medium text-sm text-muted-foreground">Typ</h4>
                   <p className="mt-1">{viewingFacility.type || 'Nicht angegeben'}</p>
                 </div>
-                <div>
-                  <h4 className="font-medium text-sm text-muted-foreground">Status</h4>
-                  <div className="mt-1">
-                    {getStatusBadge(viewingFacility.status || 'active')}
-                  </div>
-                </div>
+
                 {viewingFacility.capacity && (
                   <div>
                     <h4 className="font-medium text-sm text-muted-foreground">Kapazität</h4>

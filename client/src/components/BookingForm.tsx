@@ -123,11 +123,11 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
   });
 
   // Data queries
-  const { data: facilities } = useQuery({
+  const { data: facilities = [] } = useQuery({
     queryKey: [`/api/clubs/${selectedClubId}/facilities`],
   });
 
-  const { data: teams } = useQuery({
+  const { data: teams = [] } = useQuery({
     queryKey: [`/api/clubs/${selectedClubId}/teams`],
   });
 
@@ -189,7 +189,11 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
 
   // Availability check function
   const checkAvailability = () => {
-    if (!form.getValues('startTime') || !form.getValues('endTime') || !form.getValues('facilityId')) {
+    const startTime = form.getValues('startTime');
+    const endTime = form.getValues('endTime');
+    const facilityId = form.getValues('facilityId');
+
+    if (!startTime || !endTime || !facilityId) {
       setAvailabilityStatus({
         available: false,
         message: 'Bitte füllen Sie alle Felder (Anlage, Startzeit, Endzeit) aus.'
@@ -199,10 +203,14 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
 
     setIsCheckingAvailability(true);
 
+    // Convert datetime-local to proper ISO strings for the API
+    const startTimeISO = new Date(startTime).toISOString();
+    const endTimeISO = new Date(endTime).toISOString();
+
     checkAvailabilityMutation.mutate({
-      facilityId: parseInt(form.getValues('facilityId')),
-      startTime: form.getValues('startTime'),
-      endTime: form.getValues('endTime'),
+      facilityId: parseInt(facilityId),
+      startTime: startTimeISO,
+      endTime: endTimeISO,
       excludeBookingId: editingBooking?.id
     }, {
       onSuccess: (data: any) => {
@@ -213,9 +221,10 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
         setIsCheckingAvailability(false);
       },
       onError: (error: any) => {
+        console.error('Availability check error:', error);
         setAvailabilityStatus({
           available: false,
-          message: error.message || 'Fehler bei der Verfügbarkeitsprüfung'
+          message: error.response?.data?.message || error.message || 'Fehler bei der Verfügbarkeitsprüfung'
         });
         setIsCheckingAvailability(false);
       }

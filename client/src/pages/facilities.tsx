@@ -482,106 +482,119 @@ export default function Facilities() {
           </CardContent>
         </Card>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredFacilities.map((facility) => (
             <Card 
               key={facility.id} 
-              className="group hover:shadow-md transition-all duration-200 cursor-pointer border rounded-lg"
-              onClick={() => handleViewFacility(facility)}
+              className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md overflow-hidden"
             >
-              <CardHeader className="pb-2 sm:pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-2 flex-1 min-w-0">
-                    {getTypeIcon(facility.type || '')}
-                    <CardTitle className="text-sm sm:text-base truncate">{facility.name}</CardTitle>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-8 w-8 p-0"
+              {/* Einfacher grauer Header - schlicht und modern */}
+              <div className="h-2 bg-gradient-to-r from-muted to-muted/80"></div>
+              
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">🏢</span>
+                      <h3 
+                        className="text-lg font-semibold text-foreground truncate cursor-pointer hover:underline"
+                        onClick={() => handleViewFacility(facility)}
+                        title={facility.name}
                       >
+                        {facility.name}
+                      </h3>
+                    </div>
+                    
+                    {facility.location && (
+                      <p className="text-sm text-muted-foreground mb-3">
+                        📍 {facility.location}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewFacility(facility);
-                      }}>
-                        <Eye className="mr-2 h-4 w-4" />
+                      <DropdownMenuItem onClick={() => handleViewFacility(facility)}>
+                        <Eye className="h-4 w-4 mr-2" />
                         Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditFacility(facility);
-                      }}>
-                        <Edit className="mr-2 h-4 w-4" />
+                      <DropdownMenuItem onClick={() => handleEditFacility(facility)}>
+                        <Edit className="h-4 w-4 mr-2" />
                         Bearbeiten
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleStatus(facility);
-                        }}
+                        onClick={() => handleToggleStatus(facility)}
                         disabled={toggleFacilityStatusMutation.isPending}
                         className={(facility.status === 'active' || facility.status === 'available') ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
                       >
                         {(facility.status === 'active' || facility.status === 'available') ? (
                           <>
-                            <Building className="mr-2 h-4 w-4" />
+                            <AlertCircle className="h-4 w-4 mr-2" />
                             Deaktivieren
                           </>
                         ) : (
                           <>
-                            <Building className="mr-2 h-4 w-4" />
+                            <Building className="h-4 w-4 mr-2" />
                             Aktivieren
                           </>
                         )}
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteFacility(facility);
-                        }}
+                        onClick={() => handleDeleteFacility(facility)}
                         className="text-destructive focus:text-destructive"
                       >
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        <Trash2 className="h-4 w-4 mr-2" />
                         Löschen
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-muted-foreground">Typ</span>
-                    <span className="text-xs sm:text-sm font-medium truncate max-w-[120px]">{getTypeDisplayName(facility.type || '')}</span>
-                  </div>
+
+                {/* Status Badge */}
+                <div className="flex items-center gap-2 mb-4">
+                  {getStatusBadge(facility.status || 'active')}
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs"
+                  >
+                    {getTypeDisplayName(facility.type || '')}
+                  </Badge>
+                </div>
+
+                {/* Facility Details */}
+                <div className="space-y-3 text-sm">
                   {facility.capacity && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm text-muted-foreground">Kapazität</span>
-                      <span className="text-xs sm:text-sm font-medium flex items-center">
-                        <Users className="w-3 h-3 mr-1" />
-                        {facility.capacity}
+                    <div className="flex items-center justify-between py-1">
+                      <span className="text-muted-foreground flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Kapazität
                       </span>
+                      <span className="font-medium">{facility.capacity}</span>
                     </div>
                   )}
-                  {facility.location && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm text-muted-foreground">Standort</span>
-                      <span className="text-xs sm:text-sm font-medium flex items-center truncate max-w-[120px]">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        {facility.location}
+
+                  {facility.type && (
+                    <div className="flex items-center justify-between py-1">
+                      <span className="text-muted-foreground flex items-center gap-2">
+                        <Building className="h-4 w-4" />
+                        Typ
                       </span>
+                      <span className="font-medium">{getTypeDisplayName(facility.type)}</span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status</span>
-                    {getStatusBadge(facility.status || 'active')}
-                  </div>
+
+                  {facility.description && (
+                    <div className="pt-3 mt-3 border-t border-border">
+                      <p className="text-muted-foreground text-xs leading-relaxed">
+                        {facility.description}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

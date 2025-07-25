@@ -11,6 +11,13 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Rollenbasierte Zugriffskontrolle vollständig implementiert**: Benutzer ohne Team-Zuordnung erhalten nur Leserechte
+  - ProtectedButton-Komponente erstellt mit deaktivierten Zuständen und erklärenden Tooltips
+  - ProtectedForm-Komponente implementiert für Nur-Lese-Modus bei fehlenden Berechtigungen
+  - usePermissions Hook entwickelt basierend auf Team-Zuordnungen und Club-Mitgliedschaft
+  - Teams-, Players- und Facilities-Seiten mit geschützten Interaktionen ausgestattet
+  - Einheitliche "Kein Verein ausgewählt" Nachrichten auf allen Seiten ohne Club-Auswahl
+  - Club-Auswahl LocalStorage-Bug behoben mit Versionierung und Migration
 - **Datenbank vollständig bereinigt**: Alle Datensätze gelöscht und Sequenzen zurückgesetzt
   - Gelöscht: 22 Spieler-Team-Zuordnungen, 4 Team-Mitgliedschaften, 3 Buchungen, 4 Finanzen, 22 Spieler, 8 Mitglieder, 2 Anlagen, 10 Teams, 1 Verein, 1 Benutzer
   - Zurückgesetzt: Alle 13 Auto-Increment-Sequenzen starten wieder bei 1

@@ -373,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check availability before creating booking
       const availability = await storage.checkBookingAvailability(
-        bookingData.facilityId, 
+        bookingData.facilityId!, 
         bookingData.startTime, 
         bookingData.endTime
       );
@@ -417,7 +417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             // Verfügbarkeitsprüfung für jede Buchung
             const currentAvailability = await storage.checkBookingAvailability(
-              currentBookingData.facilityId, 
+              currentBookingData.facilityId!, 
               currentBookingData.startTime, 
               currentBookingData.endTime
             );
@@ -465,7 +465,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         console.log("DEBUG Route: Final booking data with IDs:", finalBookingData);
         
-        const booking = await storage.createBooking(finalBookingData);
+        const booking = await storage.createBooking({
+          ...finalBookingData,
+          startTime: new Date(finalBookingData.startTime),
+          endTime: new Date(finalBookingData.endTime)
+        });
         console.log("DEBUG Route: Created booking:", booking);
         res.json(booking);
       }
@@ -1198,8 +1202,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const validatedData = insertNotificationSchema.parse(req.body);
     const notificationData = {
-      clubId,
       ...validatedData,
+      clubId,
     };
     
     const notification = await storage.createNotification(notificationData);

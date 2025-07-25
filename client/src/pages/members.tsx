@@ -666,7 +666,7 @@ export default function Members() {
                           <div className="text-xs font-medium text-muted-foreground mb-1">Teams</div>
                           <div className="flex flex-wrap gap-1">
                             {memberTeams.slice(0, 2).map((team: any, idx: number) => (
-                              <span key={team.id} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md font-medium">
+                              <span key={`${member.id}-team-${team.id}-${idx}`} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md font-medium">
                                 {team.name}
                               </span>
                             ))}
@@ -771,8 +771,8 @@ export default function Members() {
                           <div className="space-y-1">
                             {memberTeams.length > 0 ? (
                               <div className="max-w-xs">
-                                {memberTeams.slice(0, 2).map((team: any) => (
-                                  <div key={team.id} className="flex items-center justify-between text-xs bg-blue-50 dark:bg-blue-950/30 rounded-md px-2 py-1 mb-1">
+                                {memberTeams.slice(0, 2).map((team: any, idx: number) => (
+                                  <div key={`${member.id}-table-team-${team.id}-${idx}`} className="flex items-center justify-between text-xs bg-blue-50 dark:bg-blue-950/30 rounded-md px-2 py-1 mb-1">
                                     <span className="font-medium text-foreground truncate flex-1">{team.name}</span>
                                     <Badge variant="outline" className="text-xs ml-2 shrink-0">
                                       {team.role === 'trainer' ? 'Trainer' : 

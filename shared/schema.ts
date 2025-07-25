@@ -536,6 +536,13 @@ export const bookingFormSchema = createInsertSchema(bookings, {
     val === '' || val === undefined || val === null ? null : 
     typeof val === 'string' ? parseFloat(val) : val
   ),
+  // Wiederholungsfelder
+  recurring: z.boolean().optional().default(false),
+  recurringPattern: z.string().optional(),
+  recurringUntil: z.union([z.string(), z.date()]).optional().nullable().transform((val) => 
+    val === '' || val === undefined || val === null ? null : 
+    typeof val === 'string' ? val : val.toISOString().split('T')[0]
+  ),
 });
 
 

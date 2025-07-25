@@ -389,17 +389,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Ensure clubId and userId are included
-      const finalBookingData = {
-        ...bookingData,
-        clubId,
-        userId: req.user.id,
-      };
-      console.log("DEBUG Route: Final booking data with IDs:", finalBookingData);
+      let createdBookings = [];
       
-      const booking = await storage.createBooking(finalBookingData);
-      console.log("DEBUG Route: Created booking:", booking);
-      res.json(booking);
+      // Wenn wiederkehrende Buchung aktiviert ist
+      if (bookingData.recurring && bookingData.recurringPattern && bookingData.recurringUntil) {
+        const startDate = new Date(bookingData.startTime);
+        const endDate = new Date(bookingData.endTime);
+        const recurringUntil = new Date(bookingData.recurringUntil);
+        
+        // Berechne die Dauer der ursprünglichen Buchung
+        const duration = endDate.getTime() - startDate.getTime();
+        
+        let currentDate = new Date(startDate);
+        
+        while (currentDate <= recurringUntil) {
+          const currentEndDate = new Date(currentDate.getTime() + duration);
+          
+          // Erstelle Buchung für aktuelles Datum
+          const currentBookingData = {
+            ...bookingData,
+            startTime: new Date(currentDate),
+            endTime: currentEndDate,
+            clubId,
+            userId: req.user.id,
+            // Nur die erste Buchung hat recurring=true, alle anderen sind normale Buchungen
+            recurring: createdBookings.length === 0 ? true : false,
+            recurringPattern: createdBookings.length === 0 ? bookingData.recurringPattern : undefined,
+            recurringUntil: createdBookings.length === 0 ? bookingData.recurringUntil : undefined,
+          };
+          
+          try {
+            // Verfügbarkeitsprüfung für jede Buchung
+            const currentAvailability = await storage.checkBookingAvailability(
+              currentBookingData.facilityId, 
+              currentBookingData.startTime, 
+              currentBookingData.endTime
+            );
+            
+            if (currentAvailability.available) {
+              const booking = await storage.createBooking(currentBookingData);
+              createdBookings.push(booking);
+              console.log(`DEBUG: Wiederkehrende Buchung erstellt für ${currentDate.toISOString()}`);
+            } else {
+              console.warn(`Buchung übersprungen für ${currentDate.toISOString()} - nicht verfügbar`);
+            }
+          } catch (error) {
+            console.error(`Fehler beim Erstellen der Buchung für ${currentDate.toISOString()}:`, error);
+          }
+          
+          // Nächstes Datum berechnen basierend auf Wiederholungsmuster
+          switch (bookingData.recurringPattern) {
+            case 'daily':
+              currentDate.setDate(currentDate.getDate() + 1);
+              break;
+            case 'weekly':
+              currentDate.setDate(currentDate.getDate() + 7);
+              break;
+            case 'monthly':
+              currentDate.setMonth(currentDate.getMonth() + 1);
+              break;
+            default:
+              throw new Error(`Unbekanntes Wiederholungsmuster: ${bookingData.recurringPattern}`);
+          }
+        }
+        
+        console.log(`DEBUG Route: ${createdBookings.length} wiederkehrende Buchungen erstellt`);
+        res.json({ 
+          message: `${createdBookings.length} wiederkehrende Buchungen erfolgreich erstellt`,
+          bookings: createdBookings,
+          count: createdBookings.length,
+          mainBooking: createdBookings[0] || null
+        });
+      } else {
+        // Normale Einzelbuchung
+        const finalBookingData = {
+          ...bookingData,
+          clubId,
+          userId: req.user.id,
+        };
+        console.log("DEBUG Route: Final booking data with IDs:", finalBookingData);
+        
+        const booking = await storage.createBooking(finalBookingData);
+        console.log("DEBUG Route: Created booking:", booking);
+        res.json(booking);
+      }
     } catch (error) {
       console.error("DEBUG Route: Error creating booking:", error);
       res.status(500).json({ message: "Failed to create booking" });

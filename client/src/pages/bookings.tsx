@@ -101,6 +101,10 @@ interface BookingFormData {
   cost?: string;
   status?: string;
   notes?: string;
+  // Wiederkehrende Buchungen
+  recurring?: boolean;
+  recurringPattern?: string;
+  recurringUntil?: string;
 }
 
 export default function Bookings() {
@@ -146,6 +150,10 @@ export default function Bookings() {
       notes: "",
       participants: "",
       cost: "",
+      // Wiederholungsfelder
+      recurring: false,
+      recurringPattern: "",
+      recurringUntil: ""
     },
   });
 
@@ -224,21 +232,33 @@ export default function Bookings() {
         teamId: bookingData.teamId || undefined,
         participants: bookingData.participants || undefined,
         cost: bookingData.cost ? String(bookingData.cost) : undefined,
+        // Wiederholungsfelder
+        recurring: bookingData.recurring || false,
+        recurringPattern: bookingData.recurringPattern || undefined,
+        recurringUntil: bookingData.recurringUntil || undefined,
       };
       
       return apiRequest("POST", `/api/clubs/${selectedClub?.id}/bookings`, cleanedData);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      // Unterschiedliche Toast-Nachrichten für normale vs. wiederkehrende Buchungen
+      if (response.count && response.count > 1) {
+        toast({
+          title: "Erfolg",
+          description: `${response.count} wiederkehrende Buchungen wurden erfolgreich erstellt`,
+        });
+      } else {
+        toast({
+          title: "Erfolg",
+          description: "Buchung wurde erfolgreich erstellt",
+        });
+      }
       queryClient.invalidateQueries({
         queryKey: ['/api/clubs', selectedClub?.id, 'bookings']
       });
       setBookingModalOpen(false);
       setSelectedBooking(null);
       form.reset();
-      toast({
-        title: "Erfolg",
-        description: "Buchung wurde erfolgreich erstellt.",
-      });
     },
     onError: (error: any) => {
       if (isUnauthorizedError(error)) {
@@ -266,6 +286,10 @@ export default function Bookings() {
         teamId: bookingData.teamId || undefined,
         participants: bookingData.participants || undefined,
         cost: bookingData.cost ? String(bookingData.cost) : undefined,
+        // Wiederholungsfelder
+        recurring: bookingData.recurring || false,
+        recurringPattern: bookingData.recurringPattern || undefined,
+        recurringUntil: bookingData.recurringUntil || undefined,
       };
       
       return apiRequest("PATCH", `/api/clubs/${selectedClub?.id}/bookings/${id}`, cleanedData);
@@ -462,6 +486,10 @@ export default function Bookings() {
       participants: booking.participants ? booking.participants.toString() : undefined,
       cost: booking.cost ? booking.cost : undefined,
       notes: booking.notes || "",
+      // Wiederholungsfelder
+      recurring: booking.recurring || false,
+      recurringPattern: booking.recurringPattern || "",
+      recurringUntil: booking.recurringUntil ? new Date(booking.recurringUntil).toISOString().split('T')[0] : ""
     });
     setBookingModalOpen(true);
   };
@@ -1261,6 +1289,82 @@ export default function Bookings() {
                     </FormItem>
                   )}
                 />
+              </div>
+
+              {/* Wiederkehrende Buchungen Sektion */}
+              <div className="bg-muted/30 p-4 rounded-lg border">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="recurring"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base font-medium">Wiederkehrende Buchung</FormLabel>
+                          <div className="text-sm text-muted-foreground">
+                            Diese Buchung automatisch wiederholen
+                          </div>
+                        </div>
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value || false}
+                            onChange={(e) => field.onChange(e.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("recurring") && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="recurringPattern"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Wiederholungsmuster</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Muster auswählen" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="daily">Täglich</SelectItem>
+                                  <SelectItem value="weekly">Wöchentlich</SelectItem>
+                                  <SelectItem value="monthly">Monatlich</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="recurringUntil"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Wiederholen bis</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="date" 
+                                  {...field}
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               <FormField

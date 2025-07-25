@@ -23,6 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   MessageCircle, 
   Send, 
@@ -77,6 +78,17 @@ export default function Communication() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  
+  // Get members and teams for recipient selection
+  const { data: members = [] } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'members'],
+    enabled: !!selectedClub?.id,
+  });
+  
+  const { data: teams = [] } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
+    enabled: !!selectedClub?.id,
+  });
   const { setPage } = usePage();
 
   // Set page title
@@ -154,39 +166,8 @@ export default function Communication() {
     },
   });
 
-  // Mock data for demonstration
-  const mockMessages = [
-    {
-      id: 1,
-      subject: "Training am Samstag verschoben",
-      content: "Das Training der Herren 1 am Samstag wird aufgrund des Wetters verschoben...",
-      sender: "Max Trainer",
-      recipients: "Herren 1",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      type: "team"
-    },
-    {
-      id: 2,
-      subject: "Vereinsfest 2025 - Save the Date",
-      content: "Liebe Mitglieder, unser Vereinsfest findet am 15. Juni 2025 statt...",
-      sender: "Vereinsvorstand",
-      recipients: "Alle Mitglieder",
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      type: "announcement"
-    },
-    {
-      id: 3,
-      subject: "Neue Trainingszeiten",
-      content: "Ab nächster Woche gelten neue Trainingszeiten für die Jugendmannschaften...",
-      sender: "Jugendleiter",
-      recipients: "Jugendtrainer",
-      timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000),
-      type: "info"
-    }
-  ];
-
-  // Use real messages if available, otherwise fallback to mock
-  const displayMessages = messages?.length > 0 ? messages : mockMessages;
+  // Use real messages from the API
+  const displayMessages = messages || [];
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -195,19 +176,7 @@ export default function Communication() {
     }
   }, [isAuthenticated, isLoading]);
 
-  const handleSendMessage = () => {
-    if (!messageText.trim()) return;
-    
-    toast({
-      title: "Nachricht gesendet",
-      description: `Nachricht wurde an ${recipient} gesendet`,
-    });
-    
-    setMessageText('');
-    setSubject('');
-    setRecipient('all');
-    setShowNewMessage(false);
-  };
+
 
   // Handle search
   const handleSearch = () => {
@@ -380,38 +349,54 @@ export default function Communication() {
           </div>
 
           <div className="grid gap-4">
-            {displayMessages.map((message) => (
-              <Card key={message.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg">{message.subject}</CardTitle>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <span>Von: {message.sender}</span>
-                        <span>•</span>
-                        <span>An: {message.recipients}</span>
-                        <span>•</span>
-                        <span>{message.timestamp.toLocaleString('de-DE')}</span>
+            {displayMessages.length > 0 ? (
+              displayMessages.map((message) => (
+                <Card key={message.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg">{message.subject || "Kein Betreff"}</CardTitle>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>Von: {message.sender?.firstName} {message.sender?.lastName}</span>
+                          <span>•</span>
+                          <span>{formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: de })}</span>
+                        </div>
                       </div>
+                      <Badge variant={message.priority === 'high' ? 'destructive' : message.priority === 'medium' ? 'default' : 'secondary'}>
+                        {message.priority === 'high' ? 'Hoch' : message.priority === 'medium' ? 'Mittel' : 'Normal'}
+                      </Badge>
                     </div>
-                    {getPriorityBadge(message.type)}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">{message.content.substring(0, 150)}...</p>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700">{message.content.substring(0, 150)}...</p>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" size="sm">
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Antworten
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => markMessageAsRead(message.id)}>
+                      <Eye className="w-4 h-4 mr-2" />
+                      Als gelesen markieren
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <MessageCircle className="w-12 h-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Keine Nachrichten</h3>
+                  <p className="text-gray-600 text-center mb-4">
+                    Sie haben noch keine Nachrichten erhalten. Sobald Ihnen jemand schreibt, erscheinen die Nachrichten hier.
+                  </p>
+                  <Button onClick={() => setShowNewMessage(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Erste Nachricht senden
+                  </Button>
                 </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline" size="sm">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Antworten
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Eye className="w-4 h-4 mr-2" />
-                    Lesen
-                  </Button>
-                </CardFooter>
               </Card>
-            ))}
+            )}
           </div>
         </TabsContent>
 
@@ -425,33 +410,60 @@ export default function Communication() {
             </Button>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Pin className="w-5 h-5 text-blue-600" />
-                Vereinsfest 2025 - Save the Date
-              </CardTitle>
-              <CardDescription>
-                Veröffentlicht von Vereinsvorstand • vor 1 Tag
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>Liebe Mitglieder, unser traditionelles Vereinsfest findet am 15. Juni 2025 statt. Weitere Informationen folgen in den nächsten Wochen.</p>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <div className="flex gap-2">
-                <Badge variant="secondary">
-                  <Megaphone className="w-3 h-3 mr-1" />
-                  Ankündigung
-                </Badge>
-                <Badge variant="outline">Angepinnt</Badge>
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Eye className="w-4 h-4 mr-1" />
-                <span>24 Aufrufe</span>
-              </div>
-            </CardFooter>
-          </Card>
+          <div className="grid gap-4">
+            {announcements?.length > 0 ? (
+              announcements.map((announcement) => (
+                <Card key={announcement.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      {announcement.isPinned && <Pin className="w-5 h-5 text-blue-600" />}
+                      {announcement.title}
+                    </CardTitle>
+                    <CardDescription>
+                      Veröffentlicht von {announcement.author?.firstName} {announcement.author?.lastName} • 
+                      {formatDistanceToNow(new Date(announcement.createdAt), { addSuffix: true, locale: de })}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700">{announcement.content}</p>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <div className="flex gap-2">
+                      <Badge variant="secondary">
+                        <Megaphone className="w-3 h-3 mr-1" />
+                        {announcement.category === 'general' ? 'Allgemein' :
+                         announcement.category === 'training' ? 'Training' :
+                         announcement.category === 'event' ? 'Veranstaltung' :
+                         announcement.category === 'important' ? 'Wichtig' : announcement.category}
+                      </Badge>
+                      {announcement.isPinned && <Badge variant="outline">Angepinnt</Badge>}
+                      <Badge variant={announcement.priority === 'high' ? 'destructive' : announcement.priority === 'medium' ? 'default' : 'secondary'}>
+                        {announcement.priority === 'high' ? 'Hoch' : announcement.priority === 'medium' ? 'Mittel' : 'Normal'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Eye className="w-4 h-4 mr-1" />
+                      <span>{announcement.viewCount} Aufrufe</span>
+                    </div>
+                  </CardFooter>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <Megaphone className="w-12 h-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Keine Ankündigungen</h3>
+                  <p className="text-gray-600 text-center mb-4">
+                    Es wurden noch keine Ankündigungen veröffentlicht. Erstellen Sie die erste Ankündigung für Ihren Verein.
+                  </p>
+                  <Button onClick={() => setShowNewAnnouncement(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Erste Ankündigung erstellen
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         {/* Settings Tab */}
@@ -520,131 +532,206 @@ export default function Communication() {
       </Tabs>
 
       {/* New Message Dialog */}
-      {showNewMessage && (
-        <Card className="fixed inset-4 z-50 bg-white border shadow-lg">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Neue Nachricht</CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowNewMessage(false)}
-              >
-                ×
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Empfänger</label>
-              <Select value={recipient} onValueChange={setRecipient}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Empfänger auswählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alle Mitglieder</SelectItem>
-                  <SelectItem value="coaches">Trainer</SelectItem>
-                  <SelectItem value="players">Spieler</SelectItem>
-                  <SelectItem value="board">Vorstand</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Betreff</label>
-              <Input
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Betreff der Nachricht"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Nachricht</label>
-              <Textarea
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                placeholder="Ihre Nachricht..."
-                className="min-h-32"
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowNewMessage(false)}>
-              Abbrechen
-            </Button>
-            <Button onClick={handleSendMessage} disabled={sendingMessage}>
-              <Send className="w-4 h-4 mr-2" />
-              {sendingMessage ? "Wird gesendet..." : "Senden"}
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
+      <Dialog open={showNewMessage} onOpenChange={setShowNewMessage}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Neue Nachricht</DialogTitle>
+            <DialogDescription>
+              Senden Sie eine Nachricht an Mitglieder, Teams oder alle Vereinsmitglieder
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...messageForm}>
+            <form onSubmit={messageForm.handleSubmit((data) => {
+              const messageData = {
+                subject: subject,
+                content: messageText,
+                messageType: "direct",
+                priority: "normal",
+                recipients: [{ type: recipient, id: recipient === "all" ? undefined : recipient }]
+              };
+              
+              sendMessage(messageData);
+              
+              // Reset form
+              setMessageText('');
+              setSubject('');
+              setRecipient('all');
+              setShowNewMessage(false);
+            })} className="space-y-4">
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Empfänger</label>
+                <Select value={recipient} onValueChange={setRecipient}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Empfänger auswählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle Mitglieder ({members.length} Personen)</SelectItem>
+                    {teams.map((team) => (
+                      <SelectItem key={team.id} value={`team_${team.id}`}>
+                        Team: {team.name}
+                      </SelectItem>
+                    ))}
+                    <Separator className="my-2" />
+                    {members.slice(0, 10).map((member) => (
+                      <SelectItem key={member.id} value={`member_${member.id}`}>
+                        {member.firstName} {member.lastName}
+                        {member.email && <span className="text-xs text-gray-500 ml-2">({member.email})</span>}
+                      </SelectItem>
+                    ))}
+                    {members.length > 10 && (
+                      <SelectItem value="more" disabled>
+                        ... und {members.length - 10} weitere Mitglieder
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Betreff (optional)</label>
+                <Input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Betreff der Nachricht"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nachricht *</label>
+                <Textarea
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Ihre Nachricht..."
+                  className="min-h-32"
+                  required
+                />
+              </div>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowNewMessage(false)}>
+                  Abbrechen
+                </Button>
+                <Button type="submit" disabled={sendingMessage || !messageText.trim()}>
+                  <Send className="w-4 h-4 mr-2" />
+                  {sendingMessage ? "Wird gesendet..." : "Senden"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
       {/* New Announcement Dialog */}
-      {showNewAnnouncement && (
-        <Card className="fixed inset-4 z-50 bg-white border shadow-lg">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Neue Ankündigung</CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowNewAnnouncement(false)}
-              >
-                ×
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Titel</label>
-              <Input
-                placeholder="Titel der Ankündigung"
+      <Dialog open={showNewAnnouncement} onOpenChange={setShowNewAnnouncement}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Neue Ankündigung</DialogTitle>
+            <DialogDescription>
+              Erstellen Sie eine öffentliche Ankündigung für alle Vereinsmitglieder
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...announcementForm}>
+            <form onSubmit={announcementForm.handleSubmit((data) => {
+              createAnnouncement(data);
+              setShowNewAnnouncement(false);
+            })} className="space-y-4">
+              
+              <FormField
+                control={announcementForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Titel *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Titel der Ankündigung" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Kategorie</label>
-              <Select defaultValue="general">
-                <SelectTrigger>
-                  <SelectValue placeholder="Kategorie auswählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="general">Allgemein</SelectItem>
-                  <SelectItem value="training">Training</SelectItem>
-                  <SelectItem value="event">Veranstaltung</SelectItem>
-                  <SelectItem value="important">Wichtig</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Inhalt</label>
-              <Textarea
-                placeholder="Inhalt der Ankündigung..."
-                className="min-h-32"
+              
+              <FormField
+                control={announcementForm.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kategorie</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Kategorie auswählen" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="general">Allgemein</SelectItem>
+                        <SelectItem value="training">Training</SelectItem>
+                        <SelectItem value="event">Veranstaltung</SelectItem>
+                        <SelectItem value="important">Wichtig</SelectItem>
+                        <SelectItem value="news">Neuigkeiten</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch id="pinned" />
-              <label htmlFor="pinned" className="text-sm font-medium">
-                Als wichtig markieren
-              </label>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowNewAnnouncement(false)}>
-              Abbrechen
-            </Button>
-            <Button disabled={creatingAnnouncement}>
-              <Megaphone className="w-4 h-4 mr-2" />
-              {creatingAnnouncement ? "Wird erstellt..." : "Veröffentlichen"}
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
+              
+              <FormField
+                control={announcementForm.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Inhalt *</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Inhalt der Ankündigung..."
+                        className="min-h-32"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={announcementForm.control}
+                name="isPinned"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Als wichtig markieren
+                      </FormLabel>
+                      <div className="text-sm text-muted-foreground">
+                        Wichtige Ankündigungen werden oben angepinnt
+                      </div>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowNewAnnouncement(false)}>
+                  Abbrechen
+                </Button>
+                <Button type="submit" disabled={creatingAnnouncement}>
+                  <Megaphone className="w-4 h-4 mr-2" />
+                  {creatingAnnouncement ? "Wird erstellt..." : "Veröffentlichen"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

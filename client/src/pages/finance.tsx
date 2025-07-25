@@ -88,6 +88,34 @@ const financeFormSchema = z.object({
   path: ["dueDate"]
 });
 
+// Separates Schema für Edit-Formular das leere Strings für optionale Felder akzeptiert
+const editFinanceFormSchema = z.object({
+  type: z.enum(['income', 'expense']),
+  category: z.string().min(1, "Kategorie ist erforderlich"),
+  subcategory: z.string().optional(),
+  amount: z.string().min(1, "Betrag ist erforderlich"),
+  description: z.string().min(1, "Beschreibung ist erforderlich"),
+  date: z.string().min(1, "Datum ist erforderlich"),
+  dueDate: z.string().optional(),
+  paymentMethod: z.string().optional(),
+  status: z.enum(['pending', 'paid', 'overdue', 'cancelled']),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']),
+  recurring: z.boolean().optional(),
+  recurringInterval: z.union([z.enum(['weekly', 'monthly', 'quarterly', 'yearly']), z.literal('')]).optional(),
+  notes: z.string().optional(),
+}).refine((data) => {
+  // Prüfe dass Fälligkeitsdatum nicht vor Transaktionsdatum liegt
+  if (data.dueDate && data.date) {
+    const transactionDate = new Date(data.date);
+    const dueDate = new Date(data.dueDate);
+    return dueDate >= transactionDate;
+  }
+  return true;
+}, {
+  message: "Fälligkeitsdatum darf nicht vor dem Transaktionsdatum liegen",
+  path: ["dueDate"]
+});
+
 const memberFeeFormSchema = z.object({
   memberId: z.string().min(1, "Mitglied ist erforderlich"),
   feeType: z.enum(['membership', 'training', 'registration', 'equipment']),
@@ -181,7 +209,7 @@ export default function Finance() {
   });
 
   const editFinanceForm = useForm({
-    resolver: zodResolver(financeFormSchema),
+    resolver: zodResolver(editFinanceFormSchema),
     defaultValues: {
       type: 'income' as const,
       category: '',

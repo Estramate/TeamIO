@@ -1119,106 +1119,113 @@ export default function Finance() {
                 </CardContent>
               </Card>
             ) : viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredFinances.map((finance: any) => (
-                  <Card key={finance.id} className="group hover:shadow-lg transition-all duration-200 border border-border min-w-0">
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        {/* Header with Icon and Amount */}
-                        <div className="flex items-start justify-between">
-                          <div className={`p-2 rounded-lg ${
-                            finance.type === 'income' 
-                              ? 'bg-green-100 dark:bg-green-900/30' 
-                              : 'bg-red-100 dark:bg-red-900/30'
-                          }`}>
-                            {getCategoryIcon(finance.category)}
+                  <Card key={finance.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md overflow-hidden">
+                    {/* Einfacher grauer Header - schlicht und modern */}
+                    <div className="h-2 bg-gradient-to-r from-muted to-muted/80"></div>
+                    
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">{finance.type === 'income' ? '💰' : '💸'}</span>
+                            <h3 
+                              className="text-lg font-semibold text-foreground truncate cursor-pointer hover:underline"
+                              onClick={() => handleViewDetails(finance)}
+                              title={finance.description}
+                            >
+                              {finance.description}
+                            </h3>
                           </div>
-                          <div className="text-right">
-                            <p className={`text-lg font-bold ${
-                              finance.type === 'income' 
-                                ? 'text-green-600 dark:text-green-400' 
-                                : 'text-red-600 dark:text-red-400'
-                            }`}>
-                              {finance.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(finance.amount))}
-                            </p>
-                          </div>
+                          
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {finance.category}
+                          </p>
                         </div>
                         
-                        {/* Description and Priority */}
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-foreground text-base leading-tight">{finance.description}</h3>
-                            {getPriorityIcon(finance.priority)}
-                          </div>
-                          <p className="text-sm text-muted-foreground">{finance.category}</p>
-                        </div>
-                        
-                        {/* Date and Status */}
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="flex items-center text-muted-foreground">
-                            <Calendar className="w-4 h-4 mr-2" />
-                            {formatDate(finance.date)}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewDetails(finance)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditFinance(finance)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => toggleFinanceStatus(finance)}
+                              className={finance.isActive ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                            >
+                              {finance.isActive ? (
+                                <>
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  Deaktivieren
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  Aktivieren
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteFinance(finance.id)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Löschen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="flex items-center gap-2 mb-4">
+                        {getStatusBadge(finance.status, finance.isActive)}
+                        <Badge 
+                          variant="secondary" 
+                          className="text-xs"
+                        >
+                          {finance.category}
+                        </Badge>
+                      </div>
+
+                      {/* Finance Details */}
+                      <div className="space-y-3 text-sm">
+                        <div className="flex items-center justify-between py-1">
+                          <span className="text-muted-foreground flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Datum
                           </span>
-                          {getStatusBadge(finance.status, finance.isActive)}
+                          <span className="font-medium">{formatDate(finance.date)}</span>
                         </div>
-                        
-                        {/* Actions */}
-                        <div className="flex justify-end pt-2 border-t border-border">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem 
-                                onClick={() => handleViewDetails(finance)}
-                                className="flex items-center"
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                Details anzeigen
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleEditFinance(finance)}
-                                className="flex items-center"
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Bearbeiten
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => toggleFinanceStatus(finance)}
-                                className={`flex items-center ${
-                                  finance.isActive 
-                                    ? 'text-orange-600 dark:text-orange-400' 
-                                    : 'text-green-600 dark:text-green-400'
-                                }`}
-                              >
-                                {finance.isActive ? (
-                                  <>
-                                    <XCircle className="mr-2 h-4 w-4" />
-                                    Deaktivieren
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                                    Aktivieren
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleDeleteFinance(finance.id)}
-                                className="flex items-center text-red-600 dark:text-red-400"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Löschen
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+
+                        <div className="flex items-center justify-between py-1">
+                          <span className="text-muted-foreground flex items-center gap-2">
+                            <Euro className="h-4 w-4" />
+                            Betrag
+                          </span>
+                          <span className={`font-bold ${finance.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                            {finance.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(finance.amount))}
+                          </span>
                         </div>
+
+                        {finance.priority && finance.priority !== 'normal' && (
+                          <div className="flex items-center justify-between py-1">
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              {getPriorityIcon(finance.priority)}
+                              Priorität
+                            </span>
+                            <span className="font-medium">{translatePriority(finance.priority)}</span>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

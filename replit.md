@@ -12,12 +12,13 @@ Preferred communication style: Simple, everyday language.
 
 ### Januar 25, 2025 (Neueste)
 - **Vollständig einheitliches Card-Design systemweit implementiert**: Alle Verwaltungsseiten mit identischem modernen Layout
-  - Teams-, Members-, Bookings- und Facilities-Karten komplett vereinheitlicht
+  - Teams-, Members-, Bookings-, Facilities- und Finance-Karten komplett vereinheitlicht
   - Konsistente graue Header-Balken (from-muted to-muted/80) für minimalistisches Design
   - Identische Hover-Effekte (shadow-lg, -translate-y-1) und Grid-Layouts (1 lg:2 xl:3)
   - Emoji-Icons und moderne Typography für freundlicheres Erscheinungsbild
   - 3-Punkte-Menüs, Status-Badges und Detail-Anzeige überall gleich gestaltet
   - Professioneller minimalistischer Ansatz ohne ablenkende Farbgradienten
+  - Finance-Transaktionen mit 💰/💸 Emoji-Icons und einheitlicher Kartenstruktur
 - **Dashboard-Aktivitätsfeed vollständig repariert**: Date-Handling-Probleme in PostgreSQL-Abfragen behoben
   - getDashboardStats und getRecentActivity Methoden korrigiert für stabile Dashboard-Anzeige
   - Client-seitige Date-Filterung implementiert um Drizzle-ORM Datums-Kompatibilitätsprobleme zu vermeiden

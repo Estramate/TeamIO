@@ -16,7 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Building, Users, MapPin, Plus, Search, Edit, Trash2, MoreHorizontal, LayoutGrid, List, Eye } from "lucide-react";
+import { AlertCircle, Building, Users, MapPin, Plus, Search, Edit, Trash2, MoreHorizontal, LayoutGrid, List, Eye } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertFacilitySchema, type Facility } from "@shared/schema";

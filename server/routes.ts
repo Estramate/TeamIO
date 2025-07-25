@@ -17,6 +17,35 @@ import {
   trainingFeeFormSchema,
 } from "@shared/schema";
 
+// Middleware to check if user has access to the specified club
+const requireClubAccess = async (req: any, res: any, next: any) => {
+  try {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      return res.status(400).json({ message: "Invalid club ID" });
+    }
+
+    // Check if user is member of the club
+    const userClubs = await storage.getUserClubs(userId);
+    const hasAccess = userClubs.some(membership => 
+      membership.clubId === clubId && membership.status === 'active'
+    );
+
+    if (!hasAccess) {
+      return res.status(403).json({ 
+        message: "Access denied. You are not a member of this club." 
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Error checking club access:", error);
+    res.status(500).json({ message: "Failed to verify club access" });
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -72,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard routes
-  app.get('/api/clubs/:clubId/dashboard', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/dashboard', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const stats = await storage.getDashboardStats(clubId);
@@ -85,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Member routes
-  app.get('/api/clubs/:clubId/members', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/members', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const members = await storage.getMembers(clubId);
@@ -96,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/members', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/members', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const memberData = insertMemberSchema.parse({ ...req.body, clubId });
@@ -108,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/clubs/:clubId/members/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/clubs/:clubId/members/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -130,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/members/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/members/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -143,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Team routes
-  app.get('/api/clubs/:clubId/teams', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/teams', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const teams = await storage.getTeams(clubId);
@@ -154,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/teams', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/teams', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const teamData = insertTeamSchema.parse({ ...req.body, clubId });
@@ -166,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/clubs/:clubId/teams/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/clubs/:clubId/teams/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -179,7 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/teams/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/teams/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -192,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Facility routes
-  app.get('/api/clubs/:clubId/facilities', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/facilities', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const facilities = await storage.getFacilities(clubId);
@@ -203,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/facilities', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/facilities', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const facilityData = insertFacilitySchema.parse({ ...req.body, clubId });
@@ -215,7 +244,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/facilities/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/facilities/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -229,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/facilities/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/facilities/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -243,7 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Booking routes
-  app.get('/api/clubs/:clubId/bookings', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/bookings', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const bookings = await storage.getBookings(clubId);
@@ -254,7 +283,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/bookings', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/bookings', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       console.log("DEBUG Route: Raw request body:", req.body);
       const clubId = parseInt(req.params.clubId);
@@ -292,7 +321,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/bookings/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const booking = await storage.getBooking(id);
@@ -306,7 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/bookings/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = { ...req.body };
@@ -360,7 +389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/bookings/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteBooking(id);
@@ -372,7 +401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check booking availability route
-  app.post('/api/clubs/:clubId/bookings/check-availability', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/bookings/check-availability', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const { facilityId, startTime, endTime, excludeBookingId } = req.body;
       
@@ -419,7 +448,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Finance routes
-  app.get('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/finances', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const finances = await storage.getFinances(clubId);
@@ -430,7 +459,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/finances/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const finance = await storage.getFinance(id);
@@ -444,7 +473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/finances', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const financeData = insertFinanceSchema.parse({ ...req.body, clubId });
@@ -456,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/finances/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -470,7 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/finances/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteFinance(id);
@@ -481,32 +510,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Member fees routes
-  app.get('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const memberFees = await storage.getMemberFees(clubId);
-      res.json(memberFees);
-    } catch (error) {
-      console.error('Error fetching member fees:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
-
-  app.post('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const memberFeeData = { ...req.body, clubId };
-      const memberFee = await storage.createMemberFee(memberFeeData);
-      res.status(201).json(memberFee);
-    } catch (error) {
-      console.error('Error creating member fee:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
-
   // Training fees routes
-  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const trainingFees = await storage.getTrainingFees(clubId);
@@ -517,7 +522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const trainingFeeData = { ...req.body, clubId };
@@ -526,6 +531,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error creating training fee:', error);
       res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Seed SV Oberglan 1975 data and add current user as member
+  app.post('/api/seed-sv-oberglan', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Import and run the comprehensive seeding
+      const { seedSVOberglan1975Complete } = await import('./seedSVOberglan1975Complete');
+      const club = await seedSVOberglan1975Complete();
+      
+      // Add current user as club administrator
+      await storage.addUserToClub({
+        userId: userId,
+        clubId: club.id,
+        role: 'club-administrator',
+        status: 'active',
+      });
+
+      res.json({ 
+        message: "SV Oberglan 1975 data seeded successfully and user added as administrator", 
+        club,
+        userRole: 'club-administrator'
+      });
+    } catch (error) {
+      console.error("Error seeding SV Oberglan data:", error);
+      res.status(500).json({ message: "Failed to seed SV Oberglan data" });
     }
   });
 
@@ -630,7 +663,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // This route was removed as seedPlayers function no longer exists
 
   // Player routes
-  app.get("/api/clubs/:clubId/players", isAuthenticated, async (req: any, res) => {
+  app.get("/api/clubs/:clubId/players", isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const players = await storage.getPlayers(clubId);
@@ -655,7 +688,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/clubs/:clubId/players", isAuthenticated, async (req: any, res) => {
+  app.post("/api/clubs/:clubId/players", isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const cleanedData = { ...req.body };
@@ -683,7 +716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/clubs/:clubId/players/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/clubs/:clubId/players/:id", isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -708,7 +741,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/clubs/:clubId/players/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/clubs/:clubId/players/:id", isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -773,7 +806,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Member fees routes
-  app.get('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/member-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const memberFees = await storage.getMemberFees(clubId);
@@ -784,7 +817,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/member-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       
@@ -807,7 +840,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/member-fees/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const memberFee = await storage.updateMemberFee(id, req.body);
@@ -818,7 +851,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }  
   });
 
-  app.delete('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/member-fees/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteMemberFee(id);
@@ -830,7 +863,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Training fees routes
-  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const trainingFees = await storage.getTrainingFees(clubId);
@@ -841,7 +874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       
@@ -866,18 +899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const memberFee = await storage.updateMemberFee(id, req.body);
-      res.json(memberFee);
-    } catch (error) {
-      console.error("Error updating member fee:", error);
-      res.status(500).json({ message: "Failed to update member fee" });
-    }
-  });
-
-  app.patch('/api/clubs/:clubId/training-fees/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/training-fees/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const trainingFee = await storage.updateTrainingFee(id, req.body);
@@ -888,7 +910,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/training-fees/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/training-fees/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteTrainingFee(id);

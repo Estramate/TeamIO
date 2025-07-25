@@ -254,7 +254,7 @@ export function useCommunication(clubId: number) {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: (messageData: any) => 
-      apiRequest(`/api/clubs/${clubId}/messages`, 'POST', messageData),
+      apiRequest('POST', `/api/clubs/${clubId}/messages`, messageData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'messages'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
@@ -275,7 +275,7 @@ export function useCommunication(clubId: number) {
   // Create announcement mutation
   const createAnnouncementMutation = useMutation({
     mutationFn: (announcementData: any) => 
-      apiRequest(`/api/clubs/${clubId}/announcements`, 'POST', announcementData),
+      apiRequest('POST', `/api/clubs/${clubId}/announcements`, announcementData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'announcements'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
@@ -296,7 +296,7 @@ export function useCommunication(clubId: number) {
   // Mark message as read mutation
   const markMessageAsReadMutation = useMutation({
     mutationFn: (messageId: number) => 
-      apiRequest(`/api/clubs/${clubId}/messages/${messageId}/read`, 'POST'),
+      apiRequest('POST', `/api/clubs/${clubId}/messages/${messageId}/read`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'messages'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
@@ -306,7 +306,7 @@ export function useCommunication(clubId: number) {
   // Mark notification as read mutation
   const markNotificationAsReadMutation = useMutation({
     mutationFn: (notificationId: number) => 
-      apiRequest(`/api/clubs/${clubId}/notifications/${notificationId}/read`, 'POST'),
+      apiRequest('POST', `/api/clubs/${clubId}/notifications/${notificationId}/read`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
@@ -316,7 +316,7 @@ export function useCommunication(clubId: number) {
   // Update preferences mutation
   const updatePreferencesMutation = useMutation({
     mutationFn: (preferencesData: Partial<CommunicationPreferences>) => 
-      apiRequest(`/api/clubs/${clubId}/communication-preferences`, 'PUT', preferencesData),
+      apiRequest('PUT', `/api/clubs/${clubId}/communication-preferences`, preferencesData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-preferences'] });
       toast({
@@ -338,7 +338,7 @@ export function useCommunication(clubId: number) {
     if (!query.trim()) return [];
     
     try {
-      const response = await apiRequest(`/api/clubs/${clubId}/search/messages?q=${encodeURIComponent(query)}`, 'GET');
+      const response = await apiRequest('GET', `/api/clubs/${clubId}/search/messages?q=${encodeURIComponent(query)}`);
       return response;
     } catch (error) {
       toast({
@@ -355,7 +355,7 @@ export function useCommunication(clubId: number) {
     if (!query.trim()) return [];
     
     try {
-      const response = await apiRequest(`/api/clubs/${clubId}/search/announcements?q=${encodeURIComponent(query)}`, 'GET');
+      const response = await apiRequest('GET', `/api/clubs/${clubId}/search/announcements?q=${encodeURIComponent(query)}`);
       return response;
     } catch (error) {
       toast({

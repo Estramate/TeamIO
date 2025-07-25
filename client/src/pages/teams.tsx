@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   UsersRound, 
   Search, 
@@ -75,6 +76,7 @@ export default function Teams() {
   const [teamToDelete, setTeamToDelete] = useState<any>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [viewingTeam, setViewingTeam] = useState<any>(null);
+  const [selectedTrainers, setSelectedTrainers] = useState<number[]>([]);
 
   const form = useForm<TeamFormData>({
     resolver: zodResolver(teamFormSchema),
@@ -112,6 +114,20 @@ export default function Teams() {
   // Load players for counting
   const { data: players = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'players'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
+  // Load members for trainer selection
+  const { data: members = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'members'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
+  // Load team memberships
+  const { data: teamMemberships = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'],
     enabled: !!selectedClub?.id,
     retry: false,
   });
@@ -306,6 +322,7 @@ export default function Teams() {
       status: "active",
       season: "2024/25",
     });
+    setSelectedTrainers([]);
     setTeamModalOpen(true);
   };
 
@@ -321,6 +338,13 @@ export default function Teams() {
       status: team.status,
       season: team.season || "2024/25",
     });
+    
+    // Load current trainers for this team
+    const currentTrainers = teamMemberships
+      .filter((tm: any) => tm.teamId === team.id && tm.role === 'trainer')
+      .map((tm: any) => tm.memberId);
+    setSelectedTrainers(currentTrainers);
+    
     setTeamModalOpen(true);
   };
 
@@ -342,11 +366,53 @@ export default function Teams() {
     setIsDetailDialogOpen(true);
   };
 
-  const handleSubmit = (data: TeamFormData) => {
-    if (selectedTeam) {
-      updateTeamMutation.mutate(data);
-    } else {
-      createTeamMutation.mutate(data);
+  // Update team memberships for trainers
+  const updateTeamMembershipsMutation = useMutation({
+    mutationFn: async ({ teamId, trainerIds }: { teamId: number; trainerIds: number[] }) => {
+      // Remove existing trainer memberships for this team
+      await fetch(`/api/teams/${teamId}/trainers`, {
+        method: 'DELETE',
+      });
+
+      // Add new trainer memberships
+      for (const memberId of trainerIds) {
+        await fetch(`/api/teams/${teamId}/memberships`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            memberId,
+            role: 'trainer',
+            status: 'active',
+          }),
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'] });
+    },
+  });
+
+  const handleSubmit = async (data: TeamFormData) => {
+    try {
+      let team;
+      if (selectedTeam) {
+        team = await updateTeamMutation.mutateAsync(data);
+      } else {
+        team = await createTeamMutation.mutateAsync(data);
+      }
+      
+      // Update trainer assignments
+      const teamId = selectedTeam?.id || team.id;
+      if (teamId && selectedTrainers.length >= 0) {
+        await updateTeamMembershipsMutation.mutateAsync({
+          teamId,
+          trainerIds: selectedTrainers
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting team:', error);
     }
   };
 
@@ -971,6 +1037,51 @@ export default function Teams() {
                   </FormItem>
                 )}
               />
+
+              {/* Trainerstab Auswahl */}
+              <div className="space-y-3">
+                <FormLabel>Trainerstab</FormLabel>
+                <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                  {members.filter((member: any) => member.status === 'active').length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground">
+                      <Users className="h-8 w-8 mx-auto mb-2" />
+                      <p className="text-sm">Keine aktiven Mitglieder gefunden</p>
+                    </div>
+                  ) : (
+                    members
+                      .filter((member: any) => member.status === 'active')
+                      .map((member: any) => (
+                        <div key={member.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`trainer-${member.id}`}
+                            checked={selectedTrainers.includes(member.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedTrainers([...selectedTrainers, member.id]);
+                              } else {
+                                setSelectedTrainers(selectedTrainers.filter(id => id !== member.id));
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor={`trainer-${member.id}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {member.firstName} {member.lastName}
+                            {member.email && (
+                              <span className="text-muted-foreground ml-1">({member.email})</span>
+                            )}
+                          </label>
+                        </div>
+                      ))
+                  )}
+                </div>
+                {selectedTrainers.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    {selectedTrainers.length} Trainer ausgewählt
+                  </p>
+                )}
+              </div>
 
               <DialogFooter>
                 <Button

@@ -13,6 +13,7 @@ import {
   insertFinanceSchema,
   insertPlayerSchema,
   insertPlayerTeamAssignmentSchema,
+  insertTeamMembershipSchema,
   memberFeeFormSchema,
   trainingFeeFormSchema,
 } from "@shared/schema";
@@ -252,6 +253,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting team:", error);
       res.status(500).json({ message: "Failed to delete team" });
+    }
+  });
+
+  // Team memberships routes
+  app.get('/api/clubs/:clubId/team-memberships', isAuthenticated, requireClubAccess, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const memberships = await storage.getTeamMemberships(clubId);
+      res.json(memberships);
+    } catch (error) {
+      console.error("Error fetching team memberships:", error);
+      res.status(500).json({ message: "Failed to fetch team memberships" });
+    }
+  });
+
+  app.get('/api/teams/:teamId/memberships', isAuthenticated, async (req: any, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const memberships = await storage.getTeamMembers(teamId);
+      res.json(memberships);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      res.status(500).json({ message: "Failed to fetch team members" });
+    }
+  });
+
+  app.post('/api/teams/:teamId/memberships', isAuthenticated, async (req: any, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const membershipData = insertTeamMembershipSchema.parse({
+        teamId,
+        ...req.body,
+      });
+      const membership = await storage.addMemberToTeam(membershipData);
+      res.status(201).json(membership);
+    } catch (error) {
+      console.error("Error adding member to team:", error);
+      res.status(500).json({ message: "Failed to add member to team" });
+    }
+  });
+
+  app.delete('/api/teams/:teamId/trainers', isAuthenticated, async (req: any, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      await storage.removeTeamTrainers(teamId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing team trainers:", error);
+      res.status(500).json({ message: "Failed to remove team trainers" });
     }
   });
 

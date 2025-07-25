@@ -33,12 +33,12 @@ Preferred communication style: Simple, everyday language.
   - Intelligente Verfügbarkeitsprüfung für jede einzelne wiederkehrende Buchung
   - Toast-Nachrichten zeigen Anzahl der erfolgreich erstellten wiederkehrenden Buchungen
   - Überspringe nicht verfügbare Termine und protokolliere entsprechende Warnungen
-- **Buchungstyp-Farbschema überarbeitet**: Farbkonflikte zwischen Typ- und Status-Badges behoben
-  - Spiel: Von Grün zu Hellorange geändert (vermeidet Überschneidung mit "Bestätigt"-Status)
-  - Wartung: Von Orange zu Amber geändert für bessere Unterscheidung
-  - Training: Blau beibehalten, Event: Lila beibehalten
-  - Kalender-Events synchronisiert mit neuen Buchungstyp-Farben
-  - Konsistente Farbkodierung: Blau (Training), Orange (Spiel), Lila (Event), Amber (Wartung)
+- **Buchungstyp-Farbschema finalisiert**: Eindeutige Farbkodierung für alle Buchungstypen implementiert
+  - Training: Blau beibehalten (unterscheidet sich von allen anderen)
+  - Spiel: Grün (vermeidet Überschneidung mit Wartung-Orange)
+  - Event: Lila beibehalten (einzigartige Farbe)
+  - Wartung: Orange (klar unterschieden von Spiel-Grün)
+  - Konsistente Farbkodierung: Blau (Training), Grün (Spiel), Lila (Event), Orange (Wartung)
 - **Einheitliches Detail-Dialog-System vollständig implementiert**: Alle 6 Detail-Dialoge mit identischem Layout und Styling
   - Doppelte Status-Anzeige systemweit entfernt: Einheitliche Status-Darstellung nur im Header
   - Alle Detail-Dialoge bereinigt: Members, Facilities, Teams, Players, Bookings und Finance

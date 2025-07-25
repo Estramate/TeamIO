@@ -81,6 +81,7 @@ import {
   X,
   BookOpen
 } from "lucide-react";
+import { BookingForm } from "@/components/BookingForm";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -973,444 +974,12 @@ export default function Bookings() {
             </DialogDescription>
           </DialogHeader>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Titel *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Buchungstitel" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="facilityId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Anlage *</FormLabel>
-                      <Select 
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          // Reset availability when facility changes
-                          setAvailabilityStatus(null);
-                        }}
-                        value={field.value?.toString()}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Anlage auswählen" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {facilities.map((facility) => (
-                            <SelectItem key={facility.id} value={facility.id.toString()}>
-                              {facility.name} {facility.maxConcurrentBookings && `(Max ${facility.maxConcurrentBookings} Buchungen)`}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="teamId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Team (optional)</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(value === "none" ? undefined : value)}
-                        value={field.value?.toString() || "none"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Team auswählen" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">Kein Team</SelectItem>
-                          {teams.map((team) => (
-                            <SelectItem key={team.id} value={team.id.toString()}>
-                              {team.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Typ *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Typ auswählen" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {typeOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Status auswählen" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="confirmed">Bestätigt</SelectItem>
-                          <SelectItem value="pending">Ausstehend</SelectItem>
-                          <SelectItem value="cancelled">Abgesagt</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Startzeit *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="datetime-local" 
-                          {...field} 
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setAvailabilityStatus(null);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Endzeit *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="datetime-local" 
-                          {...field} 
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setAvailabilityStatus(null);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="participants"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Teilnehmer</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="Anzahl Teilnehmer"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="cost"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kosten (€)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.01"
-                          placeholder="0.00"
-                          {...field}
-                          value={field.value?.toString() || ""}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Availability Check Section */}
-              <div className="bg-muted/50 p-4 rounded-lg border">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-medium text-foreground">Verfügbarkeitsprüfung</h4>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={checkAvailability}
-                    disabled={isCheckingAvailability || checkAvailabilityMutation.isPending}
-                  >
-                    {isCheckingAvailability || checkAvailabilityMutation.isPending ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
-                        Prüfe...
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle className="w-4 h-4 mr-2" />
-                        Verfügbarkeit prüfen
-                      </>
-                    )}
-                  </Button>
-                </div>
-                
-                {availabilityStatus && (
-                  <div className={`p-3 rounded-md border ${
-                    availabilityStatus.available 
-                      ? 'bg-green-50 border-green-200 text-green-800' 
-                      : 'bg-red-50 border-red-200 text-red-800'
-                  }`}>
-                    <div className="flex items-center">
-                      {availabilityStatus.available ? (
-                        <Check className="w-4 h-4 mr-2" />
-                      ) : (
-                        <X className="w-4 h-4 mr-2" />
-                      )}
-                      <span className="text-sm font-medium">
-                        {availabilityStatus.message}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Beschreibung</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Zusätzliche Informationen zur Buchung..."
-                        className="resize-none"
-                        rows={3}
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="contactPerson"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kontaktperson</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Name" {...field} value={field.value || ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="contactEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>E-Mail</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="email@beispiel.de" {...field} value={field.value || ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="contactPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telefon</FormLabel>
-                      <FormControl>
-                        <Input placeholder="+49 123 456789" {...field} value={field.value || ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Wiederkehrende Buchungen Sektion */}
-              <div className="bg-muted/30 p-4 rounded-lg border">
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="recurring"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base font-medium">Wiederkehrende Buchung</FormLabel>
-                          <div className="text-sm text-muted-foreground">
-                            Diese Buchung automatisch wiederholen
-                          </div>
-                        </div>
-                        <FormControl>
-                          <input
-                            type="checkbox"
-                            checked={field.value || false}
-                            onChange={(e) => field.onChange(e.target.checked)}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {form.watch("recurring") && (
-                    <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="recurringPattern"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Wiederholungsmuster</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || ""}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Muster auswählen" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="daily">Täglich</SelectItem>
-                                  <SelectItem value="weekly">Wöchentlich</SelectItem>
-                                  <SelectItem value="monthly">Monatlich</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="recurringUntil"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Wiederholen bis</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="date" 
-                                  {...field}
-                                  value={field.value || ""}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notizen</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Interne Notizen..."
-                        className="resize-none"
-                        rows={2}
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setBookingModalOpen(false)}
-                >
-                  Abbrechen
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={createBookingMutation.isPending || updateBookingMutation.isPending}
-                >
-                  {createBookingMutation.isPending || updateBookingMutation.isPending ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Speichern...
-                    </>
-                  ) : (
-                    selectedBooking ? 'Aktualisieren' : 'Erstellen'
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <BookingForm
+            editingBooking={selectedBooking}
+            onSuccess={() => setBookingModalOpen(false)}
+            onCancel={() => setBookingModalOpen(false)}
+            selectedClubId={selectedClub.id}
+          />
         </DialogContent>
       </Dialog>
 
@@ -1426,154 +995,162 @@ export default function Bookings() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => bookingToDelete && deleteBookingMutation.mutate(bookingToDelete.id)}
+            <AlertDialogAction 
+              onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
-              disabled={deleteBookingMutation.isPending}
             >
-              {deleteBookingMutation.isPending ? 'Löschen...' : 'Löschen'}
+              Löschen
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Booking Details Dialog */}
-      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="max-w-2xl">
+      {/* Booking Detail Dialog */}
+      <Dialog open={!!viewingBooking} onOpenChange={() => setViewingBooking(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {viewingBooking && getTypeIcon(viewingBooking.type)}
-                <div>
-                  <div className="text-xl font-bold">
-                    {viewingBooking?.title}
-                  </div>
-                  <div className="text-sm text-muted-foreground font-normal">
-                    Buchungsdetails
-                  </div>
-                </div>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                <Calendar className="w-5 h-5" />
               </div>
-              {viewingBooking && (
-                <div className="mt-1">
-                  {getStatusBadge(viewingBooking.status)}
-                </div>
-              )}
+              {viewingBooking?.title}
             </DialogTitle>
+            <DialogDescription>
+              Buchungsdetails und Informationen
+            </DialogDescription>
           </DialogHeader>
-          
+
           {viewingBooking && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Titel</Label>
-                  <p className="text-sm font-medium">{viewingBooking.title}</p>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Typ</Label>
-                  <div className="mt-1">
-                    {getTypeBadge(viewingBooking.type)}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">ALLGEMEINE INFORMATIONEN</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Titel:</span>
+                      <span className="text-sm font-medium">{viewingBooking.title}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Typ:</span>
+                      <Badge className={`${getTypeBadgeColor(viewingBooking.type)} text-xs`}>
+                        {viewingBooking.type === 'training' ? 'Training' :
+                         viewingBooking.type === 'match' ? 'Spiel' : 
+                         viewingBooking.type === 'event' ? 'Veranstaltung' : 'Wartung'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Status:</span>
+                      <Badge 
+                        className={`text-xs ${
+                          viewingBooking.status === 'confirmed' ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-100' :
+                          viewingBooking.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100' : 
+                          'bg-red-100 text-red-700 border-red-200 hover:bg-red-100'
+                        }`}
+                      >
+                        {viewingBooking.status === 'confirmed' ? 'Bestätigt' :
+                         viewingBooking.status === 'pending' ? 'Ausstehend' : 'Storniert'}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Anlage</Label>
-                  <p className="text-sm">
-                    {facilities.find(f => f.id === viewingBooking.facilityId)?.name || 'Unbekannte Anlage'}
-                  </p>
+
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">ZEIT & ORT</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Datum:</span>
+                      <span className="text-sm font-medium">
+                        {format(new Date(viewingBooking.startTime), 'dd.MM.yyyy', { locale: de })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Zeit:</span>
+                      <span className="text-sm font-medium">
+                        {format(new Date(viewingBooking.startTime), 'HH:mm')} - {format(new Date(viewingBooking.endTime), 'HH:mm')}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Anlage:</span>
+                      <span className="text-sm font-medium">
+                        {facilities.find(f => f.id === viewingBooking.facilityId)?.name || 'Unbekannte Anlage'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {viewingBooking.description && (
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Beschreibung</Label>
-                  <p className="text-sm mt-1">{viewingBooking.description}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Startzeit</Label>
-                  <p className="text-sm">
-                    {format(new Date(viewingBooking.startTime), 'dd.MM.yyyy HH:mm', { locale: de })}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Endzeit</Label>
-                  <p className="text-sm">
-                    {format(new Date(viewingBooking.endTime), 'dd.MM.yyyy HH:mm', { locale: de })}
-                  </p>
-                </div>
-              </div>
-
-              {(viewingBooking.participants || viewingBooking.cost) && (
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingBooking.participants && (
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Teilnehmer</Label>
-                      <p className="text-sm">{String(viewingBooking.participants)}</p>
-                    </div>
-                  )}
-                  {viewingBooking.cost && (
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Kosten</Label>
-                      <p className="text-sm">{String(viewingBooking.cost)} €</p>
-                    </div>
-                  )}
+              {(viewingBooking.description || viewingBooking.participants || viewingBooking.cost) && (
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">ZUSÄTZLICHE DETAILS</h4>
+                  <div className="space-y-3">
+                    {viewingBooking.description && (
+                      <div>
+                        <span className="text-sm text-muted-foreground">Beschreibung:</span>
+                        <p className="text-sm mt-1">{viewingBooking.description}</p>
+                      </div>
+                    )}
+                    {viewingBooking.participants && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Teilnehmer:</span>
+                        <span className="text-sm font-medium">{viewingBooking.participants}</span>
+                      </div>
+                    )}
+                    {viewingBooking.cost && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Kosten:</span>
+                        <span className="text-sm font-medium">€{viewingBooking.cost}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
               {(viewingBooking.contactPerson || viewingBooking.contactEmail || viewingBooking.contactPhone) && (
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Kontaktinformationen</Label>
-                  <div className="mt-2 space-y-1">
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">KONTAKT</h4>
+                  <div className="space-y-3">
                     {viewingBooking.contactPerson && (
-                      <p className="text-sm">
-                        <span className="font-medium">Person:</span> {viewingBooking.contactPerson}
-                      </p>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Person:</span>
+                        <span className="text-sm font-medium">{viewingBooking.contactPerson}</span>
+                      </div>
                     )}
                     {viewingBooking.contactEmail && (
-                      <p className="text-sm">
-                        <span className="font-medium">E-Mail:</span> {viewingBooking.contactEmail}
-                      </p>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">E-Mail:</span>
+                        <span className="text-sm font-medium">{viewingBooking.contactEmail}</span>
+                      </div>
                     )}
                     {viewingBooking.contactPhone && (
-                      <p className="text-sm">
-                        <span className="font-medium">Telefon:</span> {viewingBooking.contactPhone}
-                      </p>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Telefon:</span>
+                        <span className="text-sm font-medium">{viewingBooking.contactPhone}</span>
+                      </div>
                     )}
                   </div>
                 </div>
               )}
 
               {viewingBooking.notes && (
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Notizen</Label>
-                  <p className="text-sm mt-1">{viewingBooking.notes}</p>
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">NOTIZEN</h4>
+                  <p className="text-sm">{viewingBooking.notes}</p>
                 </div>
               )}
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setViewingBooking(null)}>
+                  Schließen
+                </Button>
+                <Button onClick={() => {
+                  setViewingBooking(null);
+                  handleEditBooking(viewingBooking);
+                }}>
+                  Bearbeiten
+                </Button>
+              </div>
             </div>
           )}
-          
-          <div className="flex justify-end gap-3 pt-6 border-t mt-6">
-            <Button
-              onClick={() => setIsDetailDialogOpen(false)}
-              variant="outline"
-            >
-              Schließen
-            </Button>
-            {viewingBooking && (
-              <Button
-                onClick={() => {
-                  setIsDetailDialogOpen(false);
-                  handleEditBooking(viewingBooking);
-                }}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Bearbeiten
-              </Button>
-            )}
-          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -988,15 +988,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Invalid club ID', 'clubId');
     }
     
+    // Add server-side fields before validation
+    const requestDataWithServerFields = {
+      ...req.body,
+      clubId,
+      senderId: userId
+    };
+    
     try {
-      const validatedData = messageFormSchema.parse(req.body);
+      const validatedData = messageFormSchema.parse(requestDataWithServerFields);
       console.log('🔍 MESSAGE DEBUG - Validation successful:', JSON.stringify(validatedData, null, 2));
     } catch (validationError) {
       console.error('🚨 MESSAGE VALIDATION ERROR:', validationError);
       throw validationError;
     }
     
-    const validatedData = messageFormSchema.parse(req.body);
+    const validatedData = messageFormSchema.parse(requestDataWithServerFields);
     
     // Create the message
     const messageData = {
@@ -1109,15 +1116,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Invalid club ID', 'clubId');
     }
     
+    // Add server-side fields before validation
+    const requestDataWithServerFields = {
+      ...req.body,
+      clubId,
+      authorId: userId
+    };
+    
     try {
-      const validatedData = announcementFormSchema.parse(req.body);
+      const validatedData = announcementFormSchema.parse(requestDataWithServerFields);
       console.log('🔍 ANNOUNCEMENT DEBUG - Validation successful:', JSON.stringify(validatedData, null, 2));
     } catch (validationError) {
       console.error('🚨 ANNOUNCEMENT VALIDATION ERROR:', validationError);
       throw validationError;
     }
     
-    const validatedData = announcementFormSchema.parse(req.body);
+    const validatedData = announcementFormSchema.parse(requestDataWithServerFields);
     
     const announcementData = {
       clubId,

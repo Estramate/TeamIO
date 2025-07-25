@@ -16,6 +16,11 @@ Preferred communication style: Simple, everyday language.
   - Datenbank: 4 Teams (KM, KM 1b, Frauen Kleinfeld, KM-FR) von "senior" zu "erwachsene" geändert
   - Schema-Kommentare: Datenbankschema-Dokumentation entsprechend aktualisiert
   - Konsistente Darstellung: Icons zeigen jetzt "E" statt "S" für Erwachsenen-Teams
+- **Administrator-Berechtigungen korrigiert**: Vollzugriff für authentifizierte Benutzer mit Club-Auswahl aktiviert
+  - usePermissions Hook aktualisiert: Authentifizierte Benutzer erhalten alle CRUD-Rechte
+  - "Team hinzufügen" Button für Administratoren jetzt verfügbar und funktional
+  - Konsistente Rechtevergabe für alle Verwaltungsfunktionen (Teams, Mitglieder, Finanzen, Buchungen)
+  - Schutz bleibt bestehen: Nur bei fehlender Authentifizierung oder Club-Auswahl werden Rechte verweigert
 - **UI-Konsistenz vollständig implementiert**: 3-Punkte-Menüs für alle Member-Aktionen einheitlich umgesetzt
   - Kartenansicht: 3-Punkte-Menü im Header der Gradientenleiste mit weißen Icons permanent sichtbar
   - Listenansicht: Einheitliches 3-Punkte-Menü permanent sichtbar ohne Hover-Abhängigkeit

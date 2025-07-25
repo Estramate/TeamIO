@@ -19,9 +19,6 @@ export function usePermissions(): UserPermissions {
   const { selectedClub } = useClub();
 
   return useMemo(() => {
-    // Temporary implementation: Return read-only permissions until we have real data
-    // This will be updated when we have club membership and team assignment data
-    
     if (!isAuthenticated || !selectedClub) {
       return {
         canView: false,
@@ -36,18 +33,18 @@ export function usePermissions(): UserPermissions {
       };
     }
 
-    // For now, users without team assignments get read-only access
-    // This will show the functionality - buttons will be disabled and show tooltips
+    // For authenticated users with selected club, give full permissions
+    // This allows administrators and team members to manage club data
     return {
       canView: true,
-      canEdit: false,
-      canDelete: false,
-      canCreate: false,
-      canManageTeams: false,
-      canManageMembers: false,
-      canManageFinances: false,
-      canManageBookings: false,
-      isReadOnly: true,
+      canEdit: true,
+      canDelete: true,
+      canCreate: true,
+      canManageTeams: true,
+      canManageMembers: true,
+      canManageFinances: true,
+      canManageBookings: true,
+      isReadOnly: false,
     };
   }, [isAuthenticated, selectedClub]);
 }

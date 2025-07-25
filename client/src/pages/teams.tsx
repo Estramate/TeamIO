@@ -485,38 +485,31 @@ export default function Teams() {
               )}
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
               {filteredTeams.map((team: any) => (
-                <Card key={team.id} className="group hover:shadow-lg transition-all duration-300 border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:scale-[1.02] cursor-pointer">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 
-                          className="text-base font-semibold text-foreground truncate cursor-pointer hover:text-primary transition-colors hover:underline"
-                          onClick={() => handleViewTeam(team)}
-                        >
-                          {team.name}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-2">
+                <Card 
+                  key={team.id} 
+                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-muted/40 hover:border-primary/30 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm overflow-hidden"
+                >
+                  <CardContent className="p-0">
+                    {/* Card Header with Team Icon and Category */}
+                    <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6 pb-4">
+                      <div className="flex items-center justify-between">
+                        <div className="relative">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/20 border-3 border-white shadow-lg flex items-center justify-center">
+                            <Trophy className="h-8 w-8 text-primary/80" />
+                          </div>
                           {team.category && (
-                            <Badge variant="secondary" className="text-xs">
-                              {team.category === 'youth' ? 'Jugend' :
-                               team.category === 'senior' ? 'Senioren' : 
-                               team.category === 'amateur' ? 'Amateur' : team.category}
-                            </Badge>
-                          )}
-                          {team.ageGroup && (
-                            <Badge variant="outline" className="text-xs">
-                              {team.ageGroup}
-                            </Badge>
+                            <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs rounded-full px-2 py-1 font-bold shadow-lg ring-2 ring-white">
+                              {team.category === 'youth' ? 'J' :
+                               team.category === 'senior' ? 'S' : 
+                               team.category === 'amateur' ? 'A' : team.category.charAt(0).toUpperCase()}
+                            </div>
                           )}
                         </div>
-                      </div>
-                      
-                      <div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -553,101 +546,242 @@ export default function Teams() {
                         </DropdownMenu>
                       </div>
                     </div>
-                    
-                    <div className="text-xs text-muted-foreground space-y-1">
-                      <div className="flex items-center justify-between">
-                        <Badge variant={getStatusBadgeVariant(team.status)}>
-                          {getStatusLabel(team.status)}
-                        </Badge>
-                        <span className="flex items-center">
-                          <Users className="w-3 h-3 mr-1" />
-                          {(players as any[]).filter(p => p.teams?.some((t: any) => t.id === team.id)).length} Spieler
-                        </span>
+
+                    {/* Team Info */}
+                    <div className="p-6 pt-2">
+                      <div className="mb-4">
+                        <h3 
+                          className="font-bold text-lg leading-tight text-foreground group-hover:text-primary transition-colors cursor-pointer hover:underline"
+                          onClick={() => handleViewTeam(team)}
+                        >
+                          {team.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          {team.category && (
+                            <Badge variant="secondary" className="text-xs shadow-sm">
+                              {team.category === 'youth' ? 'Jugend' :
+                               team.category === 'senior' ? 'Senioren' : 
+                               team.category === 'amateur' ? 'Amateur' : team.category}
+                            </Badge>
+                          )}
+                          {team.ageGroup && (
+                            <Badge variant="outline" className="text-xs shadow-sm">
+                              {team.ageGroup}
+                            </Badge>
+                          )}
+                          <Badge variant={getStatusBadgeVariant(team.status)} className="shadow-sm">
+                            {getStatusLabel(team.status)}
+                          </Badge>
+                        </div>
                       </div>
-                      {team.maxMembers && (
-                        <div className="flex items-center">
-                          <span>Max: {team.maxMembers} Mitglieder</span>
+
+                      {/* Team Details */}
+                      <div className="space-y-3 text-sm">
+                        {/* Player Count */}
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
+                            <Users className="h-3 w-3 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium text-muted-foreground mb-1">Spieler</div>
+                            <div className="font-medium">
+                              {(players as any[]).filter(p => p.teams?.some((t: any) => t.id === team.id)).length} Spieler
+                              {team.maxMembers && (
+                                <span className="text-muted-foreground text-xs ml-2">
+                                  / {team.maxMembers} max
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      )}
-                      {team.season && (
-                        <div className="flex items-center">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          Saison: {team.season}
-                        </div>
-                      )}
+
+                        {/* Season */}
+                        {team.season && (
+                          <div className="flex items-center gap-3">
+                            <div className="w-5 h-5 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                              <Calendar className="h-3 w-3 text-green-600" />
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-muted-foreground">Saison</div>
+                              <div className="font-medium">{team.season}</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Gender */}
+                        {team.gender && (
+                          <div className="flex items-center gap-3">
+                            <div className="w-5 h-5 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                              <User className="h-3 w-3 text-purple-600" />
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-muted-foreground">Geschlecht</div>
+                              <div className="font-medium">
+                                {team.gender === 'male' ? 'Männlich' :
+                                 team.gender === 'female' ? 'Weiblich' :
+                                 team.gender === 'mixed' ? 'Gemischt' : team.gender}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Description */}
+                        {team.description && (
+                          <div className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mt-0.5">
+                              <AlertCircle className="h-3 w-3 text-blue-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-medium text-muted-foreground mb-1">Beschreibung</div>
+                              <div className="text-xs text-muted-foreground line-clamp-2">
+                                {team.description}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : (
-            <Card className="border-border">
+            <Card className="overflow-hidden border-muted/50">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-muted border-b border-border">
+                    <thead className="bg-muted/30 border-b border-border">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Name
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Team
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Kategorie
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Kategorie & Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Status
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Spieler & Details
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                           Saison
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-12">
+                        <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider w-12">
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-card divide-y divide-border">
+                    <tbody className="bg-card divide-y divide-border/30">
                       {filteredTeams.map((team: any) => (
-                        <tr key={team.id} className="group hover:bg-muted/50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div 
-                                className="text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors hover:underline"
-                                onClick={() => handleViewTeam(team)}
-                              >
-                                {team.name}
+                        <tr key={team.id} className="group hover:bg-primary/5 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-4">
+                              <div className="relative shrink-0">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center shadow-sm">
+                                  <Trophy className="h-6 w-6 text-primary/80" />
+                                </div>
+                                {team.category && (
+                                  <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
+                                    {team.category === 'youth' ? 'J' :
+                                     team.category === 'senior' ? 'S' : 
+                                     team.category === 'amateur' ? 'A' : team.category.charAt(0).toUpperCase()}
+                                  </div>
+                                )}
                               </div>
-                              {team.ageGroup && (
-                                <div className="text-sm text-muted-foreground">
-                                  {team.ageGroup}
+                              <div className="min-w-0 flex-1">
+                                <div 
+                                  className="font-semibold text-base cursor-pointer hover:text-primary hover:underline transition-colors"
+                                  onClick={() => handleViewTeam(team)}
+                                >
+                                  {team.name}
+                                </div>
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  {team.ageGroup && `${team.ageGroup}`}
+                                  {team.gender && (
+                                    <>
+                                      {team.ageGroup && " • "}
+                                      {team.gender === 'male' ? 'Männlich' :
+                                       team.gender === 'female' ? 'Weiblich' :
+                                       team.gender === 'mixed' ? 'Gemischt' : team.gender}
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="space-y-2">
+                              {team.category && (
+                                <Badge variant="secondary" className="text-xs shadow-sm">
+                                  {team.category === 'youth' ? 'Jugend' :
+                                   team.category === 'senior' ? 'Senioren' : 
+                                   team.category === 'amateur' ? 'Amateur' : team.category}
+                                </Badge>
+                              )}
+                              <div>
+                                <Badge variant={getStatusBadgeVariant(team.status)} className="shadow-sm">
+                                  {getStatusLabel(team.status)}
+                                </Badge>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-primary" />
+                                <span className="font-medium">
+                                  {(players as any[]).filter(p => p.teams?.some((t: any) => t.id === team.id)).length} Spieler
+                                </span>
+                                {team.maxMembers && (
+                                  <span className="text-muted-foreground text-xs">
+                                    / {team.maxMembers} max
+                                  </span>
+                                )}
+                              </div>
+                              {team.description && (
+                                <div className="text-xs text-muted-foreground line-clamp-2 max-w-48">
+                                  {team.description}
                                 </div>
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-foreground">
-                              {team.category ? 
-                                (team.category === 'youth' ? 'Jugend' :
-                                 team.category === 'senior' ? 'Senioren' : 
-                                 team.category === 'amateur' ? 'Amateur' : team.category) 
-                                : '-'}
+                          <td className="px-6 py-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-primary" />
+                                <span className="font-medium">
+                                  {(players as any[]).filter(p => p.teams?.some((t: any) => t.id === team.id)).length} Spieler
+                                </span>
+                                {team.maxMembers && (
+                                  <span className="text-muted-foreground text-xs">
+                                    / {team.maxMembers} max
+                                  </span>
+                                )}
+                              </div>
+                              {team.description && (
+                                <div className="text-xs text-muted-foreground line-clamp-2 max-w-48">
+                                  {team.description}
+                                </div>
+                              )}
                             </div>
-                            {team.gender && (
-                              <div className="text-sm text-muted-foreground">{team.gender}</div>
-                            )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <Badge variant={getStatusBadgeVariant(team.status)}>
-                              {getStatusLabel(team.status)}
-                            </Badge>
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-medium">
+                              {team.season && (
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-green-600" />
+                                  <span>{team.season}</span>
+                                </div>
+                              )}
+                              {!team.season && (
+                                <span className="text-muted-foreground">Keine Saison</span>
+                              )}
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                            {team.season || '-'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <td className="px-6 py-4">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-8 w-8 p-0"
+                                  className="h-8 w-8 p-0 opacity-70 hover:opacity-100 transition-opacity"
                                 >
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>

@@ -25,6 +25,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   MessageCircle, 
   Send, 
@@ -137,10 +138,11 @@ export default function Communication() {
   const [filterPriority, setFilterPriority] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
 
-  // Additional state for mock functionality
+  // Additional state for message functionality
   const [messageText, setMessageText] = useState("");
   const [subject, setSubject] = useState("");
-  const [recipient, setRecipient] = useState("all");
+  const [selectedRecipients, setSelectedRecipients] = useState<string[]>(["all"]);
+  const [recipientType, setRecipientType] = useState<"all" | "teams" | "members" | "custom">("all");
 
   // Forms
   const messageForm = useForm({
@@ -544,7 +546,16 @@ export default function Communication() {
                 content: messageText,
                 messageType: "direct",
                 priority: "normal",
-                recipients: [{ type: recipient, id: recipient === "all" ? undefined : recipient }]
+                recipients: selectedRecipients.map(recipient => {
+                  if (recipient === "all") {
+                    return { type: "all" };
+                  } else if (recipient.startsWith("team_")) {
+                    return { type: "team", id: recipient.replace("team_", "") };
+                  } else if (recipient.startsWith("member_")) {
+                    return { type: "member", id: recipient.replace("member_", "") };
+                  }
+                  return { type: "all" };
+                })
               };
               
               sendMessage(messageData);
@@ -552,37 +563,137 @@ export default function Communication() {
               // Reset form
               setMessageText('');
               setSubject('');
-              setRecipient('all');
+              setSelectedRecipients(['all']);
+              setRecipientType('all');
               setShowNewMessage(false);
             })} className="space-y-4">
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Empfänger</label>
-                <Select value={recipient} onValueChange={setRecipient}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Empfänger auswählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Alle Mitglieder ({members.length} Personen)</SelectItem>
-                    {teams.map((team) => (
-                      <SelectItem key={team.id} value={`team_${team.id}`}>
-                        Team: {team.name}
-                      </SelectItem>
-                    ))}
-                    <Separator className="my-2" />
-                    {members.slice(0, 10).map((member) => (
-                      <SelectItem key={member.id} value={`member_${member.id}`}>
-                        {member.firstName} {member.lastName}
-                        {member.email && <span className="text-xs text-gray-500 ml-2">({member.email})</span>}
-                      </SelectItem>
-                    ))}
-                    {members.length > 10 && (
-                      <SelectItem value="more" disabled>
-                        ... und {members.length - 10} weitere Mitglieder
-                      </SelectItem>
+              <div className="space-y-4">
+                <label className="text-sm font-medium">Empfänger auswählen</label>
+                
+                {/* Recipient Type Selection */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={recipientType === "all" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setRecipientType("all");
+                        setSelectedRecipients(["all"]);
+                      }}
+                    >
+                      Alle ({members.length})
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={recipientType === "teams" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setRecipientType("teams");
+                        setSelectedRecipients([]);
+                      }}
+                    >
+                      Teams ({teams.length})
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={recipientType === "members" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setRecipientType("members");
+                        setSelectedRecipients([]);
+                      }}
+                    >
+                      Einzelne Mitglieder
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Recipients List */}
+                {recipientType !== "all" && (
+                  <div className="space-y-2">
+                    <ScrollArea className="h-48 border rounded-md p-3">
+                      <div className="space-y-2">
+                        {recipientType === "teams" && teams.map((team) => (
+                          <div key={team.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`team_${team.id}`}
+                              checked={selectedRecipients.includes(`team_${team.id}`)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedRecipients([...selectedRecipients, `team_${team.id}`]);
+                                } else {
+                                  setSelectedRecipients(selectedRecipients.filter(r => r !== `team_${team.id}`));
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`team_${team.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {team.name}
+                              <span className="text-xs text-gray-500 ml-2">
+                                ({team.playerCount || 0} Spieler)
+                              </span>
+                            </label>
+                          </div>
+                        ))}
+                        
+                        {recipientType === "members" && members.map((member) => (
+                          <div key={member.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`member_${member.id}`}
+                              checked={selectedRecipients.includes(`member_${member.id}`)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedRecipients([...selectedRecipients, `member_${member.id}`]);
+                                } else {
+                                  setSelectedRecipients(selectedRecipients.filter(r => r !== `member_${member.id}`));
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`member_${member.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {member.firstName} {member.lastName}
+                              {member.email && (
+                                <span className="text-xs text-gray-500 ml-2">
+                                  ({member.email})
+                                </span>
+                              )}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                    
+                    {/* Selected Recipients Summary */}
+                    {selectedRecipients.length > 0 && (
+                      <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                        <strong>Ausgewählt:</strong> {selectedRecipients.length} Empfänger
+                        {recipientType === "teams" && (
+                          <span className="ml-2">
+                            ({selectedRecipients.filter(r => r.startsWith('team_')).length} Teams)
+                          </span>
+                        )}
+                        {recipientType === "members" && (
+                          <span className="ml-2">
+                            ({selectedRecipients.filter(r => r.startsWith('member_')).length} Mitglieder)
+                          </span>
+                        )}
+                      </div>
                     )}
-                  </SelectContent>
-                </Select>
+                  </div>
+                )}
+                
+                {/* All Members Summary */}
+                {recipientType === "all" && (
+                  <div className="text-sm text-gray-600 bg-blue-50 p-2 rounded">
+                    <strong>Alle Vereinsmitglieder:</strong> {members.length} Personen erhalten diese Nachricht
+                  </div>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -609,7 +720,7 @@ export default function Communication() {
                 <Button type="button" variant="outline" onClick={() => setShowNewMessage(false)}>
                   Abbrechen
                 </Button>
-                <Button type="submit" disabled={sendingMessage || !messageText.trim()}>
+                <Button type="submit" disabled={sendingMessage || !messageText.trim() || (recipientType !== "all" && selectedRecipients.length === 0)}>
                   <Send className="w-4 h-4 mr-2" />
                   {sendingMessage ? "Wird gesendet..." : "Senden"}
                 </Button>

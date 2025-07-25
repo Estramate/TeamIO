@@ -49,6 +49,9 @@ const bookingFormSchema = z.object({
   contactEmail: z.string().optional(),
   contactPhone: z.string().optional(),
   notes: z.string().optional(),
+  recurring: z.boolean().optional(),
+  recurringPattern: z.string().optional(),
+  recurringUntil: z.string().optional(),
 });
 
 // Color schemes matching bookings page - updated to avoid conflicts
@@ -92,6 +95,10 @@ export default function Calendar() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [editingBooking, setEditingBooking] = useState<any>(null);
+  
+  // Calendar availability state
+  const [calendarAvailabilityStatus, setCalendarAvailabilityStatus] = useState<{ available: boolean; message?: string; maxConcurrent?: number; currentBookings?: number } | null>(null);
+  const [isCheckingCalendarAvailability, setIsCheckingCalendarAvailability] = useState(false);
   
   // Drag & Drop state
   const [draggedEvent, setDraggedEvent] = useState<any>(null);
@@ -185,6 +192,9 @@ export default function Calendar() {
       contactEmail: "",
       contactPhone: "",
       notes: "",
+      recurring: false,
+      recurringPattern: "",
+      recurringUntil: "",
     },
   });
 
@@ -223,12 +233,28 @@ export default function Calendar() {
 
   const createBookingMutation = useMutation({
     mutationFn: (data: any) => apiRequest('POST', `/api/clubs/${selectedClub?.id}/bookings`, data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
       setShowBookingModal(false);
       bookingForm.reset();
-      toast({ title: "Buchung erstellt", description: "Die Buchung wurde erfolgreich erstellt." });
+      
+      // Handle recurring booking success message
+      if (response.createdCount && response.createdCount > 1) {
+        toast({ 
+          title: "Wiederkehrende Buchungen erstellt", 
+          description: `${response.createdCount} Buchungen wurden erfolgreich erstellt.` 
+        });
+      } else {
+        toast({ title: "Buchung erstellt", description: "Die Buchung wurde erfolgreich erstellt." });
+      }
     },
+    onError: (error: any) => {
+      toast({ 
+        title: "Fehler", 
+        description: error.message || "Buchung konnte nicht erstellt werden.", 
+        variant: "destructive" 
+      });
+    }
   });
 
   const updateBookingMutation = useMutation({
@@ -249,6 +275,8 @@ export default function Calendar() {
       toast({ title: "Buchung gelöscht", description: "Die Buchung wurde erfolgreich gelöscht." });
     },
   });
+
+
 
   // Helper functions
   const getBirthdays = (date: Date) => {
@@ -423,14 +451,7 @@ export default function Calendar() {
   // State to prevent modal opening during resize
   const [isResizing, setIsResizing] = useState(false);
 
-  // Calendar availability check state
-  const [isCheckingCalendarAvailability, setIsCheckingCalendarAvailability] = useState(false);
-  const [calendarAvailabilityStatus, setCalendarAvailabilityStatus] = useState<{
-    available: boolean;
-    message: string;
-    maxConcurrent?: number;
-    currentBookings?: number;
-  } | null>(null);
+
 
   // Resize handlers - only for end time (extending events)
   const handleResizeStart = (event: any, direction: 'end', e: React.MouseEvent) => {
@@ -845,6 +866,10 @@ export default function Calendar() {
       cost: data.cost || null,
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
+      // Include recurring fields
+      recurring: data.recurring || false,
+      recurringPattern: data.recurring ? data.recurringPattern : null,
+      recurringUntil: data.recurring && data.recurringUntil ? new Date(data.recurringUntil).toISOString() : null,
     };
 
     console.log('Calendar processed data:', processedData);
@@ -1955,6 +1980,77 @@ export default function Calendar() {
                         {calendarAvailabilityStatus.message}
                       </span>
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Recurring Booking Section */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <FormField
+                    control={bookingForm.control}
+                    name="recurring"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value || false}
+                            onChange={field.onChange}
+                            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-medium">
+                            Wiederkehrende Buchung
+                          </FormLabel>
+                          <p className="text-xs text-muted-foreground">
+                            Automatisch weitere Buchungen basierend auf dem gewählten Muster erstellen
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {bookingForm.watch('recurring') && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={bookingForm.control}
+                      name="recurringPattern"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Wiederholungsmuster *</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Muster auswählen" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="daily">Täglich</SelectItem>
+                              <SelectItem value="weekly">Wöchentlich</SelectItem>
+                              <SelectItem value="monthly">Monatlich</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={bookingForm.control}
+                      name="recurringUntil"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Wiederholung bis *</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 )}
               </div>

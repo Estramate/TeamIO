@@ -51,7 +51,10 @@ import {
   Trophy,
   Building,
   BarChart3,
-  FileText
+  FileText,
+  Info,
+  User,
+  CheckCircle
 } from "lucide-react";
 import { FeesTabContent } from "./finance-fees";
 import { format } from "date-fns";
@@ -673,12 +676,15 @@ export default function Finance() {
   const translatePaymentMethod = (method: string) => {
     switch (method) {
       case 'cash': return 'Bargeld';
-      case 'bank': return 'Banküberweisung';
-      case 'card': return 'Karte';
+      case 'bank_transfer': return 'Banküberweisung';
+      case 'credit_card': return 'Kreditkarte';
+      case 'debit_card': return 'Debitkarte';
       case 'paypal': return 'PayPal';
       default: return method;
     }
   };
+
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('de-DE', {
@@ -1429,14 +1435,6 @@ export default function Finance() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">Beschreibung</label>
-                    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{selectedFinance.description}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">Kategorie</label>
                     <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
                       {getCategoryIcon(selectedFinance.category)}
@@ -1464,45 +1462,75 @@ export default function Finance() {
                   </div>
                 </div>
 
-                {/* Additional Information */}
-                {(selectedFinance.dueDate || selectedFinance.paymentMethod || selectedFinance.recurring) && (
-                  <>
-                    <div className="border-t pt-4">
-                      <h3 className="text-lg font-semibold border-b pb-2 mb-4">Zusätzliche Informationen</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {selectedFinance.dueDate && (
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Fälligkeitsdatum</label>
-                            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{formatDate(selectedFinance.dueDate)}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {selectedFinance.paymentMethod && (
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Zahlungsmethode</label>
-                            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
-                              <CreditCard className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{translatePaymentMethod(selectedFinance.paymentMethod)}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {selectedFinance.recurring && (
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Wiederkehrend</label>
-                            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
-                              <span className="text-sm">{selectedFinance.recurringInterval || 'Ja'}</span>
-                            </div>
-                          </div>
-                        )}
+                {/* Additional Information Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2 border-b pb-2">
+                    <Info className="h-5 w-5" />
+                    Zusätzliche Informationen
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Fälligkeitsdatum</label>
+                      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{selectedFinance.dueDate ? formatDate(selectedFinance.dueDate) : 'Nicht festgelegt'}</span>
                       </div>
                     </div>
-                  </>
-                )}
+
+                    {selectedFinance.memberId && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">Zugeordnetes Mitglied</label>
+                        <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Mitglied #{selectedFinance.memberId}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedFinance.teamId && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">Zugeordnetes Team</label>
+                        <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Team #{selectedFinance.teamId}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Zahlungsart</label>
+                      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                        <CreditCard className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{selectedFinance.paymentMethod ? translatePaymentMethod(selectedFinance.paymentMethod) : 'Nicht angegeben'}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Wiederkehrend</label>
+                      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{selectedFinance.recurring ? (selectedFinance.recurringInterval || 'Ja') : 'Nein'}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Erstellt am</label>
+                      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{selectedFinance.createdAt ? formatDate(new Date(selectedFinance.createdAt)) : 'Nicht verfügbar'}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Status</label>
+                      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{selectedFinance.isActive ? 'Aktiv' : 'Inaktiv'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Notes */}
                 {selectedFinance.notes && (

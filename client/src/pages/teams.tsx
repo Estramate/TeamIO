@@ -4,12 +4,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
+import { usePermissions } from "@/hooks/use-permissions";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { ProtectedButton } from "@/components/ui/protected-button";
+import { ProtectedForm } from "@/components/ui/protected-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -56,6 +59,7 @@ export default function Teams() {
   const { selectedClub } = useClub();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
+  const permissions = usePermissions();
 
   // Set page title
   useEffect(() => {
@@ -436,13 +440,14 @@ export default function Teams() {
               </div>
 
               {/* Add Button */}
-              <Button 
+              <ProtectedButton 
+                requiresCreate={true}
                 onClick={handleAddTeam} 
                 className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Team hinzufügen
-              </Button>
+              </ProtectedButton>
             </div>
           </div>
         </div>
@@ -640,7 +645,10 @@ export default function Teams() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEditTeam(team)}>
+                                <DropdownMenuItem 
+                                  onClick={() => handleEditTeam(team)}
+                                  disabled={!permissions?.canEdit}
+                                >
                                   <Edit className="h-4 w-4 mr-2" />
                                   Bearbeiten
                                 </DropdownMenuItem>
@@ -663,6 +671,7 @@ export default function Teams() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
                                   onClick={() => handleDeleteTeam(team)}
+                                  disabled={!permissions?.canDelete}
                                   className="text-destructive focus:text-destructive"
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />

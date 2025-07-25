@@ -142,7 +142,9 @@ export interface IStorage {
   updateTrainingFee(id: number, trainingFee: Partial<InsertTrainingFee>): Promise<TrainingFee>;
   deleteTrainingFee(id: number): Promise<void>;
 
-
+  // User permission operations
+  getUserClubMembership(userId: string, clubId: number): Promise<any>;
+  getUserTeamAssignments(userId: string, clubId: number): Promise<any[]>;
 
   // Dashboard operations
   getDashboardStats(clubId: number): Promise<any>;
@@ -919,6 +921,56 @@ export class DatabaseStorage implements IStorage {
     await db.delete(playerStats).where(eq(playerStats.id, id));
   }
 
+  // User permission operations
+  async getUserClubMembership(userId: string, clubId: number): Promise<any> {
+    try {
+      const membership = await this.db
+        .select()
+        .from(clubMemberships)
+        .where(and(
+          eq(clubMemberships.userId, userId),
+          eq(clubMemberships.clubId, clubId)
+        ))
+        .limit(1);
+      
+      return membership[0] || null;
+    } catch (error) {
+      console.error('Error getting user club membership:', error);
+      throw error;
+    }
+  }
+
+  async getUserTeamAssignments(userId: string, clubId: number): Promise<any[]> {
+    try {
+      // First get user as member
+      const member = await this.db
+        .select()
+        .from(members)
+        .where(and(
+          eq(members.email, userId), // Assuming email is used as user identifier
+          eq(members.clubId, clubId)
+        ))
+        .limit(1);
+
+      if (!member[0]) {
+        return [];
+      }
+
+      // Get team assignments for this member
+      const assignments = await this.db
+        .select({
+          teamId: teamMemberships.teamId,
+          role: teamMemberships.role,
+        })
+        .from(teamMemberships)
+        .where(eq(teamMemberships.memberId, member[0].id));
+
+      return assignments;
+    } catch (error) {
+      console.error('Error getting user team assignments:', error);
+      throw error;
+    }
+  }
 
 }
 

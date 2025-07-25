@@ -62,6 +62,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User permission routes
+  app.get('/api/clubs/:clubId/user-membership', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const userId = req.user.id;
+      
+      // Check if user is member of this club
+      const membership = await storage.getUserClubMembership(userId, clubId);
+      
+      res.json({
+        isMember: !!membership,
+        role: membership?.role || null,
+        joinedAt: membership?.joinedAt || null
+      });
+    } catch (error) {
+      console.error('Error checking user club membership:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get('/api/clubs/:clubId/user-teams', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const userId = req.user.id;
+      
+      // Get user's team assignments for this club
+      const teamAssignments = await storage.getUserTeamAssignments(userId, clubId);
+      
+      res.json(teamAssignments);
+    } catch (error) {
+      console.error('Error fetching user team assignments:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // Club routes
   app.get('/api/clubs', isAuthenticated, async (req: any, res) => {
     try {

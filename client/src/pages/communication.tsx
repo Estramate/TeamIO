@@ -238,16 +238,11 @@ export default function Communication() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
-      {/* Header */}
+      {/* Search and Status Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <MessageCircle className="w-6 h-6 text-blue-600" />
-            Kommunikation
-          </h1>
-          <p className="text-gray-600 mt-1">Nachrichten und Ankündigungen verwalten</p>
+        <div className="flex items-center gap-4">
           {wsConnected && (
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-sm text-green-600">Live-Verbindung aktiv</span>
             </div>

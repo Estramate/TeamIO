@@ -1,181 +1,196 @@
-// Centralized client-side error handling and reporting
-import { toast } from '@/hooks/use-toast';
-
-interface ErrorReport {
-  message: string;
-  stack?: string;
-  url: string;
-  timestamp: string;
-  userAgent: string;
+// Centralized error handling utilities
+interface ErrorContext {
+  component?: string;
+  action?: string;
   userId?: string;
-  context?: any;
+  clubId?: string;
+  timestamp?: string;
+  url?: string;
+  userAgent?: string;
+  [key: string]: any;
+}
+
+interface PerformanceMetric {
+  metric: string;
+  value: number;
+  context: ErrorContext;
 }
 
 class ErrorHandler {
-  private static instance: ErrorHandler;
-  private errorQueue: ErrorReport[] = [];
-  private isOnline = navigator.onLine;
+  private isProduction = process.env.NODE_ENV === 'production';
+  private errorQueue: Array<{ error: Error; context: ErrorContext }> = [];
+  private performanceQueue: PerformanceMetric[] = [];
 
-  private constructor() {
-    this.setupEventListeners();
-  }
-
-  static getInstance(): ErrorHandler {
-    if (!ErrorHandler.instance) {
-      ErrorHandler.instance = new ErrorHandler();
-    }
-    return ErrorHandler.instance;
-  }
-
-  private setupEventListeners() {
-    // Global error handler
-    window.addEventListener('error', (event) => {
-      this.handleError(event.error, {
-        type: 'javascript',
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
-      });
-    });
-
-    // Unhandled promise rejection handler
-    window.addEventListener('unhandledrejection', (event) => {
-      this.handleError(event.reason, {
-        type: 'promise',
-        promise: event.promise,
-      });
-    });
-
-    // Network status listeners
-    window.addEventListener('online', () => {
-      this.isOnline = true;
-      this.flushErrorQueue();
-    });
-
-    window.addEventListener('offline', () => {
-      this.isOnline = false;
-    });
-  }
-
-  handleError(error: Error | any, context?: any) {
-    const errorReport: ErrorReport = {
-      message: error?.message || String(error),
-      stack: error?.stack,
-      url: window.location.href,
+  // Log error to console (development) or external service (production)
+  logError(error: Error, context: ErrorContext = {}) {
+    const enrichedContext = {
+      ...context,
       timestamp: new Date().toISOString(),
+      url: window.location.href,
       userAgent: navigator.userAgent,
-      context,
     };
 
-    // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error captured:', errorReport);
-    }
-
-    // Add to queue for sending to server
-    this.errorQueue.push(errorReport);
-
-    // Show user-friendly error message
-    this.showUserError(error, context);
-
-    // Attempt to send error report
-    if (this.isOnline) {
-      this.flushErrorQueue();
+    if (this.isProduction) {
+      // In production, send to monitoring service
+      this.queueError(error, enrichedContext);
+    } else {
+      // In development, log to console
+      console.error('Error:', error);
+      console.error('Context:', enrichedContext);
     }
   }
 
-  private showUserError(error: any, context?: any) {
-    // Don't show errors for network issues or expected errors
-    if (this.isNetworkError(error) || this.isExpectedError(error)) {
-      return;
-    }
-
-    let title = 'An error occurred';
-    let description = 'Something went wrong. Please try again.';
-
-    // Customize based on error type
-    if (error?.name === 'ChunkLoadError' || error?.message?.includes('Loading chunk')) {
-      title = 'Loading Error';
-      description = 'Failed to load application resources. Please refresh the page.';
-    } else if (error?.name === 'TypeError' && error?.message?.includes('fetch')) {
-      title = 'Network Error';
-      description = 'Unable to connect to the server. Please check your connection.';
-    } else if (context?.type === 'promise') {
-      title = 'Unexpected Error';
-      description = 'An unexpected error occurred. The team has been notified.';
-    }
-
-    toast({
-      title,
-      description,
-      variant: 'destructive',
+  // Handle API errors consistently
+  handleApiError(response: Response, context: ErrorContext = {}) {
+    const error = new Error(`API Error: ${response.status} ${response.statusText}`);
+    this.logError(error, {
+      ...context,
+      apiStatus: response.status,
+      apiUrl: response.url,
     });
   }
 
-  private isNetworkError(error: any): boolean {
-    return error?.name === 'NetworkError' ||
-           error?.message?.includes('fetch') ||
-           error?.message?.includes('network');
+  // Handle async operation errors
+  handleAsyncError(promise: Promise<any>, context: ErrorContext = {}) {
+    return promise.catch((error) => {
+      this.logError(error, context);
+      throw error; // Re-throw to allow component-level handling
+    });
   }
 
-  private isExpectedError(error: any): boolean {
-    // Add patterns for errors that should not show user notifications
-    const expectedPatterns = [
-      'AbortError',
-      'User cancelled',
-      'Navigation cancelled',
-    ];
+  // Report performance issues
+  reportPerformance(metric: string, value: number, context: ErrorContext = {}) {
+    const performanceMetric: PerformanceMetric = {
+      metric,
+      value,
+      context: {
+        ...context,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+      },
+    };
 
-    return expectedPatterns.some(pattern => 
-      error?.name?.includes(pattern) || error?.message?.includes(pattern)
-    );
+    if (this.isProduction) {
+      this.performanceQueue.push(performanceMetric);
+      this.flushPerformanceQueue();
+    } else {
+      console.warn(`Performance Issue - ${metric}:`, value, 'ms', context);
+    }
   }
 
+  // Queue errors for batch sending in production
+  private queueError(error: Error, context: ErrorContext) {
+    this.errorQueue.push({ error, context });
+    
+    // Flush queue when it gets too large or after a timeout
+    if (this.errorQueue.length >= 5) {
+      this.flushErrorQueue();
+    } else {
+      setTimeout(() => this.flushErrorQueue(), 5000);
+    }
+  }
+
+  // Send queued errors to monitoring service
   private async flushErrorQueue() {
     if (this.errorQueue.length === 0) return;
 
-    const errors = [...this.errorQueue];
-    this.errorQueue = [];
-
     try {
+      // Here you would send to your monitoring service
+      // Example: Sentry, LogRocket, DataDog, etc.
+      const payload = this.errorQueue.map(({ error, context }) => ({
+        message: error.message,
+        stack: error.stack,
+        context,
+      }));
+
+      // Example API call to your error logging endpoint
       await fetch('/api/errors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ errors }),
+        body: JSON.stringify({ errors: payload }),
       });
+
+      this.errorQueue = [];
+    } catch (sendError) {
+      console.error('Failed to send error reports:', sendError);
+      // Keep errors in queue for retry
+    }
+  }
+
+  // Send performance metrics
+  private async flushPerformanceQueue() {
+    if (this.performanceQueue.length === 0) return;
+
+    try {
+      await fetch('/api/performance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metrics: this.performanceQueue }),
+      });
+
+      this.performanceQueue = [];
     } catch (error) {
-      // If sending fails, add errors back to queue
-      this.errorQueue.unshift(...errors);
-      console.warn('Failed to send error reports:', error);
+      console.error('Failed to send performance metrics:', error);
     }
   }
 
-  // Manual error reporting for caught exceptions
-  reportError(error: Error, context?: any) {
-    this.handleError(error, { ...context, manual: true });
+  // Create error boundary helper
+  createErrorBoundary(componentName: string) {
+    return (error: Error, errorInfo: any) => {
+      this.logError(error, {
+        component: componentName,
+        errorBoundary: true,
+        componentStack: errorInfo.componentStack,
+      });
+    };
   }
 
-  // Performance monitoring
-  reportPerformance(metric: string, value: number, context?: any) {
-    if (process.env.NODE_ENV === 'production') {
-      // Send performance metrics to monitoring service
-      console.log('Performance metric:', { metric, value, context });
-    }
+  // Wrap async functions with error handling
+  wrapAsync<T extends (...args: any[]) => Promise<any>>(
+    fn: T,
+    context: ErrorContext = {}
+  ): T {
+    return ((...args: Parameters<T>) => {
+      return this.handleAsyncError(fn(...args), context);
+    }) as T;
   }
+
+  // Create a fetch wrapper with error handling
+  safeFetch = async (url: string, options: RequestInit = {}) => {
+    try {
+      const response = await fetch(url, options);
+      
+      if (!response.ok) {
+        this.handleApiError(response, { fetchUrl: url, fetchMethod: options.method || 'GET' });
+      }
+      
+      return response;
+    } catch (error) {
+      this.logError(error as Error, { 
+        fetchUrl: url, 
+        fetchMethod: options.method || 'GET',
+        networkError: true 
+      });
+      throw error;
+    }
+  };
 }
 
 // Export singleton instance
-export const errorHandler = ErrorHandler.getInstance();
+export const errorHandler = new ErrorHandler();
 
 // Utility functions for common error scenarios
-export const handleApiError = (error: any, operation: string) => {
-  errorHandler.reportError(error, { operation, type: 'api' });
+export const withErrorHandling = <T extends (...args: any[]) => any>(
+  fn: T,
+  context: ErrorContext = {}
+): T => {
+  return errorHandler.wrapAsync(fn, context);
 };
 
-export const handleFormError = (error: any, formName: string) => {
-  errorHandler.reportError(error, { formName, type: 'form' });
+export const logError = (error: Error, context?: ErrorContext) => {
+  errorHandler.logError(error, context);
 };
 
-export const handleRouteError = (error: any, route: string) => {
-  errorHandler.reportError(error, { route, type: 'routing' });
+export const reportPerformance = (metric: string, value: number, context?: ErrorContext) => {
+  errorHandler.reportPerformance(metric, value, context);
 };

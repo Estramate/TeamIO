@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupSecurity } from "./security";
 import { logger, errorHandler, requestLogger } from "./logger";
 import { requestTimeout, validateRequestSize, apiVersioning, enhancedCors, healthCheck } from "./middleware";
+import { setupApiDocs } from "./api-docs";
 
 const app = express();
 
@@ -32,6 +33,9 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // Health check endpoint
 app.get('/health', healthCheck);
+
+// Setup API documentation
+setupApiDocs(app);
 
 app.use((req, res, next) => {
   const start = Date.now();

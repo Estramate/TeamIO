@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { requireClubAccess, csrfProtection, generateCSRFToken } from "./security";
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
+import { handleErrorReports, handlePerformanceMetrics } from "./error-reporting";
 
 import {
   insertClubSchema,
@@ -31,6 +32,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // CSRF token endpoint
   app.get('/api/csrf-token', isAuthenticated, generateCSRFToken);
+
+  // Error reporting endpoints
+  app.post('/api/errors', handleErrorReports);
+  app.post('/api/performance', handlePerformanceMetrics);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, asyncHandler(async (req: any, res: any) => {

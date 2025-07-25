@@ -183,8 +183,12 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
   });
 
   const checkAvailabilityMutation = useMutation({
-    mutationFn: (data: { facilityId: number; startTime: string; endTime: string; excludeBookingId?: number }) =>
-      apiRequest('POST', `/api/clubs/${selectedClubId}/bookings/check-availability`, data),
+    mutationFn: async (data: { facilityId: number; startTime: string; endTime: string; excludeBookingId?: number }) => {
+      const response = await apiRequest('POST', `/api/clubs/${selectedClubId}/bookings/check-availability`, data);
+      const jsonData = await response.json();
+      console.log('Parsed JSON data:', jsonData);
+      return jsonData;
+    },
   });
 
   // Availability check function

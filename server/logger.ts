@@ -1,11 +1,65 @@
 import winston from 'winston';
 
-// Create centralized logger
+// Sensitive data patterns to filter from logs
+const SENSITIVE_PATTERNS = [
+  /password/i,
+  /token/i,
+  /secret/i,
+  /apikey/i,
+  /authorization/i,
+  /credit.?card/i,
+  /ssn/i,
+  /social.?security/i,
+];
+
+// Fields that should be completely masked
+const SENSITIVE_FIELDS = [
+  'password', 'token', 'secret', 'apiKey', 'authorization', 
+  'creditCard', 'ssn', 'socialSecurity', 'passwd', 'auth'
+];
+
+// Function to sanitize sensitive data from logs
+const sanitizeData = (data: any): any => {
+  if (typeof data === 'string') {
+    // Mask potential sensitive strings
+    if (SENSITIVE_PATTERNS.some(pattern => pattern.test(data))) {
+      return '[REDACTED]';
+    }
+    return data;
+  }
+  
+  if (typeof data === 'object' && data !== null) {
+    const sanitized: any = Array.isArray(data) ? [] : {};
+    
+    for (const [key, value] of Object.entries(data)) {
+      // Check if the key is sensitive
+      if (SENSITIVE_FIELDS.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
+        sanitized[key] = '[REDACTED]';
+      } else if (SENSITIVE_PATTERNS.some(pattern => pattern.test(key))) {
+        sanitized[key] = '[REDACTED]';
+      } else {
+        sanitized[key] = sanitizeData(value);
+      }
+    }
+    
+    return sanitized;
+  }
+  
+  return data;
+};
+
+// Custom format to sanitize sensitive data
+const sanitizeFormat = winston.format((info) => {
+  return sanitizeData(info);
+});
+
+// Create centralized logger with enhanced security
 export const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
+    sanitizeFormat(),
     winston.format.json()
   ),
   defaultMeta: { service: 'teamio-api' },

@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { requireClubAccess, csrfProtection, generateCSRFToken } from "./security";
@@ -19,6 +20,12 @@ import {
   insertTeamMembershipSchema,
   memberFeeFormSchema,
   trainingFeeFormSchema,
+  messageFormSchema,
+  announcementFormSchema,
+  insertMessageSchema,
+  insertAnnouncementSchema,
+  insertNotificationSchema,
+  insertCommunicationPreferencesSchema,
 } from "@shared/schema";
 
 // Helper function to handle async route errors
@@ -933,6 +940,516 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Communication routes
+  
+  // Message routes
+  app.get('/api/clubs/:clubId/messages', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const messages = await storage.getMessages(clubId, userId);
+    logger.info('Messages retrieved', { clubId, userId, count: messages.length, requestId: req.id });
+    res.json(messages);
+  }));
+
+  app.get('/api/clubs/:clubId/messages/:messageId', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const messageId = parseInt(req.params.messageId);
+    
+    if (!messageId || isNaN(messageId)) {
+      throw new ValidationError('Invalid message ID', 'messageId');
+    }
+    
+    const message = await storage.getMessage(messageId);
+    if (!message) {
+      throw new NotFoundError('Message not found');
+    }
+    
+    logger.info('Message retrieved', { messageId, requestId: req.id });
+    res.json(message);
+  }));
+
+  app.post('/api/clubs/:clubId/messages', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const validatedData = messageFormSchema.parse(req.body);
+    
+    // Create the message
+    const messageData = {
+      clubId,
+      senderId: userId,
+      subject: validatedData.subject,
+      content: validatedData.content,
+      messageType: validatedData.messageType || 'direct',
+      priority: validatedData.priority || 'normal',
+      conversationId: validatedData.conversationId,
+      threadId: validatedData.threadId,
+      scheduledFor: validatedData.scheduledFor,
+      expiresAt: validatedData.expiresAt,
+      attachments: validatedData.attachments,
+      metadata: validatedData.metadata,
+    };
+    
+    const message = await storage.createMessage(messageData);
+    
+    // Add recipients
+    if (validatedData.recipients && validatedData.recipients.length > 0) {
+      const recipientData = validatedData.recipients.map(recipient => ({
+        messageId: message.id,
+        recipientType: recipient.type,
+        recipientId: recipient.id,
+      }));
+      
+      await storage.addMessageRecipients(recipientData);
+    }
+    
+    logger.info('Message created', { messageId: message.id, clubId, userId, requestId: req.id });
+    res.status(201).json(message);
+  }));
+
+  app.patch('/api/clubs/:clubId/messages/:messageId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const messageId = parseInt(req.params.messageId);
+    
+    if (!messageId || isNaN(messageId)) {
+      throw new ValidationError('Invalid message ID', 'messageId');
+    }
+    
+    const message = await storage.updateMessage(messageId, req.body);
+    logger.info('Message updated', { messageId, requestId: req.id });
+    res.json(message);
+  }));
+
+  app.delete('/api/clubs/:clubId/messages/:messageId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const messageId = parseInt(req.params.messageId);
+    
+    if (!messageId || isNaN(messageId)) {
+      throw new ValidationError('Invalid message ID', 'messageId');
+    }
+    
+    await storage.deleteMessage(messageId);
+    logger.info('Message deleted', { messageId, requestId: req.id });
+    res.status(204).send();
+  }));
+
+  app.post('/api/clubs/:clubId/messages/:messageId/read', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const messageId = parseInt(req.params.messageId);
+    const userId = req.user.claims.sub;
+    
+    if (!messageId || isNaN(messageId)) {
+      throw new ValidationError('Invalid message ID', 'messageId');
+    }
+    
+    await storage.markMessageAsRead(messageId, userId);
+    logger.info('Message marked as read', { messageId, userId, requestId: req.id });
+    res.status(204).send();
+  }));
+
+  // Announcement routes
+  app.get('/api/clubs/:clubId/announcements', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const announcements = await storage.getAnnouncements(clubId);
+    logger.info('Announcements retrieved', { clubId, count: announcements.length, requestId: req.id });
+    res.json(announcements);
+  }));
+
+  app.get('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const announcementId = parseInt(req.params.announcementId);
+    
+    if (!announcementId || isNaN(announcementId)) {
+      throw new ValidationError('Invalid announcement ID', 'announcementId');
+    }
+    
+    const announcement = await storage.getAnnouncement(announcementId);
+    if (!announcement) {
+      throw new NotFoundError('Announcement not found');
+    }
+    
+    logger.info('Announcement retrieved', { announcementId, requestId: req.id });
+    res.json(announcement);
+  }));
+
+  app.post('/api/clubs/:clubId/announcements', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const validatedData = announcementFormSchema.parse(req.body);
+    
+    const announcementData = {
+      clubId,
+      authorId: userId,
+      title: validatedData.title,
+      content: validatedData.content,
+      category: validatedData.category,
+      priority: validatedData.priority || 'normal',
+      targetAudience: validatedData.targetAudience || 'all',
+      targetTeamIds: validatedData.targetTeamIds,
+      scheduledFor: validatedData.scheduledFor,
+      expiresAt: validatedData.expiresAt,
+      isPinned: validatedData.isPinned || false,
+      isPublished: validatedData.isPublished || false,
+      attachments: validatedData.attachments,
+      tags: validatedData.tags,
+      metadata: validatedData.metadata,
+    };
+    
+    const announcement = await storage.createAnnouncement(announcementData);
+    logger.info('Announcement created', { announcementId: announcement.id, clubId, userId, requestId: req.id });
+    res.status(201).json(announcement);
+  }));
+
+  app.patch('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const announcementId = parseInt(req.params.announcementId);
+    
+    if (!announcementId || isNaN(announcementId)) {
+      throw new ValidationError('Invalid announcement ID', 'announcementId');
+    }
+    
+    const announcement = await storage.updateAnnouncement(announcementId, req.body);
+    logger.info('Announcement updated', { announcementId, requestId: req.id });
+    res.json(announcement);
+  }));
+
+  app.delete('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const announcementId = parseInt(req.params.announcementId);
+    
+    if (!announcementId || isNaN(announcementId)) {
+      throw new ValidationError('Invalid announcement ID', 'announcementId');
+    }
+    
+    await storage.deleteAnnouncement(announcementId);
+    logger.info('Announcement deleted', { announcementId, requestId: req.id });
+    res.status(204).send();
+  }));
+
+  app.post('/api/clubs/:clubId/announcements/:announcementId/publish', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const announcementId = parseInt(req.params.announcementId);
+    
+    if (!announcementId || isNaN(announcementId)) {
+      throw new ValidationError('Invalid announcement ID', 'announcementId');
+    }
+    
+    const announcement = await storage.publishAnnouncement(announcementId);
+    logger.info('Announcement published', { announcementId, requestId: req.id });
+    res.json(announcement);
+  }));
+
+  app.post('/api/clubs/:clubId/announcements/:announcementId/pin', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const announcementId = parseInt(req.params.announcementId);
+    const { isPinned } = req.body;
+    
+    if (!announcementId || isNaN(announcementId)) {
+      throw new ValidationError('Invalid announcement ID', 'announcementId');
+    }
+    
+    const announcement = await storage.pinAnnouncement(announcementId, isPinned);
+    logger.info('Announcement pin status updated', { announcementId, isPinned, requestId: req.id });
+    res.json(announcement);
+  }));
+
+  // Notification routes
+  app.get('/api/clubs/:clubId/notifications', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const notifications = await storage.getNotifications(userId, clubId);
+    logger.info('Notifications retrieved', { clubId, userId, count: notifications.length, requestId: req.id });
+    res.json(notifications);
+  }));
+
+  app.get('/api/clubs/:clubId/notifications/count', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const count = await storage.getUnreadNotificationsCount(userId, clubId);
+    res.json({ count });
+  }));
+
+  app.post('/api/clubs/:clubId/notifications', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const validatedData = insertNotificationSchema.parse(req.body);
+    const notificationData = {
+      clubId,
+      ...validatedData,
+    };
+    
+    const notification = await storage.createNotification(notificationData);
+    logger.info('Notification created', { notificationId: notification.id, clubId, requestId: req.id });
+    res.status(201).json(notification);
+  }));
+
+  app.post('/api/clubs/:clubId/notifications/:notificationId/read', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const notificationId = parseInt(req.params.notificationId);
+    
+    if (!notificationId || isNaN(notificationId)) {
+      throw new ValidationError('Invalid notification ID', 'notificationId');
+    }
+    
+    await storage.markNotificationAsRead(notificationId);
+    logger.info('Notification marked as read', { notificationId, requestId: req.id });
+    res.status(204).send();
+  }));
+
+  app.post('/api/clubs/:clubId/notifications/read-all', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    await storage.markAllNotificationsAsRead(userId, clubId);
+    logger.info('All notifications marked as read', { clubId, userId, requestId: req.id });
+    res.status(204).send();
+  }));
+
+  app.delete('/api/clubs/:clubId/notifications/:notificationId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const notificationId = parseInt(req.params.notificationId);
+    
+    if (!notificationId || isNaN(notificationId)) {
+      throw new ValidationError('Invalid notification ID', 'notificationId');
+    }
+    
+    await storage.deleteNotification(notificationId);
+    logger.info('Notification deleted', { notificationId, requestId: req.id });
+    res.status(204).send();
+  }));
+
+  // Communication preferences routes
+  app.get('/api/clubs/:clubId/communication-preferences', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const preferences = await storage.getCommunicationPreferences(userId, clubId);
+    res.json(preferences || {});
+  }));
+
+  app.put('/api/clubs/:clubId/communication-preferences', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const validatedData = insertCommunicationPreferencesSchema.parse(req.body);
+    const preferences = await storage.updateCommunicationPreferences(userId, clubId, validatedData);
+    
+    logger.info('Communication preferences updated', { clubId, userId, requestId: req.id });
+    res.json(preferences);
+  }));
+
+  // Communication statistics routes
+  app.get('/api/clubs/:clubId/communication-stats', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const stats = await storage.getCommunicationStats(clubId, userId);
+    res.json(stats);
+  }));
+
+  // Search routes
+  app.get('/api/clubs/:clubId/search/messages', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    const { q: query } = req.query;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    if (!query || typeof query !== 'string') {
+      throw new ValidationError('Search query is required', 'query');
+    }
+    
+    const messages = await storage.searchMessages(clubId, query, userId);
+    logger.info('Messages searched', { clubId, userId, query, results: messages.length, requestId: req.id });
+    res.json(messages);
+  }));
+
+  app.get('/api/clubs/:clubId/search/announcements', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const { q: query } = req.query;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    if (!query || typeof query !== 'string') {
+      throw new ValidationError('Search query is required', 'query');
+    }
+    
+    const announcements = await storage.searchAnnouncements(clubId, query);
+    logger.info('Announcements searched', { clubId, query, results: announcements.length, requestId: req.id });
+    res.json(announcements);
+  }));
+
   const httpServer = createServer(app);
+  
+  // WebSocket server for real-time communication
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Store active connections by user and club
+  const connections = new Map<string, { ws: WebSocket; userId: string; clubId: number; authenticated: boolean }>();
+  
+  wss.on('connection', (ws: WebSocket, req) => {
+    const connectionId = Math.random().toString(36).substring(7);
+    let connectionInfo = { ws, userId: '', clubId: 0, authenticated: false };
+    
+    logger.info('WebSocket connection established', { connectionId });
+    
+    ws.on('message', async (data: Buffer) => {
+      try {
+        const message = JSON.parse(data.toString());
+        
+        switch (message.type) {
+          case 'authenticate':
+            // In a real implementation, you would validate the token here
+            // For now, we'll accept the authentication data from the client
+            connectionInfo.userId = message.userId;
+            connectionInfo.clubId = message.clubId;
+            connectionInfo.authenticated = true;
+            connections.set(connectionId, connectionInfo);
+            
+            ws.send(JSON.stringify({
+              type: 'authenticated',
+              success: true,
+              connectionId
+            }));
+            
+            // Join user to club-specific room
+            logger.info('WebSocket authenticated', { 
+              connectionId, 
+              userId: message.userId, 
+              clubId: message.clubId 
+            });
+            break;
+            
+          case 'ping':
+            ws.send(JSON.stringify({ type: 'pong' }));
+            break;
+            
+          case 'message_sent':
+            // Broadcast new message to relevant club members
+            if (connectionInfo.authenticated) {
+              broadcastToClub(connectionInfo.clubId, {
+                type: 'new_message',
+                message: message.data,
+                senderId: connectionInfo.userId
+              });
+            }
+            break;
+            
+          case 'announcement_published':
+            // Broadcast new announcement to club members
+            if (connectionInfo.authenticated) {
+              broadcastToClub(connectionInfo.clubId, {
+                type: 'new_announcement',
+                announcement: message.data,
+                authorId: connectionInfo.userId
+              });
+            }
+            break;
+            
+          case 'notification_created':
+            // Send notification to specific user
+            if (connectionInfo.authenticated && message.targetUserId) {
+              sendToUser(message.targetUserId, connectionInfo.clubId, {
+                type: 'new_notification',
+                notification: message.data
+              });
+            }
+            break;
+            
+          default:
+            logger.warn('Unknown WebSocket message type', { type: message.type, connectionId });
+        }
+      } catch (error) {
+        logger.error('WebSocket message error', { error: error.message, connectionId });
+        ws.send(JSON.stringify({
+          type: 'error',
+          message: 'Invalid message format'
+        }));
+      }
+    });
+    
+    ws.on('close', () => {
+      connections.delete(connectionId);
+      logger.info('WebSocket connection closed', { connectionId });
+    });
+    
+    ws.on('error', (error) => {
+      logger.error('WebSocket error', { error: error.message, connectionId });
+      connections.delete(connectionId);
+    });
+  });
+  
+  // Helper function to broadcast message to all club members
+  function broadcastToClub(clubId: number, message: any) {
+    for (const [connectionId, connection] of connections.entries()) {
+      if (connection.authenticated && 
+          connection.clubId === clubId && 
+          connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(message));
+      }
+    }
+  }
+  
+  // Helper function to send message to specific user
+  function sendToUser(userId: string, clubId: number, message: any) {
+    for (const [connectionId, connection] of connections.entries()) {
+      if (connection.authenticated && 
+          connection.userId === userId && 
+          connection.clubId === clubId &&
+          connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(message));
+      }
+    }
+  }
+  
+  // Store WebSocket utilities for use in routes
+  (httpServer as any).broadcast = {
+    toClub: broadcastToClub,
+    toUser: sendToUser,
+    connections
+  };
+  
   return httpServer;
 }

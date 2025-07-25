@@ -9,6 +9,7 @@ export * from "./members";
 export * from "./teams";
 export * from "./facilities";
 export * from "./finances";
+export * from "./communication";
 
 // Update relations to include cross-domain references
 import { relations } from "drizzle-orm";
@@ -17,6 +18,7 @@ import { members, teamMemberships } from "./members";
 import { teams } from "./teams";
 import { facilities, bookings } from "./facilities";
 import { finances, memberFees, trainingFees } from "./finances";
+import { messages, announcements, notifications } from "./communication";
 
 // Enhanced club relations to include all entities
 export const clubsRelationsEnhanced = relations(clubs, ({ many }) => ({
@@ -28,6 +30,9 @@ export const clubsRelationsEnhanced = relations(clubs, ({ many }) => ({
   finances: many(finances),
   memberFees: many(memberFees),
   trainingFees: many(trainingFees),
+  messages: many(messages),
+  announcements: many(announcements),
+  notifications: many(notifications),
 }));
 
 // Enhanced member relations

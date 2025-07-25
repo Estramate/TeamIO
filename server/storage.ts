@@ -13,6 +13,11 @@ import {
   finances,
   memberFees,
   trainingFees,
+  messages,
+  messageRecipients,
+  announcements,
+  notifications,
+  communicationPreferences,
   type User,
   type UpsertUser,
   type Club,
@@ -41,9 +46,22 @@ import {
   type InsertMemberFee,
   type TrainingFee,
   type InsertTrainingFee,
+  type Message,
+  type InsertMessage,
+  type MessageRecipient,
+  type InsertMessageRecipient,
+  type Announcement,
+  type InsertAnnouncement,
+  type Notification,
+  type InsertNotification,
+  type CommunicationPreferences,
+  type InsertCommunicationPreferences,
+  type MessageWithRecipients,
+  type AnnouncementWithAuthor,
+  type CommunicationStats,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, gte, ne } from "drizzle-orm";
+import { eq, and, desc, asc, gte, ne, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -149,6 +167,48 @@ export interface IStorage {
   // Dashboard operations
   getDashboardStats(clubId: number): Promise<any>;
   getRecentActivity(clubId: number): Promise<any[]>;
+
+  // Communication operations
+  // Message operations
+  getMessages(clubId: number, userId?: string): Promise<MessageWithRecipients[]>;
+  getMessage(id: number): Promise<MessageWithRecipients | undefined>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  updateMessage(id: number, message: Partial<InsertMessage>): Promise<Message>;
+  deleteMessage(id: number): Promise<void>;
+  markMessageAsRead(messageId: number, userId: string): Promise<void>;
+  
+  // Message recipient operations
+  getMessageRecipients(messageId: number): Promise<MessageRecipient[]>;
+  addMessageRecipients(recipients: InsertMessageRecipient[]): Promise<MessageRecipient[]>;
+  updateMessageRecipientStatus(messageId: number, userId: string, status: string): Promise<void>;
+
+  // Announcement operations
+  getAnnouncements(clubId: number): Promise<AnnouncementWithAuthor[]>;
+  getAnnouncement(id: number): Promise<AnnouncementWithAuthor | undefined>;
+  createAnnouncement(announcement: InsertAnnouncement): Promise<Announcement>;
+  updateAnnouncement(id: number, announcement: Partial<InsertAnnouncement>): Promise<Announcement>;
+  deleteAnnouncement(id: number): Promise<void>;
+  publishAnnouncement(id: number): Promise<Announcement>;
+  pinAnnouncement(id: number, isPinned: boolean): Promise<Announcement>;
+
+  // Notification operations
+  getNotifications(userId: string, clubId: number): Promise<Notification[]>;
+  getUnreadNotificationsCount(userId: string, clubId: number): Promise<number>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  markNotificationAsRead(id: number): Promise<void>;
+  markAllNotificationsAsRead(userId: string, clubId: number): Promise<void>;
+  deleteNotification(id: number): Promise<void>;
+
+  // Communication preferences operations
+  getCommunicationPreferences(userId: string, clubId: number): Promise<CommunicationPreferences | undefined>;
+  updateCommunicationPreferences(userId: string, clubId: number, preferences: Partial<InsertCommunicationPreferences>): Promise<CommunicationPreferences>;
+
+  // Communication statistics
+  getCommunicationStats(clubId: number, userId?: string): Promise<CommunicationStats>;
+
+  // Search operations
+  searchMessages(clubId: number, query: string, userId?: string): Promise<MessageWithRecipients[]>;
+  searchAnnouncements(clubId: number, query: string): Promise<AnnouncementWithAuthor[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -959,6 +1019,477 @@ export class DatabaseStorage implements IStorage {
       console.error('Error getting user team assignments:', error);
       throw error;
     }
+  }
+
+  // Communication operations
+  // Message operations
+  async getMessages(clubId: number, userId?: string): Promise<MessageWithRecipients[]> {
+    const messagesData = await db
+      .select({
+        message: messages,
+        sender: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
+      .from(messages)
+      .innerJoin(users, eq(messages.senderId, users.id))
+      .where(and(
+        eq(messages.clubId, clubId),
+        eq(messages.deletedAt, null) // Only non-deleted messages
+      ))
+      .orderBy(desc(messages.createdAt));
+
+    // Get recipients for each message
+    const messagesWithRecipients = await Promise.all(
+      messagesData.map(async (messageData) => {
+        const recipients = await this.getMessageRecipients(messageData.message.id);
+        return {
+          ...messageData.message,
+          recipients,
+          sender: messageData.sender,
+        };
+      })
+    );
+
+    // Filter messages based on user access if userId is provided
+    if (userId) {
+      return messagesWithRecipients.filter(message => 
+        message.senderId === userId || 
+        message.recipients.some(r => 
+          (r.recipientType === 'user' && r.recipientId === userId) ||
+          r.recipientType === 'all'
+        )
+      );
+    }
+
+    return messagesWithRecipients;
+  }
+
+  async getMessage(id: number): Promise<MessageWithRecipients | undefined> {
+    const [messageData] = await db
+      .select({
+        message: messages,
+        sender: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
+      .from(messages)
+      .innerJoin(users, eq(messages.senderId, users.id))
+      .where(and(
+        eq(messages.id, id),
+        eq(messages.deletedAt, null)
+      ));
+
+    if (!messageData) return undefined;
+
+    const recipients = await this.getMessageRecipients(id);
+    
+    return {
+      ...messageData.message,
+      recipients,
+      sender: messageData.sender,
+    };
+  }
+
+  async createMessage(messageData: InsertMessage): Promise<Message> {
+    const [message] = await db.insert(messages).values(messageData).returning();
+    return message;
+  }
+
+  async updateMessage(id: number, messageData: Partial<InsertMessage>): Promise<Message> {
+    const [message] = await db
+      .update(messages)
+      .set({ ...messageData, updatedAt: new Date() })
+      .where(eq(messages.id, id))
+      .returning();
+    return message;
+  }
+
+  async deleteMessage(id: number): Promise<void> {
+    await db
+      .update(messages)
+      .set({ deletedAt: new Date() })
+      .where(eq(messages.id, id));
+  }
+
+  async markMessageAsRead(messageId: number, userId: string): Promise<void> {
+    await db
+      .update(messageRecipients)
+      .set({ 
+        status: 'read',
+        readAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(and(
+        eq(messageRecipients.messageId, messageId),
+        eq(messageRecipients.recipientId, userId)
+      ));
+  }
+
+  // Message recipient operations
+  async getMessageRecipients(messageId: number): Promise<MessageRecipient[]> {
+    return await db
+      .select()
+      .from(messageRecipients)
+      .where(eq(messageRecipients.messageId, messageId))
+      .orderBy(asc(messageRecipients.createdAt));
+  }
+
+  async addMessageRecipients(recipients: InsertMessageRecipient[]): Promise<MessageRecipient[]> {
+    return await db.insert(messageRecipients).values(recipients).returning();
+  }
+
+  async updateMessageRecipientStatus(messageId: number, userId: string, status: string): Promise<void> {
+    await db
+      .update(messageRecipients)
+      .set({ 
+        status,
+        readAt: status === 'read' ? new Date() : undefined,
+        updatedAt: new Date()
+      })
+      .where(and(
+        eq(messageRecipients.messageId, messageId),
+        eq(messageRecipients.recipientId, userId)
+      ));
+  }
+
+  // Announcement operations
+  async getAnnouncements(clubId: number): Promise<AnnouncementWithAuthor[]> {
+    const announcementsData = await db
+      .select({
+        announcement: announcements,
+        author: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
+      .from(announcements)
+      .innerJoin(users, eq(announcements.authorId, users.id))
+      .where(and(
+        eq(announcements.clubId, clubId),
+        eq(announcements.deletedAt, null),
+        eq(announcements.isPublished, true)
+      ))
+      .orderBy(desc(announcements.isPinned), desc(announcements.publishedAt));
+
+    return announcementsData.map(data => ({
+      ...data.announcement,
+      author: data.author,
+    }));
+  }
+
+  async getAnnouncement(id: number): Promise<AnnouncementWithAuthor | undefined> {
+    const [announcementData] = await db
+      .select({
+        announcement: announcements,
+        author: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
+      .from(announcements)
+      .innerJoin(users, eq(announcements.authorId, users.id))
+      .where(and(
+        eq(announcements.id, id),
+        eq(announcements.deletedAt, null)
+      ));
+
+    if (!announcementData) return undefined;
+
+    return {
+      ...announcementData.announcement,
+      author: announcementData.author,
+    };
+  }
+
+  async createAnnouncement(announcementData: InsertAnnouncement): Promise<Announcement> {
+    const [announcement] = await db.insert(announcements).values(announcementData).returning();
+    return announcement;
+  }
+
+  async updateAnnouncement(id: number, announcementData: Partial<InsertAnnouncement>): Promise<Announcement> {
+    const [announcement] = await db
+      .update(announcements)
+      .set({ ...announcementData, updatedAt: new Date() })
+      .where(eq(announcements.id, id))
+      .returning();
+    return announcement;
+  }
+
+  async deleteAnnouncement(id: number): Promise<void> {
+    await db
+      .update(announcements)
+      .set({ deletedAt: new Date() })
+      .where(eq(announcements.id, id));
+  }
+
+  async publishAnnouncement(id: number): Promise<Announcement> {
+    const [announcement] = await db
+      .update(announcements)
+      .set({ 
+        isPublished: true,
+        publishedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(announcements.id, id))
+      .returning();
+    return announcement;
+  }
+
+  async pinAnnouncement(id: number, isPinned: boolean): Promise<Announcement> {
+    const [announcement] = await db
+      .update(announcements)
+      .set({ 
+        isPinned,
+        updatedAt: new Date()
+      })
+      .where(eq(announcements.id, id))
+      .returning();
+    return announcement;
+  }
+
+  // Notification operations
+  async getNotifications(userId: string, clubId: number): Promise<Notification[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.clubId, clubId)
+      ))
+      .orderBy(desc(notifications.createdAt));
+  }
+
+  async getUnreadNotificationsCount(userId: string, clubId: number): Promise<number> {
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notifications)
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.clubId, clubId),
+        eq(notifications.status, 'unread')
+      ));
+    return result?.count || 0;
+  }
+
+  async createNotification(notificationData: InsertNotification): Promise<Notification> {
+    const [notification] = await db.insert(notifications).values(notificationData).returning();
+    return notification;
+  }
+
+  async markNotificationAsRead(id: number): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ 
+        status: 'read',
+        readAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(notifications.id, id));
+  }
+
+  async markAllNotificationsAsRead(userId: string, clubId: number): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ 
+        status: 'read',
+        readAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.clubId, clubId),
+        eq(notifications.status, 'unread')
+      ));
+  }
+
+  async deleteNotification(id: number): Promise<void> {
+    await db.delete(notifications).where(eq(notifications.id, id));
+  }
+
+  // Communication preferences operations
+  async getCommunicationPreferences(userId: string, clubId: number): Promise<CommunicationPreferences | undefined> {
+    const [preferences] = await db
+      .select()
+      .from(communicationPreferences)
+      .where(and(
+        eq(communicationPreferences.userId, userId),
+        eq(communicationPreferences.clubId, clubId)
+      ));
+    return preferences;
+  }
+
+  async updateCommunicationPreferences(
+    userId: string, 
+    clubId: number, 
+    preferencesData: Partial<InsertCommunicationPreferences>
+  ): Promise<CommunicationPreferences> {
+    const [preferences] = await db
+      .insert(communicationPreferences)
+      .values({
+        userId,
+        clubId,
+        ...preferencesData,
+      })
+      .onConflictDoUpdate({
+        target: [communicationPreferences.userId, communicationPreferences.clubId],
+        set: {
+          ...preferencesData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return preferences;
+  }
+
+  // Communication statistics
+  async getCommunicationStats(clubId: number, userId?: string): Promise<CommunicationStats> {
+    const [messageStats] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(messages)
+      .where(and(
+        eq(messages.clubId, clubId),
+        eq(messages.deletedAt, null)
+      ));
+
+    const [announcementStats] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(announcements)
+      .where(and(
+        eq(announcements.clubId, clubId),
+        eq(announcements.deletedAt, null),
+        eq(announcements.isPublished, true)
+      ));
+
+    let unreadMessages = 0;
+    let unreadNotifications = 0;
+
+    if (userId) {
+      const [unreadMessageStats] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(messageRecipients)
+        .innerJoin(messages, eq(messageRecipients.messageId, messages.id))
+        .where(and(
+          eq(messages.clubId, clubId),
+          eq(messageRecipients.recipientId, userId),
+          ne(messageRecipients.status, 'read')
+        ));
+
+      unreadMessages = unreadMessageStats?.count || 0;
+      unreadNotifications = await this.getUnreadNotificationsCount(userId, clubId);
+    }
+
+    const recentActivity = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(messages)
+      .where(and(
+        eq(messages.clubId, clubId),
+        gte(messages.createdAt, new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)), // Last 7 days
+        eq(messages.deletedAt, null)
+      ));
+
+    return {
+      totalMessages: messageStats?.count || 0,
+      unreadMessages,
+      totalAnnouncements: announcementStats?.count || 0,
+      unreadNotifications,
+      recentActivity: recentActivity[0]?.count || 0,
+    };
+  }
+
+  // Search operations
+  async searchMessages(clubId: number, query: string, userId?: string): Promise<MessageWithRecipients[]> {
+    const searchTerm = `%${query.toLowerCase()}%`;
+    
+    const messagesData = await db
+      .select({
+        message: messages,
+        sender: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
+      .from(messages)
+      .innerJoin(users, eq(messages.senderId, users.id))
+      .where(and(
+        eq(messages.clubId, clubId),
+        eq(messages.deletedAt, null),
+        or(
+          sql`lower(${messages.content}) like ${searchTerm}`,
+          sql`lower(${messages.subject}) like ${searchTerm}`
+        )
+      ))
+      .orderBy(desc(messages.createdAt))
+      .limit(50);
+
+    const messagesWithRecipients = await Promise.all(
+      messagesData.map(async (messageData) => {
+        const recipients = await this.getMessageRecipients(messageData.message.id);
+        return {
+          ...messageData.message,
+          recipients,
+          sender: messageData.sender,
+        };
+      })
+    );
+
+    // Filter based on user access if userId is provided
+    if (userId) {
+      return messagesWithRecipients.filter(message => 
+        message.senderId === userId || 
+        message.recipients.some(r => 
+          (r.recipientType === 'user' && r.recipientId === userId) ||
+          r.recipientType === 'all'
+        )
+      );
+    }
+
+    return messagesWithRecipients;
+  }
+
+  async searchAnnouncements(clubId: number, query: string): Promise<AnnouncementWithAuthor[]> {
+    const searchTerm = `%${query.toLowerCase()}%`;
+    
+    const announcementsData = await db
+      .select({
+        announcement: announcements,
+        author: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
+      .from(announcements)
+      .innerJoin(users, eq(announcements.authorId, users.id))
+      .where(and(
+        eq(announcements.clubId, clubId),
+        eq(announcements.deletedAt, null),
+        eq(announcements.isPublished, true),
+        or(
+          sql`lower(${announcements.content}) like ${searchTerm}`,
+          sql`lower(${announcements.title}) like ${searchTerm}`
+        )
+      ))
+      .orderBy(desc(announcements.isPinned), desc(announcements.publishedAt))
+      .limit(50);
+
+    return announcementsData.map(data => ({
+      ...data.announcement,
+      author: data.author,
+    }));
   }
 
 }

@@ -91,6 +91,12 @@ export default function Communication() {
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
     enabled: !!selectedClub?.id,
   });
+  
+  // Get players for recipient selection
+  const { data: players = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'players'],
+    enabled: !!selectedClub?.id,
+  });
   const { setPage } = usePage();
 
   // Set page title
@@ -142,7 +148,7 @@ export default function Communication() {
   const [messageText, setMessageText] = useState("");
   const [subject, setSubject] = useState("");
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>(["all"]);
-  const [recipientType, setRecipientType] = useState<"all" | "teams" | "members" | "custom">("all");
+  const [recipientType, setRecipientType] = useState<"all" | "teams" | "members" | "players">("all");
 
   // Forms
   const messageForm = useForm({
@@ -540,9 +546,29 @@ export default function Communication() {
           </DialogHeader>
           
           <Form {...messageForm}>
-            <form onSubmit={messageForm.handleSubmit((data) => {
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              
+              if (!messageText.trim()) {
+                toast({
+                  title: "Fehler",
+                  description: "Bitte geben Sie eine Nachricht ein",
+                  variant: "destructive",
+                });
+                return;
+              }
+              
+              if (recipientType !== "all" && selectedRecipients.length === 0) {
+                toast({
+                  title: "Fehler", 
+                  description: "Bitte wählen Sie mindestens einen Empfänger aus",
+                  variant: "destructive",
+                });
+                return;
+              }
+              
               const messageData = {
-                subject: subject,
+                subject: subject || "Keine Betreff",
                 content: messageText,
                 messageType: "direct",
                 priority: "normal",
@@ -553,11 +579,14 @@ export default function Communication() {
                     return { type: "team", id: recipient.replace("team_", "") };
                   } else if (recipient.startsWith("member_")) {
                     return { type: "member", id: recipient.replace("member_", "") };
+                  } else if (recipient.startsWith("player_")) {
+                    return { type: "player", id: recipient.replace("player_", "") };
                   }
                   return { type: "all" };
                 })
               };
               
+              console.log("Sending message:", messageData);
               sendMessage(messageData);
               
               // Reset form
@@ -566,7 +595,12 @@ export default function Communication() {
               setSelectedRecipients(['all']);
               setRecipientType('all');
               setShowNewMessage(false);
-            })} className="space-y-4">
+              
+              toast({
+                title: "Nachricht gesendet",
+                description: `Nachricht wurde an ${selectedRecipients.length === 1 && selectedRecipients[0] === 'all' ? 'alle Mitglieder' : selectedRecipients.length + ' Empfänger'} gesendet`,
+              });
+            }} className="space-y-4">
               
               <div className="space-y-4">
                 <label className="text-sm font-medium">Empfänger auswählen</label>
@@ -605,7 +639,18 @@ export default function Communication() {
                         setSelectedRecipients([]);
                       }}
                     >
-                      Einzelne Mitglieder
+                      Mitglieder ({(members as any[]).length})
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={recipientType === "players" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setRecipientType("players");
+                        setSelectedRecipients([]);
+                      }}
+                    >
+                      Spieler ({(players as any[]).length})
                     </Button>
                   </div>
                 </div>
@@ -666,6 +711,36 @@ export default function Communication() {
                             </label>
                           </div>
                         ))}
+
+                        {recipientType === "players" && players.map((player: any) => (
+                          <div key={player.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`player_${player.id}`}
+                              checked={selectedRecipients.includes(`player_${player.id}`)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedRecipients([...selectedRecipients, `player_${player.id}`]);
+                                } else {
+                                  setSelectedRecipients(selectedRecipients.filter(r => r !== `player_${player.id}`));
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`player_${player.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {player.firstName} {player.lastName}
+                              {player.email && (
+                                <span className="text-xs text-gray-500 ml-2">
+                                  ({player.email})
+                                </span>
+                              )}
+                              <span className="text-xs text-blue-500 ml-2">
+                                (Spieler)
+                              </span>
+                            </label>
+                          </div>
+                        ))}
                       </div>
                     </ScrollArea>
                     
@@ -681,6 +756,11 @@ export default function Communication() {
                         {recipientType === "members" && (
                           <span className="ml-2">
                             ({selectedRecipients.filter(r => r.startsWith('member_')).length} Mitglieder)
+                          </span>
+                        )}
+                        {recipientType === "players" && (
+                          <span className="ml-2">
+                            ({selectedRecipients.filter(r => r.startsWith('player_')).length} Spieler)
                           </span>
                         )}
                       </div>

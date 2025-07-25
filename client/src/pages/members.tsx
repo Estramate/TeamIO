@@ -1131,7 +1131,7 @@ export default function Members() {
                                 <div className="font-medium text-sm text-foreground">{team.name}</div>
                                 <div className="text-xs text-muted-foreground">
                                   {team.category && `${team.category} • `}
-                                  {team.ageGroup || 'Senioren'}
+                                  {team.ageGroup || 'Erwachsene'}
                                 </div>
                               </div>
                             </div>

@@ -152,7 +152,7 @@ export const teams = pgTable("teams", {
   id: serial("id").primaryKey(),
   clubId: integer("club_id").notNull().references(() => clubs.id),
   name: varchar("name", { length: 255 }).notNull(),
-  category: varchar("category", { length: 100 }), // youth, senior, etc.
+  category: varchar("category", { length: 100 }), // youth, erwachsene, etc.
   ageGroup: varchar("age_group", { length: 50 }), // U17, U15, etc.
   gender: varchar("gender", { length: 20 }), // male, female, mixed
   description: text("description"),

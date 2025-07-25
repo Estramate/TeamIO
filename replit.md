@@ -11,6 +11,14 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Globale Terminologie-Änderung abgeschlossen**: "Senior" zu "Erwachsene" systemweit umbenannt
+  - Frontend: Alle UI-Komponenten, Dropdown-Menüs, Badges und Labels in Teams- und Members-Seiten aktualisiert
+  - Datenbank: 4 Teams (KM, KM 1b, Frauen Kleinfeld, KM-FR) von "senior" zu "erwachsene" geändert
+  - Schema-Kommentare: Datenbankschema-Dokumentation entsprechend aktualisiert
+  - Konsistente Darstellung: Icons zeigen jetzt "E" statt "S" für Erwachsenen-Teams
+- **Doppeltes Beschreibungsfeld in Kalender-Buchungsmodal entfernt**: Struktur bereinigt für bessere UX
+  - Nur noch ein Beschreibungsfeld nach der Verfügbarkeitsprüfung (wie gewünscht)
+  - Layout entspricht der optimalen Formular-Struktur ohne redundante Felder
 - **Authentische OEFB-Spielerdaten mit Profilbildern vollständig implementiert**: 32 echte SV Oberglan 1975 Spieler importiert
   - Alle Dummy-Spieler entfernt und durch authentische OEFB-Daten ersetzt
   - 32 Spieler mit echten Profilbildern von vereine.oefb.at importiert: Martin Napetschnig (Tor), Anel Sandal, Martin Hinteregger, Denis Tomic etc.

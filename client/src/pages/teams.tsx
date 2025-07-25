@@ -481,7 +481,7 @@ export default function Teams() {
                 <SelectContent>
                   <SelectItem value="all">Alle Kategorien</SelectItem>
                   <SelectItem value="youth">Jugend</SelectItem>
-                  <SelectItem value="senior">Senioren</SelectItem>
+                  <SelectItem value="erwachsene">Erwachsene</SelectItem>
                   <SelectItem value="amateur">Amateur</SelectItem>
                 </SelectContent>
               </Select>
@@ -571,7 +571,7 @@ export default function Teams() {
                           {team.category && (
                             <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs rounded-full px-2 py-1 font-bold shadow-lg ring-2 ring-white">
                               {team.category === 'youth' ? 'J' :
-                               team.category === 'senior' ? 'S' : 
+                               team.category === 'erwachsene' ? 'E' : 
                                team.category === 'amateur' ? 'A' : team.category.charAt(0).toUpperCase()}
                             </div>
                           )}
@@ -629,7 +629,7 @@ export default function Teams() {
                           {team.category && (
                             <Badge variant="secondary" className="text-xs shadow-sm">
                               {team.category === 'youth' ? 'Jugend' :
-                               team.category === 'senior' ? 'Senioren' : 
+                               team.category === 'erwachsene' ? 'Erwachsene' : 
                                team.category === 'amateur' ? 'Amateur' : team.category}
                             </Badge>
                           )}
@@ -749,7 +749,7 @@ export default function Teams() {
                                 {team.category && (
                                   <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-sm">
                                     {team.category === 'youth' ? 'J' :
-                                     team.category === 'senior' ? 'S' : 
+                                     team.category === 'erwachsene' ? 'E' : 
                                      team.category === 'amateur' ? 'A' : team.category.charAt(0).toUpperCase()}
                                   </div>
                                 )}
@@ -780,7 +780,7 @@ export default function Teams() {
                               {team.category && (
                                 <Badge variant="secondary" className="text-xs shadow-sm">
                                   {team.category === 'youth' ? 'Jugend' :
-                                   team.category === 'senior' ? 'Senioren' : 
+                                   team.category === 'erwachsene' ? 'Erwachsene' : 
                                    team.category === 'amateur' ? 'Amateur' : team.category}
                                 </Badge>
                               )}
@@ -942,7 +942,7 @@ export default function Teams() {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="youth">Jugend</SelectItem>
-                          <SelectItem value="senior">Senioren</SelectItem>
+                          <SelectItem value="erwachsene">Erwachsene</SelectItem>
                           <SelectItem value="amateur">Amateur</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1181,7 +1181,7 @@ export default function Teams() {
                 {viewingTeam.category && (
                   <Badge variant="secondary">
                     {viewingTeam.category === 'youth' ? 'Jugend' :
-                     viewingTeam.category === 'senior' ? 'Senioren' : 'Amateur'}
+                     viewingTeam.category === 'erwachsene' ? 'Erwachsene' : 'Amateur'}
                   </Badge>
                 )}
                 {viewingTeam.ageGroup && (

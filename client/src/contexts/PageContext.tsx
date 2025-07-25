@@ -10,7 +10,7 @@ const PageContext = createContext<PageContextType | undefined>(undefined);
 
 export function PageProvider({ children }: { children: ReactNode }) {
   const [title, setTitle] = useState("Dashboard");
-  const [subtitle, setSubtitle] = useState<string | undefined>("Willkommen zurück, hier ist die Übersicht für Ihren Verein");
+  const [subtitle, setSubtitle] = useState<string | undefined>("Bitte wählen Sie einen Verein aus, um zu beginnen");
 
   const setPage = (newTitle: string, newSubtitle?: string) => {
     setTitle(newTitle);

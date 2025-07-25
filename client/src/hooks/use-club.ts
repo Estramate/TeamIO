@@ -15,12 +15,23 @@ interface ClubStore {
 
 export const useClub = create<ClubStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       selectedClub: null,
-      setSelectedClub: (club) => set({ selectedClub: club }),
+      setSelectedClub: (club) => {
+        console.log('Setting selected club:', club);
+        set({ selectedClub: club });
+      },
     }),
     {
       name: 'teamio-selected-club',
+      version: 2, // Increment version to clear old cache
+      migrate: (persistedState: any, version: number) => {
+        // Clear old state on version change
+        if (version < 2) {
+          return { selectedClub: null };
+        }
+        return persistedState;
+      },
     }
   )
 );

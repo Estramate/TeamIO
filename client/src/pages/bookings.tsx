@@ -6,6 +6,7 @@ import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
+import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -271,15 +272,7 @@ export default function Bookings() {
         });
       }
       // Invalidate alle booking-relevanten Queries
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'bookings']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'dashboard']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'events']
-      });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'bookings');
       setBookingModalOpen(false);
       setSelectedBooking(null);
       form.reset();
@@ -320,15 +313,7 @@ export default function Bookings() {
     },
     onSuccess: () => {
       // Invalidate alle booking-relevanten Queries
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'bookings']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'dashboard']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'events']
-      });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'bookings');
       setBookingModalOpen(false);
       setSelectedBooking(null);
       form.reset();
@@ -359,15 +344,7 @@ export default function Bookings() {
     },
     onSuccess: () => {
       // Invalidate alle booking-relevanten Queries
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'bookings']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'dashboard']
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'events']
-      });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'bookings');
       setDeleteDialogOpen(false);
       setBookingToDelete(null);
       toast({
@@ -394,9 +371,7 @@ export default function Bookings() {
       return apiRequest("PATCH", `/api/clubs/${selectedClub?.id}/bookings/${id}`, { status });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['/api/clubs', selectedClub?.id, 'bookings']
-      });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'bookings');
       toast({
         title: "Erfolg",
         description: "Status wurde erfolgreich geändert.",

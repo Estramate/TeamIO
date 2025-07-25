@@ -7,6 +7,7 @@ import { usePage } from "@/contexts/PageContext";
 import { usePermissions } from "@/hooks/use-permissions";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
+import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -151,7 +152,7 @@ export default function Teams() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'teams');
       setTeamModalOpen(false);
       setSelectedTeam(null);
       form.reset();
@@ -199,7 +200,7 @@ export default function Teams() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'teams');
       setTeamModalOpen(false);
       setSelectedTeam(null);
       form.reset();
@@ -234,7 +235,7 @@ export default function Teams() {
       await apiRequest("PUT", `/api/clubs/${selectedClub?.id}/teams/${teamId}`, { status: newStatus });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'teams'] });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'teams');
       toast({
         title: "Erfolg",
         description: "Team-Status wurde erfolgreich geändert",

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertCircle, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { z } from "zod";
 
 // Local form data type that matches the schema's string inputs before transformation
@@ -136,9 +137,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
     mutationFn: (bookingData: any) => apiRequest('POST', `/api/clubs/${selectedClubId}/bookings`, bookingData),
     onSuccess: (data) => {
       // Invalidate alle booking-relevanten Queries
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/bookings`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/events`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/dashboard`] });
+      invalidateEntityData(queryClient, selectedClubId, 'bookings');
       
       if ((data as any).createdCount && (data as any).createdCount > 1) {
         toast({

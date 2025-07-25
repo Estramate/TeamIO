@@ -6,6 +6,7 @@ import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
+import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -145,7 +146,7 @@ export default function Facilities() {
     mutationFn: (data: FacilityFormData) => 
       apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/facilities/${selectedFacility?.id}`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'facilities');
       setFacilityModalOpen(false);
       form.reset();
       setSelectedFacility(null);
@@ -178,7 +179,7 @@ export default function Facilities() {
     mutationFn: (facilityId: number) => 
       apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/facilities/${facilityId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'facilities'] });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'facilities');
       setDeleteDialogOpen(false);
       setFacilityToDelete(null);
       toast({

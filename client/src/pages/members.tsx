@@ -16,6 +16,7 @@ import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -144,7 +145,7 @@ export default function Members() {
         title: "Erfolg",
         description: "Mitglied wurde erfolgreich erstellt",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'members'] });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'members');
       setMemberModalOpen(false);
       form.reset();
       setSelectedMember(null);
@@ -209,7 +210,7 @@ export default function Members() {
         title: "Erfolg",
         description: "Mitglied wurde erfolgreich aktualisiert",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'members'] });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'members');
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'] });
       setMemberModalOpen(false);
       form.reset();
@@ -242,7 +243,7 @@ export default function Members() {
       await apiRequest("PUT", `/api/clubs/${selectedClub?.id}/members/${memberId}`, { status: newStatus });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'members'] });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'members');
       toast({
         title: "Erfolg",
         description: "Status wurde erfolgreich geändert",
@@ -278,7 +279,7 @@ export default function Members() {
         title: "Erfolg",
         description: "Mitglied wurde erfolgreich gelöscht",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'members'] });
+      invalidateEntityData(queryClient, selectedClub?.id!, 'members');
       setDeleteDialogOpen(false);
       setMemberToDelete(null);
     },

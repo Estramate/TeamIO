@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { Player, insertPlayerSchema, type InsertPlayer, Team } from "@shared/schema";
@@ -186,7 +187,7 @@ export default function Players() {
       return await apiRequest("POST", `/api/clubs/${selectedClub.id}/players`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub.id}/players`] });
+      invalidateEntityData(queryClient, selectedClub.id, 'players');
       setIsCreateDialogOpen(false);
       form.reset();
       toast({
@@ -209,7 +210,7 @@ export default function Players() {
       return await apiRequest("PATCH", `/api/clubs/${selectedClub.id}/players/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub.id}/players`] });
+      invalidateEntityData(queryClient, selectedClub.id, 'players');
       setIsCreateDialogOpen(false);
       setEditingPlayer(null);
       form.reset();
@@ -233,7 +234,7 @@ export default function Players() {
       return await apiRequest("PATCH", `/api/clubs/${selectedClub.id}/players/${playerId}`, { status: newStatus });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub.id}/players`] });
+      invalidateEntityData(queryClient, selectedClub.id, 'players');
       toast({
         title: "Erfolg",
         description: "Spieler-Status wurde erfolgreich geändert",

@@ -665,13 +665,13 @@ export default function Bookings() {
             const startTime = new Date(booking.startTime);
             const endTime = new Date(booking.endTime);
             
-            // Typ-spezifische Farben
+            // Typ-spezifische Farben - keine Überschneidung mit Status-Farben
             const getTypeColor = (type: string) => {
               switch (type) {
                 case 'training': return 'from-blue-500 to-blue-600';
-                case 'match': return 'from-green-500 to-green-600';
+                case 'match': return 'from-orange-500 to-orange-600';  // Hellorange für Spiele
                 case 'event': return 'from-purple-500 to-purple-600';
-                case 'maintenance': return 'from-orange-500 to-orange-600';
+                case 'maintenance': return 'from-amber-500 to-amber-600';  // Dunkleres Gelb für Wartung
                 default: return 'from-gray-500 to-gray-600';
               }
             };
@@ -679,9 +679,9 @@ export default function Bookings() {
             const getTypeBadgeColor = (type: string) => {
               switch (type) {
                 case 'training': return 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100';
-                case 'match': return 'bg-green-100 text-green-700 border-green-200 hover:bg-green-100';
+                case 'match': return 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100';  // Hellorange
                 case 'event': return 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-100';
-                case 'maintenance': return 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100';
+                case 'maintenance': return 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100';  // Amber statt Orange
                 default: return 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100';
               }
             };
@@ -832,11 +832,11 @@ export default function Bookings() {
                   
                   const getTypeBadgeColor = (type: string) => {
                     switch (type) {
-                      case 'training': return 'bg-blue-100 text-blue-800 border-blue-200';
-                      case 'match': return 'bg-green-100 text-green-800 border-green-200';
-                      case 'event': return 'bg-purple-100 text-purple-800 border-purple-200';
-                      case 'maintenance': return 'bg-orange-100 text-orange-800 border-orange-200';
-                      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+                      case 'training': return 'bg-blue-100 text-blue-700 border-blue-200';
+                      case 'match': return 'bg-orange-100 text-orange-700 border-orange-200';  // Hellorange
+                      case 'event': return 'bg-purple-100 text-purple-700 border-purple-200';
+                      case 'maintenance': return 'bg-amber-100 text-amber-700 border-amber-200';  // Amber
+                      default: return 'bg-gray-100 text-gray-700 border-gray-200';
                     }
                   };
                   

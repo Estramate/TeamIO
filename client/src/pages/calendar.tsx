@@ -51,13 +51,14 @@ const bookingFormSchema = z.object({
   notes: z.string().optional(),
 });
 
-// Color schemes matching bookings page
+// Color schemes matching bookings page - updated to avoid conflicts
 const getBookingTypeColor = (type: string) => {
   switch (type) {
     case 'training': return 'bg-blue-500';
-    case 'game': return 'bg-green-500';
+    case 'match': return 'bg-orange-500';    // Hellorange für Spiele
+    case 'game': return 'bg-orange-500';     // Alias für 'match'
     case 'event': return 'bg-purple-500';
-    case 'maintenance': return 'bg-orange-500';
+    case 'maintenance': return 'bg-amber-500';  // Amber für Wartung
     default: return 'bg-gray-500';
   }
 };
@@ -279,6 +280,7 @@ export default function Calendar() {
   const getBookingTypeLabel = (type: string) => {
     switch (type) {
       case 'training': return 'Training';
+      case 'match': return 'Spiel';
       case 'game': return 'Spiel';
       case 'event': return 'Veranstaltung';
       case 'maintenance': return 'Wartung';

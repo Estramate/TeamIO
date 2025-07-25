@@ -11,6 +11,12 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Buchungstyp-Farbschema überarbeitet**: Farbkonflikte zwischen Typ- und Status-Badges behoben
+  - Spiel: Von Grün zu Hellorange geändert (vermeidet Überschneidung mit "Bestätigt"-Status)
+  - Wartung: Von Orange zu Amber geändert für bessere Unterscheidung
+  - Training: Blau beibehalten, Event: Lila beibehalten
+  - Kalender-Events synchronisiert mit neuen Buchungstyp-Farben
+  - Konsistente Farbkodierung: Blau (Training), Orange (Spiel), Lila (Event), Amber (Wartung)
 - **Einheitliches Detail-Dialog-System vollständig implementiert**: Alle 6 Detail-Dialoge mit identischem Layout und Styling
   - Doppelte Status-Anzeige systemweit entfernt: Einheitliche Status-Darstellung nur im Header
   - Alle Detail-Dialoge bereinigt: Members, Facilities, Teams, Players, Bookings und Finance

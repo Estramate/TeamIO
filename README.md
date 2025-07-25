@@ -1,6 +1,6 @@
 # TeamIO - Professional Club Management System
 
-TeamIO is a comprehensive, modern web-based platform designed for sports clubs and organizations. It provides complete management solutions for members, teams, facilities, bookings, finances, and communications in one integrated system.
+TeamIO is a comprehensive, enterprise-grade web-based platform designed for sports clubs and organizations. Built with cutting-edge technologies and optimized for performance, accessibility, and scalability, it provides complete management solutions for members, teams, facilities, bookings, finances, and communication systems.
 
 ## ✨ Key Features
 
@@ -18,12 +18,15 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - **Communication Hub**: Centralized communication tracking and notification system
 - **Multi-Club Support**: Users can manage multiple clubs with granular role-based access control
 
-### 💡 User Experience
-- **Responsive Design**: Fully optimized for desktop, tablet, and mobile devices
+### 💡 User Experience & Performance
+- **Enterprise Performance**: Virtualized lists for large datasets, lazy loading, and optimized database queries
+- **Full Accessibility**: WCAG 2.1 AA compliant with keyboard navigation, screen reader support, and focus management
+- **Professional API**: Complete OpenAPI/Swagger documentation available at `/api-docs` with interactive testing
+- **Comprehensive Testing**: Full test coverage with Vitest, unit tests, integration tests, and accessibility testing
+- **Performance Monitoring**: Real-time Web Vitals tracking, error reporting, and performance analytics
+- **Responsive Design**: Mobile-first design optimized for desktop, tablet, and mobile devices
 - **Modern UI**: Clean, professional interface built with shadcn/ui and Tailwind CSS
 - **Real-time Updates**: Live data synchronization across all components with intelligent cache management
-- **Accessibility**: WCAG compliant design with keyboard navigation and screen reader support
-- **Performance**: Optimized loading with efficient query caching and background updates
 
 ## 🛠️ Tech Stack
 
@@ -33,6 +36,7 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - **shadcn/ui** component library with Radix UI primitives for accessibility
 - **Wouter** for lightweight, efficient client-side routing
 - **TanStack Query** for sophisticated server state management and caching
+- **TanStack Virtual** for efficient rendering of large lists
 - **Zustand** for predictable client-side state management
 - **Vite** for lightning-fast development and optimized production builds
 
@@ -42,13 +46,17 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - **Drizzle ORM** for type-safe database operations and migrations
 - **OpenID Connect** authentication with session management
 - **Express Sessions** with PostgreSQL storage for secure user sessions
+- **Winston** for structured logging and monitoring
+- **Helmet** for security headers and CSRF protection
 
-### Development & Deployment
+### Development & Quality Assurance
 - **TypeScript** strict mode for comprehensive type checking
 - **ESLint** for code quality and consistency
+- **Vitest** for unit and integration testing
+- **@testing-library/react** for component testing
 - **Drizzle Kit** for database schema migrations
+- **Swagger/OpenAPI** for complete API documentation
 - **Hot Module Replacement** for efficient development workflow
-- **Cloud Deployments** for seamless production deployment
 
 ## 📋 Prerequisites
 
@@ -66,246 +74,232 @@ npm install
 ```
 
 ### 2. Environment Configuration
-Create a `.env` file with the following variables:
+Copy the environment template and configure your settings:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your configuration:
 ```env
 # Database Configuration
 DATABASE_URL=postgresql://username:password@host:port/database
 
-# Session Security
-SESSION_SECRET=your-secure-session-secret
+# Authentication
+ISSUER_URL=https://your-auth-provider.com
+SESSION_SECRET=your-very-secure-session-secret-key-here
 
-# Authentication (OpenID Connect)
-CLIENT_ID=your-client-id
-ISSUER_URL=https://your-auth-provider.com/oidc
-ALLOWED_DOMAINS=your-domain.com
+# Application Settings
+NODE_ENV=development
+PORT=5000
+ALLOWED_DOMAINS=localhost:3000,localhost:5000
+
+# Optional: Security & Performance
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+REQUEST_TIMEOUT_MS=30000
+MAX_REQUEST_SIZE_BYTES=10485760
 ```
 
 ### 3. Database Setup
 ```bash
-# Initialize database schema
+# Push database schema
 npm run db:push
 
-# Optional: Add sample data
-npm run seed:example
+# Optional: Open database studio
+npm run db:studio
 ```
 
-### 4. Development
+### 4. Start Development Server
 ```bash
-# Start development servers with hot reload
 npm run dev
 ```
 
-### 5. Production
+The application will be available at `http://localhost:5000`
+
+## 📚 API Documentation
+
+TeamIO includes comprehensive API documentation powered by Swagger/OpenAPI:
+
+- **Interactive Documentation**: Visit `/api-docs` when the server is running
+- **OpenAPI Spec**: Available at `/api-docs.json`
+- **Authentication**: All endpoints use session-based authentication with CSRF protection
+
+### Key API Endpoints
+
+- `GET /api/auth/user` - Get current authenticated user
+- `GET /api/clubs` - List all clubs for current user
+- `GET /api/clubs/{clubId}/members` - Get club members
+- `GET /api/clubs/{clubId}/teams` - Get club teams
+- `GET /api/clubs/{clubId}/bookings` - Get club bookings
+- `GET /api/clubs/{clubId}/facilities` - Get club facilities
+- `GET /api/clubs/{clubId}/dashboard` - Get dashboard statistics
+
+## 🧪 Testing
+
+TeamIO includes a comprehensive testing suite:
+
 ```bash
-# Build and start production server
-npm run build
-npm start
+# Run all tests
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests for CI/CD
+npm run test:ci
 ```
 
-## 📁 Project Architecture
+### Test Categories
+- **Unit Tests**: Component and function testing
+- **Integration Tests**: API endpoint testing
+- **Accessibility Tests**: WCAG compliance testing
+- **Performance Tests**: Load time and interaction testing
 
+## 🏗️ Database Schema
+
+### Core Tables
+- **users**: User authentication and profile data
+- **clubs**: Club information and settings
+- **user_clubs**: User-club memberships with roles
+- **members**: Club member profiles and status
+- **teams**: Team organization and metadata
+- **players**: Player profiles and statistics
+- **team_assignments**: Player-team relationships
+- **facilities**: Club facilities and resources
+- **bookings**: Facility reservations and events
+- **finances**: Financial transactions and reporting
+
+### Optimizations
+- **Database Indices**: Optimized queries for common operations
+- **Foreign Key Constraints**: Data integrity enforcement
+- **Session Storage**: Secure user session management
+- **Query Optimization**: Efficient data fetching patterns
+
+## 🔧 Development
+
+### Project Structure
 ```
 teamio/
-├── client/                    # React frontend application
-│   ├── src/
-│   │   ├── components/        # Reusable UI components
-│   │   │   ├── ui/           # shadcn/ui base components
-│   │   │   └── forms/        # Form components
-│   │   ├── pages/            # Application pages and routes
-│   │   ├── lib/              # Utilities and configurations
-│   │   │   ├── cache-invalidation.ts  # Central cache management
-│   │   │   └── queryClient.ts         # API client configuration
-│   │   ├── hooks/            # Custom React hooks
-│   │   └── contexts/         # React context providers
-├── server/                   # Express backend application
-│   ├── db.ts                # Database connection and configuration
-│   ├── routes.ts            # API routes and middleware
-│   ├── storage.ts           # Data access layer
-│   ├── auth.ts             # Authentication configuration
-│   └── index.ts             # Server entry point
-├── shared/                   # Shared types and schemas
-│   └── schema.ts            # Database schema with Zod validation
-├── drizzle.config.ts        # Database migration configuration
-└── package.json
+├── client/src/           # React frontend application
+│   ├── components/       # Reusable UI components
+│   ├── pages/           # Application pages/routes
+│   ├── hooks/           # Custom React hooks
+│   ├── contexts/        # React context providers
+│   ├── lib/             # Utility functions and configs
+│   └── test/            # Test files and utilities
+├── server/              # Express backend application
+│   ├── routes.ts        # API route definitions
+│   ├── storage.ts       # Data access layer
+│   ├── security.ts      # Security middleware
+│   └── logger.ts        # Logging configuration
+├── shared/              # Shared types and schemas
+└── docs/                # Additional documentation
 ```
 
-## 🔐 Authentication & Security
+### Available Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run test` - Run test suite
+- `npm run db:push` - Apply database schema changes
+- `npm run db:studio` - Open database management interface
 
-### Authentication Flow
-- **OpenID Connect** integration for secure user authentication
-- **Automatic User Management**: Profile creation and updates
-- **Session Security**: PostgreSQL-backed sessions with encryption
-- **Role-Based Access Control**: Granular permissions within clubs
+### Performance Features
+- **Code Splitting**: Lazy loading of page components
+- **Virtual Scrolling**: Efficient handling of large data lists
+- **Query Optimization**: Intelligent caching and background updates
+- **Bundle Optimization**: Tree-shaking and modern build optimization
+- **Performance Monitoring**: Real-time Web Vitals tracking
 
-### Security Features
-- **CSRF Protection**: Built-in request validation
-- **Secure Sessions**: HTTP-only cookies with secure flags
-- **Input Validation**: Server-side validation with Zod schemas
-- **SQL Injection Prevention**: Parameterized queries with Drizzle ORM
+### Accessibility Features
+- **WCAG 2.1 AA Compliance**: Full accessibility standard compliance
+- **Keyboard Navigation**: Complete keyboard-only operation
+- **Screen Reader Support**: Proper ARIA labels and semantic HTML
+- **Focus Management**: Intelligent focus handling and trap
+- **High Contrast**: Support for high contrast display modes
+- **Responsive Text**: Scalable text for vision accessibility
 
-## 📊 Database Design
+## 🔒 Security
 
-### Core Entities
-```
-Users ──────── Club Memberships ──────── Clubs
-  │                                        │
-  └── Authentication Data                  ├── Members
-                                          ├── Teams ──── Team Memberships
-                                          ├── Players ─── Player Assignments
-                                          ├── Facilities
-                                          ├── Bookings
-                                          ├── Events
-                                          └── Finances
-```
+### Authentication & Authorization
+- **OpenID Connect** integration for secure authentication
+- **Session-based** authentication with CSRF protection
+- **Role-based access control** with club-specific permissions
+- **Secure session storage** in PostgreSQL
 
-### Key Relationships
-- **Multi-Club Support**: Users can belong to multiple clubs with different roles
-- **Flexible Team Structure**: Players can be assigned to multiple teams
-- **Comprehensive Booking**: Facilities support concurrent bookings with availability checking
-- **Financial Tracking**: Detailed transaction logging with category management
-
-## 🎨 Design System
-
-### UI Components
-- **Consistent Design Language**: Professional, modern interface
-- **Accessibility First**: WCAG 2.1 AA compliance
-- **Responsive Layouts**: Mobile-first design approach
-- **Dark/Light Themes**: Automatic theme detection and manual toggle
-- **Interactive Elements**: Hover states, animations, and feedback
-
-### Color Scheme
-- **Primary**: Blue tones for primary actions and navigation
-- **Success**: Green for positive actions and confirmations
-- **Warning**: Orange for cautionary states and maintenance
-- **Error**: Red for error states and critical actions
-- **Neutral**: Gray scale for text and backgrounds
-
-## 📱 Mobile & Responsive
-
-### Mobile Optimization
-- **Touch-Friendly Interfaces**: Appropriate touch targets and gestures
-- **Optimized Layouts**: Adaptive grid systems and collapsible navigation
-- **Performance**: Optimized images and lazy loading
-- **Offline Capabilities**: Service worker integration for core functionality
-
-### Responsive Breakpoints
-- **Mobile**: 320px - 768px
-- **Tablet**: 768px - 1024px
-- **Desktop**: 1024px - 1440px
-- **Large Desktop**: 1440px+
-
-## 🔧 Available Scripts
-
-```bash
-# Development
-npm run dev              # Start development servers with hot reload
-npm run check           # TypeScript type checking
-npm run lint            # ESLint code quality check
-
-# Database
-npm run db:push         # Push schema changes to database
-npm run db:generate     # Generate migration files
-npm run db:migrate      # Run database migrations
-
-# Production
-npm run build           # Build for production
-npm start              # Start production server
-
-# Utilities
-npm run seed:example   # Seed database with example data
-npm run clean          # Clean build artifacts
-```
-
-## 🤝 Contributing
-
-### Development Workflow
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Implement** your changes with tests
-4. **Commit** with clear messages (`git commit -m 'Add amazing feature'`)
-5. **Push** to your branch (`git push origin feature/amazing-feature`)
-6. **Open** a Pull Request with detailed description
-
-### Code Standards
-- **TypeScript**: Strict mode with comprehensive type definitions
-- **ESLint**: Follow established code style guidelines
-- **Testing**: Unit tests for utility functions and components
-- **Documentation**: Update README and inline documentation
-- **Accessibility**: Ensure WCAG compliance for new features
-
-### Architecture Guidelines
-- **Component Design**: Reusable, composable UI components
-- **State Management**: Appropriate use of local vs global state
-- **Performance**: Optimize for loading time and runtime performance
-- **Security**: Follow security best practices for authentication and data handling
+### Security Headers
+- **Helmet.js** for security headers
+- **CORS** configuration for cross-origin requests
+- **Rate limiting** for API protection
+- **Request validation** with Zod schemas
+- **SQL injection** prevention through parameterized queries
 
 ## 🚀 Deployment
 
-### Cloud Deployment Options
-- **Vercel**: Frontend deployment with serverless functions
-- **Railway**: Full-stack deployment with PostgreSQL
-- **DigitalOcean**: VPS deployment with Docker
-- **AWS**: Scalable cloud deployment with RDS
+### Production Requirements
+- **Node.js 18+** runtime environment
+- **PostgreSQL** database (Neon recommended)
+- **OpenID Connect** provider configuration
+- **HTTPS** certificate for secure connections
 
-## 📈 Performance & Scaling
+### Environment Variables
+Ensure all required environment variables are configured:
+- Database connection string
+- Authentication provider settings
+- Session secrets and security keys
+- Performance and monitoring settings
 
-### Optimization Features
-- **Intelligent Caching**: Multi-level caching with automatic invalidation
-- **Lazy Loading**: On-demand resource loading for faster initial load
-- **Database Optimization**: Efficient queries with proper indexing
-- **Asset Optimization**: Minified CSS/JS with gzip compression
+### Performance Optimization
+- **Database indices** for query optimization
+- **CDN integration** for static asset delivery
+- **Gzip compression** for reduced bandwidth
+- **Caching strategies** for improved response times
 
-### Monitoring & Analytics
-- **Error Tracking**: Comprehensive error logging and reporting
-- **Performance Metrics**: Load time and user interaction tracking
-- **Database Monitoring**: Query performance and connection health
-- **User Analytics**: Usage patterns and feature adoption
+## 📊 Monitoring & Analytics
 
-## 🔮 Roadmap
+### Built-in Monitoring
+- **Performance Tracking**: Web Vitals and custom metrics
+- **Error Reporting**: Centralized error logging and reporting
+- **API Analytics**: Request/response monitoring
+- **User Activity**: Session and interaction tracking
 
-### Short-term (Next 3 months)
-- [ ] **Mobile App**: Native iOS and Android applications
-- [ ] **API Documentation**: Comprehensive REST API documentation
-- [ ] **Advanced Analytics**: Enhanced reporting and data visualization
-- [ ] **Email Integration**: Automated email notifications and reminders
+### Integration Ready
+- **External Monitoring**: Ready for Sentry, DataDog, or similar services
+- **Custom Dashboards**: Performance and usage analytics
+- **Alert Systems**: Automated monitoring and notifications
 
-### Medium-term (6 months)
-- [ ] **Multi-language Support**: Internationalization and localization
-- [ ] **Advanced Role Management**: Custom roles and permission sets
-- [ ] **Integration APIs**: Third-party calendar and payment integrations
-- [ ] **Workflow Automation**: Custom automation rules and triggers
+## 🤝 Contributing
 
-### Long-term (12+ months)
-- [ ] **AI-Powered Insights**: Predictive analytics and recommendations
-- [ ] **Advanced Communication**: In-app messaging and video calls
-- [ ] **Marketplace Integration**: Equipment and service marketplace
-- [ ] **Federation Support**: Multi-organization management
+We welcome contributions to TeamIO! Please read our contributing guidelines and:
+
+1. Fork the repository
+2. Create a feature branch
+3. Write tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
+
+### Development Guidelines
+- Follow TypeScript strict mode
+- Maintain test coverage above 80%
+- Follow accessibility best practices
+- Document API changes in OpenAPI spec
+- Use semantic commit messages
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support & Documentation
+## 🆘 Support
 
-### Getting Help
-- **GitHub Issues**: Bug reports and feature requests
-- **Documentation**: Comprehensive guides in `/docs`
-- **Code Examples**: Reference implementations in the codebase
-- **Community**: Discussion forums and user community
-
-### Resources
-- **API Reference**: Complete API documentation
-- **Component Library**: UI component documentation
-- **Database Schema**: Entity relationship diagrams
-- **Deployment Guides**: Platform-specific deployment instructions
-
-## 🙏 Acknowledgments
-
-- **Open Source Community**: Built on amazing open-source technologies
-- **Sports Organizations**: Inspired by real-world club management needs
-- **User Feedback**: Continuously improved based on user experience
-- **Contributors**: Thanks to all who contribute to making TeamIO better
+For support and questions:
+- **Documentation**: Check `/api-docs` for API reference
+- **Issues**: Report bugs on GitHub Issues
+- **Discussions**: Join GitHub Discussions for questions
+- **Security**: Report security issues privately
 
 ---
 
-**TeamIO** - Empowering sports clubs with professional management tools.
+**TeamIO** - Professional club management made simple and powerful. Built with modern web technologies for scalability, performance, and accessibility.

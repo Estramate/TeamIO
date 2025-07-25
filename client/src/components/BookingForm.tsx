@@ -207,6 +207,15 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
     const startTimeISO = new Date(startTime).toISOString();
     const endTimeISO = new Date(endTime).toISOString();
 
+    console.log('Checking availability with data:', {
+      facilityId: parseInt(facilityId),
+      startTime: startTimeISO,
+      endTime: endTimeISO,
+      excludeBookingId: editingBooking?.id,
+      originalStartTime: startTime,
+      originalEndTime: endTime
+    });
+
     checkAvailabilityMutation.mutate({
       facilityId: parseInt(facilityId),
       startTime: startTimeISO,
@@ -214,6 +223,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       excludeBookingId: editingBooking?.id
     }, {
       onSuccess: (data: any) => {
+        console.log('Availability check SUCCESS:', data);
         setAvailabilityStatus({
           available: data.available,
           message: data.message
@@ -221,7 +231,9 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
         setIsCheckingAvailability(false);
       },
       onError: (error: any) => {
-        console.error('Availability check error:', error);
+        console.error('Availability check ERROR:', error);
+        console.error('Error response:', error.response);
+        console.error('Error message:', error.message);
         setAvailabilityStatus({
           available: false,
           message: error.response?.data?.message || error.message || 'Fehler bei der Verfügbarkeitsprüfung'

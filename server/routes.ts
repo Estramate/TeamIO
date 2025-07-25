@@ -581,14 +581,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Event routes (Events sind jetzt Teil der Bookings)
+  // Event routes (Events sind jetzt Teil der Bookings - diese Route ist deprecated)
+  // Der Kalender sollte nur noch /api/clubs/:clubId/bookings verwenden
   app.get('/api/clubs/:clubId/events', isAuthenticated, async (req: any, res) => {
     try {
-      const clubId = parseInt(req.params.clubId);
-      // Events sind jetzt Bookings mit type='event'
-      const events = await storage.getBookings(clubId);
-      const eventBookings = events.filter(booking => booking.type === 'event');
-      res.json(eventBookings);
+      // Zurückgabe eines leeren Arrays, um Duplikate zu vermeiden
+      // Alle Events sind jetzt in der Bookings-API enthalten
+      res.json([]);
     } catch (error) {
       console.error("Error fetching events:", error);
       res.status(500).json({ message: "Failed to fetch events" });

@@ -1513,17 +1513,10 @@ export default function Calendar() {
                             {event.source === 'booking' ? event.title : (event.title || event.name)}
                           </h4>
                           
-                          {event.facilityName && (
+                          {(event.facilityName || event.location) && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <MapPin className="w-4 h-4" />
-                              <span>{event.facilityName}</span>
-                            </div>
-                          )}
-                          
-                          {event.location && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <MapPin className="w-4 h-4" />
-                              <span>{event.location}</span>
+                              <span>{event.facilityName || event.location}</span>
                             </div>
                           )}
                           
@@ -1581,10 +1574,10 @@ export default function Calendar() {
                               {event.source === 'booking' ? event.title : (event.title || event.name)}
                             </h5>
                             
-                            {event.facilityName && (
+                            {(event.facilityName || event.location) && (
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <MapPin className="w-3 h-3" />
-                                <span className="truncate">{event.facilityName}</span>
+                                <span className="truncate">{event.facilityName || event.location}</span>
                               </div>
                             )}
                           </div>

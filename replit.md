@@ -11,6 +11,18 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Kalender-Duplikate und Ortsanzeige-Probleme behoben**: Events-Darstellung im Kalender korrigiert
+  - Events-API-Route auf leeres Array gesetzt um Duplikate zu vermeiden (Events sind jetzt Bookings mit type='event')
+  - Doppelte Ortsanzeige behoben: Einheitliche Anzeige von facilityName oder location (nicht beide)
+  - Kalender zeigt jetzt nur noch Daten aus der Bookings-API für konsistente Darstellung
+  - Keine doppelten Veranstaltungseinträge mehr im Kalender-Grid und Seitenleiste
+- **Vollständiges wiederkehrendes Buchungssystem implementiert**: Automatische Terminserien mit Verfügbarkeitsprüfung
+  - Schema erweitert: recurring, recurringPattern und recurringUntil Felder in bookingFormSchema
+  - Frontend-UI: Checkbox für wiederkehrende Buchungen mit Dropdown für Muster (täglich, wöchentlich, monatlich)
+  - Backend-Logik: Automatische Generierung mehrerer Buchungen basierend auf gewähltem Muster
+  - Intelligente Verfügbarkeitsprüfung für jede einzelne wiederkehrende Buchung
+  - Toast-Nachrichten zeigen Anzahl der erfolgreich erstellten wiederkehrenden Buchungen
+  - Überspringe nicht verfügbare Termine und protokolliere entsprechende Warnungen
 - **Buchungstyp-Farbschema überarbeitet**: Farbkonflikte zwischen Typ- und Status-Badges behoben
   - Spiel: Von Grün zu Hellorange geändert (vermeidet Überschneidung mit "Bestätigt"-Status)
   - Wartung: Von Orange zu Amber geändert für bessere Unterscheidung

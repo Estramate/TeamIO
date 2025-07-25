@@ -11,12 +11,16 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### Januar 25, 2025 (Neueste)
+- **Alle Seeding-Dateien entfernt**: Vollständige Bereinigung der Projekt-Struktur
+  - Entfernt: seedSVOberglan1975Complete.ts, seedAll.ts, seedTeams.ts, seedOberglan.ts, seedPlayers.ts, seedClean.ts
+  - Entfernt: Alle Seeding-API-Routen (/api/seed-data, /api/seed-sv-oberglan)
+  - Bereinigt: settings.tsx ohne Seeding-Funktionalität komplett neu erstellt
+  - Projekt ist jetzt sauber und ohne Entwicklungs-Seeding-Code
 - **Kritisches Sicherheitsproblem behoben**: Club-Mitgliedschafts-Überprüfung implementiert
   - requireClubAccess Middleware zu allen Club-spezifischen API-Routen hinzugefügt
   - User ohne Club-Mitgliedschaft erhalten jetzt 403 "Access denied" statt Datenzugriff
   - Status 403 mit klarer Fehlermeldung: "Access denied. You are not a member of this club."
   - Alle Club-Daten (Teams, Spieler, Buchungen, Finanzen) sind jetzt richtig geschützt
-  - Neue Route /api/seed-sv-oberglan fügt User automatisch als Club-Administrator hinzu
 - **Events-zu-Bookings Migration abgeschlossen**: Database-Schema-Konsolidierung erfolgreich durchgeführt
   - Events-Tabelle vollständig in Bookings-Tabelle migriert mit erweiterten Feldern (location, isPublic, nullable facilityId)
   - Alle bestehenden Event-Daten erfolgreich übertragen ohne Datenverlust (3 Events → 3 Bookings)

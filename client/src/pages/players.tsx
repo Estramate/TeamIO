@@ -206,10 +206,10 @@ export default function Players() {
   // Update player mutation
   const updatePlayerMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: InsertPlayer }) => {
-      return await apiRequest("PATCH", `/api/clubs/${selectedClub}/players/${id}`, data);
+      return await apiRequest("PATCH", `/api/clubs/${selectedClub.id}/players/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub.id}/players`] });
       setIsCreateDialogOpen(false);
       setEditingPlayer(null);
       form.reset();
@@ -230,10 +230,10 @@ export default function Players() {
   // Status toggle mutation for players
   const togglePlayerStatusMutation = useMutation({
     mutationFn: async ({ playerId, newStatus }: { playerId: number; newStatus: string }) => {
-      return await apiRequest("PATCH", `/api/clubs/${selectedClub}/players/${playerId}`, { status: newStatus });
+      return await apiRequest("PATCH", `/api/clubs/${selectedClub.id}/players/${playerId}`, { status: newStatus });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub.id}/players`] });
       toast({
         title: "Erfolg",
         description: "Spieler-Status wurde erfolgreich geändert",
@@ -251,10 +251,10 @@ export default function Players() {
   // Delete player mutation
   const deletePlayerMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest("DELETE", `/api/clubs/${selectedClub}/players/${id}`);
+      return await apiRequest("DELETE", `/api/clubs/${selectedClub.id}/players/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub.id}/players`] });
       toast({
         title: "Erfolg",
         description: "Spieler wurde erfolgreich gelöscht.",
@@ -646,7 +646,7 @@ export default function Players() {
                               Bearbeiten
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                              onClick={() => handleToggleStatus(player)}
+                              onClick={() => handleTogglePlayerStatus(player)}
                               className={player.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
                             >
                               {player.status === 'active' ? (
@@ -1182,7 +1182,7 @@ export default function Players() {
                         {viewingPlayer.salary && (
                           <div>
                             <div className="text-sm text-muted-foreground">Gehalt</div>
-                            <div className="font-medium">{viewingPlayer.salary.toLocaleString('de-DE')} €</div>
+                            <div className="font-medium">{Number(viewingPlayer.salary).toLocaleString('de-DE')} €</div>
                           </div>
                         )}
                       </div>
@@ -1194,7 +1194,7 @@ export default function Players() {
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold border-b pb-2">Teams</h3>
                       <div className="flex flex-wrap gap-2">
-                        {getPlayerTeams(viewingPlayer).map((team) => (
+                        {getPlayerTeams(viewingPlayer).map((team: any) => (
                           <Badge key={team.id} variant="secondary" className="text-sm">
                             {team.name}
                           </Badge>

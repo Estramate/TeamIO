@@ -246,7 +246,7 @@ export default function Communication() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="container mx-auto px-4 py-8 space-y-6" style={{ touchAction: 'pan-y', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
       {/* Search and Status Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4">
@@ -343,7 +343,7 @@ export default function Communication() {
         </TabsList>
 
         {/* Messages Tab */}
-        <TabsContent value="messages" className="space-y-4">
+        <TabsContent value="messages" className="space-y-4" style={{ touchAction: 'pan-y', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Nachrichten</h2>
             <Button onClick={() => setShowNewMessage(true)}>
@@ -352,7 +352,7 @@ export default function Communication() {
             </Button>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-4" style={{ touchAction: 'pan-y', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
             {displayMessages.length > 0 ? (
               displayMessages.map((message) => (
                 <Card key={message.id} className="hover:shadow-md transition-shadow">
@@ -405,7 +405,7 @@ export default function Communication() {
         </TabsContent>
 
         {/* Announcements Tab */}
-        <TabsContent value="announcements" className="space-y-4">
+        <TabsContent value="announcements" className="space-y-4" style={{ touchAction: 'pan-y', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Ankündigungen</h2>
             <Button onClick={() => setShowNewAnnouncement(true)}>
@@ -414,7 +414,7 @@ export default function Communication() {
             </Button>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-4" style={{ touchAction: 'pan-y', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
             {announcements?.length > 0 ? (
               announcements.map((announcement) => (
                 <Card key={announcement.id} className="hover:shadow-md transition-shadow">
@@ -471,7 +471,7 @@ export default function Communication() {
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-4">
+        <TabsContent value="settings" className="space-y-4" style={{ touchAction: 'pan-y', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <h2 className="text-xl font-semibold">Kommunikationseinstellungen</h2>
           
           <Card>
@@ -658,7 +658,7 @@ export default function Communication() {
                 {/* Recipients List */}
                 {recipientType !== "all" && (
                   <div className="space-y-2">
-                    <ScrollArea className="h-48 border rounded-md p-3">
+                    <ScrollArea className="h-48 border rounded-md p-3" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
                       <div className="space-y-2">
                         {recipientType === "teams" && teams.map((team: any) => (
                           <div key={team.id} className="flex items-center space-x-2">

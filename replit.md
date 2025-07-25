@@ -29,6 +29,7 @@ Preferred communication style: Simple, everyday language.
   - Vollständige Testdaten: Buchungen, Events, Finanztransaktionen, Team-Zuordnungen
   - Korrektes Schema-Management: PlayerTeamAssignments und TeamMemberships getrennt
   - Ausführbar über: tsx server/seedTestData.ts für saubere Testumgebung
+  - SV Oberglan 1975-spezifische Seeding-Dateien entfernt und Datenbank bereinigt
 
 ### Januar 24, 2025 (Frühere Updates)
 - **Kalender-System vollständig optimiert**: Alle Interaktions-Probleme behoben für professionelle Benutzererfahrung

@@ -690,7 +690,11 @@ export default function Bookings() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-lg">{getTypeIcon(booking.type)}</span>
-                        <h3 className="text-lg font-semibold text-foreground truncate">
+                        <h3 
+                          className="text-lg font-semibold text-foreground truncate cursor-pointer hover:underline"
+                          onClick={() => handleViewBooking(booking)}
+                          title={booking.title}
+                        >
                           {booking.title}
                         </h3>
                       </div>
@@ -823,7 +827,13 @@ export default function Bookings() {
                   return (
                     <tr key={booking.id} className={`hover:bg-muted/50 transition-colors ${index !== filteredBookings.length - 1 ? 'border-b' : ''}`}>
                       <td className="py-3 px-4">
-                        <div className="font-medium text-foreground">{booking.title}</div>
+                        <div 
+                          className="font-medium text-foreground cursor-pointer hover:text-primary hover:underline transition-colors"
+                          onClick={() => handleViewBooking(booking)}
+                          title={booking.title}
+                        >
+                          {booking.title}
+                        </div>
                         {booking.description && (
                           <div className="text-sm text-muted-foreground truncate max-w-xs">{booking.description}</div>
                         )}

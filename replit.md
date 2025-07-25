@@ -12,7 +12,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Januar 25, 2025 (Neueste)
 - **Vollständig einheitliches Card-Design systemweit implementiert**: Alle Verwaltungsseiten mit identischem modernen Layout
-  - Teams-, Members-, Bookings-, Facilities- und Finance-Karten komplett vereinheitlicht
+  - Teams-, Members-, Players-, Bookings-, Facilities- und Finance-Karten komplett vereinheitlicht
   - Konsistente graue Header-Balken (from-muted to-muted/80) für minimalistisches Design
   - Identische Hover-Effekte (shadow-lg, -translate-y-1) und Grid-Layouts (1 lg:2 xl:3)
   - Emoji-Icons und moderne Typography für freundlicheres Erscheinungsbild

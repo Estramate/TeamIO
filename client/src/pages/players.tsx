@@ -51,20 +51,7 @@ import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { Player, insertPlayerSchema, type InsertPlayer, Team } from "@shared/schema";
 import { z } from "zod";
-import {
-  Search,
-  UserPlus,
-  Users,
-  MoreHorizontal,
-  Edit2,
-  Trash2,
-  Grid3X3,
-  List,
-  Phone,
-  Mail,
-  Calendar,
-  MapPin,
-} from "lucide-react";
+import { CalendarDays, Calendar, UserPlus, Users, MoreHorizontal, Eye, Edit2, Trash2, MapPin, Phone, Mail, LayoutGrid, List, Search, Filter, Activity, XCircle, CheckCircle2 } from "lucide-react";
 
 const positionOptions = [
   { value: "Tor", label: "Tor" },
@@ -579,170 +566,177 @@ export default function Players() {
             )
           ) : filteredPlayers.length > 0 ? (
             viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredPlayers.map((player: Player) => (
                   <Card 
                     key={player.id} 
-                    className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-muted/40 hover:border-primary/30 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm overflow-hidden"
+                    className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md overflow-hidden"
                   >
-                    <CardContent className="p-0">
-                      {/* Card Header with Avatar and Jersey */}
-                      <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6 pb-4">
-                        <div className="flex items-center justify-between">
-                          <div className="relative">
-                            {player.profileImageUrl ? (
-                              <img
-                                src={player.profileImageUrl}
-                                alt={`${player.firstName} ${player.lastName}`}
-                                className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg ring-2 ring-primary/20"
-                                onError={(e) => {
-                                  const img = e.target as HTMLImageElement;
-                                  img.style.display = 'none';
-                                  img.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : null}
-                            <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/20 border-3 border-white shadow-lg flex items-center justify-center ${player.profileImageUrl ? 'hidden' : ''}`}>
-                              <Users className="h-7 w-7 text-primary/80" />
-                            </div>
-                            {player.jerseyNumber && (
-                              <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-sm rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg ring-2 ring-white">
-                                {player.jerseyNumber}
+                    {/* Einfacher grauer Header - einheitlich mit anderen Seiten */}
+                    <div className="h-2 bg-gradient-to-r from-muted to-muted/80"></div>
+                    
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            {/* Profilbild oder Avatar */}
+                            <div className="relative shrink-0">
+                              {player.profileImageUrl ? (
+                                <img
+                                  src={player.profileImageUrl}
+                                  alt={`${player.firstName} ${player.lastName}`}
+                                  className="w-12 h-12 rounded-full object-cover border-2 border-muted/20"
+                                  onError={(e) => {
+                                    const img = e.target as HTMLImageElement;
+                                    img.style.display = 'none';
+                                    img.nextElementSibling?.classList.remove('hidden');
+                                  }}
+                                />
+                              ) : null}
+                              <div className={`w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center ${player.profileImageUrl ? 'hidden' : ''}`}>
+                                <Users className="h-6 w-6 text-muted-foreground" />
                               </div>
-                            )}
+                              {player.jerseyNumber && (
+                                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                                  {player.jerseyNumber}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Name und Position */}
+                            <div className="min-w-0">
+                              <h3 
+                                className="text-lg font-semibold text-foreground truncate cursor-pointer hover:underline"
+                                onClick={() => handleViewPlayer(player)}
+                                title={`${player.firstName} ${player.lastName}`}
+                              >
+                                {player.firstName} {player.lastName}
+                              </h3>
+                              {player.position && (
+                                <p className="text-sm text-muted-foreground">
+                                  {player.position}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEdit(player)}>
-                                <Edit2 className="mr-2 h-4 w-4" />
-                                Bearbeiten
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleTogglePlayerStatus(player)}
-                                disabled={togglePlayerStatusMutation.isPending}
-                                className={player.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
-                              >
-                                {player.status === 'active' ? (
-                                  <>
-                                    <Users className="mr-2 h-4 w-4" />
-                                    Deaktivieren
-                                  </>
-                                ) : (
-                                  <>
-                                    <Users className="mr-2 h-4 w-4" />
-                                    Aktivieren
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(player)}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Löschen
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         </div>
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewPlayer(player)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEdit(player)}>
+                              <Edit2 className="mr-2 h-4 w-4" />
+                              Bearbeiten
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleToggleStatus(player)}
+                              className={player.status === 'active' ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                            >
+                              {player.status === 'active' ? (
+                                <>
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  Deaktivieren
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  Aktivieren
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDelete(player)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Löschen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
 
-                      {/* Player Info */}
-                      <div className="p-6 pt-2">
-                        <div className="mb-4">
-                          <h3 
-                            className="font-bold text-lg leading-tight text-foreground group-hover:text-primary transition-colors cursor-pointer hover:underline"
-                            onClick={() => handleViewPlayer(player)}
-                          >
-                            {player.firstName} {player.lastName}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            {player.position && (
-                              <span className={`text-xs px-3 py-1 rounded-full font-semibold shadow-sm ${getPositionColor(player.position)}`}>
-                                {player.position}
-                              </span>
-                            )}
-                            <Badge variant={getStatusBadgeVariant(player.status)} className="shadow-sm">
-                              {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                            </Badge>
+                      {/* Status und Teams */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <Badge variant={getStatusBadgeVariant(player.status)}>
+                          {statusOptions.find(s => s.value === player.status)?.label || player.status}
+                        </Badge>
+                        {getPlayerTeams(player).length > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            {getPlayerTeams(player).length} Team{getPlayerTeams(player).length > 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Player Details */}
+                      <div className="space-y-3 text-sm">
+                        {/* Teams */}
+                        {getPlayerTeams(player).length > 0 && (
+                          <div className="flex items-center justify-between py-1">
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              Teams
+                            </span>
+                            <div className="flex flex-wrap gap-1 justify-end">
+                              {getPlayerTeams(player).slice(0, 2).map((team: any) => (
+                                <span key={team.id} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md font-medium">
+                                  {team.name}
+                                </span>
+                              ))}
+                              {getPlayerTeams(player).length > 2 && (
+                                <span className="text-xs text-muted-foreground">
+                                  +{getPlayerTeams(player).length - 2}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        )}
 
-                        {/* Player Details */}
-                        <div className="space-y-3 text-sm">
-                          {/* Teams */}
-                          {getPlayerTeams(player).length > 0 && (
-                            <div className="flex items-start gap-3">
-                              <div className="w-5 h-5 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
-                                <Users className="h-3 w-3 text-primary" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-xs font-medium text-muted-foreground mb-1">Teams</div>
-                                <div className="flex flex-wrap gap-1">
-                                  {getPlayerTeams(player).slice(0, 2).map((team: any, idx: number) => (
-                                    <span key={team.id} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md font-medium">
-                                      {team.name}
-                                    </span>
-                                  ))}
-                                  {getPlayerTeams(player).length > 2 && (
-                                    <span className="text-xs bg-muted/50 text-muted-foreground px-2 py-0.5 rounded-md">
-                                      +{getPlayerTeams(player).length - 2}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )}
+                        {/* Alter */}
+                        {player.birthDate && (
+                          <div className="flex items-center justify-between py-1">
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              <Calendar className="h-4 w-4" />
+                              Alter
+                            </span>
+                            <span className="font-medium">
+                              {new Date().getFullYear() - new Date(player.birthDate).getFullYear()} Jahre
+                            </span>
+                          </div>
+                        )}
 
-                          {/* Age */}
-                          {player.birthDate && (
-                            <div className="flex items-center gap-3">
-                              <div className="w-5 h-5 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                                <Calendar className="h-3 w-3 text-purple-600" />
-                              </div>
-                              <div>
-                                <div className="text-xs font-medium text-muted-foreground">Alter</div>
-                                <div className="font-medium">
-                                  {new Date().getFullYear() - new Date(player.birthDate).getFullYear()} Jahre
-                                </div>
-                              </div>
-                            </div>
-                          )}
+                        {/* Physische Daten */}
+                        {(player.height || player.weight) && (
+                          <div className="flex items-center justify-between py-1">
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              <Activity className="h-4 w-4" />
+                              Physik
+                            </span>
+                            <span className="font-medium">
+                              {player.height && `${player.height}cm`}
+                              {player.height && player.weight && " • "}
+                              {player.weight && `${player.weight}kg`}
+                            </span>
+                          </div>
+                        )}
 
-                          {/* Physical Stats */}
-                          {(player.height || player.weight) && (
-                            <div className="flex items-center gap-3">
-                              <div className="w-5 h-5 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                                <div className="w-2 h-2 bg-green-600 rounded"></div>
-                              </div>
-                              <div>
-                                <div className="text-xs font-medium text-muted-foreground">Physik</div>
-                                <div className="font-medium">
-                                  {player.height && `${player.height}cm`}
-                                  {player.height && player.weight && " • "}
-                                  {player.weight && `${player.weight}kg`}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Nationality */}
-                          {player.nationality && (
-                            <div className="flex items-center gap-3">
-                              <div className="w-5 h-5 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                <MapPin className="h-3 w-3 text-blue-600" />
-                              </div>
-                              <div>
-                                <div className="text-xs font-medium text-muted-foreground">Nationalität</div>
-                                <div className="font-medium">{player.nationality}</div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        {/* Nationalität */}
+                        {player.nationality && (
+                          <div className="flex items-center justify-between py-1">
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              <MapPin className="h-4 w-4" />
+                              Land
+                            </span>
+                            <span className="font-medium">{player.nationality}</span>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

@@ -38,7 +38,8 @@ Preferred communication style: Simple, everyday language.
   - Spiel: Grün (vermeidet Überschneidung mit Wartung-Orange)
   - Event: Lila beibehalten (einzigartige Farbe)
   - Wartung: Orange (klar unterschieden von Spiel-Grün)
-  - Konsistente Farbkodierung: Blau (Training), Grün (Spiel), Lila (Event), Orange (Wartung)
+  - Konsistente Farbkodierung: Blau (Training), Smaragd (Spiel), Lila (Event), Orange (Wartung)
+  - Vermeidet Grün-Konflikt mit "Bestätigt"-Status durch Verwendung von Smaragd-Farbtönen
 - **Einheitliches Detail-Dialog-System vollständig implementiert**: Alle 6 Detail-Dialoge mit identischem Layout und Styling
   - Doppelte Status-Anzeige systemweit entfernt: Einheitliche Status-Darstellung nur im Header
   - Alle Detail-Dialoge bereinigt: Members, Facilities, Teams, Players, Bookings und Finance

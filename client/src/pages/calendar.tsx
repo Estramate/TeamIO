@@ -1768,8 +1768,6 @@ export default function Calendar() {
             onSuccess={() => setShowBookingModal(false)}
             onCancel={() => setShowBookingModal(false)}
             selectedClubId={selectedClub.id}
-            initialStartTime={bookingForm.getValues('startTime')}
-            initialEndTime={bookingForm.getValues('endTime')}
           />
         </DialogContent>
       </Dialog>

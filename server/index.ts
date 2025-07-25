@@ -1,10 +1,37 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { setupSecurity } from "./security";
+import { logger, errorHandler, requestLogger } from "./logger";
+import { requestTimeout, validateRequestSize, apiVersioning, enhancedCors, healthCheck } from "./middleware";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Trust proxy for proper IP addresses behind reverse proxy
+app.set('trust proxy', 1);
+
+// Enhanced CORS
+app.use(enhancedCors);
+
+// Request timeout and size validation
+app.use(requestTimeout(30000)); // 30 second timeout
+app.use(validateRequestSize(10 * 1024 * 1024)); // 10MB limit
+
+// API versioning
+app.use(apiVersioning);
+
+// Setup security middleware
+setupSecurity(app);
+
+// Request logging
+app.use(requestLogger);
+
+// Body parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Health check endpoint
+app.get('/health', healthCheck);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -39,13 +66,8 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
-  });
+  // Use centralized error handler
+  app.use(errorHandler);
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route

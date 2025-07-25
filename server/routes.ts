@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { requireClubAccess, csrfProtection, generateCSRFToken } from "./security";
+import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
 
 import {
   insertClubSchema,
@@ -18,160 +20,142 @@ import {
   trainingFeeFormSchema,
 } from "@shared/schema";
 
-// Middleware to check if user has access to the specified club
-const requireClubAccess = async (req: any, res: any, next: any) => {
-  try {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
-    
-    if (!clubId || isNaN(clubId)) {
-      return res.status(400).json({ message: "Invalid club ID" });
-    }
-
-    // Check if user is member of the club
-    const userClubs = await storage.getUserClubs(userId);
-    const hasAccess = userClubs.some(membership => 
-      membership.clubId === clubId && membership.status === 'active'
-    );
-
-    if (!hasAccess) {
-      return res.status(403).json({ 
-        message: "Access denied. You are not a member of this club." 
-      });
-    }
-
-    next();
-  } catch (error) {
-    console.error("Error checking club access:", error);
-    res.status(500).json({ message: "Failed to verify club access" });
-  }
+// Helper function to handle async route errors
+const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // CSRF token endpoint
+  app.get('/api/csrf-token', isAuthenticated, generateCSRFToken);
+
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+  app.get('/api/auth/user', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const userId = req.user.claims.sub;
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in token');
     }
-  });
+    
+    const user = await storage.getUser(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+    
+    logger.info('User data retrieved', { userId, requestId: req.id });
+    res.json(user);
+  }));
 
   // User permission routes
-  app.get('/api/clubs/:clubId/user-membership', isAuthenticated, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const userId = req.user.id;
-      
-      // Check if user is member of this club
-      const membership = await storage.getUserClubMembership(userId, clubId);
-      
-      res.json({
-        isMember: !!membership,
-        role: membership?.role || null,
-        joinedAt: membership?.joinedAt || null
-      });
-    } catch (error) {
-      console.error('Error checking user club membership:', error);
-      res.status(500).json({ message: 'Internal server error' });
+  app.get('/api/clubs/:clubId/user-membership', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
     }
-  });
+    
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    
+    logger.info('User membership retrieved', { userId, clubId, requestId: req.id });
+    res.json({
+      isMember: !!membership,
+      role: membership?.role || null,
+      joinedAt: membership?.joinedAt || null
+    });
+  }));
 
-  app.get('/api/clubs/:clubId/user-teams', isAuthenticated, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const userId = req.user.id;
-      
-      // Get user's team assignments for this club
-      const teamAssignments = await storage.getUserTeamAssignments(userId, clubId);
-      
-      res.json(teamAssignments);
-    } catch (error) {
-      console.error('Error fetching user team assignments:', error);
-      res.status(500).json({ message: 'Internal server error' });
+  app.get('/api/clubs/:clubId/user-teams', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
     }
-  });
+    
+    const teamAssignments = await storage.getUserTeamAssignments(userId, clubId);
+    
+    logger.info('User team assignments retrieved', { userId, clubId, count: teamAssignments.length, requestId: req.id });
+    res.json(teamAssignments);
+  }));
 
   // Club routes
-  app.get('/api/clubs', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const userClubs = await storage.getUserClubs(userId);
-      const clubs = await Promise.all(
-        userClubs.map(async (membership) => {
-          const club = await storage.getClub(membership.clubId);
-          return { ...club, role: membership.role, status: membership.status };
-        })
-      );
-      res.json(clubs);
-    } catch (error) {
-      console.error("Error fetching clubs:", error);
-      res.status(500).json({ message: "Failed to fetch clubs" });
+  app.get('/api/clubs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const userId = req.user.claims.sub;
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in token');
     }
-  });
+    
+    const userClubs = await storage.getUserClubs(userId);
+    const clubs = await Promise.all(
+      userClubs.map(async (membership) => {
+        const club = await storage.getClub(membership.clubId);
+        if (!club) {
+          logger.warn('Club not found for membership', { clubId: membership.clubId, userId });
+          return null;
+        }
+        return { ...club, role: membership.role, status: membership.status };
+      })
+    );
+    
+    const validClubs = clubs.filter(club => club !== null);
+    logger.info('User clubs retrieved', { userId, count: validClubs.length, requestId: req.id });
+    res.json(validClubs);
+  }));
 
-  app.post('/api/clubs', isAuthenticated, async (req: any, res) => {
-    try {
-      const clubData = insertClubSchema.parse(req.body);
-      const club = await storage.createClub(clubData);
-      
-      // Add the creator as a club administrator
-      await storage.addUserToClub({
-        userId: req.user.claims.sub,
-        clubId: club.id,
-        role: 'club-administrator',
-        status: 'active',
-      });
-
-      res.json(club);
-    } catch (error) {
-      console.error("Error creating club:", error);
-      res.status(500).json({ message: "Failed to create club" });
+  app.post('/api/clubs', isAuthenticated, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const userId = req.user.claims.sub;
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in token');
     }
-  });
+
+    const clubData = insertClubSchema.parse(req.body);
+    const club = await storage.createClub(clubData);
+    
+    // Add the creator as a club administrator
+    await storage.addUserToClub({
+      userId,
+      clubId: club.id,
+      role: 'club-administrator',
+      status: 'active',
+    });
+
+    logger.info('Club created', { clubId: club.id, userId, requestId: req.id });
+    res.status(201).json(club);
+  }));
 
   // Dashboard routes
-  app.get('/api/clubs/:clubId/dashboard', isAuthenticated, requireClubAccess, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const stats = await storage.getDashboardStats(clubId);
-      const activities = await storage.getRecentActivity(clubId);
-      res.json({ stats, activities });
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      res.status(500).json({ message: "Failed to fetch dashboard data" });
-    }
-  });
+  app.get('/api/clubs/:clubId/dashboard', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    
+    const [stats, activities] = await Promise.all([
+      storage.getDashboardStats(clubId),
+      storage.getRecentActivity(clubId)
+    ]);
+    
+    logger.info('Dashboard data retrieved', { clubId, requestId: req.id });
+    res.json({ stats, activities });
+  }));
 
   // Member routes
-  app.get('/api/clubs/:clubId/members', isAuthenticated, requireClubAccess, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const members = await storage.getMembers(clubId);
-      res.json(members);
-    } catch (error) {
-      console.error("Error fetching members:", error);
-      res.status(500).json({ message: "Failed to fetch members" });
-    }
-  });
+  app.get('/api/clubs/:clubId/members', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const members = await storage.getMembers(clubId);
+    
+    logger.info('Members retrieved', { clubId, count: members.length, requestId: req.id });
+    res.json(members);
+  }));
 
-  app.post('/api/clubs/:clubId/members', isAuthenticated, requireClubAccess, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const memberData = insertMemberSchema.parse({ ...req.body, clubId });
-      const member = await storage.createMember(memberData);
-      res.json(member);
-    } catch (error) {
-      console.error("Error creating member:", error);
-      res.status(500).json({ message: "Failed to create member" });
-    }
-  });
+  app.post('/api/clubs/:clubId/members', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const memberData = insertMemberSchema.parse({ ...req.body, clubId });
+    const member = await storage.createMember(memberData);
+    
+    logger.info('Member created', { clubId, memberId: member.id, requestId: req.id });
+    res.status(201).json(member);
+  }));
 
   app.put('/api/clubs/:clubId/members/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
     try {

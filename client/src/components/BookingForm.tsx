@@ -124,12 +124,14 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
   });
 
   // Data queries
-  const { data: facilities = [] } = useQuery({
+  const { data: facilities = [], isLoading: facilitiesLoading } = useQuery({
     queryKey: [`/api/clubs/${selectedClubId}/facilities`],
+    enabled: !!selectedClubId,
   });
 
-  const { data: teams = [] } = useQuery({
+  const { data: teams = [], isLoading: teamsLoading } = useQuery({
     queryKey: [`/api/clubs/${selectedClubId}/teams`],
+    enabled: !!selectedClubId,
   });
 
   // Mutations
@@ -340,7 +342,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {facilities?.map((facility: any) => (
+                    {(facilities as any[])?.map((facility: any) => (
                       <SelectItem key={facility.id} value={facility.id.toString()}>
                         {facility.name}
                       </SelectItem>
@@ -368,7 +370,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="none">Kein Team</SelectItem>
-                    {teams?.map((team: any) => (
+                    {(teams as any[])?.map((team: any) => (
                       <SelectItem key={team.id} value={team.id.toString()}>
                         {team.name}
                       </SelectItem>

@@ -217,7 +217,7 @@ export const bookings = pgTable("bookings", {
   contactEmail: varchar("contact_email", { length: 255 }),
   contactPhone: varchar("contact_phone", { length: 50 }),
   participants: jsonb("participants"), // can store numbers or participant lists
-  cost: decimal("cost", { precision: 10, scale: 2 }),
+  cost: varchar("cost", { length: 50 }),
   status: varchar("status", { length: 20 }).notNull().default("confirmed"),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -534,7 +534,7 @@ export const bookingFormSchema = createInsertSchema(bookings, {
   }),
   cost: z.union([z.string(), z.number(), z.null()]).optional().nullable().transform((val) => 
     val === '' || val === undefined || val === null ? null : 
-    typeof val === 'string' ? parseFloat(val) : val
+    typeof val === 'number' ? val.toString() : val
   ),
   // Wiederholungsfelder
   recurring: z.boolean().optional().default(false),

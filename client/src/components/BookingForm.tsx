@@ -79,7 +79,10 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
         return "";
       }
       
-      const formatted = date.toISOString().slice(0, 16);
+      // Convert to local time for datetime-local input
+      // Subtract timezone offset to get local time representation
+      const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      const formatted = localDate.toISOString().slice(0, 16);
       return formatted;
     } catch (error) {
       console.error('Error formatting date:', error, 'Input:', dateValue);
@@ -270,7 +273,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {(facilities as any[])?.map((facility) => (
+                    {facilities?.map((facility: any) => (
                       <SelectItem key={facility.id} value={facility.id.toString()}>
                         {facility.name}
                       </SelectItem>

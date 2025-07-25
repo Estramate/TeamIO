@@ -980,8 +980,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
+    console.log('🔍 MESSAGE DEBUG - Request body:', JSON.stringify(req.body, null, 2));
+    console.log('🔍 MESSAGE DEBUG - Club ID:', clubId);
+    console.log('🔍 MESSAGE DEBUG - User ID:', userId);
+    
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    try {
+      const validatedData = messageFormSchema.parse(req.body);
+      console.log('🔍 MESSAGE DEBUG - Validation successful:', JSON.stringify(validatedData, null, 2));
+    } catch (validationError) {
+      console.error('🚨 MESSAGE VALIDATION ERROR:', validationError);
+      throw validationError;
     }
     
     const validatedData = messageFormSchema.parse(req.body);
@@ -1089,8 +1101,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
+    console.log('🔍 ANNOUNCEMENT DEBUG - Request body:', JSON.stringify(req.body, null, 2));
+    console.log('🔍 ANNOUNCEMENT DEBUG - Club ID:', clubId);
+    console.log('🔍 ANNOUNCEMENT DEBUG - User ID:', userId);
+    
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    try {
+      const validatedData = announcementFormSchema.parse(req.body);
+      console.log('🔍 ANNOUNCEMENT DEBUG - Validation successful:', JSON.stringify(validatedData, null, 2));
+    } catch (validationError) {
+      console.error('🚨 ANNOUNCEMENT VALIDATION ERROR:', validationError);
+      throw validationError;
     }
     
     const validatedData = announcementFormSchema.parse(req.body);

@@ -612,11 +612,20 @@ export default function Players() {
                               >
                                 {player.firstName} {player.lastName}
                               </h3>
-                              {player.position && (
-                                <p className="text-sm text-muted-foreground">
-                                  {player.position}
-                                </p>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {player.position && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {player.position}
+                                  </Badge>
+                                )}
+                                {player.preferredFoot && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {player.preferredFoot === 'left' ? '⚽L' : 
+                                     player.preferredFoot === 'right' ? '⚽R' : 
+                                     player.preferredFoot === 'both' ? '⚽B' : '⚽'}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -676,8 +685,8 @@ export default function Players() {
                       </div>
 
                       {/* Player Details */}
-                      <div className="space-y-3 text-sm">
-                        {/* Teams */}
+                      <div className="space-y-2 text-sm">
+                        {/* Teams - immer anzeigen wenn vorhanden */}
                         {getPlayerTeams(player).length > 0 && (
                           <div className="flex items-center justify-between py-1">
                             <span className="text-muted-foreground flex items-center gap-2">
@@ -699,15 +708,17 @@ export default function Players() {
                           </div>
                         )}
 
-                        {/* Alter */}
-                        {player.birthDate && (
+                        {/* Alter & Nationalität */}
+                        {(player.birthDate || player.nationality) && (
                           <div className="flex items-center justify-between py-1">
                             <span className="text-muted-foreground flex items-center gap-2">
                               <Calendar className="h-4 w-4" />
-                              Alter
+                              Info
                             </span>
-                            <span className="font-medium">
-                              {new Date().getFullYear() - new Date(player.birthDate).getFullYear()} Jahre
+                            <span className="font-medium text-right">
+                              {player.birthDate && `${new Date().getFullYear() - new Date(player.birthDate).getFullYear()} Jahre`}
+                              {player.birthDate && player.nationality && " • "}
+                              {player.nationality && player.nationality}
                             </span>
                           </div>
                         )}
@@ -727,14 +738,54 @@ export default function Players() {
                           </div>
                         )}
 
-                        {/* Nationalität */}
-                        {player.nationality && (
+                        {/* Bevorzugter Fuß */}
+                        {player.preferredFoot && (
                           <div className="flex items-center justify-between py-1">
                             <span className="text-muted-foreground flex items-center gap-2">
-                              <MapPin className="h-4 w-4" />
-                              Land
+                              <Activity className="h-4 w-4" />
+                              Fuß
                             </span>
-                            <span className="font-medium">{player.nationality}</span>
+                            <span className="font-medium">
+                              {player.preferredFoot === 'left' ? 'Links' : 
+                               player.preferredFoot === 'right' ? 'Rechts' : 
+                               player.preferredFoot === 'both' ? 'Beidseitig' : player.preferredFoot}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Vertragslaufzeit */}
+                        {(player.contractStart || player.contractEnd) && (
+                          <div className="flex items-center justify-between py-1">
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              <CalendarDays className="h-4 w-4" />
+                              Vertrag
+                            </span>
+                            <span className="font-medium text-right">
+                              {player.contractStart && new Date(player.contractStart).getFullYear()}
+                              {player.contractStart && player.contractEnd && " - "}
+                              {player.contractEnd && new Date(player.contractEnd).getFullYear()}
+                              {!player.contractStart && player.contractEnd && `bis ${new Date(player.contractEnd).getFullYear()}`}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Kontakt */}
+                        {(player.phone || player.email) && (
+                          <div className="flex items-center justify-between py-1">
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              {player.phone ? <Phone className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                              Kontakt
+                            </span>
+                            <div className="text-right">
+                              {player.phone && (
+                                <div className="font-medium text-xs">{player.phone}</div>
+                              )}
+                              {player.email && (
+                                <div className="font-medium text-xs truncate max-w-32" title={player.email}>
+                                  {player.email}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -788,12 +839,20 @@ export default function Players() {
                               >
                                 {player.firstName} {player.lastName}
                               </div>
-                              <div className="text-sm text-muted-foreground mt-1">
+                              <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
                                 {player.nationality && `${player.nationality}`}
                                 {player.birthDate && (
                                   <>
                                     {player.nationality && " • "}
                                     {new Date().getFullYear() - new Date(player.birthDate).getFullYear()} Jahre
+                                  </>
+                                )}
+                                {(player.height || player.weight) && (
+                                  <>
+                                    {(player.nationality || player.birthDate) && " • "}
+                                    {player.height && `${player.height}cm`}
+                                    {player.height && player.weight && "/"}
+                                    {player.weight && `${player.weight}kg`}
                                   </>
                                 )}
                               </div>
@@ -802,11 +861,20 @@ export default function Players() {
                         </TableCell>
                         <TableCell className="py-4">
                           <div className="space-y-2">
-                            {player.position && (
-                              <span className={`inline-block text-xs px-3 py-1 rounded-full font-semibold shadow-sm ${getPositionColor(player.position)}`}>
-                                {player.position}
-                              </span>
-                            )}
+                            <div className="flex flex-wrap gap-1">
+                              {player.position && (
+                                <span className={`inline-block text-xs px-3 py-1 rounded-full font-semibold shadow-sm ${getPositionColor(player.position)}`}>
+                                  {player.position}
+                                </span>
+                              )}
+                              {player.preferredFoot && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {player.preferredFoot === 'left' ? '⚽L' : 
+                                   player.preferredFoot === 'right' ? '⚽R' : 
+                                   player.preferredFoot === 'both' ? '⚽B' : '⚽'}
+                                </Badge>
+                              )}
+                            </div>
                             <div>
                               <Badge variant={getStatusBadgeVariant(player.status)} className="shadow-sm">
                                 {statusOptions.find(s => s.value === player.status)?.label || player.status}

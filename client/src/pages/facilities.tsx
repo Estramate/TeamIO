@@ -325,13 +325,13 @@ export default function Facilities() {
     switch (status) {
       case 'active':
       case 'available': // Handle old "available" status as active
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Aktiv</Badge>;
+        return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Aktiv</Badge>;
       case 'maintenance':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Wartung</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100">Wartung</Badge>;
       case 'inactive':
-        return <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Inaktiv</Badge>;
+        return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Inaktiv</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100">{status}</Badge>;
     }
   };
 

@@ -361,17 +361,19 @@ export default function Players() {
     }
   };
 
-  // Status badge variant - unified with teams and members
-  const getStatusBadgeVariant = (status: string) => {
+  // Status badge function - unified with teams and members
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'success';
-      case 'inactive':
-      case 'injured':
-      case 'suspended':
-        return 'destructive';
-      default:
-        return 'destructive';
+      case 'active': 
+        return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Aktiv</Badge>;
+      case 'inactive': 
+        return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Inaktiv</Badge>;
+      case 'injured': 
+        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100">Verletzt</Badge>;
+      case 'suspended': 
+        return <Badge className="bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100">Suspendiert</Badge>;
+      default: 
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100">{status}</Badge>;
     }
   };
 
@@ -674,9 +676,7 @@ export default function Players() {
 
                       {/* Status und Teams */}
                       <div className="flex items-center gap-2 mb-4">
-                        <Badge variant={getStatusBadgeVariant(player.status)}>
-                          {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                        </Badge>
+                        {getStatusBadge(player.status)}
                         {getPlayerTeams(player).length > 0 && (
                           <Badge variant="secondary" className="text-xs">
                             {getPlayerTeams(player).length} Team{getPlayerTeams(player).length > 1 ? 's' : ''}
@@ -876,9 +876,7 @@ export default function Players() {
                               )}
                             </div>
                             <div>
-                              <Badge variant={getStatusBadgeVariant(player.status)} className="shadow-sm">
-                                {statusOptions.find(s => s.value === player.status)?.label || player.status}
-                              </Badge>
+                              {getStatusBadge(player.status)}
                             </div>
                           </div>
                         </TableCell>
@@ -1035,9 +1033,9 @@ export default function Players() {
                     </div>
                   </div>
                   {viewingPlayer && (
-                    <Badge variant={getStatusBadgeVariant(viewingPlayer.status)} className="border-0">
-                      {statusOptions.find(s => s.value === viewingPlayer.status)?.label || viewingPlayer.status}
-                    </Badge>
+                    <div className="mt-1">
+                      {getStatusBadge(viewingPlayer.status)}
+                    </div>
                   )}
                 </DialogTitle>
               </DialogHeader>

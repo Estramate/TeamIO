@@ -382,17 +382,17 @@ export default function Members() {
     }
   };
 
-  // Status badge variant
-  const getStatusBadgeVariant = (status: string) => {
+  // Status badge function
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'success';
-      case 'inactive':
-        return 'destructive';
-      case 'suspended':
-        return 'destructive';
-      default:
-        return 'destructive';
+      case 'active': 
+        return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Aktiv</Badge>;
+      case 'inactive': 
+        return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Inaktiv</Badge>;
+      case 'suspended': 
+        return <Badge className="bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100">Gesperrt</Badge>;
+      default: 
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100">{status}</Badge>;
     }
   };
 
@@ -600,12 +600,7 @@ export default function Members() {
 
                   {/* Status Badge */}
                   <div className="flex items-center gap-2 mb-4">
-                    <Badge 
-                      variant={getStatusBadgeVariant(member.status)} 
-                      className="text-xs font-medium"
-                    >
-                      {getStatusLabel(member.status)}
-                    </Badge>
+                    {getStatusBadge(member.status)}
                   </div>
 
                   {/* Contact Information - Kompakter Stil */}
@@ -802,9 +797,7 @@ export default function Members() {
                           </div>
                         </td>
                         <td className="px-6 py-5">
-                          <Badge variant={getStatusBadgeVariant(member.status)} className="font-medium">
-                            {getStatusLabel(member.status)}
-                          </Badge>
+                          {getStatusBadge(member.status)}
                         </td>
                         <td className="px-6 py-5">
                           <div className="flex items-center justify-end">
@@ -1301,9 +1294,9 @@ export default function Members() {
                 </div>
               </div>
               {viewingMember && (
-                <Badge variant="secondary" className={`${viewingMember.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} border-0`}>
-                  {viewingMember.status === 'active' ? 'Aktiv' : 'Inaktiv'}
-                </Badge>
+                <div className="mt-1">
+                  {getStatusBadge(viewingMember.status)}
+                </div>
               )}
             </DialogTitle>
           </DialogHeader>

@@ -509,7 +509,7 @@ export default function Bookings() {
       case 'cancelled':
         return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Abgesagt</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100">{status}</Badge>;
     }
   };
 

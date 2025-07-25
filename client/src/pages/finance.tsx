@@ -607,22 +607,22 @@ export default function Finance() {
 
   const getStatusBadge = (status: string, isActive: boolean = true) => {
     if (!isActive) {
-      return <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Inaktiv</Badge>;
+      return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Inaktiv</Badge>;
     }
     
     switch (status) {
       case 'paid':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Bezahlt</Badge>;
+        return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Bezahlt</Badge>;
       case 'pending':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Ausstehend</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100">Ausstehend</Badge>;
       case 'overdue':
-        return <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Überfällig</Badge>;
+        return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Überfällig</Badge>;
       case 'cancelled':
-        return <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400">Storniert</Badge>;
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100">Storniert</Badge>;
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Abgeschlossen</Badge>;
+        return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Abgeschlossen</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100">{status}</Badge>;
     }
   };
 

@@ -425,12 +425,16 @@ export default function Teams() {
     }
   };
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return 'success';
-      case 'inactive': return 'destructive';
-      case 'suspended': return 'destructive';
-      default: return 'destructive';
+      case 'active': 
+        return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Aktiv</Badge>;
+      case 'inactive': 
+        return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Inaktiv</Badge>;
+      case 'suspended': 
+        return <Badge className="bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100">Suspendiert</Badge>;
+      default: 
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100">{status}</Badge>;
     }
   };
 
@@ -629,12 +633,7 @@ export default function Teams() {
 
                     {/* Status Badge */}
                     <div className="flex items-center gap-2 mb-4">
-                      <Badge 
-                        variant={getStatusBadgeVariant(team.status)} 
-                        className="text-xs font-medium"
-                      >
-                        {getStatusLabel(team.status)}
-                      </Badge>
+                      {getStatusBadge(team.status)}
                       {team.category && (
                         <Badge 
                           variant="secondary" 
@@ -766,9 +765,7 @@ export default function Teams() {
                                 </Badge>
                               )}
                               <div>
-                                <Badge variant={getStatusBadgeVariant(team.status)} className="shadow-sm">
-                                  {getStatusLabel(team.status)}
-                                </Badge>
+                                {getStatusBadge(team.status)}
                               </div>
                             </div>
                           </td>
@@ -1163,9 +1160,9 @@ export default function Teams() {
                 </div>
               </div>
               {viewingTeam && (
-                <Badge variant={getStatusBadgeVariant(viewingTeam.status)} className="border-0">
-                  {getStatusLabel(viewingTeam.status)}
-                </Badge>
+                <div className="mt-1">
+                  {getStatusBadge(viewingTeam.status)}
+                </div>
               )}
             </DialogTitle>
           </DialogHeader>

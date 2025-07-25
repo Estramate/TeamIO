@@ -1401,7 +1401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           default:
             logger.warn('Unknown WebSocket message type', { type: message.type, connectionId });
         }
-      } catch (error) {
+      } catch (error: any) {
         logger.error('WebSocket message error', { error: error.message, connectionId });
         ws.send(JSON.stringify({
           type: 'error',
@@ -1415,7 +1415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       logger.info('WebSocket connection closed', { connectionId });
     });
     
-    ws.on('error', (error) => {
+    ws.on('error', (error: any) => {
       logger.error('WebSocket error', { error: error.message, connectionId });
       connections.delete(connectionId);
     });
@@ -1423,25 +1423,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Helper function to broadcast message to all club members
   function broadcastToClub(clubId: number, message: any) {
-    for (const [connectionId, connection] of connections.entries()) {
+    connections.forEach((connection, connectionId) => {
       if (connection.authenticated && 
           connection.clubId === clubId && 
           connection.ws.readyState === WebSocket.OPEN) {
         connection.ws.send(JSON.stringify(message));
       }
-    }
+    });
   }
   
   // Helper function to send message to specific user
   function sendToUser(userId: string, clubId: number, message: any) {
-    for (const [connectionId, connection] of connections.entries()) {
+    connections.forEach((connection, connectionId) => {
       if (connection.authenticated && 
           connection.userId === userId && 
           connection.clubId === clubId &&
           connection.ws.readyState === WebSocket.OPEN) {
         connection.ws.send(JSON.stringify(message));
       }
-    }
+    });
   }
   
   // Store WebSocket utilities for use in routes

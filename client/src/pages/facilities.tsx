@@ -86,6 +86,20 @@ export default function Facilities() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  if (!selectedClub) {
+    return (
+      <div className="flex-1 overflow-y-auto bg-background p-6">
+        <div className="text-center py-12">
+          <MapPin className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Kein Verein ausgewählt</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Bitte wählen Sie einen Verein aus, um Anlagen zu verwalten.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Data fetching
   const { data: facilities = [], isLoading: isFacilitiesLoading } = useQuery<Facility[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'facilities'],

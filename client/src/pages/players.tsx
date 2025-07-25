@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useClubStore } from "@/lib/clubStore";
+import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { Player, insertPlayerSchema, type InsertPlayer, Team } from "@shared/schema";
 import { z } from "zod";
@@ -133,36 +133,39 @@ export default function Players() {
   const [viewingPlayer, setViewingPlayer] = useState<Player | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   
-  const { selectedClub, setSelectedClub } = useClubStore();
+  const { selectedClub } = useClub();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { setPage } = usePage();
-
-  // Auto-select first club if none selected
-  const { data: clubs } = useQuery({
-    queryKey: ["/api/clubs"],
-  });
-
-  useEffect(() => {
-    if (clubs && clubs.length > 0 && !selectedClub) {
-      setSelectedClub(clubs[0].id);
-    }
-  }, [clubs, selectedClub, setSelectedClub]);
 
   useEffect(() => {
     setPage("Spieler", "Verwalten Sie alle Spieler des Vereins");
   }, [setPage]);
 
+  if (!selectedClub) {
+    return (
+      <div className="flex-1 overflow-y-auto bg-background p-6">
+        <div className="text-center py-12">
+          <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">Kein Verein ausgewählt</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Bitte wählen Sie einen Verein aus, um Spieler zu verwalten.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Fetch players
   const { data: players = [], isLoading, error } = useQuery({
-    queryKey: [`/api/clubs/${selectedClub}/players`],
-    enabled: !!selectedClub,
+    queryKey: [`/api/clubs/${selectedClub.id}/players`],
+    enabled: !!selectedClub?.id,
   });
 
   // Fetch teams for assignments
   const { data: teams = [] } = useQuery({
-    queryKey: [`/api/clubs/${selectedClub}/teams`],
-    enabled: !!selectedClub,
+    queryKey: [`/api/clubs/${selectedClub.id}/teams`],
+    enabled: !!selectedClub?.id,
   });
 
   // Form for creating/editing players
@@ -193,10 +196,10 @@ export default function Players() {
   // Create player mutation
   const createPlayerMutation = useMutation({
     mutationFn: async (data: InsertPlayer) => {
-      return await apiRequest("POST", `/api/clubs/${selectedClub}/players`, data);
+      return await apiRequest("POST", `/api/clubs/${selectedClub.id}/players`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub}/players`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub.id}/players`] });
       setIsCreateDialogOpen(false);
       form.reset();
       toast({

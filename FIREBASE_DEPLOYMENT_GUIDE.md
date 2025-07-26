@@ -1,20 +1,21 @@
-# Firebase Deployment Configuration Guide
+# Firebase Deployment Configuration Guide - NACH DEPLOYMENT
 
-## Nach dem Replit Deployment erforderliche Firebase-Einstellungen
+## ✅ APP IST DEPLOYED - Jetzt Firebase konfigurieren
 
 ### 1. Facebook OAuth Redirect URIs
 **In der Facebook Developer Console:**
 - Fügen Sie diese URIs zu Ihrer Facebook-App hinzu:
   ```
-  https://teamio-1be61.firebaseapp.com/__/auth/handler
-  https://IHRE-REPLIT-DOMAIN.replit.app
+  https://teamio-1be61.firebaseapp.com/__/auth/handler  ← Bereits hinzugefügt
+  https://IHRE-FINALE-REPLIT-DOMAIN.replit.app  ← JETZT HINZUFÜGEN
   ```
 
-### 2. Firebase Console - Authorized Domains
+### 2. Firebase Console - Authorized Domains  
 **Firebase Console → Authentication → Settings → Authorized domains:**
 - Fügen Sie Ihre finale Replit-Domain hinzu:
   ```
-  IHRE-REPLIT-DOMAIN.replit.app
+  IHRE-FINALE-REPLIT-DOMAIN.replit.app  ← JETZT HINZUFÜGEN
+  teamio-1be61.firebaseapp.com  ← Bereits vorhanden
   ```
 
 ### 3. Google OAuth (falls verwendet)
@@ -44,7 +45,17 @@
 - **"unauthorized_domain"**: Fügen Sie Domain zu Firebase Authorized Domains hinzu
 - **"auth/operation-not-allowed"**: Aktivieren Sie Sign-in-Methoden in Firebase Console
 
-## Aktuelle Konfiguration
-- Firebase Project: teamio-1be61
-- Auth Domain: teamio-1be61.firebaseapp.com
-- Aktuell erforderliche Facebook Redirect URI: https://teamio-1be61.firebaseapp.com/__/auth/handler
+## ✅ DEPLOYMENT ABGESCHLOSSEN - Finale Schritte
+
+### Aktuelle Konfiguration
+- Firebase Project: teamio-1be61 ✅
+- Auth Domain: teamio-1be61.firebaseapp.com ✅
+- Facebook Redirect URI bereits konfiguriert: https://teamio-1be61.firebaseapp.com/__/auth/handler ✅
+
+### ⚠️ NOCH ZU TUN:
+1. **Firebase Console öffnen**: https://console.firebase.google.com/project/teamio-1be61
+2. **Authentication → Settings → Authorized domains**
+3. **Ihre finale Replit-Domain hinzufügen** (z.B. `meine-app.replit.app`)
+4. **Facebook Developer Console**: Finale Domain auch dort hinzufügen
+
+### 🎯 Nach diesen Einstellungen ist Firebase vollständig konfiguriert!

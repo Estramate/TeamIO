@@ -1024,6 +1024,7 @@ export class DatabaseStorage implements IStorage {
   // Communication operations
   // Message operations
   async getMessages(clubId: number, userId?: string): Promise<MessageWithRecipients[]> {
+    // Get main messages (not replies) first
     const messagesData = await db
       .select({
         message: messages,
@@ -1038,18 +1039,24 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(messages.senderId, users.id))
       .where(and(
         eq(messages.clubId, clubId),
-        isNull(messages.deletedAt) // Only non-deleted messages
+        isNull(messages.deletedAt), // Only non-deleted messages
+        isNull(messages.threadId) // Only main messages, not replies
       ))
       .orderBy(desc(messages.createdAt));
 
-    // Get recipients for each message
+    // Get recipients and replies for each message
     const messagesWithRecipients = await Promise.all(
       messagesData.map(async (messageData) => {
         const recipients = await this.getMessageRecipients(messageData.message.id);
+        const replies = await this.getMessageReplies(messageData.message.id);
+        const replyCount = replies.length;
+        
         return {
           ...messageData.message,
           recipients,
           sender: messageData.sender,
+          replies,
+          replyCount,
         };
       })
     );
@@ -1159,6 +1166,53 @@ export class DatabaseStorage implements IStorage {
 
   async addMessageRecipients(recipients: InsertMessageRecipient[]): Promise<MessageRecipient[]> {
     return await db.insert(messageRecipients).values(recipients).returning();
+  }
+
+  // Get replies for a specific message (thread support)
+  async getMessageReplies(messageId: number): Promise<MessageWithRecipients[]> {
+    const repliesData = await db
+      .select({
+        message: messages,
+        sender: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
+      .from(messages)
+      .innerJoin(users, eq(messages.senderId, users.id))
+      .where(and(
+        eq(messages.threadId, messageId),
+        isNull(messages.deletedAt)
+      ))
+      .orderBy(asc(messages.createdAt)); // Replies in chronological order
+
+    // Get recipients for each reply
+    const repliesWithRecipients = await Promise.all(
+      repliesData.map(async (replyData) => {
+        const recipients = await this.getMessageRecipients(replyData.message.id);
+        return {
+          ...replyData.message,
+          recipients,
+          sender: replyData.sender,
+        };
+      })
+    );
+
+    return repliesWithRecipients;
+  }
+
+  // Create a reply to an existing message
+  async createMessageReply(parentMessageId: number, messageData: InsertMessage): Promise<Message> {
+    const replyData = {
+      ...messageData,
+      threadId: parentMessageId,
+      messageType: 'reply'
+    };
+    
+    const [reply] = await db.insert(messages).values(replyData).returning();
+    return reply;
   }
 
   async updateMessageRecipientStatus(messageId: number, userId: string, status: string): Promise<void> {

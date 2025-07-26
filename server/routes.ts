@@ -1075,6 +1075,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   }));
 
+  // Reply to a message (create threaded reply)
+  app.post('/api/clubs/:clubId/messages/:messageId/reply', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const messageId = parseInt(req.params.messageId);
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!messageId || isNaN(messageId)) {
+      throw new ValidationError('Invalid message ID', 'messageId');
+    }
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Validate request body
+    const validationSchema = z.object({
+      content: z.string().min(1, "Content is required"),
+      subject: z.string().optional(),
+    });
+    
+    const validatedData = validationSchema.parse(req.body);
+    
+    const replyData = {
+      clubId,
+      senderId: userId,
+      subject: validatedData.subject || `Re: ${req.body.originalSubject || 'Message'}`,
+      content: validatedData.content,
+      messageType: 'reply',
+      priority: 'normal',
+      status: 'sent',
+    };
+    
+    const reply = await storage.createMessageReply(messageId, replyData);
+    logger.info('Message reply created', { replyId: reply.id, parentMessageId: messageId, clubId, userId, requestId: req.id });
+    res.status(201).json(reply);
+  }));
+
   // Announcement routes
   app.get('/api/clubs/:clubId/announcements', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);

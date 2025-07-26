@@ -384,38 +384,51 @@ export default function Communication() {
                       <p className="text-blue-600 text-sm mt-2">Klicken zum vollständigen Lesen</p>
                     )}
                   </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setSelectedMessage(message)}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Antworten
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => {
-                        try {
-                          markMessageAsRead(message.id);
-                          toast({
-                            title: "Erfolgreich",
-                            description: "Nachricht als gelesen markiert",
-                          });
-                        } catch (error) {
-                          console.error('Error marking message as read:', error);
-                          toast({
-                            title: "Hinweis",
-                            description: "Nachricht wurde angezeigt",
-                          });
-                        }
-                      }}
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Als gelesen markieren
-                    </Button>
-                  </CardFooter>
+                  
+                  {/* Reply Count and Actions */}
+                  <div className="px-6 py-2 border-t bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        {(message as any).replyCount > 0 && (
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="w-4 h-4" />
+                            {(message as any).replyCount} {(message as any).replyCount === 1 ? 'Antwort' : 'Antworten'}
+                          </span>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setSelectedMessage(message)}
+                          className="text-blue-600 hover:text-blue-800 p-0 h-auto"
+                        >
+                          Antworten
+                        </Button>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          try {
+                            markMessageAsRead(message.id);
+                            toast({
+                              title: "Erfolgreich",
+                              description: "Nachricht als gelesen markiert",
+                            });
+                          } catch (error) {
+                            console.error('Error marking message as read:', error);
+                            toast({
+                              title: "Hinweis",
+                              description: "Nachricht wurde angezeigt",
+                            });
+                          }
+                        }}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Als gelesen
+                      </Button>
+                    </div>
+                  </div>
                 </Card>
               ))
             ) : (
@@ -944,115 +957,145 @@ export default function Communication() {
         </DialogContent>
       </Dialog>
 
-      {/* Message Detail Dialog with Reply */}
+      {/* Message Thread Dialog (Facebook-style) */}
       <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedMessage?.subject || "Nachricht"}</DialogTitle>
             <DialogDescription>
-              Von: {selectedMessage?.sender?.firstName} {selectedMessage?.sender?.lastName} • 
-              {selectedMessage && formatDistanceToNow(new Date(selectedMessage.createdAt), { addSuffix: true, locale: de })}
+              Unterhaltung mit {(selectedMessage as any)?.replies?.length || 0} Antworten
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-6">
-            {/* Original Message */}
-            <div className="border-l-4 border-blue-500 pl-4 bg-gray-50 p-4 rounded-r">
-              <div className="prose max-w-none">
-                <p className="text-gray-700 whitespace-pre-wrap">{selectedMessage?.content}</p>
-              </div>
-              
-              {selectedMessage?.priority && selectedMessage.priority !== 'normal' && (
-                <div className="flex items-center gap-2 mt-3">
-                  <AlertCircle className="w-4 h-4 text-orange-500" />
-                  <span className="text-sm font-medium">
-                    Priorität: {selectedMessage.priority === 'high' ? 'Hoch' : selectedMessage.priority === 'medium' ? 'Mittel' : 'Normal'}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Reply Form */}
+          <ScrollArea className="max-h-[60vh] pr-4">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Reply className="w-4 h-4" />
-                Antwort verfassen
+              {/* Original Message */}
+              <div className="bg-white border rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Avatar className="w-10 h-10">
+                    <AvatarFallback>
+                      {selectedMessage?.sender?.firstName?.[0]}{selectedMessage?.sender?.lastName?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-medium">
+                        {selectedMessage?.sender?.firstName} {selectedMessage?.sender?.lastName}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {selectedMessage && formatDistanceToNow(new Date(selectedMessage.createdAt), { addSuffix: true, locale: de })}
+                      </span>
+                      {selectedMessage?.priority && selectedMessage.priority !== 'normal' && (
+                        <Badge variant={selectedMessage.priority === 'high' ? 'destructive' : 'default'} className="text-xs">
+                          {selectedMessage.priority === 'high' ? 'Hoch' : selectedMessage.priority === 'medium' ? 'Mittel' : 'Normal'}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-gray-800 whitespace-pre-wrap">{selectedMessage?.content}</p>
+                  </div>
+                </div>
               </div>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium">An:</label>
-                  <p className="text-sm text-gray-600">
-                    {selectedMessage?.sender?.firstName} {selectedMessage?.sender?.lastName}
-                  </p>
+
+              {/* Replies */}
+              {(selectedMessage as any)?.replies?.map((reply: any, index: number) => (
+                <div key={reply.id} className="bg-gray-50 border rounded-lg p-4 ml-8">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback className="text-xs">
+                        {reply.sender?.firstName?.[0]}{reply.sender?.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-medium text-sm">
+                          {reply.sender?.firstName} {reply.sender?.lastName}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true, locale: de })}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 text-sm whitespace-pre-wrap">{reply.content}</p>
+                    </div>
+                  </div>
                 </div>
-                
-                <div>
-                  <label className="text-sm font-medium">Betreff:</label>
-                  <Input
-                    value={`Re: ${selectedMessage?.subject || 'Nachricht'}`}
-                    disabled
-                    className="bg-gray-50"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium">Nachricht:</label>
-                  <Textarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Ihre Antwort..."
-                    className="min-h-24"
-                  />
+              ))}
+            </div>
+          </ScrollArea>
+
+          {/* Reply Form */}
+          <div className="border-t pt-4 mt-4">
+            <div className="flex items-start gap-3">
+              <Avatar className="w-8 h-8">
+                <AvatarFallback className="text-xs">
+                  {user?.firstName?.[0]}{user?.lastName?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <Textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="Antwort schreiben..."
+                  className="min-h-20 resize-none"
+                />
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button variant="outline" size="sm" onClick={() => {
+                    setSelectedMessage(null);
+                    setReplyText('');
+                  }}>
+                    Schließen
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={async () => {
+                      if (!replyText.trim()) {
+                        toast({
+                          title: "Fehler",
+                          description: "Bitte geben Sie eine Antwort ein",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      try {
+                        // Use the new reply endpoint
+                        await fetch(`/api/clubs/${selectedClub?.id}/messages/${selectedMessage?.id}/reply`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          credentials: 'include',
+                          body: JSON.stringify({
+                            content: replyText,
+                            originalSubject: selectedMessage?.subject
+                          }),
+                        });
+                        
+                        setReplyText('');
+                        toast({
+                          title: "Antwort gesendet",
+                          description: "Ihre Antwort wurde hinzugefügt",
+                        });
+                        
+                        // Refresh messages to show the new reply
+                        window.location.reload();
+                      } catch (error) {
+                        console.error('Error sending reply:', error);
+                        toast({
+                          title: "Fehler",
+                          description: "Antwort konnte nicht gesendet werden",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    disabled={!replyText.trim() || sendingMessage}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Antworten
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
-          
-          <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => {
-              setSelectedMessage(null);
-              setReplyText('');
-            }}>
-              Schließen
-            </Button>
-            <Button 
-              onClick={() => {
-                if (!replyText.trim()) {
-                  toast({
-                    title: "Fehler",
-                    description: "Bitte geben Sie eine Antwort ein",
-                    variant: "destructive",
-                  });
-                  return;
-                }
-                
-                const replyData = {
-                  subject: `Re: ${selectedMessage?.subject || 'Nachricht'}`,
-                  content: replyText,
-                  messageType: "direct",
-                  priority: "normal",
-                  recipients: [{
-                    type: "user",
-                    id: selectedMessage?.senderId
-                  }]
-                };
-                
-                sendMessage(replyData);
-                setSelectedMessage(null);
-                setReplyText('');
-                
-                toast({
-                  title: "Antwort gesendet",
-                  description: "Ihre Antwort wurde erfolgreich gesendet",
-                });
-              }}
-              disabled={!replyText.trim() || sendingMessage}
-            >
-              <Send className="w-4 h-4 mr-2" />
-              {sendingMessage ? "Wird gesendet..." : "Antwort senden"}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

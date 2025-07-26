@@ -276,8 +276,8 @@ export class DatabaseStorage implements IStorage {
     console.log('UpsertUser called with:', userData);
     
     try {
-      // For Firebase users, always use the ID directly if provided
-      if (userData.id && userData.authProvider === 'firebase') {
+      // For legacy compatibility, check if ID is provided directly
+      if (userData.id) {
         // Check if user exists by ID first
         const existingUser = await this.getUser(userData.id);
         if (existingUser) {

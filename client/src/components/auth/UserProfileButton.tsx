@@ -1,6 +1,6 @@
 /**
- * User profile button with multi-provider authentication support
- * Shows user info and logout options for both Replit and Firebase auth
+ * User profile button with Replit authentication support
+ * Shows user info and logout options
  */
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 // Firebase auth removed - using only Replit auth
 import { LogOut, User, Settings, Shield } from "lucide-react";
-import { FaGoogle } from "react-icons/fa";
+// Firebase icons removed - using only Replit auth
 import { SiReplit } from "react-icons/si";
 
 interface UserProfileButtonProps {

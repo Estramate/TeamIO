@@ -120,7 +120,7 @@ export async function setupAuth(app: Express) {
     console.log('=== COMPLETE LOGOUT PROCESS ===');
     
     // Clear ALL auth cookies with different options
-    const cookiesToClear = ['firebase-auth', 'connect.sid', 'session', '__session'];
+    const cookiesToClear = ['connect.sid', 'session', '__session'];
     cookiesToClear.forEach(cookieName => {
       // Clear with all possible configurations
       res.clearCookie(cookieName, { path: '/', httpOnly: true, secure: false });

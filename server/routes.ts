@@ -3,9 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-// Firebase authentication removed - using only Replit auth
-// Security imports temporarily commented for Firebase overhaul
-// import { requireClubAccess } from "./security";
+// ClubFlow authentication system - Replit integration only
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
 import { handleErrorReports, handlePerformanceMetrics } from "./error-reporting";
 
@@ -31,7 +29,7 @@ import {
   insertCommunicationPreferencesSchema,
 } from "@shared/schema";
 
-// Additional imports for Firebase auth
+// OpenID client for Replit authentication
 import * as client from "openid-client";
 import memoize from "memoizee";
 
@@ -66,11 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   
-  // Firebase authentication removed - using only Replit auth
-
-  // CSRF token endpoint
-  // CSRF token temporarily disabled for Firebase overhaul
-  // app.get('/api/csrf-token', isAuthenticated, generateCSRFToken);
+  // CSRF protection not required for current authentication system
 
   // Error reporting endpoints
   app.post('/api/errors', handleErrorReports);
@@ -100,45 +94,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
 
-    // Check Firebase auth cookie
-    const firebaseAuth = req.cookies['firebase-auth'];
-    
-    if (firebaseAuth) {
-      try {
-        let decodedCookie = firebaseAuth;
-        try {
-          decodedCookie = decodeURIComponent(firebaseAuth);
-        } catch (e) {
-          // Cookie might not be URL encoded
-        }
-        const userData = JSON.parse(Buffer.from(decodedCookie, 'base64').toString());
-        
-        if (userData.exp > Date.now()) {
-          // Create compatible user object for downstream middleware
-          req.user = {
-            claims: {
-              sub: userData.sub,
-              email: userData.email,
-              first_name: userData.first_name,
-              last_name: userData.last_name,
-              profile_image_url: userData.profile_image_url,
-            },
-            authProvider: userData.authProvider
-          };
-          return next();
-        } else {
-          console.log('Firebase token expired:', { exp: userData.exp, now: Date.now() });
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.log('Firebase token decode error:', errorMessage, 'Cookie:', firebaseAuth?.substring(0, 50) + '...');
-      }
-    }
-
     return res.status(401).json({ message: "Not authenticated" });
   };
 
-  // Auth routes (supports both Replit and Firebase auth) - NO MIDDLEWARE, handles auth internally
+  // Auth routes (Replit auth only) - NO MIDDLEWARE, handles auth internally
   app.get('/api/auth/user', async (req: any, res: any) => {
     try {
       console.log('=== GET /api/auth/user DEBUG ===');

@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 import type { Express } from 'express';
 import { logger, AuthorizationError } from './logger';
 
-// Security configuration for Google-only Firebase auth
+// Security configuration for Replit-only auth
 export const setupSecurity = (app: Express) => {
   // Conditional CSP configuration - disabled in development for Vite compatibility
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -18,28 +18,17 @@ export const setupSecurity = (app: Express) => {
         scriptSrc: [
           "'self'", 
           "'unsafe-eval'", 
-          "'unsafe-inline'",
-          "https://apis.google.com",
-          "https://www.google.com",
-          "https://www.gstatic.com"
+          "'unsafe-inline'"
         ],
         connectSrc: [
           "'self'", 
           "ws:", 
           "wss:", 
           "*.neon.tech",
-          "https://apis.google.com",
-          "https://accounts.google.com",
-          "https://www.googleapis.com",
-          "https://teamio-1be61.firebaseapp.com",
-          "https://*.googleapis.com",
-          "https://securetoken.googleapis.com",
           "https://clubflow.replit.app"
         ],
         frameSrc: [
-          "'self'",
-          "https://accounts.google.com",
-          "https://teamio-1be61.firebaseapp.com"
+          "'self'"
         ],
       },
     },

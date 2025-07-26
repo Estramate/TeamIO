@@ -180,12 +180,33 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
         updateUserSession(user, tokenResponse);
         return next();
       } catch (error) {
-        // Fall through to Firebase auth check
+        // Fall through to email auth check
       }
     }
   }
 
-  // Firebase authentication removed - using only Replit auth
+  // Check email/password session authentication
+  const session = req.session as any;
+  if (session?.user?.id) {
+    try {
+      const { storage } = await import('./storage');
+      const sessionUser = await storage.getUser(session.user.id);
+      if (sessionUser && sessionUser.authProvider === 'email') {
+        // Add user to request for compatibility with existing code
+        (req as any).user = {
+          claims: {
+            sub: sessionUser.id,
+            email: sessionUser.email,
+            name: `${sessionUser.firstName} ${sessionUser.lastName}`
+          }
+        };
+        console.log('✅ Email auth successful for user:', sessionUser.email);
+        return next();
+      }
+    } catch (error) {
+      console.error('Email auth check failed:', error);
+    }
+  }
 
   return res.status(401).json({ message: "Unauthorized" });
 };

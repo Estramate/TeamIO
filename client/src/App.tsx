@@ -57,6 +57,7 @@ function AuthenticatedApp() {
           <Route path="/reports" component={() => <LazyPage component={Reports} />} />
           <Route path="/users" component={() => <LazyPage component={Users} />} />
           <Route path="/settings" component={() => <LazyPage component={Settings} />} />
+          <Route path="/auth-test" component={() => <LazyPage component={lazy(() => import("@/pages/auth-test"))} />} />
           <Route component={NotFound} />
         </Switch>
       </Layout>

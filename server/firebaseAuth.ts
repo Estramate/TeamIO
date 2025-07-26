@@ -81,39 +81,7 @@ export function setupFirebaseAuth(app: Express) {
     });
   });
 
-  // Get current user endpoint (supports both Replit and Firebase auth)
-  app.get("/api/auth/user", async (req, res) => {
-    try {
-      const user = req.user || req.session.user;
-      
-      if (!user || !user.claims) {
-        return res.status(401).json({ message: "Not authenticated" });
-      }
-
-      // Get user from database to include latest info
-      const dbUser = await storage.getUser(user.claims.sub);
-      
-      if (!dbUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({
-        id: dbUser.id,
-        email: dbUser.email,
-        firstName: dbUser.firstName,
-        lastName: dbUser.lastName,
-        profileImageUrl: dbUser.profileImageUrl,
-        authProvider: dbUser.authProvider,
-        hasCompletedOnboarding: dbUser.hasCompletedOnboarding,
-        preferredLanguage: dbUser.preferredLanguage,
-        lastLoginAt: dbUser.lastLoginAt,
-      });
-
-    } catch (error) {
-      logger.error('Get user error:', error);
-      res.status(500).json({ message: "Failed to get user" });
-    }
-  });
+  // Firebase auth user endpoint removed - using unified endpoint in routes.ts
 
   logger.info('Firebase authentication routes configured');
 }

@@ -35,26 +35,12 @@ export function SocialLoginButtons({
 
   const handleGoogleSignIn = async () => {
     try {
-      // Use redirect instead of popup for better compatibility
-      if (window.innerWidth < 768) {
-        // Mobile: always use redirect
-        await signInWithGoogleRedirectMethod();
-      } else {
-        // Desktop: try popup first, fallback to redirect
-        try {
-          await signInWithGooglePopup();
-        } catch (popupError: any) {
-          if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
-            console.log('Popup blocked or closed, trying redirect...');
-            await signInWithGoogleRedirectMethod();
-          } else {
-            throw popupError;
-          }
-        }
-      }
+      // Always use popup for simplicity - no fallback complexity
+      await signInWithGooglePopup();
       onSuccess?.();
     } catch (error) {
       // Error handling is done in the hook
+      console.error('Google sign-in button error:', error);
     }
   };
 

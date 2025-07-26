@@ -88,6 +88,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastLoginAt: new Date(),
       };
       
+      console.log('=== FIREBASE AUTH DEBUG ===');
+      console.log('Original userData:', userData);
+      console.log('Processed userDataToInsert:', userDataToInsert);
+      
       console.log('User data to insert:', userDataToInsert);
       
       // Upsert Firebase user to database with provider info
@@ -214,20 +218,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Auth routes (supports both Replit and Firebase auth)
-  app.get('/api/auth/user', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
-    const userId = req.user.claims.sub;
-    if (!userId) {
-      throw new AuthorizationError('User ID not found in token');
+  app.get('/api/auth/user', async (req: any, res: any) => {
+    try {
+      console.log('=== GET /api/auth/user DEBUG ===');
+      console.log('Session exists:', !!req.session);
+      console.log('Is authenticated (Replit):', req.isAuthenticated?.());
+      console.log('User object:', !!req.user);
+      console.log('Cookies:', Object.keys(req.cookies || {}));
+      
+      // Try Replit authentication first
+      if (req.isAuthenticated && req.isAuthenticated() && req.user && req.user.claims) {
+        const userId = req.user.claims.sub;
+        console.log('Using Replit auth, user ID:', userId);
+        const user = await storage.getUser(userId);
+        if (user) {
+          return res.json(user);
+        }
+      }
+
+      // Try Firebase authentication
+      const firebaseAuthCookie = req.cookies['firebase-auth'];
+      if (firebaseAuthCookie) {
+        console.log('Found Firebase auth cookie, decoding...');
+        try {
+          const decoded = JSON.parse(Buffer.from(firebaseAuthCookie, 'base64').toString());
+          console.log('Decoded Firebase token:', { sub: decoded.sub, email: decoded.email, exp: decoded.exp });
+          
+          if (decoded.exp && Date.now() < decoded.exp) {
+            const firebaseUserId = decoded.sub;
+            console.log('Looking up Firebase user:', firebaseUserId);
+            const user = await storage.getUser(firebaseUserId);
+            if (user) {
+              console.log('Firebase user found in DB:', { id: user.id, email: user.email });
+              return res.json(user);
+            } else {
+              console.log('Firebase user not found in database');
+            }
+          } else {
+            console.log('Firebase token expired');
+          }
+        } catch (cookieError) {
+          console.error('Firebase cookie parsing error:', cookieError);
+        }
+      } else {
+        console.log('No Firebase auth cookie found');
+      }
+
+      console.log('No valid authentication found');
+      res.status(401).json({ message: "Not authenticated" });
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
-    
-    const user = await storage.getUser(userId);
-    if (!user) {
-      throw new NotFoundError('User not found');
-    }
-    
-    logger.info('User data retrieved', { userId, requestId: req.id });
-    res.json(user);
-  }));
+  });
 
   // User permission routes
   app.get('/api/clubs/:clubId/user-membership', isAuthenticated, asyncHandler(async (req: any, res: any) => {

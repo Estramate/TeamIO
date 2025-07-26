@@ -33,64 +33,14 @@ export function useFirebaseAuth() {
   });
   const { toast } = useToast();
 
-  // Listen to Firebase auth state changes
+  // Simplified auth state management - no automatic backend sync
   useEffect(() => {
     const unsubscribe = onAuthStateChange(async (user) => {
-      try {
-        if (user) {
-          // User signed in, send to backend
-          const userData = extractUserData(user);
-          console.log('Sending Firebase user data to backend:', userData);
-          
-          const response = await fetch('/api/auth/firebase', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ userData }),
-            credentials: 'include',
-          });
-          
-          if (response.ok) {
-            const result = await response.json();
-            console.log('Firebase backend response:', result);
-            
-            setAuthState({ user, loading: false, error: null });
-            toast({
-              title: "Erfolgreich angemeldet",
-              description: `Willkommen zurück, ${user.displayName || user.email}!`,
-            });
-            
-            // Force reload of the app to pick up authentication
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
-          } else {
-            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-            console.error('Firebase backend error:', response.status, errorData);
-            
-            setAuthState({ user: null, loading: false, error: `Backend-Fehler: ${errorData.error || 'Unbekannt'}` });
-            toast({
-              title: "Anmeldung fehlgeschlagen",
-              description: `Backend-Fehler: ${errorData.error || 'Synchronisation fehlgeschlagen'}`,
-              variant: "destructive",
-            });
-          }
-        } else {
-          // User signed out - don't immediately set state to prevent loops
-          setTimeout(() => {
-            setAuthState({ user: null, loading: false, error: null });
-          }, 100);
-        }
-      } catch (error) {
-        console.error('Auth state change error:', error);
-        setAuthState({ user: null, loading: false, error: 'Anmeldung fehlgeschlagen' });
-        toast({
-          title: "Anmeldung fehlgeschlagen",
-          description: "Backend-Synchronisation fehlgeschlagen. Bitte versuchen Sie es erneut.",
-          variant: "destructive",
-        });
+      if (user) {
+        console.log('Firebase user authenticated:', { uid: user.uid, email: user.email });
+        setAuthState({ user, loading: false, error: null });
+      } else {
+        setAuthState({ user: null, loading: false, error: null });
       }
     });
 
@@ -98,19 +48,62 @@ export function useFirebaseAuth() {
     handleAuthRedirect().catch(console.error);
 
     return () => unsubscribe();
-  }, [toast]);
+  }, []);
 
-  // Google sign-in with popup
+  // Simplified Google sign-in with immediate backend sync
   const signInWithGooglePopup = async () => {
     try {
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      await signInWithGoogle();
-      // Auth state change will handle the rest
+      
+      // Perform Firebase authentication
+      const userCredential = await signInWithGoogle();
+      const user = userCredential?.user;
+      
+      if (!user) {
+        throw new Error('No user returned from Firebase');
+      }
+      
+      console.log('Firebase authentication successful:', { uid: user.uid, email: user.email });
+      
+      // Immediately sync with backend
+      const userData = extractUserData(user);
+      const response = await fetch('/api/auth/firebase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userData }),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Backend sync failed' }));
+        throw new Error(`Backend sync failed: ${errorData.error}`);
+      }
+      
+      const result = await response.json();
+      console.log('Backend sync successful:', result);
+      
+      setAuthState({ user, loading: false, error: null });
+      toast({
+        title: "Erfolgreich angemeldet",
+        description: `Willkommen, ${user.displayName || user.email}!`,
+      });
+      
+      // Reload page to pick up new authentication state
+      setTimeout(() => window.location.reload(), 1000);
+      
     } catch (error: any) {
       console.error('Google sign-in error:', error);
+      
+      // Sign out from Firebase if backend sync failed
+      try {
+        await signOut();
+      } catch (signOutError) {
+        console.error('Sign out error:', signOutError);
+      }
+      
       const errorMessage = error?.code === 'auth/popup-closed-by-user' 
         ? 'Anmeldung wurde abgebrochen'
-        : 'Google-Anmeldung fehlgeschlagen';
+        : `Anmeldung fehlgeschlagen: ${error.message || 'Unbekannter Fehler'}`;
       
       setAuthState(prev => ({ ...prev, loading: false, error: errorMessage }));
       toast({

@@ -1,0 +1,95 @@
+✅ KLUBAUSWAHL PROBLEM BEHOBEN!
+
+**PROBLEM:**
+- User mit inaktiver Mitgliedschaft konnte Verein im Dropdown auswählen
+- Club Selection zeigte alle Mitgliedschaften (aktiv + inaktiv)
+- Führte zu Verwirrung, da inaktive User Dashboard erreichen konnten
+
+**LÖSUNG IMPLEMENTIERT:**
+
+### 1. **API-Route /api/clubs geändert:**
+
+**VORHER:**
+```javascript
+const userClubs = await storage.getUserClubs(userId);
+// Alle Mitgliedschaften zurückgeben
+```
+
+**NACHHER:**
+```javascript 
+const userClubs = await storage.getUserClubs(userId);
+const activeClubs = userClubs.filter(membership => membership.status === 'active');
+// Nur aktive Mitgliedschaften zurückgeben
+```
+
+### 2. **Filter-Logik:**
+
+```javascript
+// Filtert explizit nach status='active'
+const activeClubs = userClubs.filter(membership => membership.status === 'active');
+
+// Club-Daten nur für aktive Mitgliedschaften laden
+const clubs = await Promise.all(
+  activeClubs.map(async (membership) => {
+    const club = await storage.getClub(membership.clubId);
+    return { ...club, role: membership.role, status: membership.status };
+  })
+);
+```
+
+### 3. **Auswirkungen:**
+
+**Für inaktive User:**
+- ✅ Keine Vereine im Club-Dropdown sichtbar
+- ✅ Bleiben im OnboardingWizard ohne Auswahlmöglichkeit
+- ✅ Müssen warten bis Admin genehmigt
+
+**Für aktive User:**
+- ✅ Sehen nur ihre genehmigten Vereine
+- ✅ Können normal zwischen Vereinen wechseln
+- ✅ Dashboard-Zugriff wie gewohnt
+
+### 4. **Database-Konsistenz:**
+
+**Inactive Membership:**
+```sql
+SELECT * FROM club_memberships WHERE status='inactive'
+-- Diese erscheinen NICHT in /api/clubs
+```
+
+**Active Membership:**
+```sql  
+SELECT * FROM club_memberships WHERE status='active'
+-- Diese erscheinen in /api/clubs für Auswahl
+```
+
+### 5. **UI-Verhalten:**
+
+**Scenario A - Inaktiver User:**
+```
+Login → OnboardingWizard → Leere Club-Liste → "Bitte warten auf Genehmigung"
+```
+
+**Scenario B - Aktiver User:**
+```
+Login → Auto-Select aktiver Verein → Dashboard
+```
+
+**Scenario C - Multi-Club aktiver User:**
+```
+Login → Club-Auswahl nur aktive → Dashboard
+```
+
+### 6. **Logging verbessert:**
+
+```javascript
+logger.info('User active clubs retrieved', { 
+  userId, 
+  count: validClubs.length, // Nur aktive gezählt
+  requestId: req.id 
+});
+```
+
+**STATUS: 🎯 PROBLEM GELÖST!**
+
+Die Club-Auswahl zeigt jetzt nur noch aktive Mitgliedschaften. Inaktive User können keine Vereine auswählen und müssen auf Admin-Genehmigung warten.

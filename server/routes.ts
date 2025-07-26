@@ -341,16 +341,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(allClubs);
   }));
 
-  // Club routes (authenticated - returns user's clubs with membership info)
+  // Club routes (authenticated - returns user's ACTIVE clubs only for selection)
   app.get('/api/clubs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.claims.sub;
     if (!userId) {
       throw new AuthorizationError('User ID not found in token');
     }
     
+    // Get user's club memberships - filter for ACTIVE status only
     const userClubs = await storage.getUserClubs(userId);
+    const activeClubs = userClubs.filter(membership => membership.status === 'active');
+    
     const clubs = await Promise.all(
-      userClubs.map(async (membership) => {
+      activeClubs.map(async (membership) => {
         const club = await storage.getClub(membership.clubId);
         if (!club) {
           logger.warn('Club not found for membership', { clubId: membership.clubId, userId });
@@ -361,7 +364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     );
     
     const validClubs = clubs.filter(club => club !== null);
-    logger.info('User clubs retrieved', { userId, count: validClubs.length, requestId: req.id });
+    logger.info('User active clubs retrieved', { userId, count: validClubs.length, requestId: req.id });
     res.json(validClubs);
   }));
 

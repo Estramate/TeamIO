@@ -54,7 +54,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { apiRequest } from '@/lib/queryClient';
 
 // Simple loading component
 const LoadingSpinner = ({ size = 'md', className = '' }: { size?: 'sm' | 'md' | 'lg', className?: string }) => {
@@ -624,7 +623,7 @@ export default function Users() {
 
 // Activity Log Component
 function ActivityLogTab({ clubId }: { clubId: number }) {
-  const { data: logs, isLoading, error } = useQuery({
+  const { data: logs = [], isLoading, error } = useQuery<any[]>({
     queryKey: [`/api/clubs/${clubId}/activity-logs`],
     enabled: !!clubId,
     retry: false,
@@ -757,10 +756,7 @@ function InviteUserForm({ clubId }: { clubId: number }) {
 
   const inviteMutation = useMutation({
     mutationFn: async (data: InvitationForm) => {
-      return await apiRequest(`/api/clubs/${clubId}/invite`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return await apiRequest('POST', `/api/clubs/${clubId}/invite`, data);
     },
     onSuccess: () => {
       toastService.success('Einladung erfolgreich versendet!');
@@ -859,136 +855,3 @@ function InviteUserForm({ clubId }: { clubId: number }) {
   );
 }
 
-// Activity Log Component
-function ActivityLogTab({ clubId }: { clubId: number }) {
-  const { data: logs, isLoading, error } = useQuery({
-    queryKey: [`/api/clubs/${clubId}/activity-logs`],
-    enabled: !!clubId,
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white dark:bg-gray-950 rounded-lg border shadow-sm p-6">
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">Fehler beim Laden der Aktivitätslogs</p>
-            <p className="text-gray-600 dark:text-gray-400">
-              {error instanceof Error ? error.message : 'Unbekannter Fehler'}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('de-DE', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getActionIcon = (action: string) => {
-    switch (action) {
-      case 'user_invited':
-        return <Mail className="h-4 w-4 text-blue-500" />;
-      case 'user_approved':
-        return <UserCheck className="h-4 w-4 text-green-500" />;
-      case 'user_rejected':
-        return <UserX className="h-4 w-4 text-red-500" />;
-      case 'role_changed':
-        return <Shield className="h-4 w-4 text-orange-500" />;
-      default:
-        return <Activity className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  return (
-    <div className="bg-white dark:bg-gray-950 rounded-lg border shadow-sm p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-green-500/10 rounded-lg">
-          <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Aktivitätsprotokoll
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Chronologische Übersicht aller Benutzeraktivitäten und Systemereignisse.
-          </p>
-        </div>
-      </div>
-
-      {!logs || logs.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full w-fit mx-auto mb-4">
-            <Clock className="h-8 w-8 text-gray-400" />
-          </div>
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            Keine Aktivitätslogs vorhanden
-          </p>
-          <p className="text-gray-600 dark:text-gray-400">
-            Aktivitäten werden hier angezeigt, sobald Benutzeraktionen stattfinden.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {logs.map((log: any) => (
-            <div
-              key={log.id}
-              className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              <div className="flex-shrink-0 mt-1 p-1.5 bg-white dark:bg-gray-900 rounded-full border">
-                {getActionIcon(log.action)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-                    {log.description}
-                  </p>
-                  <time className="text-xs text-gray-500 dark:text-gray-400 ml-4 flex-shrink-0">
-                    {formatDate(log.createdAt)}
-                  </time>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                  <User className="h-3 w-3" />
-                  <span>
-                    {log.userFirstName} {log.userLastName}
-                    {log.userEmail && ` (${log.userEmail})`}
-                  </span>
-                  {log.ipAddress && (
-                    <span className="ml-2 px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">
-                      IP: {log.ipAddress}
-                    </span>
-                  )}
-                </div>
-                {log.metadata && Object.keys(log.metadata).length > 0 && (
-                  <details className="mt-2">
-                    <summary className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">
-                      Details anzeigen
-                    </summary>
-                    <pre className="text-xs text-gray-600 dark:text-gray-400 mt-1 p-2 bg-gray-100 dark:bg-gray-700 rounded overflow-x-auto">
-                      {JSON.stringify(log.metadata, null, 2)}
-                    </pre>
-                  </details>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}

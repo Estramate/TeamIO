@@ -42,7 +42,8 @@ import {
   AlertCircle,
   LayoutGrid,
   List,
-  MoreHorizontal
+  MoreHorizontal,
+  Calendar
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -103,11 +104,7 @@ export default function Users() {
     retry: false,
   });
 
-  // Fetch team memberships for detailed member data
-  const { data: teamMemberships = [] } = useQuery<any[]>({
-    queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'],
-    enabled: !!selectedClub?.id,
-  });
+
 
   // Update member role mutation
   const updateRoleMutation = useMutation({
@@ -209,22 +206,7 @@ export default function Users() {
     },
   });
 
-  // Helper function to get teams for a member by matching member name with team memberships
-  const getMemberTeams = (member: any) => {
-    const memberFullName = `${member.firstName} ${member.lastName}`.toLowerCase();
-    return teamMemberships.filter((tm: any) => 
-      `${tm.memberFirstName} ${tm.memberLastName}`.toLowerCase() === memberFullName
-    );
-  };
 
-  // Helper function to get member phone from team memberships data
-  const getMemberPhone = (member: any) => {
-    const memberFullName = `${member.firstName} ${member.lastName}`.toLowerCase();
-    const teamMembership = teamMemberships.find((tm: any) => 
-      `${tm.memberFirstName} ${tm.memberLastName}`.toLowerCase() === memberFullName
-    );
-    return teamMembership?.memberPhone || null;
-  };
 
   // Filter members based on search and filters
   const filteredMembers = (members as any[] || []).filter((member: any) => {
@@ -465,51 +447,35 @@ export default function Users() {
                         {getStatusBadge(member.status)}
                       </div>
                       
-                      {/* Phone */}
+                      {/* Email */}
                       <div className="flex items-start gap-2 text-sm">
-                        <div className="w-4 h-4 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mt-0.5">
-                          <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                        </div>
+                        <Mail className="w-4 h-4 text-blue-600 mt-0.5" />
                         <div>
-                          <div className="text-muted-foreground text-xs">Telefon</div>
-                          <div className="font-medium">
-                            {getMemberPhone(member) || 'Keine Telefonnummer'}
+                          <div className="text-muted-foreground text-xs">E-Mail</div>
+                          <div className="font-medium text-xs truncate">
+                            {member.email}
                           </div>
                         </div>
                       </div>
                       
-                      {/* Teams */}
+                      {/* Role */}
                       <div className="flex items-start gap-2 text-sm">
-                        <UsersIcon className="w-4 h-4 text-blue-600 mt-0.5" />
+                        <Shield className="w-4 h-4 text-purple-600 mt-0.5" />
                         <div>
-                          <div className="text-muted-foreground text-xs">Teams</div>
-                          <div className="flex gap-1 flex-wrap mt-1">
-                            {(() => {
-                              const memberTeams = getMemberTeams(member);
-                              if (memberTeams.length === 0) {
-                                return <span className="text-xs text-muted-foreground">Kein Team zugewiesen</span>;
-                              }
-                              
-                              const displayTeams = memberTeams.slice(0, 2);
-                              const remainingCount = memberTeams.length - 2;
-                              
-                              return (
-                                <>
-                                  {displayTeams.map((team: any, index: number) => (
-                                    <Badge 
-                                      key={`${team.teamId}-${index}`}
-                                      variant="outline" 
-                                      className="text-xs px-2 py-0 h-5 border-blue-200 text-blue-700"
-                                    >
-                                      {team.teamAgeGroup ? `${team.teamAgeGroup}-${team.teamName.split(' ').pop()}` : team.teamName}
-                                    </Badge>
-                                  ))}
-                                  {remainingCount > 0 && (
-                                    <span className="text-xs text-muted-foreground">+{remainingCount}</span>
-                                  )}
-                                </>
-                              );
-                            })()}
+                          <div className="text-muted-foreground text-xs">Rolle</div>
+                          <div className="mt-1">
+                            {getRoleBadge(member.role)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Join Date */}
+                      <div className="flex items-start gap-2 text-sm">
+                        <Calendar className="w-4 h-4 text-gray-600 mt-0.5" />
+                        <div>
+                          <div className="text-muted-foreground text-xs">Beigetreten</div>
+                          <div className="font-medium text-xs">
+                            {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('de-DE') : 'Nicht verfügbar'}
                           </div>
                         </div>
                       </div>

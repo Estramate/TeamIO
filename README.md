@@ -1,495 +1,259 @@
-# ClubFlow - Professional Club Management System
+# ClubFlow - Professionelle Vereinsmanagement-Plattform
 
-ClubFlow is a comprehensive, enterprise-grade web-based platform designed for sports clubs and organizations. Built with cutting-edge technologies and optimized for performance, accessibility, and scalability, it provides complete management solutions for members, teams, facilities, bookings, finances, and communication systems.
+![ClubFlow Logo](https://img.shields.io/badge/ClubFlow-Vereinsmanagement-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Enterprise%20Ready-green?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-2.0-orange?style=for-the-badge)
 
-## ✨ Key Features
+## 🏆 Überblick
 
-### 🏆 Core Management
-- **Member Management**: Complete member profiles with advanced search, filtering, and role-based permissions
-- **Team Organization**: Team creation, player assignments, and categorization by age groups and categories
-- **Player Database**: Detailed player profiles with contract management, statistics, and multi-team assignments
-- **Facility Booking**: Real-time availability checking with recurring bookings and conflict prevention
-- **Financial Management**: Comprehensive income/expense tracking, membership fees, and automated reporting
+ClubFlow ist eine moderne, webbasierte Plattform für die umfassende Verwaltung von Sportvereinen und Organisationen. Das System bietet komplette Management-Lösungen für Mitglieder, Teams, Anlagen, Buchungen, Finanzen und Kommunikation mit Multi-Vereins-Unterstützung und rollenbasierter Zugriffskontrolle.
 
-### 🚀 Advanced Functionality
-- **Dynamic Dashboard**: Real-time statistics, activity feeds, and data visualization with interactive charts
-- **Calendar System**: Drag-and-drop event scheduling with multiple view modes (day, week, month)
-- **Automated Reporting**: Professional PDF report generation for finances, members, and team statistics
-- **Communication Hub**: Centralized communication tracking and notification system
-- **Multi-Club Support**: Users can manage multiple clubs with granular role-based access control
+### ✨ Hauptfunktionen
 
-### 💡 User Experience & Performance
-- **Enterprise Performance**: Virtualized lists for large datasets, lazy loading, and optimized database queries
-- **Full Accessibility**: WCAG 2.1 AA compliant with keyboard navigation, screen reader support, and focus management
-- **Professional API**: Complete OpenAPI/Swagger documentation available at `/api-docs` with interactive testing
-- **Comprehensive Testing**: Full test coverage with Vitest, unit tests, integration tests, and accessibility testing
-- **Performance Monitoring**: Real-time Web Vitals tracking, error reporting, and performance analytics
-- **Responsive Design**: Mobile-first design optimized for desktop, tablet, and mobile devices
-- **Modern UI**: Clean, professional interface built with shadcn/ui and Tailwind CSS
-- **Real-time Updates**: Live data synchronization across all components with intelligent cache management
+- **🔐 Multi-Provider-Authentifizierung** - Replit & Google OAuth Integration
+- **👥 Mitgliederverwaltung** - Genehmigungssystem für neue Mitglieder
+- **🏅 Team-Management** - Vollständige Team- und Spielerverwaltung
+- **🏟️ Anlagenbuchung** - Buchungssystem für Vereinsanlagen
+- **💰 Finanzmanagement** - Budgetverfolgung und Beitragsverwaltung
+- **📧 Kommunikation** - Nachrichten, Ankündigungen und Benachrichtigungen
+- **📊 Activity-Tracking** - Vollständiges Aktivitätsprotokoll aller Benutzeraktionen
+- **📱 Responsive Design** - Optimiert für Desktop, Tablet und Mobile
 
-## 🛠️ Tech Stack
+## 🚀 Aktuelle Version - Enterprise Ready+
 
-### Frontend Architecture
-- **React 18** with TypeScript for type-safe, component-based development
-- **Tailwind CSS** for utility-first, responsive styling
-- **shadcn/ui** component library with Radix UI primitives for accessibility
-- **Wouter** for lightweight, efficient client-side routing
-- **TanStack Query** for sophisticated server state management and caching
-- **TanStack Virtual** for efficient rendering of large lists
-- **Zustand** for predictable client-side state management
-- **Vite** for lightning-fast development and optimized production builds
+### Neueste Updates (Juli 26, 2025)
 
-### Backend Infrastructure
-- **Express.js** with TypeScript for robust API development
-- **PostgreSQL** with Neon serverless hosting for scalable data storage
-- **Drizzle ORM** for type-safe database operations and migrations
-- **OpenID Connect** authentication with session management
-- **Express Sessions** with PostgreSQL storage for secure user sessions
-- **Winston** for structured logging and monitoring
-- **Helmet** for security headers and CSRF protection
+#### ✅ Komponenten-Standardisierung Abgeschlossen
+- **PascalCase-Namenskonvention** für alle Komponentendateien
+- **Import-Optimierung** - Alle @shared/schema zu @shared/schemas/core
+- **Datei-Struktur bereinigt** für bessere Code-Qualität
 
-### Development & Quality Assurance
-- **TypeScript** strict mode for comprehensive type checking
-- **ESLint** for code quality and consistency
-- **Vitest** for unit and integration testing
-- **@testing-library/react** for component testing
-- **Drizzle Kit** for database schema migrations
-- **Swagger/OpenAPI** for complete API documentation
-- **Hot Module Replacement** for efficient development workflow
+#### ✅ Activity-Logging-System Implementiert
+- **Automatisches Protokollieren** aller kritischen Benutzeraktionen:
+  - Mitgliedschaftsanträge, Genehmigungen, Ablehnungen
+  - Rollenänderungen und Status-Updates
+  - E-Mail-Einladungen und Administratoraktionen
+- **Datenbank-Integration** mit vollständiger Metadaten-Erfassung
+- **Admin-Dashboard** für Aktivitätseinsicht
 
-## 📋 Prerequisites
+#### ✅ CSS-Layout-Optimierungen
+- **Team-Status-Widget** repariert - keine Container-Überschreitungen mehr
+- **Responsive Grid-Layouts** für alle Dashboard-Komponenten
+- **Text-Truncation** für lange Inhalte implementiert
 
-- **Node.js 18+** - Latest LTS version recommended
-- **PostgreSQL Database** - Neon serverless recommended for production
-- **OpenID Connect Provider** - For secure user authentication
+### Vollständig Implementierte Features
 
-## 🚀 Quick Start
+#### 🔒 Authentifizierung & Sicherheit
+- Multi-Provider OAuth (Replit + Google)
+- Sichere Session-Verwaltung mit PostgreSQL
+- Rollenbasierte Zugriffskontrolle
+- Activity-Logging für Compliance
 
-### 1. Installation
+#### 👤 Benutzer- & Mitgliederverwaltung
+- Genehmigungsworkflow für neue Mitglieder
+- E-Mail-Einladungssystem mit SendGrid
+- Automatische Rollenzuweisung
+- Vollständiges Aktivitätsprotokoll
+
+#### 🏢 Multi-Vereins-Architektur
+- Beliebig viele Vereine pro Benutzer
+- Vereinsspezifische Berechtigungen
+- Club-Branding und Anpassung
+- Isolierte Datenverwaltung
+
+#### 📊 Dashboard & Reporting
+- Echtzeit-Statistiken und Metriken
+- Aktivitätsverfolgung
+- Team-Status-Übersicht
+- Finanzielle Zusammenfassungen
+
+## 🛠️ Technische Architektur
+
+### Frontend-Stack
+- **React 18** mit TypeScript für typsichere Entwicklung
+- **Vite** für schnelle Entwicklung und optimierte Production-Builds
+- **Tailwind CSS** + shadcn/ui für konsistente, zugängliche UI
+- **Wouter** für Client-Side-Routing
+- **TanStack Query** für Server-State-Management
+- **Zustand** für Client-State-Management
+
+### Backend-Stack
+- **Express.js** mit TypeScript für REST API
+- **Drizzle ORM** mit PostgreSQL für typsichere Datenbankoperationen
+- **Neon Database** (serverless PostgreSQL) für Cloud-Hosting
+- **OpenID Connect** Authentifizierung mit Express Sessions
+- **Winston** für strukturiertes Logging
+
+### Datenbank-Schema (Modularisiert)
+```
+shared/schemas/
+├── core.ts        # Users, Clubs, Sessions, Activity Logs
+├── members.ts     # Memberships, Team Assignments
+├── teams.ts       # Teams, Players, Statistics
+├── facilities.ts  # Facilities, Bookings
+├── finances.ts    # Budgets, Fees, Transactions
+└── communication.ts # Messages, Announcements, Notifications
+```
+
+### Entwicklungstools
+- **TypeScript** im Strict-Modus
+- **ESLint v9** für Code-Qualität
+- **Prettier** für einheitliche Formatierung
+- **Drizzle Kit** für Datenbankmigrationen
+- **Hot Module Replacement** für effizienten Entwicklungsworkflow
+
+## 🚦 Installation & Setup
+
+### Voraussetzungen
+- Node.js 18+ 
+- PostgreSQL-Datenbank (Neon empfohlen)
+- Replit-Account für Authentifizierung
+
+### Schnellstart
 ```bash
-git clone https://github.com/yourusername/clubflow.git
+# Repository klonen
+git clone <repository-url>
 cd clubflow
+
+# Dependencies installieren
 npm install
-```
 
-### 2. Environment Configuration
-Copy the environment template and configure your settings:
-```bash
+# Umgebungsvariablen konfigurieren
 cp .env.example .env
-```
+# Bearbeiten Sie .env mit Ihrigen Credentials
 
-Edit `.env` with your configuration:
-```env
-# Database Configuration
-DATABASE_URL=postgresql://username:password@host:port/database
-
-# Authentication
-ISSUER_URL=https://your-auth-provider.com
-SESSION_SECRET=your-very-secure-session-secret-key-here
-
-# Application Settings
-NODE_ENV=development
-PORT=5000
-ALLOWED_DOMAINS=localhost:3000,localhost:5000
-
-# Optional: Security & Performance
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-REQUEST_TIMEOUT_MS=30000
-MAX_REQUEST_SIZE_BYTES=10485760
-```
-
-### 3. Database Setup
-```bash
-# Push database schema
+# Datenbank-Schema anwenden
 npm run db:push
 
-# Optional: Open database studio
-npm run db:studio
-```
-
-### 4. Start Development Server
-```bash
+# Entwicklungsserver starten
 npm run dev
 ```
 
-The application will be available at `http://localhost:5000`
-
-## 📚 API Documentation
-
-ClubFlow includes comprehensive API documentation powered by Swagger/OpenAPI:
-
-- **Interactive Documentation**: Visit `/api-docs` when the server is running
-- **OpenAPI Spec**: Available at `/api-docs.json`
-- **Authentication**: All endpoints use session-based authentication with CSRF protection
-
-## 🏗️ Project Architecture
-
-### Database Schema (Modularized)
-The database schema has been modularized into domain-specific files for better maintainability:
-
-```
-shared/schemas/
-├── index.ts          # Central exports and enhanced relations
-├── core.ts           # Users, Clubs, Sessions, Club Memberships
-├── members.ts        # Members, Team Memberships
-├── teams.ts          # Teams, Players, Player Assignments, Statistics
-├── facilities.ts     # Facilities, Bookings, Events
-└── finances.ts       # Finances, Member Fees, Training Fees
-```
-
-### Code Quality & Standards
-- **ESLint v9**: Modern configuration with TypeScript and React support
-- **Prettier**: Consistent code formatting across the entire codebase
-- **TypeScript**: Strict mode with comprehensive type checking
-- **Accessibility**: WCAG 2.1 AA compliance with custom hooks and components
-
-### Security Features
-- **Enhanced Logging**: Automatic filtering of sensitive data (passwords, tokens, API keys)
-- **Request Security**: Helmet headers, rate limiting, CORS protection
-- **Session Management**: Secure session storage with PostgreSQL
-- **CSRF Protection**: Built-in protection against cross-site request forgery
-
-### Development Tools
-```bash
-# Code Quality
-npm run lint          # Run ESLint checks
-npm run lint:fix      # Fix ESLint issues automatically
-npm run format        # Format code with Prettier
-npm run format:check  # Check code formatting
-
-# Testing
-npm run test          # Run all tests
-npm run test:ui       # Run tests with UI
-npm run test:coverage # Generate test coverage report
-
-# Database
-npm run db:push       # Push schema changes to database
-npm run check         # TypeScript type checking
-```
-
-## 🎯 Recent Improvements (Latest Session)
-
-### ✅ Database Architecture Enhancement
-- Modularized large schema.ts (676 lines) into 5 domain-specific files
-- Improved maintainability and reduced complexity per file
-- Enhanced relations and cross-domain references
-
-### ✅ Code Quality & Tooling
-- ESLint v9 configuration with TypeScript and React support
-- Prettier formatting with consistent style guidelines
-- Enhanced environment configuration with comprehensive .env.example
-- Professional CONTRIBUTING.md with development guidelines
-
-### ✅ Security & Logging Enhancement
-- Enhanced logging security with sensitive data filtering
-- Automatic redaction of passwords, tokens, API keys from logs
-- Pattern-based detection of sensitive information
-- Improved request/response logging with privacy protection
-
-### ✅ Accessibility & WCAG 2.1 AA Compliance
-- Comprehensive accessibility hooks: `useFocusTrap`, `useScreenReaderAnnouncement`, `useKeyboardNavigation`
-- `AccessibleButton` component with loading states and confirmations
-- Accessibility testing suite with WCAG compliance tests
-- Focus management, keyboard navigation, and screen reader support
-
-## 🔧 Configuration
-
-### Environment Variables
-All configuration is managed through environment variables. See `.env.example` for a complete template:
-
+### Erforderliche Umgebungsvariablen
 ```env
-# Core Configuration
-DATABASE_URL=postgresql://username:password@host:port/database
-ISSUER_URL=https://your-auth-provider.com
-SESSION_SECRET=your-very-secure-session-secret-key-here
-NODE_ENV=development
-PORT=5000
+# Datenbank
+DATABASE_URL=postgresql://...
 
-# Security Settings
-ALLOWED_DOMAINS=localhost:3000,localhost:5000
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-REQUEST_TIMEOUT_MS=30000
-MAX_REQUEST_SIZE_BYTES=10485760
+# Authentifizierung
+SESSION_SECRET=your-session-secret
+ISSUER_URL=https://replit.com/oidc
+REPL_ID=your-repl-id
+REPLIT_DOMAINS=your-domain.replit.app
 
-# Logging
-LOG_LEVEL=info
+# Firebase (optional)
+FIREBASE_API_KEY=your-api-key
+FIREBASE_PROJECT_ID=your-project-id
+# ... weitere Firebase-Konfiguration
+
+# E-Mail (optional)
+SENDGRID_API_KEY=your-sendgrid-key
 ```
 
-### Development Settings
-- **Hot Module Replacement**: Automatic reload during development
-- **TypeScript**: Strict mode with comprehensive error checking
-- **Database**: Automatic schema synchronization via Drizzle
-- **Testing**: Comprehensive test suite with coverage reporting
-
-## 🧪 Testing
-
-ClubFlow includes comprehensive testing infrastructure:
-
-### Test Types
-- **Unit Tests**: Individual component and function testing
-- **Integration Tests**: API endpoint and database operation testing
-- **Accessibility Tests**: WCAG 2.1 AA compliance verification
-- **Component Tests**: React component behavior and rendering
-
-### Running Tests
-```bash
-# Run all tests
-npm run test
-
-# Run tests with UI
-npm run test:ui
-
-# Generate coverage report
-npm run test:coverage
-
-# Run specific test file
-npm run test src/components/ui/accessible-button.test.tsx
-```
-
-## 📈 Performance Features
-
-### Frontend Optimizations
-- **Code Splitting**: Automatic route-based code splitting
-- **Lazy Loading**: Components loaded on demand
-- **Virtualized Lists**: Efficient rendering of large datasets with TanStack Virtual
-- **Optimized Queries**: Smart caching and background refetching with TanStack Query
-
-### Backend Optimizations
-- **Database Indexing**: Optimized queries with proper database indices
-- **Request Timeout**: Configurable timeouts to prevent hanging requests
-- **Rate Limiting**: Protection against abuse with configurable limits
-- **Response Compression**: Automatic compression for better performance
-
-## 🔒 Security
-
-### Authentication & Authorization
-- **OpenID Connect**: Industry-standard authentication protocol
-- **Session-based Auth**: Secure session management with PostgreSQL storage
-- **Role-based Access**: Granular permissions per club and user role
-- **CSRF Protection**: Built-in protection against cross-site request forgery
-
-### Data Protection
-- **Sensitive Data Filtering**: Automatic removal of sensitive information from logs
-- **Security Headers**: Helmet.js for comprehensive security headers
-- **Input Validation**: Zod schema validation on all inputs
-- **SQL Injection Protection**: Drizzle ORM prevents SQL injection attacks
-
-## 📖 Contributing
-
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
-- Development setup and prerequisites
-- Code style and formatting requirements
-- Testing procedures and standards
-- Pull request process and requirements
-- Security considerations and best practices
-
-## 🚀 Deployment
-
-### Production Build
-```bash
-# Build for production
-npm run build
-
-# Start production server
-npm start
-```
-
-### Environment Setup
-1. Set `NODE_ENV=production`
-2. Configure production database URL
-3. Set secure session secret
-4. Configure allowed domains for CORS
-5. Set up proper logging levels
-
-### Monitoring & Performance
-- API documentation available at `/api-docs`
-- Health check endpoint at `/health`
-- Performance monitoring built-in
-- Structured logging with Winston
-
----
-
-**Enterprise-Ready**: ClubFlow is production-ready with comprehensive testing, security, accessibility compliance, and professional documentation.
-
-### Key API Endpoints
-
-- `GET /api/auth/user` - Get current authenticated user
-- `GET /api/clubs` - List all clubs for current user
-- `GET /api/clubs/{clubId}/members` - Get club members
-- `GET /api/clubs/{clubId}/teams` - Get club teams
-- `GET /api/clubs/{clubId}/bookings` - Get club bookings
-- `GET /api/clubs/{clubId}/facilities` - Get club facilities
-- `GET /api/clubs/{clubId}/dashboard` - Get dashboard statistics
-
-## 🧪 Testing
-
-ClubFlow includes a comprehensive testing suite:
+## 📋 Verfügbare Scripts
 
 ```bash
-# Run all tests
-npm test
-
-# Run tests with UI
-npm run test:ui
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests for CI/CD
-npm run test:ci
+npm run dev          # Entwicklungsserver starten
+npm run build        # Production-Build erstellen
+npm start           # Production-Server starten
+npm run db:push     # Datenbankschema synchronisieren
+npm run db:studio   # Drizzle Studio öffnen
+npm run lint        # Code-Qualitätsprüfung
+npm run format      # Code-Formatierung
 ```
 
-### Test Categories
-- **Unit Tests**: Component and function testing
-- **Integration Tests**: API endpoint testing
-- **Accessibility Tests**: WCAG compliance testing
-- **Performance Tests**: Load time and interaction testing
+## 🏗️ Projektstruktur
 
-## 🏗️ Database Schema
-
-### Core Tables
-- **users**: User authentication and profile data
-- **clubs**: Club information and settings
-- **user_clubs**: User-club memberships with roles
-- **members**: Club member profiles and status
-- **teams**: Team organization and metadata
-- **players**: Player profiles and statistics
-- **team_assignments**: Player-team relationships
-- **facilities**: Club facilities and resources
-- **bookings**: Facility reservations and events
-- **finances**: Financial transactions and reporting
-
-### Optimizations
-- **Database Indices**: Optimized queries for common operations
-- **Foreign Key Constraints**: Data integrity enforcement
-- **Session Storage**: Secure user session management
-- **Query Optimization**: Efficient data fetching patterns
-
-## 🔧 Development
-
-### Project Structure
 ```
 clubflow/
-├── client/src/           # React frontend application
-│   ├── components/       # Reusable UI components
-│   ├── pages/           # Application pages/routes
-│   ├── hooks/           # Custom React hooks
-│   ├── contexts/        # React context providers
-│   ├── lib/             # Utility functions and configs
-│   └── test/            # Test files and utilities
-├── server/              # Express backend application
-│   ├── routes.ts        # API route definitions
-│   ├── storage.ts       # Data access layer
-│   ├── security.ts      # Security middleware
-│   └── logger.ts        # Logging configuration
-├── shared/              # Shared types and schemas
-└── docs/                # Additional documentation
+├── client/src/           # React Frontend
+│   ├── components/       # Wiederverwendbare UI-Komponenten
+│   ├── pages/           # Seiten-Komponenten (PascalCase)
+│   ├── hooks/           # Custom React Hooks
+│   ├── lib/             # Utility-Funktionen
+│   └── contexts/        # React Context Provider
+├── server/              # Express Backend
+│   ├── routes.ts        # API-Endpunkte
+│   ├── storage.ts       # Datenbank-Operationen
+│   ├── auth.ts          # Authentifizierung
+│   └── middleware/      # Express Middleware
+├── shared/              # Geteilte Typen und Schemas
+│   └── schemas/         # Modularisierte Datenbankschemas
+└── docs/               # Dokumentation
 ```
 
-### Available Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run test` - Run test suite
-- `npm run db:push` - Apply database schema changes
-- `npm run db:studio` - Open database management interface
+## 🔧 API-Dokumentation
 
-### Performance Features
-- **Code Splitting**: Lazy loading of page components
-- **Virtual Scrolling**: Efficient handling of large data lists
-- **Query Optimization**: Intelligent caching and background updates
-- **Bundle Optimization**: Tree-shaking and modern build optimization
-- **Performance Monitoring**: Real-time Web Vitals tracking
+Die vollständige API-Dokumentation ist verfügbar unter `/api-docs` wenn der Server läuft.
 
-### Accessibility Features
-- **WCAG 2.1 AA Compliance**: Full accessibility standard compliance
-- **Keyboard Navigation**: Complete keyboard-only operation
-- **Screen Reader Support**: Proper ARIA labels and semantic HTML
-- **Focus Management**: Intelligent focus handling and trap
-- **High Contrast**: Support for high contrast display modes
-- **Responsive Text**: Scalable text for vision accessibility
+### Wichtige Endpunkte
+- `GET /api/auth/user` - Aktuelle Benutzerinformationen
+- `GET /api/clubs` - Benutzer-Vereine (nur aktive)
+- `POST /api/clubs/:id/join` - Vereinsbeitritt beantragen
+- `GET /api/clubs/:id/members` - Vereinsmitglieder
+- `GET /api/clubs/:id/activity-logs` - Aktivitätsprotokoll (Admin)
 
-## 🔒 Security
+## 🎯 Funktionale Highlights
 
-### Authentication & Authorization
-- **OpenID Connect** integration for secure authentication
-- **Session-based** authentication with CSRF protection
-- **Role-based access control** with club-specific permissions
-- **Secure session storage** in PostgreSQL
+### Mitgliedschafts-Genehmigungsworkflow
+1. **Benutzer beantragt** Vereinsmitgliedschaft
+2. **System erstellt** inaktive Mitgliedschaft
+3. **Administrator genehmigt/lehnt ab** über Users-Seite
+4. **Automatisches Logging** aller Aktionen
+5. **E-Mail-Benachrichtigungen** (optional)
 
-### Security Headers
-- **Helmet.js** for security headers
-- **CORS** configuration for cross-origin requests
-- **Rate limiting** for API protection
-- **Request validation** with Zod schemas
-- **SQL injection** prevention through parameterized queries
+### Multi-Club-Management
+- Benutzer können mehreren Vereinen angehören
+- Vereinsspezifische Rollen und Berechtigungen
+- Automatische Club-Auswahl bei einzelner Mitgliedschaft
+- Vereinsisolierte Datenansicht
 
-## 🚀 Deployment
+### Activity-Tracking-System
+- Protokollierung aller kritischen Benutzeraktionen
+- Metadaten-Erfassung (IP, User-Agent, Timestamps)
+- Admin-Dashboard für Compliance-Übersicht
+- Deutsche Lokalisierung aller Log-Nachrichten
 
-### Production Requirements
-- **Node.js 18+** runtime environment
-- **PostgreSQL** database (Neon recommended)
-- **OpenID Connect** provider configuration
-- **HTTPS** certificate for secure connections
+## 🌟 Enterprise-Features
 
-### Environment Variables
-Ensure all required environment variables are configured:
-- Database connection string
-- Authentication provider settings
-- Session secrets and security keys
-- Performance and monitoring settings
+### Sicherheit & Compliance
+- ✅ WCAG 2.1 AA Accessibility-Compliance
+- ✅ Sensitive Daten-Filtering in Logs
+- ✅ Rate-Limiting für API-Endpunkte
+- ✅ SQL-Injection-Schutz durch Drizzle ORM
 
-### Performance Optimization
-- **Database indices** for query optimization
-- **CDN integration** for static asset delivery
-- **Gzip compression** for reduced bandwidth
-- **Caching strategies** for improved response times
+### Performance & Skalierbarkeit
+- ✅ Server-Side Caching mit TanStack Query
+- ✅ Optimistische Updates für bessere UX
+- ✅ Lazy Loading für große Datasets
+- ✅ Virtualisierte Listen für Performance
 
-## 📊 Monitoring & Analytics
+### Entwicklererfahrung
+- ✅ TypeScript Strict Mode
+- ✅ Comprehensive Error Handling
+- ✅ Strukturierte Logging mit Winston
+- ✅ Hot Module Replacement
 
-### Built-in Monitoring
-- **Performance Tracking**: Web Vitals and custom metrics
-- **Error Reporting**: Centralized error logging and reporting
-- **API Analytics**: Request/response monitoring
-- **User Activity**: Session and interaction tracking
+## 🤝 Beiträge
 
-### Integration Ready
-- **External Monitoring**: Ready for Sentry, DataDog, or similar services
-- **Custom Dashboards**: Performance and usage analytics
-- **Alert Systems**: Automated monitoring and notifications
+Detaillierte Entwicklungsrichtlinien finden Sie in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## 🤝 Contributing
+### Code-Standards
+- **TypeScript Strict Mode** für alle neuen Dateien
+- **PascalCase** für Komponentendateien
+- **Deutsche UI-Texte** für Benutzerfreundlichkeit
+- **Comprehensive Testing** für kritische Features
 
-We welcome contributions to ClubFlow! Please read our contributing guidelines and:
+## 📄 Lizenz
 
-1. Fork the repository
-2. Create a feature branch
-3. Write tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
-### Development Guidelines
-- Follow TypeScript strict mode
-- Maintain test coverage above 80%
-- Follow accessibility best practices
-- Document API changes in OpenAPI spec
-- Use semantic commit messages
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Dieses Projekt ist proprietär. Alle Rechte vorbehalten.
 
 ## 🆘 Support
 
-For support and questions:
-- **Documentation**: Check `/api-docs` for API reference
-- **Issues**: Report bugs on GitHub Issues
-- **Discussions**: Join GitHub Discussions for questions
-- **Security**: Report security issues privately
+Bei Fragen oder Problemen:
+1. Überprüfen Sie die API-Dokumentation unter `/api-docs`
+2. Konsultieren Sie die Entwicklungsrichtlinien in `CONTRIBUTING.md`
+3. Überprüfen Sie die Activity-Logs für Debugging-Informationen
 
 ---
 
-**ClubFlow** - Professional club management made simple and powerful. Built with modern web technologies for scalability, performance, and accessibility.
+**Status**: Enterprise-Ready+ ✅ | **Letzte Aktualisierung**: Juli 26, 2025 | **Version**: 2.0

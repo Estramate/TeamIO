@@ -51,7 +51,8 @@ import {
   Globe,
   User,
   Volume2,
-  VolumeX
+  VolumeX,
+  Reply
 } from "lucide-react";
 
 // Form schemas
@@ -149,6 +150,7 @@ export default function Communication() {
   const [subject, setSubject] = useState("");
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>(["all"]);
   const [recipientType, setRecipientType] = useState<"all" | "teams" | "members" | "players">("all");
+  const [replyText, setReplyText] = useState("");
 
   // Forms
   const messageForm = useForm({
@@ -386,11 +388,7 @@ export default function Communication() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => {
-                        setSelectedMessage(message);
-                        setShowNewMessage(true);
-                        messageForm.setValue('subject', `Re: ${message.subject || 'Nachricht'}`);
-                      }}
+                      onClick={() => setSelectedMessage(message)}
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
                       Antworten
@@ -946,9 +944,9 @@ export default function Communication() {
         </DialogContent>
       </Dialog>
 
-      {/* Message Detail Dialog */}
+      {/* Message Detail Dialog with Reply */}
       <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedMessage?.subject || "Nachricht"}</DialogTitle>
             <DialogDescription>
@@ -957,34 +955,102 @@ export default function Communication() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div className="prose max-w-none">
-              <p className="text-gray-700 whitespace-pre-wrap">{selectedMessage?.content}</p>
-            </div>
-            
-            {selectedMessage?.priority && selectedMessage.priority !== 'normal' && (
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-orange-500" />
-                <span className="text-sm font-medium">
-                  Priorität: {selectedMessage.priority === 'high' ? 'Hoch' : selectedMessage.priority === 'medium' ? 'Mittel' : 'Normal'}
-                </span>
+          <div className="space-y-6">
+            {/* Original Message */}
+            <div className="border-l-4 border-blue-500 pl-4 bg-gray-50 p-4 rounded-r">
+              <div className="prose max-w-none">
+                <p className="text-gray-700 whitespace-pre-wrap">{selectedMessage?.content}</p>
               </div>
-            )}
+              
+              {selectedMessage?.priority && selectedMessage.priority !== 'normal' && (
+                <div className="flex items-center gap-2 mt-3">
+                  <AlertCircle className="w-4 h-4 text-orange-500" />
+                  <span className="text-sm font-medium">
+                    Priorität: {selectedMessage.priority === 'high' ? 'Hoch' : selectedMessage.priority === 'medium' ? 'Mittel' : 'Normal'}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Reply Form */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <Reply className="w-4 h-4" />
+                Antwort verfassen
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium">An:</label>
+                  <p className="text-sm text-gray-600">
+                    {selectedMessage?.sender?.firstName} {selectedMessage?.sender?.lastName}
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium">Betreff:</label>
+                  <Input
+                    value={`Re: ${selectedMessage?.subject || 'Nachricht'}`}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium">Nachricht:</label>
+                  <Textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Ihre Antwort..."
+                    className="min-h-24"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedMessage(null)}>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => {
+              setSelectedMessage(null);
+              setReplyText('');
+            }}>
               Schließen
             </Button>
             <Button 
               onClick={() => {
-                setShowNewMessage(true);
-                messageForm.setValue('subject', `Re: ${selectedMessage?.subject || 'Nachricht'}`);
+                if (!replyText.trim()) {
+                  toast({
+                    title: "Fehler",
+                    description: "Bitte geben Sie eine Antwort ein",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                
+                const replyData = {
+                  subject: `Re: ${selectedMessage?.subject || 'Nachricht'}`,
+                  content: replyText,
+                  messageType: "direct",
+                  priority: "normal",
+                  recipients: [{
+                    type: "user",
+                    id: selectedMessage?.senderId
+                  }]
+                };
+                
+                sendMessage(replyData);
                 setSelectedMessage(null);
+                setReplyText('');
+                
+                toast({
+                  title: "Antwort gesendet",
+                  description: "Ihre Antwort wurde erfolgreich gesendet",
+                });
               }}
+              disabled={!replyText.trim() || sendingMessage}
             >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Antworten
+              <Send className="w-4 h-4 mr-2" />
+              {sendingMessage ? "Wird gesendet..." : "Antwort senden"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -2085,15 +2085,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/invitations/send', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
-    const { email, role, personalMessage } = req.body;
     
+    console.log('📧 Invitation request received:', { body: req.body, userId, clubId });
+    
+    // Validate club ID
     if (!clubId || isNaN(clubId)) {
+      console.log('📧 ERROR: Invalid club ID');
       throw new ValidationError('Invalid club ID', 'clubId');
     }
     
-    if (!email || !email.includes('@')) {
-      throw new ValidationError('Valid email address is required', 'email');
+    // Validate request body with Zod schema
+    const { emailInvitationFormSchema } = await import('@shared/schemas/core');
+    
+    try {
+      const validatedData = emailInvitationFormSchema.parse(req.body);
+      const { email, role, personalMessage } = validatedData;
+      console.log('📧 Validation successful:', { email, role, personalMessage });
+    } catch (validationError: any) {
+      console.log('📧 Validation failed:', validationError.errors);
+      throw new ValidationError(`Validation failed: ${validationError.message}`, 'form');
     }
+    
+    const { email, role, personalMessage } = req.body;
     
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);

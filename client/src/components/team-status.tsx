@@ -119,25 +119,25 @@ export default function TeamStatus({ clubId }: TeamStatusProps) {
   ];
 
   return (
-    <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 h-full flex flex-col">
+    <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 h-[280px] max-h-[280px] flex flex-col">
       <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 flex-shrink-0">Team-Status</h3>
       
-      <div className="grid grid-cols-2 gap-4 flex-1">
+      <div className="grid grid-cols-2 gap-3 flex-1 overflow-hidden">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           
           return (
             <div
               key={index}
-              className={`${stat.bg} dark:bg-card rounded-lg p-3 sm:p-4 border border-border/50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}
+              className={`${stat.bg} dark:bg-card rounded-lg p-3 border border-border/50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 min-h-0 flex flex-col justify-between`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <Icon className={`${stat.color} h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0`} />
-                <span className={`${stat.color} text-lg sm:text-2xl font-bold`}>
+              <div className="flex items-center justify-between mb-2 min-h-0">
+                <Icon className={`${stat.color} h-4 w-4 flex-shrink-0`} />
+                <span className={`${stat.color} text-lg font-bold truncate ml-1`}>
                   {stat.value}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium leading-tight">
+              <p className="text-xs text-muted-foreground font-medium leading-tight line-clamp-2">
                 {stat.title}
               </p>
             </div>

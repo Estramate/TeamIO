@@ -83,6 +83,7 @@ export interface IStorage {
 
   // Club membership operations
   getUserClubs(userId: string): Promise<ClubMembership[]>;
+  getUserMemberships(userId: string): Promise<ClubMembership[]>; // Get ALL memberships (active + inactive)
   getClubMembers(clubId: number): Promise<ClubMembership[]>;
   addUserToClub(membership: InsertClubMembership): Promise<ClubMembership>;
   removeUserFromClub(userId: string, clubId: number): Promise<void>;
@@ -346,6 +347,15 @@ export class DatabaseStorage implements IStorage {
 
   // Club membership operations
   async getUserClubs(userId: string): Promise<ClubMembership[]> {
+    return await db
+      .select()
+      .from(clubMemberships)
+      .where(eq(clubMemberships.userId, userId))
+      .orderBy(desc(clubMemberships.joinedAt));
+  }
+
+  // Get ALL memberships (active + inactive) - for onboarding logic
+  async getUserMemberships(userId: string): Promise<ClubMembership[]> {
     return await db
       .select()
       .from(clubMemberships)

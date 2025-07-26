@@ -15,6 +15,7 @@ import { DashboardSkeleton, CardSkeleton } from '@/components/ui/loading-skeleto
 import { Landing } from "@/pages/landing";
 import { LoginPage } from "@/pages/LoginPage";
 import { OnboardingWizard } from "@/components/auth/OnboardingWizard";
+import { PendingMembershipDashboard } from "@/components/PendingMembershipDashboard";
 import Layout from "@/components/layout";
 import NotFound from "@/pages/not-found";
 
@@ -70,7 +71,7 @@ function Router() {
   const { isAuthenticated: replitAuth, isLoading: replitLoading } = useAuth();
   const { isAuthenticated: firebaseAuth, loading: firebaseLoading } = useFirebaseAuth();
   const { selectedClub } = useClubStore();
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState<boolean | 'pending'>(false);
 
   // Check if user is authenticated with either provider
   const isAuthenticated = replitAuth || firebaseAuth;
@@ -97,24 +98,37 @@ function Router() {
   // Check if authenticated user needs club selection or auto-select first club
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      // If no club is selected, check if user has club memberships
+      // If no club is selected, check user's membership status
       if (!selectedClub) {
-        // Fetch user's clubs to auto-select the first one
-        fetch('/api/clubs', { credentials: 'include' })
-          .then(res => res.ok ? res.json() : [])
-          .then(clubs => {
-            if (clubs && clubs.length > 0) {
-              // Auto-select the first club the user is member of
-              const { setSelectedClub } = useClubStore.getState();
-              setSelectedClub(clubs[0].id);
-              setShowOnboarding(false);
+        // First check if user has ANY memberships (active or inactive)
+        fetch('/api/user/memberships/status', { credentials: 'include' })
+          .then(res => res.ok ? res.json() : { hasMemberships: false })
+          .then(membershipStatus => {
+            if (membershipStatus.hasMemberships) {
+              // User has memberships, check for active ones
+              if (membershipStatus.activeMemberships > 0) {
+                // Auto-select the first active club
+                fetch('/api/clubs', { credentials: 'include' })
+                  .then(res => res.ok ? res.json() : [])
+                  .then(clubs => {
+                    if (clubs && clubs.length > 0) {
+                      const { setSelectedClub } = useClubStore.getState();
+                      setSelectedClub(clubs[0].id);
+                    }
+                    setShowOnboarding(false);
+                  })
+                  .catch(() => setShowOnboarding(false));
+              } else {
+                // User has pending memberships but no active ones - show pending dashboard
+                setShowOnboarding('pending');
+              }
             } else {
-              // No club memberships - show onboarding
+              // No memberships at all - show onboarding
               setShowOnboarding(true);
             }
           })
           .catch(() => {
-            // Error fetching clubs - show onboarding
+            // Error checking membership status - show onboarding as fallback
             setShowOnboarding(true);
           });
       } else {
@@ -144,11 +158,16 @@ function Router() {
     );
   }
 
+  // Show pending dashboard for users with inactive memberships
+  if (showOnboarding === 'pending' && isAuthenticated) {
+    return <PendingMembershipDashboard />;
+  }
+
   // Show club selection for users without a club
   if (showOnboarding && isAuthenticated) {
     return (
       <OnboardingWizard 
-        isOpen={showOnboarding}
+        isOpen={true}
         onComplete={(clubId) => {
           setShowOnboarding(false);
           if (clubId) {

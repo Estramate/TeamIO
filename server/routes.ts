@@ -301,6 +301,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check if user has ANY club membership (active or inactive) - for onboarding logic
+  app.get('/api/user/memberships/status', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const userId = req.user.claims.sub;
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in token');
+    }
+    
+    const memberships = await storage.getUserMemberships(userId); // Get ALL memberships
+    logger.info('User membership status retrieved', { userId, totalMemberships: memberships.length, requestId: req.id });
+    
+    res.json({ 
+      hasMemberships: memberships.length > 0,
+      activeMemberships: memberships.filter(m => m.status === 'active').length,
+      pendingMemberships: memberships.filter(m => m.status === 'inactive').length
+    });
+  }));
+
   // User permission routes
   app.get('/api/clubs/:clubId/user-membership', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);

@@ -11,6 +11,7 @@ import { FaGoogle } from "react-icons/fa";
 import { SiReplit } from "react-icons/si";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toastService } from "@/lib/toast-service";
 
 interface SocialLoginButtonsProps {
   onSuccess?: () => void;
@@ -33,12 +34,11 @@ export function SocialLoginButtons({
 
   const handleGoogleSignIn = async () => {
     try {
-      console.log('Starting Google sign-in from button...');
       await signInWithGoogle();
-      console.log('Google sign-in successful from button');
+      toastService.auth.loginSuccess();
       onSuccess?.();
     } catch (error) {
-      console.error('Google sign-in button error:', error);
+      toastService.auth.loginError((error as any).message);
     }
   };
 

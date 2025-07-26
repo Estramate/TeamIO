@@ -24,8 +24,15 @@ interface OnboardingWizardProps {
 }
 
 export function OnboardingWizard({ onComplete, onClose, isOpen }: OnboardingWizardProps) {
-  const [step, setStep] = useState<'welcome' | 'browse'>('welcome');
+  const [step, setStep] = useState<'welcome' | 'browse' | 'create'>('welcome');
   const [searchQuery, setSearchQuery] = useState('');
+  const [newClubData, setNewClubData] = useState({
+    name: '',
+    description: '',
+    address: '',
+    email: '',
+    website: ''
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { setSelectedClub } = useClubStore();
@@ -72,6 +79,46 @@ export function OnboardingWizard({ onComplete, onClose, isOpen }: OnboardingWiza
       });
     },
   });
+
+  // Create club mutation
+  const createClubMutation = useMutation({
+    mutationFn: async (clubData: typeof newClubData) => {
+      const response = await fetch('/api/clubs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(clubData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to create club');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (newClub) => {
+      toast({
+        title: "Verein erstellt",
+        description: `${newClub.name} wurde erfolgreich erstellt.`,
+      });
+      setSelectedClub(newClub);
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs'] });
+      onComplete(newClub.id);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler beim Erstellen",
+        description: error.message || "Der Verein konnte nicht erstellt werden.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateClub = () => {
+    if (newClubData.name.trim()) {
+      createClubMutation.mutate(newClubData);
+    }
+  };
 
   const filteredClubs = (clubs as Club[] || []).filter((club: Club) =>
     club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -357,6 +404,7 @@ export function OnboardingWizard({ onComplete, onClose, isOpen }: OnboardingWiza
         <div className="px-2">
           {step === 'welcome' && renderWelcomeStep()}
           {step === 'browse' && renderBrowseStep()}
+          {step === 'create' && renderCreateStep()}
         </div>
       </DialogContent>
     </Dialog>

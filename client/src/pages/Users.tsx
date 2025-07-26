@@ -300,14 +300,28 @@ export default function Users() {
         </CardContent>
       </Card>
 
-      {/* Members Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Mitglieder</CardTitle>
-          <CardDescription>
-            Alle Mitglieder des Vereins mit ihren Rollen und Status
-          </CardDescription>
-        </CardHeader>
+      {/* Main Content with Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <UsersIcon className="h-4 w-4" />
+            Mitglieder
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Aktivitätsprotokoll
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users" className="space-y-6">
+          {/* Members Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Mitglieder</CardTitle>
+              <CardDescription>
+                Alle Mitglieder des Vereins mit ihren Rollen und Status
+              </CardDescription>
+            </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -414,6 +428,12 @@ export default function Users() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="activity" className="space-y-6">
+          {selectedClub && <ActivityLogTab clubId={selectedClub.id} />}
+        </TabsContent>
+      </Tabs>
 
       {/* Edit Role Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
@@ -471,6 +491,121 @@ export default function Users() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// Activity Log Component
+function ActivityLogTab({ clubId }: { clubId: number }) {
+  const { data: logs, isLoading, error } = useQuery({
+    queryKey: [`/api/clubs/${clubId}/activity-logs`],
+    enabled: !!clubId,
+    retry: false,
+  });
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('de-DE', {
+      year: 'numeric',
+      month: '2-digit', 
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getActionIcon = (action: string) => {
+    switch (action) {
+      case 'user_invited':
+        return <Mail className="h-4 w-4 text-blue-500" />;
+      case 'user_approved':
+        return <UserCheck className="h-4 w-4 text-green-500" />;
+      case 'user_rejected':
+        return <UserX className="h-4 w-4 text-red-500" />;
+      case 'role_changed':
+        return <Shield className="h-4 w-4 text-orange-500" />;
+      default:
+        return <Activity className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-lg font-semibold">Fehler beim Laden der Aktivitätslogs</p>
+            <p className="text-muted-foreground">
+              {error instanceof Error ? error.message : 'Unbekannter Fehler'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-3">
+          <Activity className="h-5 w-5 text-green-600" />
+          Aktivitätsprotokoll
+        </CardTitle>
+        <CardDescription>
+          Chronologische Übersicht aller Benutzeraktivitäten und Systemereignisse.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!logs || logs.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full w-fit mx-auto mb-4">
+              <Clock className="h-8 w-8 text-gray-400" />
+            </div>
+            <p className="text-lg font-medium mb-2">
+              Keine Aktivitätslogs vorhanden
+            </p>
+            <p className="text-muted-foreground">
+              Aktivitäten werden hier angezeigt, sobald Benutzeraktionen stattfinden.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {logs.map((log: any) => (
+              <div
+                key={log.id}
+                className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <div className="flex-shrink-0 mt-1 p-1.5 bg-white dark:bg-gray-900 rounded-full border">
+                  {getActionIcon(log.action)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <p className="text-sm font-medium mb-1">
+                      {log.description}
+                    </p>
+                    <time className="text-xs text-muted-foreground ml-4 flex-shrink-0">
+                      {formatDate(log.createdAt)}
+                    </time>
+                  </div>
+                  {log.user && (
+                    <p className="text-xs text-muted-foreground">
+                      von {log.user.firstName} {log.user.lastName}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

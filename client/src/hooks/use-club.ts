@@ -23,7 +23,7 @@ export const useClub = create<ClubStore>()(
       },
     }),
     {
-      name: 'teamio-selected-club',
+      name: 'clubflow-selected-club',
       version: 2, // Increment version to clear old cache
       migrate: (persistedState: any, version: number) => {
         // Clear old state on version change

@@ -1,6 +1,6 @@
-# TeamIO - Professional Club Management System
+# ClubFlow - Professional Club Management System
 
-TeamIO is a comprehensive, enterprise-grade web-based platform designed for sports clubs and organizations. Built with cutting-edge technologies and optimized for performance, accessibility, and scalability, it provides complete management solutions for members, teams, facilities, bookings, finances, and communication systems.
+ClubFlow is a comprehensive, enterprise-grade web-based platform designed for sports clubs and organizations. Built with cutting-edge technologies and optimized for performance, accessibility, and scalability, it provides complete management solutions for members, teams, facilities, bookings, finances, and communication systems.
 
 ## ✨ Key Features
 
@@ -68,8 +68,8 @@ TeamIO is a comprehensive, enterprise-grade web-based platform designed for spor
 
 ### 1. Installation
 ```bash
-git clone https://github.com/yourusername/teamio.git
-cd teamio
+git clone https://github.com/yourusername/clubflow.git
+cd clubflow
 npm install
 ```
 
@@ -312,7 +312,7 @@ npm start
 
 ---
 
-**Enterprise-Ready**: TeamIO is production-ready with comprehensive testing, security, accessibility compliance, and professional documentation.
+**Enterprise-Ready**: ClubFlow is production-ready with comprehensive testing, security, accessibility compliance, and professional documentation.
 
 ### Key API Endpoints
 
@@ -326,7 +326,7 @@ npm start
 
 ## 🧪 Testing
 
-TeamIO includes a comprehensive testing suite:
+ClubFlow includes a comprehensive testing suite:
 
 ```bash
 # Run all tests
@@ -372,7 +372,7 @@ npm run test:ci
 
 ### Project Structure
 ```
-teamio/
+clubflow/
 ├── client/src/           # React frontend application
 │   ├── components/       # Reusable UI components
 │   ├── pages/           # Application pages/routes
@@ -463,7 +463,7 @@ Ensure all required environment variables are configured:
 
 ## 🤝 Contributing
 
-We welcome contributions to TeamIO! Please read our contributing guidelines and:
+We welcome contributions to ClubFlow! Please read our contributing guidelines and:
 
 1. Fork the repository
 2. Create a feature branch

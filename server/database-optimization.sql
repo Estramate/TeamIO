@@ -1,4 +1,4 @@
--- Database optimization indices for TeamIO
+-- Database optimization indices for ClubFlow
 -- These indices improve query performance for frequently accessed data
 
 -- User authentication and sessions

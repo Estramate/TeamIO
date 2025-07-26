@@ -13,7 +13,7 @@
 
 #### 1. Firebase Console
 ```
-URL: https://console.firebase.google.com/project/teamio-1be61
+URL: https://console.firebase.google.com/project/clubflow-1be61
 Pfad: Authentication → Settings → Authorized domains
 Aktion: Domain "clubflow.replit.app" hinzufügen
 ```

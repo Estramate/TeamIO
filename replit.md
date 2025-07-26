@@ -1,8 +1,8 @@
-# TeamIO - Professional Club Management System
+# ClubFlow - Professional Club Management System
 
 ## Overview
 
-TeamIO is a comprehensive, modern web-based platform designed for sports clubs and organizations. It provides complete management solutions for members, teams, facilities, bookings, finances, and communication. The system supports multi-club management with role-based access control and features a responsive, accessible design optimized for desktop, tablet, and mobile devices.
+ClubFlow is a comprehensive, modern web-based platform designed for sports clubs and organizations. It provides complete management solutions for members, teams, facilities, bookings, finances, and communication. The system supports multi-club management with role-based access control and features a responsive, accessible design optimized for desktop, tablet, and mobile devices.
 
 **Latest Enhancement**: The platform now includes enterprise-level optimization with performance monitoring, comprehensive testing infrastructure, full WCAG accessibility compliance, virtualized data handling, and professional API documentation.
 
@@ -49,6 +49,7 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - ✅ System runs cleanly without console spam from Replit's internal WebSocket attempts
 
 **LATEST UPDATE (July 26, 2025):**
+✅ **PROJEKT VON TEAMIO ZU CLUBFLOW UMBENANNT** - Komplette Umbenennung in allen Dateien, UI-Texten und Dokumentation
 ✅ **VEREIN-BEITRITT SYSTEM KOMPLETT REPARIERT** - Join-Route erstellt, Error-Handling verbessert, Loading-States implementiert
 ✅ **COMPREHENSIVE AUTHENTICATION & LOGOUT SYSTEM** fully implemented:
 - ✅ Multi-provider authentication (Replit + Firebase) working correctly

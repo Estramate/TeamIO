@@ -87,10 +87,10 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         </div>
         <div>
           <h2 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            Willkommen bei TeamIO!
+            Willkommen bei ClubFlow!
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-            Sie sind erfolgreich angemeldet. Beginnen Sie jetzt mit der Vereinsverwaltung, indem Sie einem bestehenden Verein beitreten oder einen neuen erstellen.
+            Sie sind erfolgreich angemeldet. Beginnen Sie jetzt mit der Vereinsverwaltung, indem Sie einem bestehenden Verein beitreten.
           </p>
         </div>
       </div>
@@ -115,7 +115,7 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
             </div>
             <h3 className="font-bold text-2xl mb-3">Später entscheiden</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Erkunden Sie TeamIO zuerst und entscheiden Sie später über Ihre Vereinszugehörigkeit. Sie können jederzeit einem Verein beitreten.
+              Erkunden Sie ClubFlow zuerst und entscheiden Sie später über Ihre Vereinszugehörigkeit. Sie können jederzeit einem Verein beitreten.
             </p>
           </CardContent>
         </Card>
@@ -358,7 +358,7 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         <DialogHeader className="text-center pb-6">
           <DialogTitle className="text-2xl font-bold">Vereinsauswahl</DialogTitle>
           <DialogDescription className="text-base">
-            Wählen Sie einen Verein aus oder erstellen Sie einen neuen, um mit TeamIO zu beginnen.
+            Wählen Sie einen Verein aus, um mit ClubFlow zu beginnen.
           </DialogDescription>
         </DialogHeader>
         

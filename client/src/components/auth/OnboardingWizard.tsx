@@ -95,28 +95,19 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+      <div className="max-w-lg mx-auto">
         <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/30 cursor-pointer group" onClick={() => setStep('browse')}>
           <CardContent className="p-10 text-center">
             <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
               <Search className="w-10 h-10 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="font-bold text-2xl mb-3">Verein suchen</h3>
+            <h3 className="font-bold text-2xl mb-3">Einem Verein beitreten</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Durchsuchen Sie bestehende Vereine und treten Sie einem bei, der zu Ihnen passt. Finden Sie den perfekten Verein für Ihre sportlichen Aktivitäten.
+              Durchsuchen Sie bestehende Vereine und stellen Sie einen Beitrittsantrag. Nach der Genehmigung erhalten Sie Zugang zu allen Vereinsfunktionen.
             </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/30 cursor-pointer group" onClick={() => onComplete()}>
-          <CardContent className="p-10 text-center">
-            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-              <Users className="w-10 h-10 text-gray-600 dark:text-gray-400" />
-            </div>
-            <h3 className="font-bold text-2xl mb-3">Später entscheiden</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              Erkunden Sie ClubFlow zuerst und entscheiden Sie später über Ihre Vereinszugehörigkeit. Sie können jederzeit einem Verein beitreten.
-            </p>
+            <Button size="lg" className="mt-6 px-8">
+              Vereine durchsuchen
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -125,7 +116,7 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 max-w-2xl mx-auto">
           <p className="text-sm text-blue-800 dark:text-blue-200 text-center">
             <strong>Hinweis:</strong> Die Erstellung neuer Vereine ist Administratoren vorbehalten. 
-            Sie können Ihre Vereinszugehörigkeit jederzeit in den Einstellungen ändern.
+            Ihr Beitrittsantrag wird vom Vereinsadministrator geprüft und genehmigt.
           </p>
         </div>
       </div>

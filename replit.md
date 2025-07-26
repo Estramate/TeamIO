@@ -92,6 +92,7 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 - ✅ **NEUE BENUTZER BESCHRÄNKUNGEN** - Vereinserstellung nur für Administratoren, neue Benutzer können nur bestehenden Vereinen beitreten
 ✅ **INTELLIGENTE VEREINSAUSWAHL-LOGIK** - Benutzer mit inaktiven Mitgliedschaften sehen PendingMembershipDashboard statt Onboarding-Wizard
 ✅ **RATE-LIMIT-PROBLEM BEHOBEN** - Entwicklungsfreundliche Rate-Limits (1000/100 statt 100/10) für störungsfreies Testing
+✅ **ONBOARDING-WIZARD BEREINIGT** - "Weiter ohne Verein" Button entfernt, UI vereinfacht, alle Membership-Checks funktionieren korrekt
 
 **MAJOR UPDATE - Complete Communication System (January 25, 2025):**
 ✅ **COMPREHENSIVE COMMUNICATION PLATFORM** implemented with all project standards:

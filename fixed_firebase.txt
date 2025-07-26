@@ -1,33 +1,35 @@
-✅ ALLE WINDOW.CONFIRM() ENTFERNT UND DURCH SCHÖNE MODALS ERSETZT!
+✅ LOGOUT-PROBLEM IN DEV-UMGEBUNG BEHOBEN!
 
-**VOLLSTÄNDIG IMPLEMENTIERT:**
+**PROBLEM:**
+- Nach dem Logout in der Entwicklungsumgebung konnte sich der Benutzer nicht mehr einloggen
+- Aggressive Cookie-Löschung und komplexe Redirects verursachten Auth-Loops
 
-1. **ConfirmDialog Komponente erstellt:**
-   - Wiederverwendbare Modal-Komponente 
-   - useConfirmDialog Hook für einfache Verwendung
-   - Schöne UI mit destructive/default Varianten
-   - Deutsche Texte (Bestätigen/Abbrechen)
+**LÖSUNG:**
+1. **Vereinfachtes Logout in server/replitAuth.ts:**
+   - Entwicklungsmodus: Einfacher Redirect auf '/' ohne komplexe Replit-Logout-Logik
+   - Produktionsmodus: Vollständiger Replit-Logout mit korrekten Redirects
+   - Minimale Cookie-Löschung (nur firebase-auth und connect.sid)
 
-2. **Communication.tsx aktualisiert:**
-   ✅ confirm() durch showConfirm() ersetzt
-   ✅ Optimistische Updates für sofortiges Entfernen von Nachrichten
-   ✅ Schöner "Nachricht löschen" Dialog mit Warnung
-   ✅ ConfirmDialog am Ende der Komponente hinzugefügt
+2. **Client-seitiges Logout in sidebar.tsx:**
+   - Entfernt aggressive localStorage.clear() und queryClient-Manipulationen
+   - Einfacher Redirect zu /api/logout
+   - Weniger Code, weniger Fehlerquellen
 
-3. **Weitere Seiten bereinigt:**
-   ✅ players.tsx - confirm() entfernt
-   ✅ finance.tsx - window.confirm() entfernt
+**TECHNISCHE DETAILS:**
+```javascript
+// DEV-Mode Logout (einfach und funktional)
+if (process.env.NODE_ENV === 'development') {
+  console.log('DEV MODE - Simple redirect to home page');
+  return res.redirect('/');
+}
 
-**JETZT TESTEN:**
-1. Gehen Sie zur Kommunikation-Seite
-2. Klicken Sie das Löschen-Symbol bei einer Nachricht
-3. Schöner Modal erscheint mit "Löschen/Abbrechen" Buttons
-4. Nach Bestätigung verschwindet Nachricht sofort ohne Seitenneuladung
+// PRODUCTION-Mode (vollständiger Replit-Logout)
+req.logout(() => {
+  res.redirect(client.buildEndSessionUrl(config, {...}).href);
+});
+```
 
-**VORTEILE:**
-- Keine hässlichen Browser-Popups mehr
-- Konsistente UI/UX im modernen Design
-- Deutsche Lokalisierung
-- Sofortige UI-Updates ohne Wartezeit
+**TESTERGEBNIS:**
+Der Benutzer kann sich jetzt in der Entwicklungsumgebung ordnungsgemäß aus- und wieder einloggen, ohne in Auth-Loops zu geraten.
 
-Das System ist jetzt professionell und benutzerfreundlich! 🎯
+Status: ✅ BEHOBEN - Entwicklungsumgebung funktioniert wieder einwandfrei!

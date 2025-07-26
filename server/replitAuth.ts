@@ -117,67 +117,45 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
-    console.log('=== COMPLETE LOGOUT PROCESS ===');
-    console.log('Session exists before logout:', !!req.session);
-    console.log('Is authenticated before logout:', req.isAuthenticated?.());
-    console.log('Cookies before logout:', Object.keys(req.cookies || {}));
+    console.log('=== LOGOUT PROCESS (DEV-FRIENDLY) ===');
     
-    // Clear session and Firebase cookies
-    req.logout((err) => {
-      if (err) {
-        console.error('Logout error:', err);
-      }
-      
-      console.log('After req.logout - clearing ALL cookies and session data');
-      
-      // Clear ALL possible auth cookies
-      const cookiesToClear = ['firebase-auth', 'connect.sid', 'session', 'auth-token'];
-      cookiesToClear.forEach(cookieName => {
-        res.clearCookie(cookieName, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/'
-        });
-        // Also clear without httpOnly for client-side cookies
-        res.clearCookie(cookieName, {
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/'
-        });
+    // Clear Firebase auth cookie
+    res.clearCookie('firebase-auth', { 
+      path: '/', 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+    
+    // Clear session cookie
+    res.clearCookie('connect.sid', { 
+      path: '/', 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+
+    // Destroy session
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) console.error('Session destruction error:', err);
       });
-      
-      // Destroy session completely and forcefully
-      if (req.session) {
-        req.session.destroy((destroyErr) => {
-          if (destroyErr) {
-            console.error('Session destroy error:', destroyErr);
-          } else {
-            console.log('Session destroyed successfully on logout');
-          }
-        });
-      }
-      
-      // Set additional headers to prevent caching
-      res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      });
-      
-      // Always redirect to the original domain, not localhost
-      const redirectUrl = `${req.protocol}://${req.get('host')}`;
-      
-      console.log('LOGOUT COMPLETE - Redirecting to:', redirectUrl);
-      
-      // Add cache control headers to prevent caching of redirect
-      res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate, private',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      });
-      
-      res.redirect(302, redirectUrl);
+    }
+
+    // Development mode - simple redirect to avoid auth loops
+    if (process.env.NODE_ENV === 'development') {
+      console.log('DEV MODE - Simple redirect to home page');
+      return res.redirect('/');
+    }
+
+    // Production mode - use proper Replit logout
+    req.logout(() => {
+      res.redirect(
+        client.buildEndSessionUrl(config, {
+          client_id: process.env.REPL_ID!,
+          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+        }).href
+      );
     });
   });
 }

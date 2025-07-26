@@ -393,26 +393,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    // Clearing all data and redirecting to logout
-                    
-                    // Mark that we're logging out
+                    // Development-friendly logout
                     sessionStorage.setItem('just_logged_out', 'true');
-                    
-                    // Clear all local storage
                     localStorage.clear();
                     
-                    // Clear any cached query data
-                    try {
-                      // @ts-expect-error - queryClient may be available globally
-                      if (window.queryClient) {
-                        window.queryClient.clear();
-                      }
-                    } catch (e) {
-                      // Ignore queryClient errors
-                    }
-                    
-                    // Force logout and redirect
-                    window.location.assign("/api/logout");
+                    // Simply redirect to logout
+                    window.location.href = "/api/logout";
                   }}
                   className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 h-8 w-8"
                   title="Abmelden"

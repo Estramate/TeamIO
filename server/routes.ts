@@ -2097,16 +2097,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Validate request body with Zod schema
     const { emailInvitationFormSchema } = await import('@shared/schemas/core');
     
+    let email: string, role: string, personalMessage: string | undefined;
+    
     try {
       const validatedData = emailInvitationFormSchema.parse(req.body);
-      const { email, role, personalMessage } = validatedData;
+      email = validatedData.email;
+      role = validatedData.role;
+      personalMessage = validatedData.personalMessage;
       console.log('📧 Validation successful:', { email, role, personalMessage });
     } catch (validationError: any) {
       console.log('📧 Validation failed:', validationError.errors);
       throw new ValidationError(`Validation failed: ${validationError.message}`, 'form');
     }
-    
-    const { email, role, personalMessage } = req.body;
     
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);

@@ -246,48 +246,51 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    // First check if user exists by email + authProvider combination
-    if (userData.email && userData.authProvider) {
-      const existingUser = await this.getUserByEmailAndProvider(userData.email, userData.authProvider);
-      if (existingUser) {
-        // User with this email + provider combination exists - update and return
-        const [updatedUser] = await db
-          .update(users)
-          .set({
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            profileImageUrl: userData.profileImageUrl,
-            lastLoginAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .where(and(eq(users.email, userData.email), eq(users.authProvider, userData.authProvider)))
-          .returning();
-        return updatedUser;
-      }
-    }
-
+    console.log('UpsertUser called with:', userData);
+    
     try {
-      // Try to insert new user
+      // For Firebase users, always use the ID directly if provided
+      if (userData.id && userData.authProvider === 'firebase') {
+        // Check if user exists by ID first
+        const existingUser = await this.getUser(userData.id);
+        if (existingUser) {
+          // Update existing user
+          const [updatedUser] = await db
+            .update(users)
+            .set({
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              profileImageUrl: userData.profileImageUrl,
+              lastLoginAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(eq(users.id, userData.id))
+            .returning();
+          console.log('User updated:', updatedUser);
+          return updatedUser;
+        }
+      }
+
+      // Insert new user
       const [user] = await db
         .insert(users)
         .values({
           ...userData,
           authProvider: userData.authProvider || 'replit',
-        })
-        .onConflictDoUpdate({
-          target: users.id,
-          set: {
-            ...userData,
-            updatedAt: new Date(),
-          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
         })
         .returning();
+      
+      console.log('New user created:', user);
       return user;
     } catch (error: any) {
-      // Final fallback - if any error occurs, try to find existing user by email
-      if (userData.email) {
-        const existingUser = await this.getUserByEmail(userData.email);
+      console.error('UpsertUser error:', error);
+      // If unique constraint violation and it's about email, try to find by email+provider
+      if (error.code === '23505' && userData.email && userData.authProvider) {
+        const existingUser = await this.getUserByEmailAndProvider(userData.email, userData.authProvider);
         if (existingUser) {
+          console.log('Found existing user by email+provider:', existingUser);
           return existingUser;
         }
       }

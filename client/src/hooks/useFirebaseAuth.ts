@@ -40,29 +40,42 @@ export function useFirebaseAuth() {
         if (user) {
           // User signed in, send to backend
           const userData = extractUserData(user);
+          console.log('Sending Firebase user data to backend:', userData);
+          
           const response = await fetch('/api/auth/firebase', {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'  // Bypass some middleware
+              'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({ userData }),
-            credentials: 'include', // Include cookies for session
+            credentials: 'include',
           });
           
           if (response.ok) {
+            const result = await response.json();
+            console.log('Firebase backend response:', result);
+            
             setAuthState({ user, loading: false, error: null });
             toast({
               title: "Erfolgreich angemeldet",
               description: `Willkommen zurück, ${user.displayName || user.email}!`,
             });
             
-            // No automatic redirect - let React handle state changes
+            // Force reload of the app to pick up authentication
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
           } else {
-            const errorText = await response.text();
-            console.error('Backend response:', response.status, errorText);
-            // Don't throw error for authentication failures to prevent infinite loops
-            setAuthState({ user: null, loading: false, error: 'Backend-Synchronisation fehlgeschlagen' });
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.error('Firebase backend error:', response.status, errorData);
+            
+            setAuthState({ user: null, loading: false, error: `Backend-Fehler: ${errorData.error || 'Unbekannt'}` });
+            toast({
+              title: "Anmeldung fehlgeschlagen",
+              description: `Backend-Fehler: ${errorData.error || 'Synchronisation fehlgeschlagen'}`,
+              variant: "destructive",
+            });
           }
         } else {
           // User signed out - don't immediately set state to prevent loops

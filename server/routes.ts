@@ -63,24 +63,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (Replit OpenID Connect) - MUST BE FIRST for session setup
   await setupAuth(app);
 
-  // Firebase authentication endpoint - Simple approach without session dependency
+  // Firebase authentication endpoint - Robust approach with proper error handling
   app.post('/api/auth/firebase', async (req: any, res: any) => {
     const { userData } = req.body;
     
     if (!userData || !userData.uid) {
-      return res.status(400).json({ error: 'Invalid user data' });
+      return res.status(400).json({ error: 'Invalid user data - missing uid' });
     }
     
     try {
-      // Upsert Firebase user to database with provider info
-      const dbUser = await storage.upsertUser({
-        id: userData.uid,
+      console.log('Firebase auth request received:', { uid: userData.uid, email: userData.email });
+      
+      // Create Firebase user with proper provider-specific ID
+      const firebaseUserId = `firebase_${userData.uid}`;
+      
+      const userDataToInsert = {
+        id: firebaseUserId,
         email: userData.email,
         authProvider: 'firebase',
+        providerUserId: userData.uid,
         firstName: userData.displayName?.split(' ')[0] || null,
         lastName: userData.displayName?.split(' ').slice(1).join(' ') || null,
         profileImageUrl: userData.photoURL,
-      });
+        lastLoginAt: new Date(),
+      };
+      
+      console.log('User data to insert:', userDataToInsert);
+      
+      // Upsert Firebase user to database with provider info
+      const dbUser = await storage.upsertUser(userDataToInsert);
+      
+      console.log('Database user created/updated:', { id: dbUser.id, email: dbUser.email });
       
       // Create simple session cookie manually - use database user data
       const userToken = Buffer.from(JSON.stringify({
@@ -101,12 +114,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sameSite: 'lax'
       });
       
-      logger.info('Firebase user authenticated', { userId: userData.uid, email: userData.email });
-      res.json({ success: true, userId: userData.uid });
+      logger.info('Firebase user authenticated successfully', { 
+        userId: dbUser.id, 
+        email: dbUser.email, 
+        provider: 'firebase' 
+      });
+      
+      res.json({ 
+        success: true, 
+        userId: dbUser.id, 
+        message: 'Firebase authentication successful' 
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error('Firebase authentication failed', { error: errorMessage, userId: userData.uid });
-      res.status(500).json({ error: 'Firebase authentication failed', details: errorMessage });
+      console.error('Firebase authentication error:', error);
+      logger.error('Firebase authentication failed', { 
+        error: errorMessage, 
+        userId: userData.uid, 
+        email: userData.email 
+      });
+      res.status(500).json({ 
+        error: 'Firebase authentication failed', 
+        details: errorMessage,
+        userData: userData
+      });
     }
   });
   

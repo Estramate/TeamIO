@@ -375,8 +375,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check availability before creating booking
       const availability = await storage.checkBookingAvailability(
         bookingData.facilityId!, 
-        bookingData.startTime, 
-        bookingData.endTime
+        new Date(bookingData.startTime), 
+        new Date(bookingData.endTime)
       );
       
       if (!availability.available) {

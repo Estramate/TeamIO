@@ -1090,7 +1090,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(messages.senderId, users.id))
       .where(and(
         eq(messages.id, id),
-        eq(messages.deletedAt, null)
+        isNull(messages.deletedAt)
       ));
 
     if (!messageData) return undefined;
@@ -1132,12 +1132,7 @@ export class DatabaseStorage implements IStorage {
     return message;
   }
 
-  async deleteMessage(id: number): Promise<void> {
-    await db
-      .update(messages)
-      .set({ deletedAt: new Date() })
-      .where(eq(messages.id, id));
-  }
+
 
   async markMessageAsRead(messageId: number, userId: string): Promise<void> {
     // Try to update existing recipient record

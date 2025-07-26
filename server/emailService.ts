@@ -168,7 +168,7 @@ Falls Sie diese E-Mail irrtümlich erhalten haben, können Sie sie einfach ignor
   
   return await sendEmail({
     to,
-    from: process.env.FROM_EMAIL || 'noreply@clubflow.app',
+    from: process.env.FROM_EMAIL || 'koglerf@gmail.com', // Use verified SendGrid sender
     subject,
     html,
     text

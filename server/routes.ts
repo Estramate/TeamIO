@@ -568,6 +568,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ stats, activities });
   }));
 
+  // Activity log routes
+  app.get('/api/clubs/:clubId/activity-logs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Check if user has admin permissions for this club
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership || !['club-administrator', 'admin'].includes(membership.role)) {
+      throw new AuthorizationError('Only administrators can view activity logs');
+    }
+    
+    const logs = await storage.getClubActivityLogs(clubId);
+    logger.info('Activity logs retrieved', { userId, clubId, count: logs.length, requestId: req.id });
+    res.json(logs);
+  }));
+
+  // Email invitation routes
+  app.post('/api/clubs/:clubId/invite', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Check if user has admin permissions for this club
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership || !['club-administrator', 'admin'].includes(membership.role)) {
+      throw new AuthorizationError('Only administrators can invite users');
+    }
+    
+    const { email, role = 'member' } = req.body;
+    
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new ValidationError('Valid email address is required', 'email');
+    }
+    
+    // Check if user already exists and has membership
+    const existingUser = await storage.getUserByEmail(email);
+    if (existingUser) {
+      const existingMembership = await storage.getUserClubMembership(existingUser.id, clubId);
+      if (existingMembership) {
+        throw new ValidationError('User is already a member of this club', 'email');
+      }
+    }
+    
+    // Check for existing pending invitation
+    const existingInvitations = await storage.getClubEmailInvitations(clubId);
+    const pendingInvitation = existingInvitations.find(inv => 
+      inv.email === email && inv.status === 'pending'
+    );
+    
+    if (pendingInvitation) {
+      throw new ValidationError('Invitation already sent to this email', 'email');
+    }
+    
+    // Generate invitation token
+    const crypto = await import('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    
+    // Create invitation record
+    const invitation = await storage.createEmailInvitation({
+      clubId,
+      invitedBy: userId,
+      email,
+      role,
+      token,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    });
+    
+    // Send invitation email
+    const club = await storage.getClub(clubId);
+    const inviter = await storage.getUser(userId);
+    
+    if (club && inviter) {
+      const { sendEmail, generateInvitationEmail } = await import('./emailService');
+      const emailContent = generateInvitationEmail(
+        club.name, 
+        `${inviter.firstName} ${inviter.lastName}`, 
+        token, 
+        role
+      );
+      
+      const emailSent = await sendEmail({
+        to: email,
+        from: club.email || 'noreply@clubflow.app',
+        ...emailContent,
+      });
+      
+      // Log the invitation activity
+      await storage.createActivityLog({
+        clubId,
+        userId,
+        action: 'user_invited',
+        targetResource: 'invitation',
+        targetResourceId: invitation.id,
+        description: `${inviter.firstName} ${inviter.lastName} hat ${email} als ${role === 'club-administrator' ? 'Administrator' : role === 'trainer' ? 'Trainer' : 'Mitglied'} eingeladen`,
+        metadata: { email, role, emailSent },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      logger.info('User invitation sent', { 
+        userId, 
+        clubId, 
+        invitedEmail: email, 
+        role, 
+        emailSent,
+        requestId: req.id 
+      });
+    }
+    
+    res.json({ 
+      message: 'Einladung erfolgreich versendet',
+      invitation: { ...invitation, token: undefined } // Don't expose token
+    });
+  }));
+
   // Users management route (admin only)
   app.get('/api/clubs/:clubId/users', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);

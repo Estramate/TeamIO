@@ -29,6 +29,45 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// Activity Log table for user actions tracking
+export const activityLogs = pgTable("activity_logs", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").references(() => clubs.id, { onDelete: 'cascade' }).notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  action: varchar("action", { length: 100 }).notNull(), // 'user_invited', 'membership_approved', 'role_changed', etc.
+  targetUserId: varchar("target_user_id").references(() => users.id, { onDelete: 'cascade' }), // For actions on other users
+  targetResource: varchar("target_resource", { length: 100 }), // 'membership', 'user', 'team', etc.
+  targetResourceId: integer("target_resource_id"), // ID of the affected resource
+  description: text("description").notNull(), // Human readable description
+  metadata: jsonb("metadata"), // Additional data (old values, new values, etc.)
+  ipAddress: varchar("ip_address", { length: 45 }), // IPv4/IPv6
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_activity_logs_club_id").on(table.clubId),
+  index("idx_activity_logs_user_id").on(table.userId),
+  index("idx_activity_logs_created_at").on(table.createdAt),
+]);
+
+// Email Invitations table
+export const emailInvitations = pgTable("email_invitations", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id").references(() => clubs.id, { onDelete: 'cascade' }).notNull(),
+  invitedBy: varchar("invited_by").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  role: varchar("role", { length: 50 }).default('member').notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  status: varchar("status", { length: 20 }).default('pending').notNull(), // 'pending', 'accepted', 'expired'
+  expiresAt: timestamp("expires_at").notNull(),
+  acceptedAt: timestamp("accepted_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_email_invitations_club_id").on(table.clubId),
+  index("idx_email_invitations_email").on(table.email),
+  index("idx_email_invitations_token").on(table.token),
+]);
+
 // User storage table (supports multiple auth providers)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
@@ -159,6 +198,15 @@ export const insertClubJoinRequestSchema = createInsertSchema(clubJoinRequests).
   createdAt: true,
   updatedAt: true,
 });
+export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertEmailInvitationSchema = createInsertSchema(emailInvitations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 // Form schemas for core entities
 export const clubFormSchema = createInsertSchema(clubs, {
@@ -195,3 +243,7 @@ export type ClubMembership = typeof clubMemberships.$inferSelect;
 export type InsertClubMembership = z.infer<typeof insertClubMembershipSchema>;
 export type ClubJoinRequest = typeof clubJoinRequests.$inferSelect;
 export type InsertClubJoinRequest = z.infer<typeof insertClubJoinRequestSchema>;
+export type ActivityLog = typeof activityLogs.$inferSelect;
+export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
+export type EmailInvitation = typeof emailInvitations.$inferSelect;
+export type InsertEmailInvitation = z.infer<typeof insertEmailInvitationSchema>;

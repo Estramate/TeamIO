@@ -62,6 +62,12 @@ import {
   type MessageWithRecipients,
   type AnnouncementWithAuthor,
   type CommunicationStats,
+  activityLogs,
+  emailInvitations,
+  type ActivityLog,
+  type InsertActivityLog,
+  type EmailInvitation,
+  type InsertEmailInvitation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, gte, ne, or, sql, isNull } from "drizzle-orm";
@@ -228,6 +234,16 @@ export interface IStorage {
   // Search operations
   searchMessages(clubId: number, query: string, userId?: string): Promise<MessageWithRecipients[]>;
   searchAnnouncements(clubId: number, query: string): Promise<AnnouncementWithAuthor[]>;
+
+  // Activity log operations
+  createActivityLog(activityLog: InsertActivityLog): Promise<ActivityLog>;
+  getClubActivityLogs(clubId: number): Promise<any[]>;
+
+  // Email invitation operations
+  createEmailInvitation(invitation: InsertEmailInvitation): Promise<EmailInvitation>;
+  getEmailInvitationByToken(token: string): Promise<EmailInvitation | undefined>;
+  updateEmailInvitationStatus(token: string, status: 'accepted' | 'expired'): Promise<void>;
+  getClubEmailInvitations(clubId: number): Promise<EmailInvitation[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -965,6 +981,72 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFinance(id: number): Promise<void> {
     await db.delete(finances).where(eq(finances.id, id));
+  }
+
+  // Activity Log operations
+  async createActivityLog(activityLog: InsertActivityLog): Promise<ActivityLog> {
+    const [newLog] = await db.insert(activityLogs).values(activityLog).returning();
+    return newLog;
+  }
+
+  async getClubActivityLogs(clubId: number): Promise<any[]> {
+    return await db
+      .select({
+        id: activityLogs.id,
+        clubId: activityLogs.clubId,
+        userId: activityLogs.userId,
+        action: activityLogs.action,
+        targetUserId: activityLogs.targetUserId,
+        targetResource: activityLogs.targetResource,
+        targetResourceId: activityLogs.targetResourceId,
+        description: activityLogs.description,
+        metadata: activityLogs.metadata,
+        ipAddress: activityLogs.ipAddress,
+        userAgent: activityLogs.userAgent,
+        createdAt: activityLogs.createdAt,
+        // Join user data for display
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        userEmail: users.email,
+      })
+      .from(activityLogs)
+      .leftJoin(users, eq(activityLogs.userId, users.id))
+      .where(eq(activityLogs.clubId, clubId))
+      .orderBy(desc(activityLogs.createdAt))
+      .limit(100); // Limit to recent 100 activities
+  }
+
+  // Email Invitation operations  
+  async createEmailInvitation(invitation: InsertEmailInvitation): Promise<EmailInvitation> {
+    const [newInvitation] = await db.insert(emailInvitations).values(invitation).returning();
+    return newInvitation;
+  }
+
+  async getEmailInvitationByToken(token: string): Promise<EmailInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(emailInvitations)
+      .where(eq(emailInvitations.token, token));
+    return invitation;
+  }
+
+  async updateEmailInvitationStatus(token: string, status: 'accepted' | 'expired'): Promise<void> {
+    await db
+      .update(emailInvitations)
+      .set({ 
+        status, 
+        acceptedAt: status === 'accepted' ? new Date() : null,
+        updatedAt: new Date() 
+      })
+      .where(eq(emailInvitations.token, token));
+  }
+
+  async getClubEmailInvitations(clubId: number): Promise<EmailInvitation[]> {
+    return await db
+      .select()
+      .from(emailInvitations)
+      .where(eq(emailInvitations.clubId, clubId))
+      .orderBy(desc(emailInvitations.createdAt));
   }
 
   // Dashboard operations

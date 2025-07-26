@@ -386,6 +386,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(club);
   }));
 
+  // Club join request route
+  app.post('/api/clubs/:id/join', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.id);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in token');
+    }
+
+    // Check if user is already a member of this club
+    const existingMembership = await storage.getUserClubMembership(userId, clubId);
+    if (existingMembership) {
+      throw new ValidationError('You are already a member of this club', 'membership');
+    }
+
+    // Check if user already has a pending request
+    const userRequests = await storage.getUserJoinRequests(userId);
+    const pendingRequest = userRequests.find(request => 
+      request.clubId === clubId && request.status === 'pending'
+    );
+    
+    if (pendingRequest) {
+      throw new ValidationError('You already have a pending request for this club', 'request');
+    }
+
+    // Create join request
+    const requestData = {
+      userId,
+      clubId,
+      message: req.body.message || '',
+      requestedRole: req.body.role || 'member'
+    };
+
+    const joinRequest = await storage.createJoinRequest(requestData);
+    
+    logger.info('Club join request created', { 
+      requestId: joinRequest.id, 
+      clubId, 
+      userId, 
+      requestId: req.id 
+    });
+    
+    res.status(201).json({
+      success: true,
+      message: 'Join request submitted successfully',
+      requestId: joinRequest.id,
+      status: 'pending'
+    });
+  }));
+
   // Dashboard routes
   app.get('/api/clubs/:clubId/dashboard', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);

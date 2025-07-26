@@ -46,22 +46,27 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: 'member' }),
       });
-      if (!response.ok) throw new Error('Failed to join club');
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to join club');
+      }
+      
       return response.json();
     },
-    onSuccess: (membership) => {
+    onSuccess: (result) => {
       toast({
-        title: "Erfolgreich beigetreten",
-        description: "Sie sind dem Verein erfolgreich beigetreten.",
+        title: "Beitrittsanfrage gesendet",
+        description: "Ihre Beitrittsanfrage wurde erfolgreich gesendet und wird vom Administrator geprüft.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs'] });
-      setSelectedClub(membership.clubId); // Set club in store
-      onComplete(membership.clubId);
+      // Don't set selected club since it's just a request, not approved membership
+      onComplete(); // Go to dashboard without club selection
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: "Fehler beim Beitreten",
-        description: "Sie konnten dem Verein nicht beitreten.",
+        description: error.message || "Sie konnten dem Verein nicht beitreten.",
         variant: "destructive",
       });
     },

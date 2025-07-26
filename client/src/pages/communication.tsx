@@ -476,7 +476,21 @@ export default function Communication() {
 
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-4" style={{ touchAction: 'pan-y', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <h2 className="text-xl font-semibold">Kommunikationseinstellungen</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Kommunikationseinstellungen</h2>
+            <Button
+              onClick={() => {
+                toast({
+                  title: "Einstellungen gespeichert",
+                  description: "Ihre Präferenzen wurden erfolgreich aktualisiert",
+                });
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Speichern
+            </Button>
+          </div>
           
           <Card>
             <CardHeader>
@@ -491,7 +505,17 @@ export default function Communication() {
                   <label className="text-sm font-medium">E-Mail Benachrichtigungen</label>
                   <p className="text-sm text-gray-600">Erhalten Sie E-Mails für neue Nachrichten</p>
                 </div>
-                <Switch defaultChecked={preferences?.emailNotifications} />
+                <Switch 
+                  checked={preferences?.emailNotifications || false}
+                  onCheckedChange={(checked) => {
+                    updatePreferences({
+                      emailNotifications: checked,
+                      pushNotifications: preferences?.pushNotifications || false,
+                      soundNotifications: preferences?.soundNotifications || false,
+                      emailDigest: preferences?.emailDigest || 'daily'
+                    });
+                  }}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -499,7 +523,17 @@ export default function Communication() {
                   <label className="text-sm font-medium">Push Benachrichtigungen</label>
                   <p className="text-sm text-gray-600">Erhalten Sie sofortige Benachrichtigungen</p>
                 </div>
-                <Switch defaultChecked={preferences?.pushNotifications} />
+                <Switch 
+                  checked={preferences?.pushNotifications || false}
+                  onCheckedChange={(checked) => {
+                    updatePreferences({
+                      emailNotifications: preferences?.emailNotifications || false,
+                      pushNotifications: checked,
+                      soundNotifications: preferences?.soundNotifications || false,
+                      emailDigest: preferences?.emailDigest || 'daily'
+                    });
+                  }}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -507,7 +541,17 @@ export default function Communication() {
                   <label className="text-sm font-medium">Sound Benachrichtigungen</label>
                   <p className="text-sm text-gray-600">Ton bei neuen Nachrichten abspielen</p>
                 </div>
-                <Switch defaultChecked={preferences?.soundNotifications} />
+                <Switch 
+                  checked={preferences?.soundNotifications || false}
+                  onCheckedChange={(checked) => {
+                    updatePreferences({
+                      emailNotifications: preferences?.emailNotifications || false,
+                      pushNotifications: preferences?.pushNotifications || false,
+                      soundNotifications: checked,
+                      emailDigest: preferences?.emailDigest || 'daily'
+                    });
+                  }}
+                />
               </div>
             </CardContent>
           </Card>
@@ -522,7 +566,17 @@ export default function Communication() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">E-Mail Zusammenfassung</label>
-                <Select defaultValue={preferences?.emailDigest || "daily"}>
+                <Select 
+                  value={preferences?.emailDigest || "daily"}
+                  onValueChange={(value) => {
+                    updatePreferences({
+                      emailNotifications: preferences?.emailNotifications || false,
+                      pushNotifications: preferences?.pushNotifications || false,
+                      soundNotifications: preferences?.soundNotifications || false,
+                      emailDigest: value
+                    });
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Wählen Sie die Häufigkeit" />
                   </SelectTrigger>
@@ -533,6 +587,33 @@ export default function Communication() {
                     <SelectItem value="never">Nie</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Kommunikationsstatistiken</CardTitle>
+              <CardDescription>
+                Ihre aktuellen Kommunikationsdaten
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Nachrichten gesendet:</span>
+                <Badge variant="secondary">{stats?.recentActivity || 0}</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Nachrichten erhalten:</span>
+                <Badge variant="secondary">{stats?.totalMessages || 0}</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Ungelesene Nachrichten:</span>
+                <Badge variant="destructive">{stats?.unreadMessages || 0}</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Ankündigungen:</span>
+                <Badge variant="outline">{stats?.totalAnnouncements || 0}</Badge>
               </div>
             </CardContent>
           </Card>

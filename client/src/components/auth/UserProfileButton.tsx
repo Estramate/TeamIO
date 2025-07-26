@@ -45,13 +45,13 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
     ? {
         name: `${replitUser.firstName || ''} ${replitUser.lastName || ''}`.trim() || replitUser.email || 'User',
         email: replitUser.email || '',
-        avatar: replitUser.profileImageUrl,
+        avatar: replitUser.profileImageUrl || null,
         initials: `${replitUser.firstName?.[0] || ''}${replitUser.lastName?.[0] || ''}`.toUpperCase() || replitUser.email?.[0]?.toUpperCase() || 'U',
       }
     : {
         name: firebaseUser?.displayName || firebaseUser?.email || 'User',
         email: firebaseUser?.email || '',
-        avatar: firebaseUser?.photoURL,
+        avatar: firebaseUser?.photoURL || null,
         initials: firebaseUser?.displayName?.split(' ').map(n => n[0]).join('').toUpperCase() || firebaseUser?.email?.[0]?.toUpperCase() || 'U',
       };
 
@@ -98,9 +98,9 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className={`relative h-10 w-10 rounded-full ${className}`}>
           <Avatar className="h-10 w-10">
-            <AvatarImage src={userInfo.avatar || undefined} alt={userInfo.name || 'User'} />
+            <AvatarImage src={userInfo.avatar || undefined} alt={userInfo.name} />
             <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-              {userInfo.initials || 'U'}
+              {userInfo.initials}
             </AvatarFallback>
           </Avatar>
         </Button>

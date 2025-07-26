@@ -306,10 +306,10 @@ export default function Members() {
   // Filter members
   const filteredMembers = (members as any[]).filter((member: any) => {
     const matchesSearch = 
-      member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.membershipNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+      (member.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (member.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (member.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (member.membershipNumber || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
     

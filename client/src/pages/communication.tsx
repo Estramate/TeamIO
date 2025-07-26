@@ -1054,8 +1054,15 @@ export default function Communication() {
                       }
                       
                       try {
+                        console.log('Sending reply:', {
+                          content: replyText,
+                          originalSubject: selectedMessage?.subject,
+                          messageId: selectedMessage?.id,
+                          clubId: selectedClub?.id
+                        });
+                        
                         // Use the new reply endpoint
-                        await fetch(`/api/clubs/${selectedClub?.id}/messages/${selectedMessage?.id}/reply`, {
+                        const response = await fetch(`/api/clubs/${selectedClub?.id}/messages/${selectedMessage?.id}/reply`, {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',
@@ -1066,6 +1073,15 @@ export default function Communication() {
                             originalSubject: selectedMessage?.subject
                           }),
                         });
+                        
+                        if (!response.ok) {
+                          const errorData = await response.text();
+                          console.error('Reply failed:', response.status, errorData);
+                          throw new Error(`Reply failed: ${response.status} ${errorData}`);
+                        }
+                        
+                        const newReply = await response.json();
+                        console.log('Reply created successfully:', newReply);
                         
                         setReplyText('');
                         toast({
@@ -1079,7 +1095,7 @@ export default function Communication() {
                         console.error('Error sending reply:', error);
                         toast({
                           title: "Fehler",
-                          description: "Antwort konnte nicht gesendet werden",
+                          description: `Antwort konnte nicht gesendet werden: ${error.message}`,
                           variant: "destructive",
                         });
                       }

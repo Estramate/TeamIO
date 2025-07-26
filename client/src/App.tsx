@@ -12,26 +12,26 @@ import { useClub } from "@/hooks/use-club";
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { DashboardSkeleton, CardSkeleton } from '@/components/ui/loading-skeleton';
-import { Landing } from "@/pages/landing";
+import { Landing } from "@/pages/Landing";
 import { LoginPage } from "@/pages/LoginPage";
 import { OnboardingWizard } from "@/components/auth/OnboardingWizard";
 import { PendingMembershipDashboard } from "@/components/PendingMembershipDashboard";
 import Layout from "@/components/layout";
-import NotFound from "@/pages/not-found";
+import NotFound from "@/pages/Not-Found";
 
 // Lazy load all major pages for better performance
-const Dashboard = lazy(() => import("@/pages/dashboard"));
-const Members = lazy(() => import("@/pages/members"));
-const Players = lazy(() => import("@/pages/players"));
-const Teams = lazy(() => import("@/pages/teams"));
-const Bookings = lazy(() => import("@/pages/bookings"));
-const Facilities = lazy(() => import("@/pages/facilities"));
-const Finance = lazy(() => import("@/pages/finance"));
-const Calendar = lazy(() => import("@/pages/calendar"));
-const Communication = lazy(() => import("@/pages/communication"));
-const Reports = lazy(() => import("@/pages/reports"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Members = lazy(() => import("@/pages/Members"));
+const Players = lazy(() => import("@/pages/Players"));
+const Teams = lazy(() => import("@/pages/Teams"));
+const Bookings = lazy(() => import("@/pages/Bookings"));
+const Facilities = lazy(() => import("@/pages/Facilities"));
+const Finance = lazy(() => import("@/pages/Finance"));
+const Calendar = lazy(() => import("@/pages/Calendar"));
+const Communication = lazy(() => import("@/pages/Communication"));
+const Reports = lazy(() => import("@/pages/Reports"));
 const Users = lazy(() => import("@/pages/Users"));
-const Settings = lazy(() => import("@/pages/settings"));
+const Settings = lazy(() => import("@/pages/Settings"));
 
 // Lazy loading wrapper component
 const LazyPage = ({ component: Component }: { component: React.ComponentType }) => (
@@ -59,7 +59,7 @@ function AuthenticatedApp() {
           <Route path="/reports" component={() => <LazyPage component={Reports} />} />
           <Route path="/users" component={() => <LazyPage component={Users} />} />
           <Route path="/settings" component={() => <LazyPage component={Settings} />} />
-          <Route path="/auth-test" component={() => <LazyPage component={lazy(() => import("@/pages/auth-test"))} />} />
+          <Route path="/auth-test" component={() => <LazyPage component={lazy(() => import("@/pages/Auth-Test"))} />} />
           <Route component={NotFound} />
         </Switch>
       </Layout>

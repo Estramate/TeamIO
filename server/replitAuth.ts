@@ -165,10 +165,8 @@ export async function setupAuth(app: Express) {
         'Expires': '0'
       });
       
-      // For development, redirect to localhost with proper port and clear query params
-      const redirectUrl = process.env.NODE_ENV === 'production' 
-        ? `${req.protocol}://${req.hostname}` 
-        : 'http://localhost:5000';
+      // Always redirect to the original domain, not localhost
+      const redirectUrl = `${req.protocol}://${req.get('host')}`;
       
       console.log('LOGOUT COMPLETE - Redirecting to:', redirectUrl);
       

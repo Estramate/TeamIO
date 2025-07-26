@@ -88,13 +88,13 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
       console.log('Local data cleared, redirecting to server logout');
       
       // Always call server logout to clear cookies and sessions
-      window.location.href = "/api/logout";
+      window.location.assign("/api/logout");
     } catch (error) {
       console.error('Logout process error:', error);
       // Fallback: Force logout even if something fails
       localStorage.clear();
       sessionStorage.clear();
-      window.location.href = "/api/logout";
+      window.location.assign("/api/logout");
     }
   };
 

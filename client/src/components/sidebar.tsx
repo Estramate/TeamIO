@@ -412,7 +412,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     }
                     
                     // Force logout and redirect
-                    window.location.href = "/api/logout";
+                    window.location.assign("/api/logout");
                   }}
                   className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 h-8 w-8"
                   title="Abmelden"

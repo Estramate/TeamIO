@@ -48,8 +48,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import type { User } from '../../../shared/schemas/core';
+// LoadingSpinner removed - using built-in loading states
 
 export default function Users() {
   const { selectedClub } = useClub();

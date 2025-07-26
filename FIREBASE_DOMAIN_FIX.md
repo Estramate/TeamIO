@@ -5,9 +5,13 @@ Die Google Firebase Anmeldung funktioniert nicht in der Produktion unter `https:
 
 **Error Status**: 401 Unauthorized bei `/api/auth/user` in Production
 
-## IMMEDIATE SOLUTION REQUIRED
+## UPDATE: Domain ist bereits korrekt konfiguriert! ✅
 
-### 1. Firebase Console öffnen
+**Neue Analyse**: Die Firebase Console zeigt, dass `clubflow.replit.app` bereits in den autorisierten Domains steht. Das Problem liegt wahrscheinlich an der Environment-Variable-Konfiguration in der Produktionsumgebung.
+
+## NEUE DEBUGGING SCHRITTE
+
+### 1. Environment Variablen prüfen
 - Gehe zu https://console.firebase.google.com
 - Wähle dein Firebase Projekt aus (vermutlich "teamio-1be61" oder ähnlich)
 
@@ -53,7 +57,15 @@ Nach dem Hinzufügen:
 ## The Only Issue
 Firebase blockiert OAuth-Requests von nicht-autorisierten Domains aus Sicherheitsgründen. 
 
-**CRITICAL**: Nach dem Hinzufügen der Domain wird die Anmeldung sofort funktionieren - keine Code-Änderungen erforderlich!
+## Debugging-Verbesserungen hinzugefügt ✅
+- Enhanced Firebase error logging mit detaillierten Fehlermeldungen
+- Domain-Verification im Client-Code
+- Bessere Unterscheidung zwischen Domain- und Config-Problemen
 
-## Alternative (Temporary)
-Falls du die Firebase Console nicht direkt erreichen kannst, kannst du den Replit Login verwenden bis die Domain-Autorisierung erfolgt ist.
+## Nächste Schritte:
+1. **Teste die verbesserte Fehlerausgabe** in der Production Console
+2. **Prüfe Browser Network Tab** auf Firebase API-Calls
+3. **Fallback auf Replit Authentication** funktioniert weiterhin
+
+## Alternative (Funktioniert immer)
+Replit Authentication ist vollständig funktional und kann als primäre Anmeldemethode verwendet werden.

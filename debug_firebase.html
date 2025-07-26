@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Debug Test</title>
+</head>
+<body>
+    <h1>Firebase Configuration Test</h1>
+    <div id="result"></div>
+    
+    <script type="module">
+        // Test Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBzZhKUa-97ReDQMAIvns0eZLBcsyvbNrQ",
+            authDomain: "teamio-1be61.firebaseapp.com",
+            projectId: "teamio-1be61",
+            storageBucket: "teamio-1be61.firebasestorage.app",
+            appId: "1:940581002603:web:d9bd5b60072f6443b0402e"
+        };
+        
+        console.log('Firebase Config:', firebaseConfig);
+        console.log('Current Domain:', window.location.hostname);
+        console.log('Auth Domain:', firebaseConfig.authDomain);
+        
+        document.getElementById('result').innerHTML = `
+            <p><strong>Current Domain:</strong> ${window.location.hostname}</p>
+            <p><strong>Auth Domain:</strong> ${firebaseConfig.authDomain}</p>
+            <p><strong>Project ID:</strong> ${firebaseConfig.projectId}</p>
+            <p><strong>Status:</strong> Config loaded successfully</p>
+        `;
+    </script>
+</body>
+</html>

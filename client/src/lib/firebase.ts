@@ -24,6 +24,16 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Debug Firebase configuration
+console.log('🔧 Firebase Config Debug:', {
+  hasApiKey: !!firebaseConfig.apiKey,
+  hasProjectId: !!firebaseConfig.projectId,
+  hasAppId: !!firebaseConfig.appId,
+  authDomain: firebaseConfig.authDomain,
+  currentDomain: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
+  environment: import.meta.env.NODE_ENV
+});
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -41,33 +51,49 @@ googleProvider.setCustomParameters({
  */
 export const signInWithGoogle = async (): Promise<FirebaseUser> => {
   try {
-    console.log('Starting Google sign-in...');
+    console.log('🚀 Starting Google sign-in...', {
+      domain: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
+      authDomain: firebaseConfig.authDomain,
+      projectId: firebaseConfig.projectId
+    });
+    
     const result = await signInWithPopup(auth, googleProvider);
-    console.log('Google sign-in successful:', {
+    console.log('✅ Google sign-in successful:', {
       uid: result.user.uid,
       email: result.user.email,
       displayName: result.user.displayName
     });
     return result.user;
   } catch (error: any) {
-    console.error('Google sign-in popup error:', error);
+    console.error('❌ Google sign-in popup error:', {
+      code: error.code,
+      message: error.message,
+      domain: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
+      authDomain: firebaseConfig.authDomain,
+      error: error
+    });
+    
+    // Enhanced error handling with specific error messages
+    if (error.code === 'auth/unauthorized-domain') {
+      throw new Error(`Domain ${typeof window !== 'undefined' ? window.location.hostname : 'unknown'} ist nicht für Firebase OAuth autorisiert. Kontaktieren Sie den Administrator.`);
+    }
     
     // If popup fails, try redirect method
     if (error.code === 'auth/popup-closed-by-user' || 
         error.code === 'auth/popup-blocked' || 
         error.code === 'auth/cancelled-popup-request') {
-      console.log('Popup failed, trying redirect method...');
+      console.log('🔄 Popup failed, trying redirect method...');
       try {
         await signInWithRedirect(auth, googleProvider);
         // The redirect will happen, so we don't return anything here
         throw new Error('Redirecting to Google sign-in...');
-      } catch (redirectError) {
-        console.error('Redirect sign-in also failed:', redirectError);
-        throw new Error('Google sign-in failed. Please try again.');
+      } catch (redirectError: any) {
+        console.error('❌ Redirect sign-in also failed:', redirectError);
+        throw new Error(`Google sign-in failed: ${redirectError.message || 'Unknown error'}`);
       }
     }
     
-    throw error;
+    throw new Error(`Firebase Authentication Error: ${error.message || 'Unknown error'}`);
   }
 };
 

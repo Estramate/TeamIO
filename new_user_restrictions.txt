@@ -1,0 +1,46 @@
+✅ NEUE BENUTZER BESCHRÄNKUNGEN IMPLEMENTIERT!
+
+**ÄNDERUNG:**
+- Neue Benutzer können keine Vereine mehr über OnboardingWizard erstellen
+- "Verein erstellen" Option komplett entfernt
+- Nur noch 2 Optionen: "Verein suchen" und "Später entscheiden"
+
+**ENTFERNTE FUNKTIONEN:**
+1. **Welcome Step:** 
+   - "Verein erstellen" Karte entfernt
+   - Grid von 3 auf 2 Spalten reduziert
+   - Karten größer und prominenter gestaltet
+
+2. **Browse Step:**
+   - "Verein erstellen" Button entfernt
+   - Hilfstext für Administratorkontakt hinzugefügt
+
+3. **Create Step:**
+   - Kompletter Step entfernt (renderCreateStep)
+   - Alle Create-Mutations entfernt
+   - newClubData State entfernt
+
+4. **Navigation:**
+   - Step-States auf 'welcome' | 'browse' beschränkt
+   - createClubMutation komplett entfernt
+   - handleCreateClub Funktion entfernt
+
+**NEUE BENUTZERFÜHRUNG:**
+```
+Willkommen → Verein suchen OR Später entscheiden
+```
+
+**HINWEISE FÜR BENUTZER:**
+- Blauer Info-Box: "Die Erstellung neuer Vereine ist Administratoren vorbehalten"
+- Bei leerer Suche: "Kontaktieren Sie den Administrator, um einen neuen Verein hinzuzufügen"
+
+**VORTEILE:**
+- ✅ Verhindert Spam-Vereine von neuen Benutzern
+- ✅ Administratoren behalten Kontrolle über Vereinserstellung
+- ✅ Klarere Benutzerführung
+- ✅ Weniger Verwirrung für neue Benutzer
+- ✅ Vereinfachte Oberfläche
+
+**STATUS: 🎯 BESCHRÄNKUNG ERFOLGREICH IMPLEMENTIERT!**
+
+Neue Benutzer können nur bestehenden Vereinen beitreten oder später entscheiden.

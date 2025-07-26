@@ -23,15 +23,8 @@ interface OnboardingWizardProps {
 }
 
 export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) {
-  const [step, setStep] = useState<'welcome' | 'browse' | 'create' | 'join'>('welcome');
+  const [step, setStep] = useState<'welcome' | 'browse'>('welcome');
   const [searchQuery, setSearchQuery] = useState('');
-  const [newClubData, setNewClubData] = useState({
-    name: '',
-    description: '',
-    address: '',
-    email: '',
-    website: ''
-  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { setSelectedClub } = useClubStore();
@@ -39,38 +32,11 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
   // Get available clubs
   const { data: clubs, isLoading } = useQuery({
     queryKey: ['/api/clubs/public'],
-    enabled: isOpen && (step === 'browse' || step === 'join'),
+    enabled: isOpen && step === 'browse',
     retry: false,
   });
 
-  // Create new club mutation
-  const createClubMutation = useMutation({
-    mutationFn: async (clubData: typeof newClubData) => {
-      const response = await fetch('/api/clubs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(clubData),
-      });
-      if (!response.ok) throw new Error('Failed to create club');
-      return response.json();
-    },
-    onSuccess: (club) => {
-      toast({
-        title: "Verein erfolgreich erstellt",
-        description: `${club.name} wurde erfolgreich erstellt.`,
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs'] });
-      setSelectedClub(club.id); // Set club in store
-      onComplete(club.id);
-    },
-    onError: () => {
-      toast({
-        title: "Fehler beim Erstellen",
-        description: "Der Verein konnte nicht erstellt werden.",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   // Join club mutation
   const joinClubMutation = useMutation({
@@ -106,17 +72,7 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
     club.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateClub = () => {
-    if (!newClubData.name.trim()) {
-      toast({
-        title: "Name erforderlich",
-        description: "Bitte geben Sie einen Vereinsnamen ein.",
-        variant: "destructive",
-      });
-      return;
-    }
-    createClubMutation.mutate(newClubData);
-  };
+
 
   const renderWelcomeStep = () => (
     <div className="text-center space-y-8">
@@ -134,48 +90,39 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
         <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/30 cursor-pointer group" onClick={() => setStep('browse')}>
-          <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <Search className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          <CardContent className="p-10 text-center">
+            <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+              <Search className="w-10 h-10 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="font-bold text-xl mb-2">Verein suchen</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Durchsuchen Sie bestehende Vereine und treten Sie einem bei, der zu Ihnen passt.
+            <h3 className="font-bold text-2xl mb-3">Verein suchen</h3>
+            <p className="text-muted-foreground leading-relaxed">
+              Durchsuchen Sie bestehende Vereine und treten Sie einem bei, der zu Ihnen passt. Finden Sie den perfekten Verein für Ihre sportlichen Aktivitäten.
             </p>
           </CardContent>
         </Card>
         
-        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/30 cursor-pointer group" onClick={() => setStep('create')}>
-          <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <Plus className="w-8 h-8 text-green-600 dark:text-green-400" />
+        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/30 cursor-pointer group" onClick={() => onComplete()}>
+          <CardContent className="p-10 text-center">
+            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+              <Users className="w-10 h-10 text-gray-600 dark:text-gray-400" />
             </div>
-            <h3 className="font-bold text-xl mb-2">Verein erstellen</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Gründen Sie einen neuen Verein und beginnen Sie mit der professionellen Verwaltung.
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/30 cursor-pointer group md:col-span-2 lg:col-span-1" onClick={() => onComplete()}>
-          <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <Users className="w-8 h-8 text-gray-600 dark:text-gray-400" />
-            </div>
-            <h3 className="font-bold text-xl mb-2">Später entscheiden</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Erkunden Sie TeamIO zuerst und entscheiden Sie später über Ihre Vereinszugehörigkeit.
+            <h3 className="font-bold text-2xl mb-3">Später entscheiden</h3>
+            <p className="text-muted-foreground leading-relaxed">
+              Erkunden Sie TeamIO zuerst und entscheiden Sie später über Ihre Vereinszugehörigkeit. Sie können jederzeit einem Verein beitreten.
             </p>
           </CardContent>
         </Card>
       </div>
       
-      <div className="pt-6 border-t border-border">
-        <p className="text-sm text-muted-foreground">
-          Sie können Ihre Entscheidung jederzeit in den Einstellungen ändern.
-        </p>
+      <div className="pt-8 border-t border-border">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 max-w-2xl mx-auto">
+          <p className="text-sm text-blue-800 dark:text-blue-200 text-center">
+            <strong>Hinweis:</strong> Die Erstellung neuer Vereine ist Administratoren vorbehalten. 
+            Sie können Ihre Vereinszugehörigkeit jederzeit in den Einstellungen ändern.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -213,10 +160,9 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
               <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
                 Versuchen Sie es mit anderen Suchbegriffen oder erstellen Sie einen neuen Verein.
               </p>
-              <Button variant="outline" onClick={() => setStep('create')} className="px-6">
-                <Plus className="h-4 w-4 mr-2" />
-                Neuen Verein erstellen
-              </Button>
+              <p className="text-sm text-muted-foreground">
+                Können Sie Ihren Verein nicht finden? Kontaktieren Sie den Administrator, um einen neuen Verein hinzuzufügen.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -287,15 +233,9 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         </div>
       )}
       
-      <div className="flex justify-center gap-4 pt-8 border-t border-border">
+      <div className="flex justify-center pt-8 border-t border-border">
         <Button variant="outline" onClick={() => setStep('welcome')} className="px-8">
-          <div className="flex items-center gap-2">
-            Zurück
-          </div>
-        </Button>
-        <Button variant="outline" onClick={() => setStep('create')} className="px-8">
-          <Plus className="h-4 w-4 mr-2" />
-          Verein erstellen
+          Zurück zur Auswahl
         </Button>
       </div>
     </div>
@@ -415,7 +355,6 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         <div className="px-2">
           {step === 'welcome' && renderWelcomeStep()}
           {step === 'browse' && renderBrowseStep()}
-          {step === 'create' && renderCreateStep()}
         </div>
       </DialogContent>
     </Dialog>

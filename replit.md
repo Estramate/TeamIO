@@ -83,6 +83,7 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - ✅ Korrekte Authentifizierungslogik für Firebase und Replit-Benutzer basierend auf selectedClub-Status
 - ✅ **AUTO-CLUB-SELECTION IMPLEMENTIERT** - Benutzer mit Vereinszugehörigkeit: Auto-Select erster Verein → Dashboard
 - ✅ **ONBOARDING-WIZARD DESIGN KOMPLETT MODERNISIERT** - Professionelle UI mit Gradients, Hover-Effekten und responsivem Layout
+- ✅ **NEUE BENUTZER BESCHRÄNKUNGEN** - Vereinserstellung nur für Administratoren, neue Benutzer können nur bestehenden Vereinen beitreten
 
 **MAJOR UPDATE - Complete Communication System (January 25, 2025):**
 ✅ **COMPREHENSIVE COMMUNICATION PLATFORM** implemented with all project standards:

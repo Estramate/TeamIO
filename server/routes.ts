@@ -49,6 +49,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/errors', handleErrorReports);
   app.post('/api/performance', handlePerformanceMetrics);
 
+  // Firebase authentication endpoint
+  app.post('/api/auth/firebase', asyncHandler(async (req: any, res: any) => {
+    const { userData } = req.body;
+    
+    if (!userData || !userData.uid) {
+      throw new ValidationError('Invalid user data', 'userData');
+    }
+    
+    try {
+      // Upsert Firebase user to database
+      await storage.upsertUser({
+        id: userData.uid,
+        email: userData.email,
+        firstName: userData.displayName?.split(' ')[0] || null,
+        lastName: userData.displayName?.split(' ').slice(1).join(' ') || null,
+        profileImageUrl: userData.photoURL,
+      });
+      
+      // Create session user object compatible with existing auth system
+      req.session.user = {
+        claims: {
+          sub: userData.uid,
+          email: userData.email,
+          first_name: userData.displayName?.split(' ')[0] || null,
+          last_name: userData.displayName?.split(' ').slice(1).join(' ') || null,
+          profile_image_url: userData.photoURL,
+        },
+        authProvider: 'firebase'
+      };
+      
+      // Save session
+      await new Promise((resolve, reject) => {
+        req.session.save((err: any) => {
+          if (err) reject(err);
+          else resolve(true);
+        });
+      });
+      
+      logger.info('Firebase user authenticated', { userId: userData.uid, email: userData.email });
+      res.json({ success: true, userId: userData.uid });
+    } catch (error) {
+      logger.error('Firebase authentication failed', { error: error.message, userId: userData.uid });
+      throw new AuthorizationError('Firebase authentication failed');
+    }
+  }));
+
   // Auth routes (supports both Replit and Firebase auth)
   app.get('/api/auth/user', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.claims.sub;

@@ -14,6 +14,7 @@ declare module "express-session" {
       claims: any;
       authProvider: string;
     };
+    firebaseUser?: any;
   }
 }
 
@@ -67,57 +68,7 @@ export const verifyFirebaseToken: RequestHandler = async (req, res, next) => {
  * Setup Firebase authentication routes
  */
 export function setupFirebaseAuth(app: Express) {
-  
-  // Firebase user registration/login endpoint
-  app.post("/api/auth/firebase", async (req, res) => {
-    try {
-      const { userData } = req.body;
-      
-      if (!userData || !userData.id || !userData.email) {
-        return res.status(400).json({ message: "Invalid user data" });
-      }
-
-      // Upsert user in database
-      await storage.upsertUser({
-        id: userData.id,
-        email: userData.email,
-        firstName: userData.firstName || '',
-        lastName: userData.lastName || '',
-        profileImageUrl: userData.profileImageUrl,
-        authProvider: userData.authProvider || 'firebase',
-        providerUserId: userData.providerUserId,
-        providerData: userData.providerData,
-        lastLoginAt: new Date(),
-      });
-
-      // Create a session for the user
-      req.session.user = {
-        claims: {
-          sub: userData.id,
-          email: userData.email,
-          first_name: userData.firstName,
-          last_name: userData.lastName,
-          profile_image_url: userData.profileImageUrl,
-        },
-        authProvider: userData.authProvider
-      };
-
-      res.json({ 
-        success: true, 
-        user: {
-          id: userData.id,
-          email: userData.email,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          authProvider: userData.authProvider
-        }
-      });
-
-    } catch (error) {
-      logger.error('Firebase authentication error:', error);
-      res.status(500).json({ message: "Authentication failed" });
-    }
-  });
+  // Note: Firebase auth endpoint moved to routes.ts to avoid duplication
 
   // Firebase logout endpoint
   app.post("/api/auth/firebase/logout", (req, res) => {
@@ -173,12 +124,12 @@ export function setupFirebaseAuth(app: Express) {
 export const isAuthenticatedEnhanced: RequestHandler = async (req, res, next) => {
   try {
     // Check for Replit authentication first
-    if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+    if (req.isAuthenticated && req.isAuthenticated() && req.user && req.user.claims) {
       return next();
     }
 
-    // Check for session-based authentication (Firebase)
-    if (req.session && req.session.user) {
+    // Check for session-based authentication (Firebase or other)
+    if (req.session && req.session.user && req.session.user.claims) {
       req.user = req.session.user;
       return next();
     }
@@ -189,9 +140,9 @@ export const isAuthenticatedEnhanced: RequestHandler = async (req, res, next) =>
       return verifyFirebaseToken(req, res, next);
     }
 
-    return res.status(401).json({ message: "Authentication required" });
+    return res.status(401).json({ message: "Unauthorized" });
   } catch (error) {
     logger.error('Authentication middleware error:', error);
-    return res.status(401).json({ message: "Authentication failed" });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 };

@@ -40,17 +40,27 @@ export function useFirebaseAuth() {
         if (user) {
           // User signed in, send to backend
           const userData = extractUserData(user);
-          await fetch('/api/auth/firebase', {
+          const response = await fetch('/api/auth/firebase', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userData }),
+            credentials: 'include', // Include cookies for session
           });
           
-          setAuthState({ user, loading: false, error: null });
-          toast({
-            title: "Erfolgreich angemeldet",
-            description: `Willkommen zurück, ${user.displayName || user.email}!`,
-          });
+          if (response.ok) {
+            setAuthState({ user, loading: false, error: null });
+            toast({
+              title: "Erfolgreich angemeldet",
+              description: `Willkommen zurück, ${user.displayName || user.email}!`,
+            });
+            
+            // Redirect to home page after successful authentication
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 1000);
+          } else {
+            throw new Error('Backend authentication failed');
+          }
         } else {
           // User signed out
           setAuthState({ user: null, loading: false, error: null });
@@ -60,7 +70,7 @@ export function useFirebaseAuth() {
         setAuthState({ user: null, loading: false, error: 'Anmeldung fehlgeschlagen' });
         toast({
           title: "Anmeldung fehlgeschlagen",
-          description: "Bitte versuchen Sie es erneut.",
+          description: "Backend-Synchronisation fehlgeschlagen. Bitte versuchen Sie es erneut.",
           variant: "destructive",
         });
       }

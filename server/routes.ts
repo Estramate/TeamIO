@@ -125,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.status(401).json({ message: "Not authenticated" });
   };
 
-  // Auth routes (Replit auth only) - NO MIDDLEWARE, handles auth internally
+  // Auth routes (Multi-provider support) - NO MIDDLEWARE, handles auth internally
   app.get('/api/auth/user', async (req: any, res: any) => {
     try {
       console.log('=== GET /api/auth/user DEBUG ===');
@@ -145,7 +145,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-
+      // Try email/password authentication (session-based)
+      if (req.session?.user) {
+        const userId = req.session.user.id;
+        console.log('Using email auth, user ID:', userId);
+        const user = await storage.getUser(userId);
+        if (user) {
+          console.log('Email user found:', { id: user.id, email: user.email });
+          return res.json(user);
+        }
+      }
 
       console.log('No valid authentication found');
       res.status(401).json({ message: "Not authenticated" });

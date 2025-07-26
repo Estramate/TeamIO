@@ -74,6 +74,34 @@ function Router() {
   // Check if user is authenticated with either provider
   const isAuthenticated = replitAuth || firebaseAuth;
   const isLoading = replitLoading || firebaseLoading;
+  
+  // Force refresh auth state after logout
+  const [lastLogout, setLastLogout] = useState(0);
+  
+  useEffect(() => {
+    const handleLogout = () => {
+      console.log('Logout event detected, forcing auth refresh');
+      setLastLogout(Date.now());
+      // Clear all local storage
+      localStorage.clear();
+      sessionStorage.clear();
+      // Force page reload after a short delay
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
+    };
+    
+    // Listen for logout events
+    window.addEventListener('beforeunload', () => {
+      if (window.location.pathname === '/api/logout') {
+        handleLogout();
+      }
+    });
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleLogout);
+    };
+  }, []);
 
   // Check if authenticated user needs onboarding
   useEffect(() => {

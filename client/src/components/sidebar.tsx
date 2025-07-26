@@ -392,7 +392,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.location.href = "/api/logout"}
+                  onClick={() => {
+                    console.log('Sidebar logout clicked');
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = "/api/logout";
+                  }}
                   className="text-muted-foreground hover:text-foreground p-1 h-8 w-8"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

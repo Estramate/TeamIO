@@ -117,35 +117,52 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
+    console.log('=== LOGOUT DEBUG ===');
+    console.log('Session exists before logout:', !!req.session);
+    console.log('Is authenticated before logout:', req.isAuthenticated?.());
+    
     // Clear session and Firebase cookies
-    req.logout(() => {
+    req.logout((err) => {
+      if (err) {
+        console.error('Logout error:', err);
+      }
+      
+      console.log('After req.logout - clearing cookies and session');
+      
       // Clear Firebase auth cookie
       res.clearCookie('firebase-auth', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: 'lax',
+        path: '/'
       });
       
-      // Clear any other auth-related cookies
+      // Clear session cookie properly
       res.clearCookie('connect.sid', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: 'lax',
+        path: '/'
       });
       
-      // Destroy session
+      // Destroy session completely
       if (req.session) {
-        req.session.destroy(() => {
-          console.log('Session destroyed on logout');
+        req.session.destroy((destroyErr) => {
+          if (destroyErr) {
+            console.error('Session destroy error:', destroyErr);
+          } else {
+            console.log('Session destroyed successfully on logout');
+          }
         });
       }
       
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
+      // For development, redirect to localhost with proper port
+      const redirectUrl = process.env.NODE_ENV === 'production' 
+        ? `${req.protocol}://${req.hostname}` 
+        : 'http://localhost:5000';
+      
+      console.log('Redirecting after logout to:', redirectUrl);
+      res.redirect(redirectUrl);
     });
   });
 }

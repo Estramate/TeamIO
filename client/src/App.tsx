@@ -97,9 +97,9 @@ function Router() {
     );
   }
 
-  // Show login page for unauthenticated users
+  // Show landing page for unauthenticated users
   if (!isAuthenticated) {
-    return <LoginPage />;
+    return <Landing />;
   }
 
   // Show onboarding for new Firebase users

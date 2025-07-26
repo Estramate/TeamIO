@@ -59,7 +59,7 @@ export default function Users() {
   const [activeTab, setActiveTab] = useState('users');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending'>('all');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'member' | 'coach'>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'member' | 'coach' | 'club-administrator'>('all');
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -186,7 +186,8 @@ export default function Users() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'admin': return <Shield className="h-4 w-4" />;
+      case 'admin': 
+      case 'club-administrator': return <Shield className="h-4 w-4" />;
       case 'coach': return <UserCog className="h-4 w-4" />;
       default: return <UsersIcon className="h-4 w-4" />;
     }
@@ -195,6 +196,7 @@ export default function Users() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin': return <Badge variant="destructive">Administrator</Badge>;
+      case 'club-administrator': return <Badge variant="destructive">Vereins-Administrator</Badge>;
       case 'coach': return <Badge variant="secondary">Trainer</Badge>;
       default: return <Badge variant="outline">Mitglied</Badge>;
     }
@@ -276,6 +278,7 @@ export default function Users() {
               <SelectContent>
                 <SelectItem value="all">Alle Rollen</SelectItem>
                 <SelectItem value="admin">Administrator</SelectItem>
+                <SelectItem value="club-administrator">Vereins-Administrator</SelectItem>
                 <SelectItem value="coach">Trainer</SelectItem>
                 <SelectItem value="member">Mitglied</SelectItem>
               </SelectContent>
@@ -430,6 +433,7 @@ export default function Users() {
                     <SelectItem value="member">Mitglied</SelectItem>
                     <SelectItem value="coach">Trainer</SelectItem>
                     <SelectItem value="admin">Administrator</SelectItem>
+                    <SelectItem value="club-administrator">Vereins-Administrator</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

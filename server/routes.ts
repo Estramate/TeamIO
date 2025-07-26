@@ -690,6 +690,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }));
 
+  // Activity logs route (admin only)
+  app.get('/api/clubs/:clubId/activity-logs', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.userId;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Check if user has admin permissions for this club
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership || !['club-administrator', 'admin'].includes(membership.role)) {
+      throw new AuthorizationError('Only administrators can view activity logs');
+    }
+    
+    const logs = await storage.getActivityLogs(clubId);
+    logger.info('Activity logs retrieved', { userId, clubId, count: logs.length, requestId: req.id });
+    res.json(logs);
+  }));
+
   // Users management route (admin only)
   app.get('/api/clubs/:clubId/users', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
@@ -722,6 +742,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const updatedMembership = await storage.updateClubMembershipById(memberId, { role });
     
+    // Log the role change activity
+    const member = await storage.getUser(updatedMembership.userId);
+    const admin = await storage.getUser(userId);
+    if (member && admin) {
+      await storage.createActivityLog({
+        clubId,
+        userId,
+        action: 'role_changed',
+        targetUserId: member.id,
+        targetResource: 'membership',
+        targetResourceId: memberId,
+        description: `${admin.firstName} ${admin.lastName} hat die Rolle von ${member.firstName} ${member.lastName} zu ${role === 'club-administrator' ? 'Administrator' : role === 'trainer' ? 'Trainer' : 'Mitglied'} geändert`,
+        metadata: { oldRole: updatedMembership.role, newRole: role },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+    }
+    
     logger.info('Member role updated', { clubId, memberId, newRole: role, updatedBy: userId, requestId: req.id });
     res.json(updatedMembership);
   }));
@@ -740,6 +778,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     const updatedMembership = await storage.updateClubMembershipById(memberId, { status });
+    
+    // Log the status change activity
+    const member = await storage.getUser(updatedMembership.userId);
+    const admin = await storage.getUser(userId);
+    if (member && admin) {
+      const statusDescription = status === 'active' ? 'genehmigt' : status === 'inactive' ? 'abgelehnt' : status;
+      await storage.createActivityLog({
+        clubId,
+        userId,
+        action: 'membership_status_changed',
+        targetUserId: member.id,
+        targetResource: 'membership',
+        targetResourceId: memberId,
+        description: `${admin.firstName} ${admin.lastName} hat die Mitgliedschaft von ${member.firstName} ${member.lastName} ${statusDescription}`,
+        metadata: { oldStatus: updatedMembership.status, newStatus: status },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+    }
     
     logger.info('Member status updated', { clubId, memberId, newStatus: status, updatedBy: userId, requestId: req.id });
     res.json(updatedMembership);

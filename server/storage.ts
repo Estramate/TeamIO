@@ -73,6 +73,9 @@ import { db } from "./db";
 import { eq, and, desc, asc, gte, ne, or, sql, isNull } from "drizzle-orm";
 
 export interface IStorage {
+  // Activity logging operations
+  createActivityLog(activityLog: InsertActivityLog): Promise<ActivityLog>;
+  getActivityLogs(clubId: number, limit?: number): Promise<ActivityLog[]>;
   // User operations (supports multiple auth providers)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -1960,6 +1963,89 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
+  // Activity logging operations
+  async createActivityLog(activityLog: InsertActivityLog): Promise<ActivityLog> {
+    const [log] = await db.insert(activityLogs).values({
+      ...activityLog,
+      createdAt: new Date()
+    }).returning();
+    return log;
+  }
+
+  async getActivityLogs(clubId: number, limit: number = 50): Promise<ActivityLog[]> {
+    const logs = await db
+      .select({
+        id: activityLogs.id,
+        clubId: activityLogs.clubId,
+        userId: activityLogs.userId,
+        action: activityLogs.action,
+        targetUserId: activityLogs.targetUserId,
+        targetResource: activityLogs.targetResource,
+        targetResourceId: activityLogs.targetResourceId,
+        description: activityLogs.description,
+        metadata: activityLogs.metadata,
+        ipAddress: activityLogs.ipAddress,
+        userAgent: activityLogs.userAgent,
+        createdAt: activityLogs.createdAt,
+        // Join user information
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+        targetUser: {
+          id: targetUsers.id,
+          firstName: targetUsers.firstName,
+          lastName: targetUsers.lastName,
+          email: targetUsers.email,
+        },
+      })
+      .from(activityLogs)
+      .innerJoin(users, eq(activityLogs.userId, users.id))
+      .leftJoin(users.as('targetUsers'), eq(activityLogs.targetUserId, users.as('targetUsers').id))
+      .where(eq(activityLogs.clubId, clubId))
+      .orderBy(desc(activityLogs.createdAt))
+      .limit(limit);
+
+    return logs.map(log => ({
+      ...log,
+      user: log.user,
+      targetUser: log.targetUser || undefined,
+    })) as ActivityLog[];
+  }
+
+  // Helper method to log user activities
+  async logActivity(params: {
+    clubId: number;
+    userId: string;
+    action: string;
+    description: string;
+    targetUserId?: string;
+    targetResource?: string;
+    targetResourceId?: number;
+    metadata?: any;
+    ipAddress?: string;
+    userAgent?: string;
+  }): Promise<void> {
+    try {
+      await this.createActivityLog({
+        clubId: params.clubId,
+        userId: params.userId,
+        action: params.action,
+        description: params.description,
+        targetUserId: params.targetUserId || null,
+        targetResource: params.targetResource || null,
+        targetResourceId: params.targetResourceId || null,
+        metadata: params.metadata || null,
+        ipAddress: params.ipAddress || null,
+        userAgent: params.userAgent || null,
+      });
+    } catch (error) {
+      console.error('Failed to log activity:', error);
+      // Don't throw - logging failures shouldn't break the main operation
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

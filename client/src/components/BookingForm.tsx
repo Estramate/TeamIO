@@ -60,13 +60,13 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       } else if (typeof dateValue === 'string') {
         // Handle time-only values (like "19:00")
         if (dateValue.match(/^\d{2}:\d{2}$/)) {
-          console.log('Processing time-only value:', dateValue, 'baseDate:', baseDate);
+          // Processing time-only value for booking
           // If we have a time-only value, we need to combine it with a date
           const referenceDate = baseDate ? new Date(baseDate) : new Date();
           const [hours, minutes] = dateValue.split(':');
           date = new Date(referenceDate);
           date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-          console.log('Formatted time-only:', date.toISOString().slice(0, 16));
+          // Formatted time-only for booking
         } else {
           date = new Date(dateValue);
         }
@@ -86,7 +86,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       const formatted = localDate.toISOString().slice(0, 16);
       return formatted;
     } catch (error) {
-      console.error('Error formatting date:', error, 'Input:', dateValue);
+      // Date formatting error handled internally
       return "";
     }
   };
@@ -189,7 +189,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
     mutationFn: async (data: { facilityId: number; startTime: string; endTime: string; excludeBookingId?: number }) => {
       const response = await apiRequest('POST', `/api/clubs/${selectedClubId}/bookings/check-availability`, data);
       const jsonData = await response.json();
-      console.log('Parsed JSON data:', jsonData);
+      // JSON data parsed successfully
       return jsonData;
     },
   });
@@ -214,15 +214,6 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
     const startTimeISO = new Date(startTime).toISOString();
     const endTimeISO = new Date(endTime).toISOString();
 
-    console.log('Checking availability with data:', {
-      facilityId: parseInt(facilityId),
-      startTime: startTimeISO,
-      endTime: endTimeISO,
-      excludeBookingId: editingBooking?.id,
-      originalStartTime: startTime,
-      originalEndTime: endTime
-    });
-
     checkAvailabilityMutation.mutate({
       facilityId: parseInt(facilityId),
       startTime: startTimeISO,
@@ -230,7 +221,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       excludeBookingId: editingBooking?.id
     }, {
       onSuccess: (data: any) => {
-        console.log('Availability check SUCCESS:', data);
+        // Availability check successful
         
         // Erweiterte Anzeige mit Buchungszählung
         let message = data.message;
@@ -248,9 +239,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
         setIsCheckingAvailability(false);
       },
       onError: (error: any) => {
-        console.error('Availability check ERROR:', error);
-        console.error('Error response:', error.response);
-        console.error('Error message:', error.message);
+        // Availability check error handled
         setAvailabilityStatus({
           available: false,
           message: error.response?.data?.message || error.message || 'Fehler bei der Verfügbarkeitsprüfung'

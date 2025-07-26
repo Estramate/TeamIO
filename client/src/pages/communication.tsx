@@ -6,6 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 
 import { useToast } from "@/hooks/use-toast";
+import { toastService } from "@/lib/toast-service";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
@@ -454,29 +455,18 @@ export default function Communication() {
                                     });
                                     
                                     if (response.ok) {
-                                      toast({
-                                        title: "Nachricht gelöscht",
-                                        description: "Die Nachricht wurde erfolgreich gelöscht",
-                                      });
+                                      toastService.database.deleted("Nachricht");
                                       // Refetch to ensure consistency
                                       queryClient.invalidateQueries({ queryKey: messagesQueryKey });
                                     } else {
                                       // Revert optimistic update on error
                                       queryClient.setQueryData(messagesQueryKey, previousMessages);
-                                      toast({
-                                        title: "Fehler",
-                                        description: "Nachricht konnte nicht gelöscht werden",
-                                        variant: "destructive",
-                                      });
+                                      toastService.database.error("Löschen", "Nachricht");
                                     }
                                   } catch (error) {
                                     // Revert optimistic update on error
                                     queryClient.setQueryData(messagesQueryKey, previousMessages);
-                                    toast({
-                                      title: "Fehler",
-                                      description: "Nachricht konnte nicht gelöscht werden",
-                                      variant: "destructive",
-                                    });
+                                    toastService.database.error("Löschen", "Nachricht");
                                   }
                                 }
                               });
@@ -1178,17 +1168,12 @@ export default function Communication() {
                             const updatedMessage = (updatedMessages as any[]).find(m => m.id === selectedMessage.id);
                             if (updatedMessage) {
                               setSelectedMessage(updatedMessage);
-                              console.log('Updated message with replies:', updatedMessage.replies?.length || 0, 'replies');
+                              toastService.log('Nachricht mit Antworten aktualisiert', { replies: updatedMessage.replies?.length || 0 });
                             }
                           }
                         }, 100);
                       } catch (error) {
-                        console.error('Error sending reply:', error);
-                        toast({
-                          title: "Fehler",
-                          description: `Antwort konnte nicht gesendet werden: ${(error as any).message}`,
-                          variant: "destructive",
-                        });
+                        toastService.error("Antwort senden fehlgeschlagen", (error as any).message);
                       }
                     }}
                     disabled={!replyText.trim() || sendingMessage}

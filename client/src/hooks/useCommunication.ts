@@ -130,6 +130,12 @@ export function useWebSocket(clubId: number, userId: string) {
   useEffect(() => {
     if (!clubId || !userId) return;
 
+    // Skip WebSocket in development if not needed to avoid errors
+    if (process.env.NODE_ENV === 'development') {
+      console.log('WebSocket disabled in development');
+      return;
+    }
+
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
     

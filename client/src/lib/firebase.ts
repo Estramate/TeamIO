@@ -116,11 +116,10 @@ export const getCurrentUser = () => {
  */
 export const extractUserData = (user: FirebaseUser) => {
   return {
-    id: user.uid,
+    uid: user.uid,  // Backend expects 'uid' not 'id'
     email: user.email,
-    firstName: user.displayName?.split(' ')[0] || '',
-    lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-    profileImageUrl: user.photoURL,
+    displayName: user.displayName,
+    photoURL: user.photoURL,
     authProvider: getProviderFromProviderId(user.providerData[0]?.providerId),
     providerUserId: user.uid,
     providerData: {

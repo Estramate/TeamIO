@@ -159,6 +159,21 @@ export const csrfProtection = (req: any, res: any, next: any) => {
     return next();
   }
 
+  // Whitelist routes that don't need CSRF protection
+  const csrfWhitelist = [
+    '/api/auth/firebase',
+    '/api/login',
+    '/api/logout', 
+    '/api/callback',
+    '/api/errors',
+    '/api/performance'
+  ];
+
+  // Skip CSRF for whitelisted routes
+  if (csrfWhitelist.some(route => req.path.startsWith(route))) {
+    return next();
+  }
+
   // Check for CSRF token in header
   const token = req.get('X-CSRF-Token') || req.body._csrf;
   const sessionToken = req.session?.csrfToken;

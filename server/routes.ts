@@ -49,7 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/errors', handleErrorReports);
   app.post('/api/performance', handlePerformanceMetrics);
 
-  // Firebase authentication endpoint
+  // Firebase authentication endpoint (no CSRF protection for auth)
   app.post('/api/auth/firebase', asyncHandler(async (req: any, res: any) => {
     const { userData } = req.body;
     

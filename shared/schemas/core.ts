@@ -69,6 +69,25 @@ export const clubs = pgTable("clubs", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Club join requests - users request to join clubs
+export const clubJoinRequests = pgTable("club_join_requests", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  clubId: integer("club_id").notNull().references(() => clubs.id),
+  message: text("message"), // Optional message from user
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, rejected
+  requestedRole: varchar("requested_role", { length: 50 }).default("member"), // member, trainer, admin
+  
+  // Admin handling
+  reviewedBy: varchar("reviewed_by").references(() => users.id), // admin who reviewed
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"), // admin notes
+  approvedRole: varchar("approved_role", { length: 50 }), // actual role granted
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Club memberships - links users to clubs with roles
 export const clubMemberships = pgTable("club_memberships", {
   id: serial("id").primaryKey(),
@@ -85,10 +104,15 @@ export const clubMemberships = pgTable("club_memberships", {
 // Relations for core entities
 export const usersRelations = relations(users, ({ many }) => ({
   clubMemberships: many(clubMemberships),
+  joinRequests: many(clubJoinRequests),
+  reviewedRequests: many(clubJoinRequests, {
+    relationName: "reviewer",
+  }),
 }));
 
 export const clubsRelations = relations(clubs, ({ many }) => ({
   memberships: many(clubMemberships),
+  joinRequests: many(clubJoinRequests),
 }));
 
 export const clubMembershipsRelations = relations(clubMemberships, ({ one }) => ({
@@ -102,6 +126,22 @@ export const clubMembershipsRelations = relations(clubMemberships, ({ one }) => 
   }),
 }));
 
+export const clubJoinRequestsRelations = relations(clubJoinRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [clubJoinRequests.userId],
+    references: [users.id],
+  }),
+  club: one(clubs, {
+    fields: [clubJoinRequests.clubId],
+    references: [clubs.id],
+  }),
+  reviewer: one(users, {
+    fields: [clubJoinRequests.reviewedBy],
+    references: [users.id],
+    relationName: "reviewer",
+  }),
+}));
+
 // Insert schemas for core entities
 export const insertUserSchema = createInsertSchema(users);
 export const insertClubSchema = createInsertSchema(clubs).omit({
@@ -110,6 +150,11 @@ export const insertClubSchema = createInsertSchema(clubs).omit({
   updatedAt: true,
 });
 export const insertClubMembershipSchema = createInsertSchema(clubMemberships).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertClubJoinRequestSchema = createInsertSchema(clubJoinRequests).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -126,6 +171,21 @@ export const clubFormSchema = createInsertSchema(clubs, {
   updatedAt: true,
 });
 
+export const clubJoinRequestFormSchema = createInsertSchema(clubJoinRequests, {
+  message: z.string().optional(),
+  requestedRole: z.enum(["member", "trainer", "admin"]).default("member"),
+}).omit({
+  id: true,
+  userId: true,
+  status: true,
+  reviewedBy: true,
+  reviewedAt: true,
+  reviewNotes: true,
+  approvedRole: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Export types for core entities
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -133,3 +193,5 @@ export type Club = typeof clubs.$inferSelect;
 export type InsertClub = z.infer<typeof insertClubSchema>;
 export type ClubMembership = typeof clubMemberships.$inferSelect;
 export type InsertClubMembership = z.infer<typeof insertClubMembershipSchema>;
+export type ClubJoinRequest = typeof clubJoinRequests.$inferSelect;
+export type InsertClubJoinRequest = z.infer<typeof insertClubJoinRequestSchema>;

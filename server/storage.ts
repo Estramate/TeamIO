@@ -2,6 +2,7 @@ import {
   users,
   clubs,
   clubMemberships,
+  clubJoinRequests,
   members,
   teams,
   teamMemberships,
@@ -24,6 +25,8 @@ import {
   type InsertClub,
   type ClubMembership,
   type InsertClubMembership,
+  type ClubJoinRequest,
+  type InsertClubJoinRequest,
   type Member,
   type InsertMember,
   type Team,
@@ -83,6 +86,15 @@ export interface IStorage {
   addUserToClub(membership: InsertClubMembership): Promise<ClubMembership>;
   removeUserFromClub(userId: string, clubId: number): Promise<void>;
   updateClubMembership(userId: string, clubId: number, updates: Partial<InsertClubMembership>): Promise<ClubMembership>;
+  getUserClubMembership(userId: string, clubId: number): Promise<ClubMembership | undefined>;
+
+  // Club join request operations
+  createJoinRequest(request: InsertClubJoinRequest): Promise<ClubJoinRequest>;
+  getClubJoinRequests(clubId: number): Promise<ClubJoinRequest[]>;
+  getUserJoinRequests(userId: string): Promise<ClubJoinRequest[]>;
+  getJoinRequest(requestId: number): Promise<ClubJoinRequest | undefined>;
+  updateJoinRequestStatus(requestId: number, status: 'approved' | 'rejected', reviewedBy: string, reviewNotes?: string, approvedRole?: string): Promise<ClubJoinRequest>;
+  getPendingJoinRequests(clubId: number): Promise<ClubJoinRequest[]>;
 
   // Member operations
   getMembers(clubId: number): Promise<Member[]>;
@@ -162,8 +174,7 @@ export interface IStorage {
   updateTrainingFee(id: number, trainingFee: Partial<InsertTrainingFee>): Promise<TrainingFee>;
   deleteTrainingFee(id: number): Promise<void>;
 
-  // User permission operations
-  getUserClubMembership(userId: string, clubId: number): Promise<any>;
+  // User permission operations  
   getUserTeamAssignments(userId: string, clubId: number): Promise<any[]>;
 
   // Dashboard operations
@@ -327,6 +338,111 @@ export class DatabaseStorage implements IStorage {
       )
       .returning();
     return updatedMembership;
+  }
+
+  async getUserClubMembership(userId: string, clubId: number): Promise<ClubMembership | undefined> {
+    const [membership] = await db
+      .select()
+      .from(clubMemberships)
+      .where(
+        and(
+          eq(clubMemberships.userId, userId),
+          eq(clubMemberships.clubId, clubId)
+        )
+      );
+    return membership;
+  }
+
+  // Club join request operations
+  async createJoinRequest(request: InsertClubJoinRequest): Promise<ClubJoinRequest> {
+    // Check if user already has a pending request for this club
+    const existingRequest = await db
+      .select()
+      .from(clubJoinRequests)
+      .where(
+        and(
+          eq(clubJoinRequests.userId, request.userId),
+          eq(clubJoinRequests.clubId, request.clubId),
+          eq(clubJoinRequests.status, 'pending')
+        )
+      );
+
+    if (existingRequest.length > 0) {
+      throw new Error('You already have a pending request for this club');
+    }
+
+    const [newRequest] = await db.insert(clubJoinRequests).values(request).returning();
+    return newRequest;
+  }
+
+  async getClubJoinRequests(clubId: number): Promise<ClubJoinRequest[]> {
+    return await db
+      .select()
+      .from(clubJoinRequests)
+      .where(eq(clubJoinRequests.clubId, clubId))
+      .orderBy(desc(clubJoinRequests.createdAt));
+  }
+
+  async getUserJoinRequests(userId: string): Promise<ClubJoinRequest[]> {
+    return await db
+      .select()
+      .from(clubJoinRequests)
+      .where(eq(clubJoinRequests.userId, userId))
+      .orderBy(desc(clubJoinRequests.createdAt));
+  }
+
+  async getJoinRequest(requestId: number): Promise<ClubJoinRequest | undefined> {
+    const [request] = await db
+      .select()
+      .from(clubJoinRequests)
+      .where(eq(clubJoinRequests.id, requestId));
+    return request;
+  }
+
+  async updateJoinRequestStatus(
+    requestId: number, 
+    status: 'approved' | 'rejected', 
+    reviewedBy: string, 
+    reviewNotes?: string, 
+    approvedRole?: string
+  ): Promise<ClubJoinRequest> {
+    const [updatedRequest] = await db
+      .update(clubJoinRequests)
+      .set({ 
+        status, 
+        reviewedBy, 
+        reviewedAt: new Date(),
+        reviewNotes,
+        approvedRole,
+        updatedAt: new Date()
+      })
+      .where(eq(clubJoinRequests.id, requestId))
+      .returning();
+
+    // If approved, create club membership
+    if (status === 'approved' && updatedRequest) {
+      await this.addUserToClub({
+        userId: updatedRequest.userId,
+        clubId: updatedRequest.clubId,
+        role: approvedRole || updatedRequest.requestedRole || 'member',
+        status: 'active'
+      });
+    }
+
+    return updatedRequest;
+  }
+
+  async getPendingJoinRequests(clubId: number): Promise<ClubJoinRequest[]> {
+    return await db
+      .select()
+      .from(clubJoinRequests)
+      .where(
+        and(
+          eq(clubJoinRequests.clubId, clubId),
+          eq(clubJoinRequests.status, 'pending')
+        )
+      )
+      .orderBy(desc(clubJoinRequests.createdAt));
   }
 
   // Member operations

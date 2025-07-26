@@ -8,6 +8,7 @@ import { ClubThemeProvider } from "@/contexts/ClubThemeContext";
 import { PageProvider } from "@/contexts/PageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { useClubStore } from "@/lib/clubStore";
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { DashboardSkeleton, CardSkeleton } from '@/components/ui/loading-skeleton';
@@ -68,8 +69,8 @@ function AuthenticatedApp() {
 function Router() {
   const { isAuthenticated: replitAuth, isLoading: replitLoading } = useAuth();
   const { isAuthenticated: firebaseAuth, loading: firebaseLoading } = useFirebaseAuth();
+  const { selectedClub } = useClubStore();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [needsClubSelection, setNeedsClubSelection] = useState(false);
 
   // Check if user is authenticated with either provider
   const isAuthenticated = replitAuth || firebaseAuth;
@@ -93,19 +94,18 @@ function Router() {
     checkLogoutState();
   }, [isAuthenticated, isLoading]);
 
-  // Check if authenticated user needs onboarding
+  // Check if authenticated user needs club selection
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      // Firebase users need onboarding (club selection)
-      // Replit users likely already have club associations
-      if (firebaseAuth && !replitAuth) {
-        // Firebase user authenticated, showing onboarding
+      // Show onboarding if user has no club selected
+      // This applies to both Firebase and Replit users
+      if (!selectedClub) {
         setShowOnboarding(true);
       } else {
         setShowOnboarding(false);
       }
     }
-  }, [isAuthenticated, isLoading, firebaseAuth, replitAuth]);
+  }, [isAuthenticated, isLoading, selectedClub]);
 
   if (isLoading) {
     return (
@@ -128,22 +128,19 @@ function Router() {
     );
   }
 
-  // Show onboarding for new Firebase users
-  if (showOnboarding) {
+  // Show club selection for users without a club
+  if (showOnboarding && isAuthenticated) {
     return (
-      <>
-        <AuthenticatedApp />
-        <OnboardingWizard 
-          isOpen={showOnboarding}
-          onComplete={(clubId) => {
-            setShowOnboarding(false);
-            if (clubId) {
-              // Redirect or refresh to show club data
-              window.location.reload();
-            }
-          }}
-        />
-      </>
+      <OnboardingWizard 
+        isOpen={showOnboarding}
+        onComplete={(clubId) => {
+          setShowOnboarding(false);
+          if (clubId) {
+            // Club is automatically selected in the onboarding wizard
+            // No need to reload - the app will re-render
+          }
+        }}
+      />
     );
   }
 

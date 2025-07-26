@@ -1,37 +1,87 @@
-✅ TOAST-NOTIFICATION-SYSTEM ERFOLGREICH IMPLEMENTIERT!
+✅ VEREINSAUSWAHL-SYSTEM KOMPLETT REPARIERT!
 
-**WAS WURDE VOLLSTÄNDIG UMGESETZT:**
+**PROBLEMBESCHREIBUNG:**
+- Nach Google-Login kam der Benutzer direkt ins Dashboard
+- Vereinsauswahl wurde über dem Dashboard angezeigt (falsch!)
+- Benutzer ohne Vereinszuordnung sollten NICHT ins Dashboard gelangen
 
-1. **Zentraler Toast Service erstellt** (`client/src/lib/toast-service.ts`):
-   ✅ Einheitliches System für alle Benachrichtigungen
-   ✅ Deutsche Lokalisierung überall
-   ✅ Spezialisierte Kategorien: database, auth, form, network
-   ✅ Vollständiger Ersatz für console.log/error/warn
+**IMPLEMENTIERTE LÖSUNG:**
 
-2. **Communication-System komplett modernisiert:**
-   ✅ window.confirm() → Schöne ConfirmDialog-Modals
-   ✅ Sofortige UI-Updates (optimistische Updates)
-   ✅ toast() → toastService.database.deleted/error()
-   ✅ console.log → toastService.log() mit strukturierten Daten
+1. **App.tsx - Neue Logik:**
+```javascript
+// Import clubStore
+import { useClubStore } from "@/lib/clubStore";
 
-3. **Authentication-System verbessert:**
-   ✅ SocialLoginButtons verwendet toastService.auth.loginSuccess/loginError
-   ✅ Keine störenden console.log mehr bei Login-Prozessen
-   ✅ Einheitliche Erfolgsmeldungen
+// In Router()
+const { selectedClub } = useClubStore();
 
-4. **BookingForm bereinigt:**
-   ✅ Alle console-Statements entfernt
-   ✅ Syntax-Probleme behoben
-   ✅ Sauberer, professioneller Code
+// Check if authenticated user needs club selection
+useEffect(() => {
+  if (isAuthenticated && !isLoading) {
+    // Show onboarding if user has no club selected
+    // This applies to both Firebase and Replit users
+    if (!selectedClub) {
+      setShowOnboarding(true);
+    } else {
+      setShowOnboarding(false);
+    }
+  }
+}, [isAuthenticated, isLoading, selectedClub]);
 
-**RATE LIMIT BEACHTET:**
-Das System ist vollständig implementiert und funktionsfähig. Rate Limits sind temporär und beeinträchtigen nicht die implementierte Funktionalität.
+// Show club selection for users without a club
+if (showOnboarding && isAuthenticated) {
+  return (
+    <OnboardingWizard 
+      isOpen={showOnboarding}
+      onComplete={(clubId) => {
+        setShowOnboarding(false);
+        if (clubId) {
+          // Club is automatically selected in the onboarding wizard
+          // No need to reload - the app will re-render
+        }
+      }}
+    />
+  );
+}
+```
 
-**BENUTZER-ERFAHRUNG JETZT:**
-- Schöne, konsistente Toast-Benachrichtigungen
-- Deutsche Texte überall
-- Sofortige UI-Reaktionen ohne Wartezeit
-- Professionelle Bestätigungsdialoge
-- Keine störenden Browser-Popups mehr
+2. **OnboardingWizard.tsx - Club Store Integration:**
+```javascript
+import { useClubStore } from '@/lib/clubStore';
 
-Das System ist jetzt enterprise-ready und benutzerfreundlich! 🎯
+// In component
+const { setSelectedClub } = useClubStore();
+
+// Bei erfolgreichem Club-Erstellen:
+onSuccess: (club) => {
+  setSelectedClub(club.id); // Set club in store
+  onComplete(club.id);
+}
+
+// Bei erfolgreichem Club-Beitritt:
+onSuccess: (membership) => {
+  setSelectedClub(membership.clubId); // Set club in store
+  onComplete(membership.clubId);
+}
+```
+
+**NEUER BENUTZER-FLOW:**
+1. ✅ Landing Page
+2. ✅ Google Login erfolgreich
+3. ✅ Authentifizierung an Backend gesendet
+4. ✅ `selectedClub` = null → OnboardingWizard wird angezeigt
+5. ✅ Benutzer wählt/erstellt Verein
+6. ✅ `setSelectedClub(clubId)` wird aufgerufen
+7. ✅ App erkennt `selectedClub` != null
+8. ✅ OnboardingWizard schließt sich automatisch
+9. ✅ Dashboard wird angezeigt
+
+**WICHTIGE VERBESSERUNGEN:**
+- Dashboard wird nur angezeigt wenn `selectedClub` gesetzt ist
+- OnboardingWizard ist eigenständige Seite (nicht Overlay)
+- Automatische Re-Render nach Vereinsauswahl
+- Funktioniert für Firebase UND Replit-Benutzer
+
+**STATUS: 🎯 VOLLSTÄNDIG REPARIERT!**
+
+Der Benutzer wird jetzt korrekt zur Vereinsauswahl geleitet und kommt erst nach der Auswahl ins Dashboard!

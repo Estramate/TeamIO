@@ -77,7 +77,10 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - ✅ Zentraler toastService mit deutschen Lokalisierung und spezialisierten Kategorien (database, auth, form, network)
 - ✅ Communication-System verwendet jetzt schöne Bestätigungsdialoge statt Browser-Popups
 - ✅ Optimistische Updates für sofortiges UI-Feedback ohne Seitenneuladung
-- Fixed React duplicate key warning in Members component - unique keys now include member ID and index for team mappings
+- ✅ Fixed React duplicate key warning in Members component - unique keys now include member ID and index for team mappings
+- ✅ **VEREINSAUSWAHL-FLOW KOMPLETT REPARIERT** - Benutzer ohne Vereinszuordnung sehen OnboardingWizard statt Dashboard
+- ✅ clubStore Integration in OnboardingWizard - automatische App-Updates nach Vereinsauswahl
+- ✅ Korrekte Authentifizierungslogik für Firebase und Replit-Benutzer basierend auf selectedClub-Status
 
 **MAJOR UPDATE - Complete Communication System (January 25, 2025):**
 ✅ **COMPREHENSIVE COMMUNICATION PLATFORM** implemented with all project standards:

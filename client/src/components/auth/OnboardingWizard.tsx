@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Plus, MapPin, Mail, Globe, Search } from 'lucide-react';
 import type { Club } from '@shared/schema';
+import { useClubStore } from '@/lib/clubStore';
 
 interface OnboardingWizardProps {
   onComplete: (clubId?: number) => void;
@@ -33,6 +34,7 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { setSelectedClub } = useClubStore();
 
   // Get available clubs
   const { data: clubs, isLoading } = useQuery({
@@ -58,6 +60,7 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         description: `${club.name} wurde erfolgreich erstellt.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs'] });
+      setSelectedClub(club.id); // Set club in store
       onComplete(club.id);
     },
     onError: () => {
@@ -86,6 +89,7 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
         description: "Sie sind dem Verein erfolgreich beigetreten.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs'] });
+      setSelectedClub(membership.clubId); // Set club in store
       onComplete(membership.clubId);
     },
     onError: () => {

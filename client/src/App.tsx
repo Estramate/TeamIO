@@ -14,7 +14,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { DashboardSkeleton, CardSkeleton } from '@/components/ui/loading-skeleton';
 import { Landing } from "@/pages/Landing";
 import { LoginPage } from "@/pages/LoginPage";
-import { OnboardingWizard } from "@/components/auth/OnboardingWizard";
+import { OnboardingWizardSimple } from "@/components/auth/OnboardingWizardSimple";
 import { PendingMembershipDashboard } from "@/components/PendingMembershipDashboard";
 import Layout from "@/components/layout";
 import NotFound from "@/pages/Not-Found";
@@ -182,56 +182,15 @@ function Router() {
   // Show club selection for users without a club
   if (showOnboarding && isAuthenticated) {
     return (
-      <OnboardingWizard 
+      <OnboardingWizardSimple 
         isOpen={true}
-        onComplete={async (clubId) => {
-          // After completing onboarding, check user's membership status
-          try {
-            const response = await fetch('/api/user/memberships/status', { credentials: 'include' });
-            const membershipStatus = await response.json();
-            
-            if (membershipStatus.activeMemberships > 0) {
-              // User has active memberships - can go to dashboard
-              setShowOnboarding(false);
-              if (clubId) {
-                // Club is automatically selected in the onboarding wizard
-                // No need to reload - the app will re-render
-              }
-            } else if (membershipStatus.hasMemberships) {
-              // User has pending memberships - show pending dashboard
-              setShowOnboarding('pending');
-            } else {
-              // No memberships at all - stay in onboarding (shouldn't happen)
-              setShowOnboarding(true);
-            }
-          } catch (error) {
-            console.error('Error checking membership status:', error);
-            // Fallback to pending dashboard to be safe
-            setShowOnboarding('pending');
-          }
+        onComplete={() => {
+          // Allow user to access dashboard without club membership
+          setShowOnboarding(false);
         }}
-        onClose={async () => {
-          // When dialog is closed without completing (X button or Escape)
-          // Check membership status and navigate accordingly
-          try {
-            const response = await fetch('/api/user/memberships/status', { credentials: 'include' });
-            const membershipStatus = await response.json();
-            
-            if (membershipStatus.activeMemberships > 0) {
-              // User has active memberships - can go to dashboard
-              setShowOnboarding(false);
-            } else if (membershipStatus.hasMemberships) {
-              // User has pending memberships - show pending dashboard
-              setShowOnboarding('pending');
-            } else {
-              // No memberships at all - stay in onboarding
-              setShowOnboarding(true);
-            }
-          } catch (error) {
-            console.error('Error checking membership status:', error);
-            // Fallback to pending dashboard to be safe
-            setShowOnboarding('pending');
-          }
+        onClose={() => {
+          // Allow user to access dashboard without club membership for testing/demo
+          setShowOnboarding(false);
         }}
       />
     );

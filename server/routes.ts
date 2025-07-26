@@ -73,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       // Upsert Firebase user to database
-      await storage.upsertUser({
+      const dbUser = await storage.upsertUser({
         id: userData.uid,
         email: userData.email,
         firstName: userData.displayName?.split(' ')[0] || null,
@@ -81,13 +81,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         profileImageUrl: userData.photoURL,
       });
       
-      // Create simple session cookie manually
+      // Create simple session cookie manually - use database user data
       const userToken = Buffer.from(JSON.stringify({
-        sub: userData.uid,
-        email: userData.email,
-        first_name: userData.displayName?.split(' ')[0] || null,
-        last_name: userData.displayName?.split(' ').slice(1).join(' ') || null,
-        profile_image_url: userData.photoURL,
+        sub: dbUser.id, // Use actual database user ID
+        email: dbUser.email,
+        first_name: dbUser.firstName,
+        last_name: dbUser.lastName,
+        profile_image_url: dbUser.profileImageUrl,
         authProvider: 'firebase',
         exp: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
       })).toString('base64');
@@ -145,12 +145,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // Check Firebase auth cookie
     const firebaseAuth = req.cookies['firebase-auth'];
-    console.log('Firebase auth cookie:', firebaseAuth ? 'present' : 'missing');
     
     if (firebaseAuth) {
       try {
         const userData = JSON.parse(Buffer.from(firebaseAuth, 'base64').toString());
-        console.log('Firebase user data:', { sub: userData.sub, exp: userData.exp, now: Date.now() });
         
         if (userData.exp > Date.now()) {
           // Create compatible user object for downstream middleware
@@ -164,13 +162,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             authProvider: userData.authProvider
           };
-          console.log('Firebase auth successful for user:', userData.sub);
           return next();
-        } else {
-          console.log('Firebase token expired');
         }
       } catch (error) {
-        console.log('Firebase token parse error:', error);
+        // Invalid Firebase token, fall through
       }
     }
 

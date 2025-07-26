@@ -2111,8 +2111,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Check if user is club admin
+    console.log('📧 Checking admin permissions for user:', userId, 'club:', clubId);
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
+    console.log('📧 User membership:', adminMembership);
     if (!adminMembership || adminMembership.role !== 'club-administrator') {
+      console.log('📧 ERROR: User is not club administrator');
       throw new AuthorizationError('You must be a club administrator to send invitations');
     }
     

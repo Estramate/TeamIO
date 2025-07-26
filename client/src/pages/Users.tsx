@@ -45,6 +45,7 @@ import {
   MoreHorizontal,
   Calendar
 } from 'lucide-react';
+import { InviteUserDialog } from '@/components/InviteUserDialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -361,11 +362,22 @@ export default function Users() {
         <TabsContent value="users" className="space-y-6">
           {/* Members Table */}
           <Card>
-            <CardHeader>
-              <CardTitle>Mitglieder</CardTitle>
-              <CardDescription>
-                Alle Mitglieder des Vereins mit ihren Rollen und Status
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle>Mitglieder</CardTitle>
+                <CardDescription>
+                  Alle Mitglieder des Vereins mit ihren Rollen und Status
+                </CardDescription>
+              </div>
+              <InviteUserDialog 
+                clubId={selectedClub?.id || 0}
+                trigger={
+                  <Button className="bg-green-600 hover:bg-green-700 text-white">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Benutzer einladen
+                  </Button>
+                }
+              />
             </CardHeader>
         <CardContent>
           {isLoading ? (

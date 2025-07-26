@@ -30,7 +30,7 @@ const Finance = lazy(() => import("@/pages/finance"));
 const Calendar = lazy(() => import("@/pages/calendar"));
 const Communication = lazy(() => import("@/pages/communication"));
 const Reports = lazy(() => import("@/pages/reports"));
-const Users = lazy(() => import("@/pages/users"));
+const Users = lazy(() => import("@/pages/Users"));
 const Settings = lazy(() => import("@/pages/settings"));
 
 // Lazy loading wrapper component

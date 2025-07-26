@@ -8,7 +8,7 @@ import { ClubThemeProvider } from "@/contexts/ClubThemeContext";
 import { PageProvider } from "@/contexts/PageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
-import { useClubStore } from "@/lib/clubStore";
+import { useClub } from "@/hooks/use-club";
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { DashboardSkeleton, CardSkeleton } from '@/components/ui/loading-skeleton';
@@ -70,7 +70,7 @@ function AuthenticatedApp() {
 function Router() {
   const { isAuthenticated: replitAuth, isLoading: replitLoading } = useAuth();
   const { isAuthenticated: firebaseAuth, loading: firebaseLoading } = useFirebaseAuth();
-  const { selectedClub } = useClubStore();
+  const { selectedClub, setSelectedClub } = useClub();
   const [showOnboarding, setShowOnboarding] = useState<boolean | 'pending'>(false);
   const [membershipChecked, setMembershipChecked] = useState(false);
 
@@ -115,14 +115,14 @@ function Router() {
                   .then(res => res.ok ? res.json() : [])
                   .then(clubs => {
                     if (clubs && clubs.length > 0) {
-                      const { setSelectedClub } = useClubStore.getState();
-                      
                       if (clubs.length === 1) {
                         // Only one active club - auto-select and go directly to dashboard
-                        setSelectedClub(clubs[0].id);
+                        console.log('🎯 Auto-selecting single club:', clubs[0].name);
+                        setSelectedClub(clubs[0]);
                         setShowOnboarding(false);
                       } else {
                         // Multiple active clubs - show selection (onboarding wizard)
+                        console.log('📋 Multiple clubs found, showing selection:', clubs.length);
                         setShowOnboarding(true);
                       }
                     } else {

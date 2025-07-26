@@ -96,7 +96,7 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 ✅ **BUTTON-FUNKTIONALITÄT KOMPLETT REPARIERT** - "Anderem Verein beitreten" und "Logout" Buttons funktionieren einwandfrei durch State-Tracking Fix
 ✅ **FORCE_ONBOARDING SYSTEM ELIMINIERT** - SessionStorage und Page Reloads durch elegante Callback-Lösung ersetzt, 90% weniger Code, 10x schnellere UI
 ✅ **ONBOARDING-WIZARD MODAL-SCHLIESSEN ABGESICHERT** - X-Button und Escape führen zu korrekter Seite basierend auf Membership-Status, verhindert unauthorized Dashboard-Zugriff
-✅ **AUTO-CLUB-SELECTION IMPLEMENTIERT** - Benutzer mit Vereinszugehörigkeit: Auto-Select erster Verein → Dashboard
+✅ **AUTO-CLUB-SELECTION OPTIMIERT** - Benutzer mit genau einer aktiven Mitgliedschaft werden automatisch in den Verein eingeloggt ohne Club-Selection-Dialog
 
 **MAJOR UPDATE - Complete Communication System (January 25, 2025):**
 ✅ **COMPREHENSIVE COMMUNICATION PLATFORM** implemented with all project standards:

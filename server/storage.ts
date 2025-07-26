@@ -1101,23 +1101,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   // User permission operations
-  async getUserClubMembership(userId: string, clubId: number): Promise<any> {
-    try {
-      const membership = await db
-        .select()
-        .from(clubMemberships)
-        .where(and(
-          eq(clubMemberships.userId, userId),
-          eq(clubMemberships.clubId, clubId)
-        ))
-        .limit(1);
-      
-      return membership[0] || null;
-    } catch (error) {
-      console.error('Error getting user club membership:', error);
-      throw error;
-    }
-  }
 
   async getUserTeamAssignments(userId: string, clubId: number): Promise<any[]> {
     try {

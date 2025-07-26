@@ -36,25 +36,12 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware (Replit OpenID Connect)
-  await setupAuth(app);
-  
-  // Firebase auth setup (Google & Facebook)
-  setupFirebaseAuth(app);
-
-  // CSRF token endpoint
-  app.get('/api/csrf-token', isAuthenticated, generateCSRFToken);
-
-  // Error reporting endpoints
-  app.post('/api/errors', handleErrorReports);
-  app.post('/api/performance', handlePerformanceMetrics);
-
-  // Firebase authentication endpoint (no CSRF protection for auth)
-  app.post('/api/auth/firebase', asyncHandler(async (req: any, res: any) => {
+  // Firebase authentication endpoint (FIRST - BYPASS ALL MIDDLEWARE)
+  app.post('/api/auth/firebase', async (req: any, res: any) => {
     const { userData } = req.body;
     
     if (!userData || !userData.uid) {
-      throw new ValidationError('Invalid user data', 'userData');
+      return res.status(400).json({ error: 'Invalid user data' });
     }
     
     try {
@@ -90,10 +77,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       logger.info('Firebase user authenticated', { userId: userData.uid, email: userData.email });
       res.json({ success: true, userId: userData.uid });
     } catch (error) {
-      logger.error('Firebase authentication failed', { error: error.message, userId: userData.uid });
-      throw new AuthorizationError('Firebase authentication failed');
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error('Firebase authentication failed', { error: errorMessage, userId: userData.uid });
+      res.status(500).json({ error: 'Firebase authentication failed', details: errorMessage });
     }
-  }));
+  });
+
+  // Auth middleware (Replit OpenID Connect)
+  await setupAuth(app);
+  
+  // Firebase auth setup (Google & Facebook)
+  setupFirebaseAuth(app);
+
+  // CSRF token endpoint
+  app.get('/api/csrf-token', isAuthenticated, generateCSRFToken);
+
+  // Error reporting endpoints
+  app.post('/api/errors', handleErrorReports);
+  app.post('/api/performance', handlePerformanceMetrics);
 
   // Auth routes (supports both Replit and Firebase auth)
   app.get('/api/auth/user', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {

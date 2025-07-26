@@ -42,7 +42,10 @@ export function useFirebaseAuth() {
           const userData = extractUserData(user);
           const response = await fetch('/api/auth/firebase', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'  // Bypass some middleware
+            },
             body: JSON.stringify({ userData }),
             credentials: 'include', // Include cookies for session
           });

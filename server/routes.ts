@@ -7,6 +7,7 @@ import { requireClubAccess, csrfProtection, generateCSRFToken } from "./security
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
 import { handleErrorReports, handlePerformanceMetrics } from "./error-reporting";
 
+import { z } from 'zod';
 import {
   insertClubSchema,
   insertMemberSchema,
@@ -1117,7 +1118,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       logger.info('Message reply created successfully', { replyId: reply.id, parentMessageId: messageId, clubId, userId, requestId: req.id });
       res.status(201).json(reply);
     } catch (error) {
-      logger.error('Error creating reply', { error: error.message, stack: error.stack, messageId, clubId, userId, requestId: req.id });
+      logger.error('Error creating reply', { 
+        error: error instanceof Error ? error.message : 'Unknown error', 
+        stack: error instanceof Error ? error.stack : 'No stack trace', 
+        messageId, 
+        clubId, 
+        userId, 
+        requestId: req.id 
+      });
       throw error;
     }
   }));

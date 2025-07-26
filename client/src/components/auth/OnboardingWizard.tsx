@@ -343,7 +343,12 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        // When dialog is closed, act like "Später entscheiden"
+        onComplete();
+      }
+    }}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="text-center pb-6">
           <DialogTitle className="text-2xl font-bold">Vereinsauswahl</DialogTitle>

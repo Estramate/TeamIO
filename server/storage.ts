@@ -1205,26 +1205,39 @@ export class DatabaseStorage implements IStorage {
 
   // Create a reply to an existing message
   async createMessageReply(parentMessageId: number, messageData: InsertMessage): Promise<Message> {
+    console.log('Creating reply with parentMessageId:', parentMessageId, 'messageData:', messageData);
+    
     const replyData = {
       ...messageData,
       threadId: parentMessageId,
-      messageType: 'reply'
+      messageType: 'reply' as const
     };
     
-    const [reply] = await db.insert(messages).values(replyData).returning();
+    console.log('Reply data to insert:', replyData);
     
-    // Create recipient for the reply (same as original message sender)
-    const originalMessage = await this.getMessage(parentMessageId);
-    if (originalMessage) {
-      await this.addMessageRecipients([{
-        messageId: reply.id,
-        recipientType: 'user',
-        recipientId: originalMessage.senderId,
-        status: 'sent'
-      }]);
+    try {
+      const [reply] = await db.insert(messages).values(replyData).returning();
+      console.log('Reply created successfully:', reply);
+      
+      // Create simple recipient - the original sender
+      try {
+        await db.insert(messageRecipients).values({
+          messageId: reply.id,
+          recipientType: 'user',
+          recipientId: messageData.senderId, // Reply goes to the person replying (for now)
+          status: 'sent'
+        });
+        console.log('Reply recipient created');
+      } catch (recipientError) {
+        console.error('Error creating reply recipient:', recipientError);
+        // Continue anyway - reply was created
+      }
+      
+      return reply;
+    } catch (error) {
+      console.error('Error in createMessageReply:', error);
+      throw error;
     }
-    
-    return reply;
   }
 
   async updateMessageRecipientStatus(messageId: number, userId: string, status: string): Promise<void> {

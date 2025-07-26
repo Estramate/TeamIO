@@ -117,7 +117,29 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
+    // Clear session and Firebase cookies
     req.logout(() => {
+      // Clear Firebase auth cookie
+      res.clearCookie('firebase-auth', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      });
+      
+      // Clear any other auth-related cookies
+      res.clearCookie('connect.sid', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      });
+      
+      // Destroy session
+      if (req.session) {
+        req.session.destroy(() => {
+          console.log('Session destroyed on logout');
+        });
+      }
+      
       res.redirect(
         client.buildEndSessionUrl(config, {
           client_id: process.env.REPL_ID!,

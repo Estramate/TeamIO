@@ -77,12 +77,10 @@ function Router() {
   // Check if authenticated user needs onboarding
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      // For new Firebase users who haven't joined a club yet
-      // This would be determined by checking user's club memberships
-      // For now, we'll show onboarding for Firebase auth users without clubs
-      if (firebaseAuth && !replitAuth) {
-        setShowOnboarding(true);
-      }
+      // Only show onboarding when user explicitly needs club selection
+      // Not automatically for all Firebase users
+      // This should be triggered by explicit user action (e.g., "Join Club" button)
+      setShowOnboarding(false); // Disable auto-onboarding
     }
   }, [isAuthenticated, isLoading, firebaseAuth, replitAuth]);
 

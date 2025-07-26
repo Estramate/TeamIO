@@ -57,13 +57,17 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
 
   const handleLogout = async () => {
     try {
-      if (replitUser && replitLogout) {
-        replitLogout();
-      } else if (firebaseUser) {
+      // Always clear Firebase auth if present
+      if (firebaseUser) {
         await firebaseSignOut();
       }
+      
+      // Always call server logout to clear cookies and sessions
+      window.location.href = "/api/logout";
     } catch (error) {
       console.error('Logout error:', error);
+      // Fallback: Still redirect to logout even if Firebase signout fails
+      window.location.href = "/api/logout";
     }
   };
 

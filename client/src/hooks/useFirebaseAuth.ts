@@ -29,19 +29,19 @@ export function useFirebaseAuth() {
 
   // Listen to Firebase auth state changes and check for redirect result
   useEffect(() => {
-    console.log('Setting up Firebase auth state listener...');
+    // Setting up Firebase auth state listener
     
     // Check for redirect result first
     checkRedirectResult().then((redirectUser) => {
       if (redirectUser) {
-        console.log('Found redirect result user:', redirectUser.uid);
+        // Found redirect result user: redirectUser.uid
       }
     }).catch((error) => {
       console.error('Error checking redirect result:', error);
     });
     
     const unsubscribe = onAuthStateChange(async (user) => {
-      console.log('Firebase auth state changed:', { user: !!user, uid: user?.uid });
+      // Firebase auth state changed: { user: !!user, uid: user?.uid }
       
       if (user) {
         try {
@@ -63,12 +63,10 @@ export function useFirebaseAuth() {
 
     // Check if user is already signed in
     const currentUser = getCurrentUser();
-    if (currentUser) {
-      console.log('User already signed in:', currentUser.uid);
-    }
+    // User already signed in check completed
 
     return () => {
-      console.log('Cleaning up Firebase auth listener');
+      // Cleaning up Firebase auth listener
       unsubscribe();
     };
   }, []);
@@ -76,10 +74,9 @@ export function useFirebaseAuth() {
   const signInWithGooglePopup = async () => {
     try {
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      console.log('Starting Google sign-in flow...');
-      
+      // Starting Google sign-in flow
       const user = await signInWithGoogle();
-      console.log('Google sign-in completed, user:', user.uid);
+      // Google sign-in completed
       
       // Backend authentication is handled in onAuthStateChange
       return user;
@@ -94,10 +91,9 @@ export function useFirebaseAuth() {
   const handleSignOut = async () => {
     try {
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      console.log('Starting sign-out...');
-      
+      // Starting sign-out
       await signOut();
-      console.log('Firebase sign-out completed');
+      // Firebase sign-out completed
       
       // Clear any backend session
       try {

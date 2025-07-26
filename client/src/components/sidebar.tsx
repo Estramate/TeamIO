@@ -398,7 +398,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       // Import Firebase auth dynamically
                       const { auth } = await import('@/lib/firebase');
                       await auth.signOut();
-                      console.log('Firebase logout successful');
+                      // Firebase logout successful
                     } catch (error) {
                       console.error('Firebase logout error:', error);
                     }

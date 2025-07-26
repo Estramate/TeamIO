@@ -3,7 +3,7 @@
  * Allows managing club members, roles, and permissions
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useClub } from '@/hooks/use-club';
+import { usePage } from '@/contexts/PageContext';
 import { 
   UserCog, 
   Search, 
@@ -54,6 +55,12 @@ export default function Users() {
   const { selectedClub } = useClub();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { setPage } = usePage();
+  
+  // Set page title
+  useEffect(() => {
+    setPage("Benutzerverwaltung", "Verwalten Sie Mitglieder, Rollen und Berechtigungen für " + (selectedClub?.name || "Ihren Verein"));
+  }, [setPage, selectedClub?.name]);
   
   // For tabbed navigation
   const [activeTab, setActiveTab] = useState('users');

@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
-import { useCommunication, useWebSocket } from "@/hooks/useCommunication";
+import { useCommunication } from "@/hooks/useCommunication";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -133,11 +133,9 @@ export default function Communication() {
     searchAnnouncements,
   } = useCommunication(selectedClub?.id || 0, isAuthenticated);
 
-  // WebSocket connection
-  const { isConnected: wsConnected, sendMessage: wsSendMessage } = useWebSocket(
-    selectedClub?.id || 0, 
-    (user as any)?.id?.toString() || ""
-  );
+  // WebSocket connection (disabled in development)
+  const wsConnected = false; // Disabled to prevent console errors
+  const wsSendMessage = () => {}; // Disabled function
 
   // State management
   const [activeTab, setActiveTab] = useState("messages");

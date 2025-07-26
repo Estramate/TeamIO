@@ -123,92 +123,12 @@ interface CommunicationPreferences {
 
 // WebSocket hook
 export function useWebSocket(clubId: number, userId: string) {
-  const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (!clubId || !userId) return;
-
-    // Skip WebSocket in development if not needed to avoid errors
-    if (process.env.NODE_ENV === 'development') {
-      console.log('WebSocket disabled in development');
-      return;
-    }
-
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
-    let ws: WebSocket;
-    try {
-      ws = new WebSocket(wsUrl);
-    } catch (error) {
-      console.warn('WebSocket connection failed:', error);
-      return;
-    }
-
-    ws.onopen = () => {
-      setIsConnected(true);
-      // Authenticate the connection
-      ws.send(JSON.stringify({
-        type: 'authenticate',
-        userId,
-        clubId
-      }));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        switch (data.type) {
-          case 'authenticated':
-            console.log('WebSocket authenticated');
-            break;
-          case 'new_message':
-            // Invalidate messages query to refetch
-            queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'messages'] });
-            break;
-          case 'new_announcement':
-            // Invalidate announcements query to refetch
-            queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'announcements'] });
-            break;
-          case 'new_notification':
-            // Invalidate notifications query to refetch
-            queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'notifications'] });
-            break;
-          case 'pong':
-            // Handle ping/pong for keep-alive
-            break;
-        }
-      } catch (error) {
-        console.error('WebSocket message error:', error);
-      }
-    };
-
-    ws.onclose = () => {
-      setIsConnected(false);
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setIsConnected(false);
-    };
-
-    setSocket(ws);
-
-    return () => {
-      ws.close();
-    };
-  }, [clubId, userId, queryClient]);
-
-  const sendMessage = useCallback((message: any) => {
-    if (socket && isConnected) {
-      socket.send(JSON.stringify(message));
-    }
-  }, [socket, isConnected]);
-
-  return { socket, isConnected, sendMessage };
+  // WebSocket completely disabled to prevent console errors in development
+  return { 
+    socket: null, 
+    isConnected: false, 
+    sendMessage: () => {} 
+  };
 }
 
 // Communication hook

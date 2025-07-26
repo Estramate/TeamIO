@@ -65,8 +65,10 @@ export function useFirebaseAuth() {
             setAuthState({ user: null, loading: false, error: 'Backend-Synchronisation fehlgeschlagen' });
           }
         } else {
-          // User signed out
-          setAuthState({ user: null, loading: false, error: null });
+          // User signed out - don't immediately set state to prevent loops
+          setTimeout(() => {
+            setAuthState({ user: null, loading: false, error: null });
+          }, 100);
         }
       } catch (error) {
         console.error('Auth state change error:', error);

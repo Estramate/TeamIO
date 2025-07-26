@@ -57,7 +57,7 @@ export const setupSecurity = (app: Express) => {
   // Stricter rate limiting for auth endpoints
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // Limit each IP to 10 auth requests per windowMs
+    max: 50, // Increased limit to prevent auth loops
     message: {
       error: {
         type: 'AuthRateLimitError',

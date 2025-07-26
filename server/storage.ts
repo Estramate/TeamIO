@@ -1212,6 +1212,18 @@ export class DatabaseStorage implements IStorage {
     };
     
     const [reply] = await db.insert(messages).values(replyData).returning();
+    
+    // Create recipient for the reply (same as original message sender)
+    const originalMessage = await this.getMessage(parentMessageId);
+    if (originalMessage) {
+      await this.addMessageRecipients([{
+        messageId: reply.id,
+        recipientType: 'user',
+        recipientId: originalMessage.senderId,
+        status: 'sent'
+      }]);
+    }
+    
     return reply;
   }
 

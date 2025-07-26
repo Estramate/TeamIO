@@ -399,8 +399,9 @@ export default function Communication() {
                           variant="ghost" 
                           size="sm"
                           onClick={() => setSelectedMessage(message)}
-                          className="text-blue-600 hover:text-blue-800 p-0 h-auto"
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded-md font-medium"
                         >
+                          <MessageCircle className="w-3 h-3 mr-1" />
                           Antworten
                         </Button>
                       </div>
@@ -1040,6 +1041,7 @@ export default function Communication() {
                   </Button>
                   <Button 
                     size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={async () => {
                       if (!replyText.trim()) {
                         toast({

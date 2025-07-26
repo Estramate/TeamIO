@@ -309,6 +309,8 @@ export type InsertCommunicationPreferences = z.infer<typeof insertCommunicationP
 export type MessageWithRecipients = Message & {
   recipients: MessageRecipient[];
   sender: { id: string; firstName?: string; lastName?: string; email?: string };
+  replies?: MessageWithRecipients[];
+  replyCount?: number;
 };
 
 export type AnnouncementWithAuthor = Announcement & {

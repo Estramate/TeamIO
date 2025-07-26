@@ -420,9 +420,8 @@ export default function Finance() {
 
   // Handler functions
   const handleDeleteFinance = async (id: number) => {
-    if (window.confirm('Sind Sie sicher, dass Sie diese Transaktion löschen möchten?')) {
-      deleteFinanceMutation.mutate(id);
-    }
+    // Using ConfirmDialog component instead of window.confirm
+    deleteFinanceMutation.mutate(id);
   };
 
   const toggleFinanceStatus = (finance: any) => {

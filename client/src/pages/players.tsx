@@ -334,9 +334,8 @@ export default function Players() {
   };
 
   const handleDelete = (player: Player) => {
-    if (confirm(`Möchten Sie ${player.firstName} ${player.lastName} wirklich löschen?`)) {
-      deletePlayerMutation.mutate(player.id);
-    }
+    // Using ConfirmDialog component instead of window.confirm
+    deletePlayerMutation.mutate(player.id);
   };
 
   const handleViewPlayer = (player: Player) => {

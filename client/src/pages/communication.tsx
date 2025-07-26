@@ -54,6 +54,7 @@ import {
   VolumeX,
   Reply
 } from "lucide-react";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // Form schemas
 const messageFormSchema = z.object({
@@ -136,6 +137,9 @@ export default function Communication() {
   // WebSocket connection (disabled in development)
   const wsConnected = false; // Disabled to prevent console errors
   const wsSendMessage = () => {}; // Disabled function
+
+  // Confirm dialog hook
+  const { showConfirm, ConfirmDialog } = useConfirmDialog();
 
   // State management
   const [activeTab, setActiveTab] = useState("messages");
@@ -424,33 +428,48 @@ export default function Communication() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.stopPropagation();
-                              if (confirm('Möchten Sie diese Nachricht wirklich löschen?')) {
-                                // Optimistic update - remove message from UI immediately
-                                const messagesQueryKey = [`/api/clubs/${selectedClub?.id}/messages`];
-                                const previousMessages = queryClient.getQueryData(messagesQueryKey);
-                                
-                                // Remove message from cache immediately
-                                queryClient.setQueryData(messagesQueryKey, (oldData: any) => {
-                                  if (!oldData) return oldData;
-                                  return oldData.filter((msg: any) => msg.id !== message.id);
-                                });
-
-                                try {
-                                  const response = await fetch(`/api/clubs/${selectedClub?.id}/messages/${message.id}`, {
-                                    method: 'DELETE',
-                                    credentials: 'include',
-                                  });
+                              showConfirm({
+                                title: "Nachricht löschen",
+                                description: "Möchten Sie diese Nachricht wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+                                confirmText: "Löschen",
+                                cancelText: "Abbrechen",
+                                variant: "destructive",
+                                onConfirm: async () => {
+                                  // Optimistic update - remove message from UI immediately
+                                  const messagesQueryKey = [`/api/clubs/${selectedClub?.id}/messages`];
+                                  const previousMessages = queryClient.getQueryData(messagesQueryKey);
                                   
-                                  if (response.ok) {
-                                    toast({
-                                      title: "Nachricht gelöscht",
-                                      description: "Die Nachricht wurde erfolgreich gelöscht",
+                                  // Remove message from cache immediately
+                                  queryClient.setQueryData(messagesQueryKey, (oldData: any) => {
+                                    if (!oldData) return oldData;
+                                    return oldData.filter((msg: any) => msg.id !== message.id);
+                                  });
+
+                                  try {
+                                    const response = await fetch(`/api/clubs/${selectedClub?.id}/messages/${message.id}`, {
+                                      method: 'DELETE',
+                                      credentials: 'include',
                                     });
-                                    // Refetch to ensure consistency
-                                    queryClient.invalidateQueries({ queryKey: messagesQueryKey });
-                                  } else {
+                                    
+                                    if (response.ok) {
+                                      toast({
+                                        title: "Nachricht gelöscht",
+                                        description: "Die Nachricht wurde erfolgreich gelöscht",
+                                      });
+                                      // Refetch to ensure consistency
+                                      queryClient.invalidateQueries({ queryKey: messagesQueryKey });
+                                    } else {
+                                      // Revert optimistic update on error
+                                      queryClient.setQueryData(messagesQueryKey, previousMessages);
+                                      toast({
+                                        title: "Fehler",
+                                        description: "Nachricht konnte nicht gelöscht werden",
+                                        variant: "destructive",
+                                      });
+                                    }
+                                  } catch (error) {
                                     // Revert optimistic update on error
                                     queryClient.setQueryData(messagesQueryKey, previousMessages);
                                     toast({
@@ -459,16 +478,8 @@ export default function Communication() {
                                       variant: "destructive",
                                     });
                                   }
-                                } catch (error) {
-                                  // Revert optimistic update on error
-                                  queryClient.setQueryData(messagesQueryKey, previousMessages);
-                                  toast({
-                                    title: "Fehler",
-                                    description: "Nachricht konnte nicht gelöscht werden",
-                                    variant: "destructive",
-                                  });
                                 }
-                              }
+                              });
                             }}
                             className="text-gray-500 hover:text-red-600"
                           >
@@ -1191,6 +1202,9 @@ export default function Communication() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog />
     </div>
   );
 }

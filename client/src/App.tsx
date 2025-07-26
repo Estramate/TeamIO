@@ -72,6 +72,7 @@ function Router() {
   const { isAuthenticated: firebaseAuth, loading: firebaseLoading } = useFirebaseAuth();
   const { selectedClub } = useClubStore();
   const [showOnboarding, setShowOnboarding] = useState<boolean | 'pending'>(false);
+  const [forceOnboardingChecked, setForceOnboardingChecked] = useState(false);
 
   // Check if user is authenticated with either provider
   const isAuthenticated = replitAuth || firebaseAuth;
@@ -97,14 +98,17 @@ function Router() {
 
   // Check if authenticated user needs club selection or auto-select first club
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    if (isAuthenticated && !isLoading && !forceOnboardingChecked) {
       // Check if user explicitly wants to join another club (reset flag)
       const forceOnboarding = sessionStorage.getItem('force_onboarding');
       if (forceOnboarding === 'true') {
         sessionStorage.removeItem('force_onboarding');
         setShowOnboarding(true);
+        setForceOnboardingChecked(true);
         return;
       }
+      
+      setForceOnboardingChecked(true);
 
       // If no club is selected, check user's membership status
       if (!selectedClub) {
@@ -143,7 +147,7 @@ function Router() {
         setShowOnboarding(false);
       }
     }
-  }, [isAuthenticated, isLoading, selectedClub]);
+  }, [isAuthenticated, isLoading, selectedClub, forceOnboardingChecked]);
 
   if (isLoading) {
     return (

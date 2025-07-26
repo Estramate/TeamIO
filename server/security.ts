@@ -46,10 +46,10 @@ export const setupSecurity = (app: Express) => {
     crossOriginEmbedderPolicy: false, // Disable for Vite compatibility
   }));
 
-  // Rate limiting
+  // Rate limiting - more lenient in development
   const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: isDevelopment ? 1000 : 100, // Much higher limit in dev for testing
     message: {
       error: {
         type: 'RateLimitError',
@@ -77,10 +77,10 @@ export const setupSecurity = (app: Express) => {
     },
   });
 
-  // Stricter rate limiting for auth endpoints
+  // Stricter rate limiting for auth endpoints - more lenient in development
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // Limit each IP to 10 auth attempts per windowMs
+    max: isDevelopment ? 100 : 10, // Higher limit in dev for testing
     message: {
       error: {
         type: 'AuthRateLimitError',

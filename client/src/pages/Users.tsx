@@ -18,6 +18,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from '@/hooks/use-toast';
 import { useClub } from '@/hooks/use-club';
 import { usePage } from '@/contexts/PageContext';
+import { apiRequest } from '@/lib/queryClient';
 import { 
   UserCog, 
   Search, 
@@ -53,7 +54,27 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-// LoadingSpinner removed - using built-in loading states
+import { apiRequest } from '@/lib/queryClient';
+
+// Simple loading component
+const LoadingSpinner = ({ size = 'md', className = '' }: { size?: 'sm' | 'md' | 'lg', className?: string }) => {
+  const sizeClasses = {
+    sm: 'w-4 h-4',
+    md: 'w-6 h-6', 
+    lg: 'w-8 h-8'
+  };
+  
+  return (
+    <div className={`animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 ${sizeClasses[size]} ${className}`} />
+  );
+};
+
+// Simple toast service helper
+const toastService = {
+  success: (message: string) => console.log('✅', message),
+  error: (message: string) => console.error('❌', message),
+  info: (message: string) => console.info('ℹ️', message)
+};
 
 export default function Users() {
   const { selectedClub } = useClub();

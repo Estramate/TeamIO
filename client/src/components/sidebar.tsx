@@ -111,9 +111,19 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <div className={cn("border-b border-border transition-all duration-300", collapsed ? "p-2" : "p-6")}>
             {collapsed ? (
               <div className="flex flex-col items-center space-y-2">
-                <div className="w-10 h-10 bg-club-primary rounded-lg flex items-center justify-center">
-                  <Shield className="text-white w-5 h-5" />
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-10 h-10 bg-club-primary rounded-lg flex items-center justify-center relative">
+                      <Shield className="text-white w-5 h-5" />
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
+                        <span className="text-[8px] font-bold text-white">β</span>
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>ClubFlow Beta</p>
+                  </TooltipContent>
+                </Tooltip>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -130,7 +140,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     <Shield className="text-white text-lg" />
                   </div>
                   <div className="overflow-hidden">
-                    <h1 className="text-xl font-bold text-club-primary whitespace-nowrap">ClubFlow</h1>
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-xl font-bold text-club-primary whitespace-nowrap">ClubFlow</h1>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 whitespace-nowrap">
+                        Beta
+                      </span>
+                    </div>
                     <p className="text-sm text-muted-foreground truncate">
                       {selectedClub?.name || "Verein auswählen"}
                     </p>

@@ -109,27 +109,27 @@ export default function Teams() {
 
   const { data: teams = [], isLoading: isTeamsLoading } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
-    enabled: !!selectedClub?.id,
+    enabled: !!selectedClub?.id && isAuthenticated,
   });
 
   // Load players for counting
   const { data: players = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'players'],
-    enabled: !!selectedClub?.id,
+    enabled: !!selectedClub?.id && isAuthenticated,
     retry: false,
   });
 
   // Load members for trainer selection
   const { data: members = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'members'],
-    enabled: !!selectedClub?.id,
+    enabled: !!selectedClub?.id && isAuthenticated,
     retry: false,
   });
 
   // Load team memberships
   const { data: teamMemberships = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'],
-    enabled: !!selectedClub?.id,
+    enabled: !!selectedClub?.id && isAuthenticated,
     retry: false,
   });
 

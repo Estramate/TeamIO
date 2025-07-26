@@ -38,7 +38,7 @@ export default function Dashboard() {
 
   const { data: dashboardData, isLoading: isDashboardLoading } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'dashboard'],
-    enabled: !!selectedClub?.id,
+    enabled: !!selectedClub?.id && isAuthenticated,
     retry: false,
   }) as { data: any, isLoading: boolean };
 

@@ -91,18 +91,18 @@ export default function Communication() {
   // Get members and teams for recipient selection
   const { data: members = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'members'],
-    enabled: !!selectedClub?.id,
+    enabled: !!selectedClub?.id && isAuthenticated,
   });
   
   const { data: teams = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
-    enabled: !!selectedClub?.id,
+    enabled: !!selectedClub?.id && isAuthenticated,
   });
   
   // Get players for recipient selection
   const { data: players = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'players'],
-    enabled: !!selectedClub?.id,
+    enabled: !!selectedClub?.id && isAuthenticated,
   });
   const { setPage } = usePage();
 
@@ -131,7 +131,7 @@ export default function Communication() {
     creatingAnnouncement,
     searchMessages,
     searchAnnouncements,
-  } = useCommunication(selectedClub?.id || 0);
+  } = useCommunication(selectedClub?.id || 0, isAuthenticated);
 
   // WebSocket connection
   const { isConnected: wsConnected, sendMessage: wsSendMessage } = useWebSocket(

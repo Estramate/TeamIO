@@ -206,7 +206,7 @@ export function useWebSocket(clubId: number, userId: string) {
 }
 
 // Communication hook
-export function useCommunication(clubId: number) {
+export function useCommunication(clubId: number, isAuthenticated: boolean = true) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -217,7 +217,7 @@ export function useCommunication(clubId: number) {
     error: messagesError
   } = useQuery<Message[]>({
     queryKey: ['/api/clubs', clubId, 'messages'],
-    enabled: !!clubId,
+    enabled: !!clubId && isAuthenticated,
   });
 
   // Announcements
@@ -227,7 +227,7 @@ export function useCommunication(clubId: number) {
     error: announcementsError
   } = useQuery<Announcement[]>({
     queryKey: ['/api/clubs', clubId, 'announcements'],
-    enabled: !!clubId,
+    enabled: !!clubId && isAuthenticated,
   });
 
   // Notifications
@@ -237,7 +237,7 @@ export function useCommunication(clubId: number) {
     error: notificationsError
   } = useQuery<Notification[]>({
     queryKey: ['/api/clubs', clubId, 'notifications'],
-    enabled: !!clubId,
+    enabled: !!clubId && isAuthenticated,
   });
 
   // Communication stats
@@ -246,7 +246,7 @@ export function useCommunication(clubId: number) {
     isLoading: statsLoading
   } = useQuery<CommunicationStats>({
     queryKey: ['/api/clubs', clubId, 'communication-stats'],
-    enabled: !!clubId,
+    enabled: !!clubId && isAuthenticated,
   });
 
   // Communication preferences
@@ -255,7 +255,7 @@ export function useCommunication(clubId: number) {
     isLoading: preferencesLoading
   } = useQuery<CommunicationPreferences>({
     queryKey: ['/api/clubs', clubId, 'communication-preferences'],
-    enabled: !!clubId,
+    enabled: !!clubId && isAuthenticated,
   });
 
   // Send message mutation

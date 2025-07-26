@@ -8,6 +8,7 @@ export function useAuth() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false, // Prevent excessive requests
     refetchOnReconnect: false,
+    enabled: true, // This is the only query that should always run
   });
 
   const logout = () => {

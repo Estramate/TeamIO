@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useClub } from '@/hooks/use-club';
 import { 
@@ -27,14 +28,36 @@ import {
   Clock,
   Shield,
   Users as UsersIcon,
-  AlertTriangle
+  AlertTriangle,
+  Mail,
+  Send,
+  User,
+  UserCheck,
+  UserX,
+  Activity,
+  AlertCircle
 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import type { User, Member } from '@shared/schema';
 
 export default function Users() {
   const { selectedClub } = useClub();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // For tabbed navigation
+  const [activeTab, setActiveTab] = useState('users');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending'>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'member' | 'coach'>('all');
@@ -481,81 +504,85 @@ function InviteUserForm({ clubId }: { clubId: number }) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Mail className="h-5 w-5" />
-          Benutzer per E-Mail einladen
-        </CardTitle>
-        <CardDescription>
-          Senden Sie eine Einladung an neue Benutzer, um dem Verein beizutreten.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>E-Mail-Adresse</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="beispiel@email.com"
-                        type="email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rolle zuweisen</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Rolle auswählen" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="member">Mitglied</SelectItem>
-                        <SelectItem value="trainer">Trainer</SelectItem>
-                        <SelectItem value="club-administrator">Administrator</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={inviteMutation.isPending}
-            >
-              {inviteMutation.isPending ? (
-                <>
-                  <LoadingSpinner size="sm" className="mr-2" />
-                  Wird gesendet...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Einladung senden
-                </>
+    <div className="bg-white dark:bg-gray-950 rounded-lg border shadow-sm p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-blue-500/10 rounded-lg">
+          <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Benutzer per E-Mail einladen
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Senden Sie eine Einladung an neue Benutzer, um dem Verein beizutreten.
+          </p>
+        </div>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700 dark:text-gray-300">E-Mail-Adresse</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="beispiel@email.com"
+                      type="email"
+                      className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+            />
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700 dark:text-gray-300">Rolle zuweisen</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                        <SelectValue placeholder="Rolle auswählen" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="member">Mitglied</SelectItem>
+                      <SelectItem value="trainer">Trainer</SelectItem>
+                      <SelectItem value="club-administrator">Administrator</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <Button 
+            type="submit" 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
+            disabled={inviteMutation.isPending}
+          >
+            {inviteMutation.isPending ? (
+              <>
+                <LoadingSpinner size="sm" className="mr-2" />
+                Wird gesendet...
+              </>
+            ) : (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                Einladung senden
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
+    </div>
   );
 }
 
@@ -576,17 +603,17 @@ function ActivityLogTab({ clubId }: { clubId: number }) {
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
+      <div className="bg-white dark:bg-gray-950 rounded-lg border shadow-sm p-6">
+        <div className="flex items-center justify-center py-8">
           <div className="text-center">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <p className="text-lg font-semibold">Fehler beim Laden der Aktivitätslogs</p>
-            <p className="text-muted-foreground">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">Fehler beim Laden der Aktivitätslogs</p>
+            <p className="text-gray-600 dark:text-gray-400">
               {error instanceof Error ? error.message : 'Unbekannter Fehler'}
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
@@ -616,72 +643,79 @@ function ActivityLogTab({ clubId }: { clubId: number }) {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
+    <div className="bg-white dark:bg-gray-950 rounded-lg border shadow-sm p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-green-500/10 rounded-lg">
+          <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Aktivitätsprotokoll
-          </CardTitle>
-          <CardDescription>
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Chronologische Übersicht aller Benutzeraktivitäten und Systemereignisse.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!logs || logs.length === 0 ? (
-            <div className="text-center py-8">
-              <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg font-semibold">Keine Aktivitätslogs vorhanden</p>
-              <p className="text-muted-foreground">
-                Aktivitäten werden hier angezeigt, sobald Benutzeraktionen stattfinden.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {logs.map((log: any) => (
-                <div
-                  key={log.id}
-                  className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex-shrink-0 mt-1">
-                    {getActionIcon(log.action)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-foreground">
-                        {log.description}
-                      </p>
-                      <time className="text-xs text-muted-foreground">
-                        {formatDate(log.createdAt)}
-                      </time>
-                    </div>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                      <User className="h-3 w-3" />
-                      <span>
-                        {log.userFirstName} {log.userLastName}
-                        {log.userEmail && ` (${log.userEmail})`}
-                      </span>
-                      {log.ipAddress && (
-                        <span className="ml-2">IP: {log.ipAddress}</span>
-                      )}
-                    </div>
-                    {log.metadata && Object.keys(log.metadata).length > 0 && (
-                      <details className="mt-2">
-                        <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                          Details anzeigen
-                        </summary>
-                        <pre className="text-xs text-muted-foreground mt-1 p-2 bg-muted rounded">
-                          {JSON.stringify(log.metadata, null, 2)}
-                        </pre>
-                      </details>
-                    )}
-                  </div>
+          </p>
+        </div>
+      </div>
+
+      {!logs || logs.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full w-fit mx-auto mb-4">
+            <Clock className="h-8 w-8 text-gray-400" />
+          </div>
+          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+            Keine Aktivitätslogs vorhanden
+          </p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Aktivitäten werden hier angezeigt, sobald Benutzeraktionen stattfinden.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {logs.map((log: any) => (
+            <div
+              key={log.id}
+              className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div className="flex-shrink-0 mt-1 p-1.5 bg-white dark:bg-gray-900 rounded-full border">
+                {getActionIcon(log.action)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                    {log.description}
+                  </p>
+                  <time className="text-xs text-gray-500 dark:text-gray-400 ml-4 flex-shrink-0">
+                    {formatDate(log.createdAt)}
+                  </time>
                 </div>
-              ))}
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <User className="h-3 w-3" />
+                  <span>
+                    {log.userFirstName} {log.userLastName}
+                    {log.userEmail && ` (${log.userEmail})`}
+                  </span>
+                  {log.ipAddress && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">
+                      IP: {log.ipAddress}
+                    </span>
+                  )}
+                </div>
+                {log.metadata && Object.keys(log.metadata).length > 0 && (
+                  <details className="mt-2">
+                    <summary className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">
+                      Details anzeigen
+                    </summary>
+                    <pre className="text-xs text-gray-600 dark:text-gray-400 mt-1 p-2 bg-gray-100 dark:bg-gray-700 rounded overflow-x-auto">
+                      {JSON.stringify(log.metadata, null, 2)}
+                    </pre>
+                  </details>
+                )}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

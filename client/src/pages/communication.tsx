@@ -1090,7 +1090,21 @@ export default function Communication() {
                         });
                         
                         // Refresh messages to show the new reply without page reload
-                        queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/messages`] });
+                        await queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/messages`] });
+                        
+                        // Refetch messages and update selected message with new replies
+                        setTimeout(async () => {
+                          const updatedMessages = await queryClient.fetchQuery({
+                            queryKey: [`/api/clubs/${selectedClub?.id}/messages`]
+                          });
+                          if (updatedMessages && selectedMessage) {
+                            const updatedMessage = (updatedMessages as any[]).find(m => m.id === selectedMessage.id);
+                            if (updatedMessage) {
+                              setSelectedMessage(updatedMessage);
+                              console.log('Updated message with replies:', updatedMessage.replies?.length || 0, 'replies');
+                            }
+                          }
+                        }, 100);
                       } catch (error) {
                         console.error('Error sending reply:', error);
                         toast({

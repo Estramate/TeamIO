@@ -1221,12 +1221,18 @@ export class DatabaseStorage implements IStorage {
       
       // Create simple recipient - get original message sender
       try {
-        const originalMessage = await this.getMessage(parentMessageId);
+        // Create recipient for the reply - use simple query to avoid circular dependency
+        const [originalMessage] = await db
+          .select({ senderId: messages.senderId })
+          .from(messages)
+          .where(eq(messages.id, parentMessageId))
+          .limit(1);
+          
         if (originalMessage) {
           await db.insert(messageRecipients).values({
             messageId: reply.id,
             recipientType: 'user',
-            recipientId: originalMessage.senderId, // Reply goes to original message sender
+            recipientId: originalMessage.senderId,
             status: 'sent'
           });
           console.log('Reply recipient created for original sender:', originalMessage.senderId);

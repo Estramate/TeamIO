@@ -113,7 +113,7 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 - ✅ Improved error handling with detailed logging for debugging
 - 📄 **SOLUTION**: Smart environment detection prevents popup/redirect conflicts
 
-**LATEST MAJOR FEATURE (July 27, 2025 - 01:25):**
+**LATEST MAJOR FEATURE (July 27, 2025 - 01:35):**
 ✅ **E-MAIL-EINLADUNGSSYSTEM VOLLSTÄNDIG FUNKTIONSFÄHIG**:
 - ✅ E-Mail-basierte Benutzereinladungen mit SendGrid-Integration
 - ✅ Passwort-Authentifizierung als Alternative zu Replit-Login
@@ -128,6 +128,9 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 - ✅ **SENDGRID ERFOLGREICH KONFIGURIERT** - FROM_EMAIL verifizierte Absender-Adresse gesetzt
 - ✅ **E-MAIL-VERSAND BESTÄTIGT** - Test-E-Mails und Server-Templates funktionieren korrekt
 - ✅ **PRODUKTIONS-URLS KONFIGURIERT** - Einladungslinks verwenden https://clubflow.replit.app/ in Produktion
+- ✅ **DUAL-LOGIN-SYSTEM IMPLEMENTIERT** - Tabbed Interface mit Replit OAuth + E-Mail/Passwort Login
+- ✅ **REGISTRIERUNGSSEITE FÜR EINLADUNGSLINKS** - Vollständige RegisterPage für Token-basierte Registrierung
+- ✅ **ROUTING-PROBLEM BEHOBEN** - RegisterPage funktioniert auch für authentifizierte Benutzer
 - ✅ **DEPLOYMENT-BEREIT** - System automatisch für https://clubflow.replit.app/ optimiert
 - 📄 **STATUS**: Vollständig funktionsfähig und deployment-bereit
 

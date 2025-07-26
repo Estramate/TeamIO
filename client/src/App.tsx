@@ -156,12 +156,16 @@ function Router() {
     );
   }
 
+  // Show register page regardless of authentication status (for invitation links)
+  if (window.location.pathname === '/register') {
+    return <RegisterPage />;
+  }
+
   // Show landing page for unauthenticated users  
   if (!isAuthenticated) {
     return (
       <Switch>
         <Route path="/login" component={LoginPage} />
-        <Route path="/register" component={RegisterPage} />
         <Route component={Landing} />
       </Switch>
     );

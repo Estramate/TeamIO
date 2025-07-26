@@ -258,16 +258,8 @@ export default function Users() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Benutzerverwaltung</h1>
-          <p className="text-muted-foreground">
-            Verwalten Sie Mitglieder, Rollen und Berechtigungen für {selectedClub.name}
-          </p>
-        </div>
-      </div>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-auto p-6 space-y-6">
 
       {/* Filters and Search */}
       <Card>
@@ -617,6 +609,7 @@ export default function Users() {
           )}
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

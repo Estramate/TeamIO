@@ -313,12 +313,19 @@ export function useCommunication(clubId: number) {
       const previousMessages = queryClient.getQueryData(['/api/clubs', clubId, 'messages']);
       const previousStats = queryClient.getQueryData(['/api/clubs', clubId, 'communication-stats']);
       
-      // Optimistically update messages
+      // Optimistically update messages - only mark the current user's recipient as read
       queryClient.setQueryData(['/api/clubs', clubId, 'messages'], (old: any) => {
         if (!old) return old;
         return old.map((msg: any) => 
           msg.id === messageId 
-            ? { ...msg, recipients: msg.recipients.map((r: any) => ({ ...r, readAt: new Date().toISOString() })) }
+            ? { 
+                ...msg, 
+                recipients: msg.recipients.map((r: any) => 
+                  r.recipientId === (window as any).__user?.id || r.recipientId === (window as any).__user?.claims?.sub 
+                    ? { ...r, readAt: new Date().toISOString(), status: 'read' }
+                    : r
+                )
+              }
             : msg
         );
       });

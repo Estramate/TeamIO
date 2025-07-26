@@ -1120,6 +1120,20 @@ export class DatabaseStorage implements IStorage {
 
   async createMessage(messageData: InsertMessage): Promise<Message> {
     const [message] = await db.insert(messages).values(messageData).returning();
+    
+    // Create recipient record for sender (so they can mark it as read)
+    if (messageData.senderId) {
+      await db.insert(messageRecipients).values({
+        messageId: message.id,
+        recipientType: 'user',
+        recipientId: messageData.senderId,
+        status: 'sent',
+        deliveredAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    }
+    
     return message;
   }
 
@@ -1135,13 +1149,15 @@ export class DatabaseStorage implements IStorage {
 
 
   async markMessageAsRead(messageId: number, userId: string): Promise<void> {
+    const now = new Date();
+    
     // Try to update existing recipient record
     const updated = await db
       .update(messageRecipients)
       .set({ 
         status: 'read',
-        readAt: new Date(),
-        updatedAt: new Date()
+        readAt: now,
+        updatedAt: now
       })
       .where(and(
         eq(messageRecipients.messageId, messageId),
@@ -1156,12 +1172,15 @@ export class DatabaseStorage implements IStorage {
         recipientType: 'user',
         recipientId: userId,
         status: 'read',
-        readAt: new Date(),
-        deliveredAt: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date()
+        readAt: now,
+        deliveredAt: now,
+        createdAt: now,
+        updatedAt: now
       });
     }
+    
+    // Log the operation for debugging
+    console.log(`Message ${messageId} marked as read for user ${userId}`);
   }
 
   // Message recipient operations
@@ -1499,7 +1518,9 @@ export class DatabaseStorage implements IStorage {
         .where(and(
           eq(messages.clubId, clubId),
           eq(messageRecipients.recipientId, userId),
-          ne(messageRecipients.status, 'read')
+          isNull(messageRecipients.readAt), // Check for null readAt instead of status
+          isNull(messages.deletedAt),
+          isNull(messages.threadId) // Only count main messages, not replies
         ));
 
       unreadMessages = unreadMessageStats?.count || 0;

@@ -83,6 +83,11 @@ export default function Communication() {
   const { selectedClub } = useClub();
   const queryClient = useQueryClient();
   
+  // Store user info globally for optimistic updates
+  if (typeof window !== 'undefined' && user) {
+    (window as any).__user = user;
+  }
+  
   // Get members and teams for recipient selection
   const { data: members = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'members'],
@@ -398,29 +403,24 @@ export default function Communication() {
                         }
                       </Button>
                       <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => {
-                            try {
+                        {/* Only show "mark as read" button for unread messages */}
+                        {message.recipients && message.recipients.some(r => (r.recipientId === (user as any)?.id || r.recipientId === (user as any)?.claims?.sub) && !r.readAt) && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => {
                               markMessageAsRead(message.id);
                               toast({
                                 title: "Erfolgreich",
                                 description: "Nachricht als gelesen markiert",
                               });
-                            } catch (error) {
-                              console.error('Error marking message as read:', error);
-                              toast({
-                                title: "Hinweis",
-                                description: "Nachricht wurde angezeigt",
-                              });
-                            }
-                          }}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Als gelesen
-                        </Button>
+                            }}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Als gelesen
+                          </Button>
+                        )}
                         {/* Delete button for message creator */}
                         {message.senderId === (user as any)?.id && (
                           <Button 

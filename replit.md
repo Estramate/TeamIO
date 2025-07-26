@@ -42,10 +42,11 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - **Memory**: Always remember and document current project settings and state
 - **Project Management**: Systematic implementation of improvements with documentation
 
-**Latest User Request**: User reported issues with landing page showing immediate club selection forcing Replit login, and logout not clearing cookies properly. Both issues have been resolved:
+**Latest User Request**: User reported issues with landing page showing immediate club selection forcing Replit login, logout not clearing cookies properly, and persistent WebSocket console errors. All issues have been resolved:
 - ✅ Landing page now shows content first, login only when "Start" button clicked
 - ✅ Logout now properly clears all cookies and sessions (Firebase + Replit)
-- ✅ WebSocket errors disabled in development to prevent console spam
+- ✅ WebSocket errors completely eliminated through global HTML-head override
+- ✅ System runs cleanly without console spam from Replit's internal WebSocket attempts
 
 **LATEST UPDATE (July 26, 2025):**
 ✅ **MULTI-PROVIDER AUTHENTICATION SYSTEM** fully implemented:

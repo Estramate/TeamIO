@@ -38,7 +38,8 @@ export const setupSecurity = (app: Express) => {
         ],
         frameSrc: [
           "'self'",
-          "https://accounts.google.com"
+          "https://accounts.google.com",
+          "https://teamio-1be61.firebaseapp.com"
         ],
       },
     },

@@ -188,8 +188,11 @@ export function generateInvitationEmail(
   const roleText = role === 'club-administrator' ? 'Administrator' : 
                    role === 'trainer' ? 'Trainer' : 'Mitglied';
                    
-  const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
-  const inviteUrl = `https://${domain}/accept-invitation?token=${inviteToken}`;
+  // Use production domain for invitation URLs
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://clubflow.replit.app' 
+    : 'http://localhost:5000';
+  const inviteUrl = `${baseUrl}/register?token=${inviteToken}`;
   
   const subject = `Einladung zu ${clubName} - ClubFlow`;
   

@@ -2158,7 +2158,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (club && inviter) {
       const { sendInvitationEmail } = await import('./emailService');
       
-      const invitationUrl = `${req.protocol}://${req.get('host')}/register?token=${token}`;
+      // Generate invitation URL - use production domain if available
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://clubflow.replit.app' 
+        : `${req.protocol}://${req.get('host')}`;
+      const invitationUrl = `${baseUrl}/register?token=${token}`;
       
       const emailSent = await sendInvitationEmail({
         to: email,

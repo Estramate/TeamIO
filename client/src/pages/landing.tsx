@@ -321,7 +321,7 @@ export function Landing() {
             <Button 
               size="lg" 
               className="group bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 font-medium px-10 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => window.location.href = "/"}
             >
               Jetzt kostenlos starten
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />

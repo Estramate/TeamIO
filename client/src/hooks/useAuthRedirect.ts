@@ -13,14 +13,15 @@ export const useAuthRedirect = () => {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Abgemeldet",
+        description: "Sie wurden abgemeldet und zur Startseite weitergeleitet.",
         variant: "destructive",
       });
       
       // Use a shorter delay to improve user experience
       const timer = setTimeout(() => {
-        window.location.href = "/api/login";
+        // Redirect to landing page instead of Replit login
+        window.location.href = "/";
       }, 1000);
 
       return () => clearTimeout(timer);
@@ -46,12 +47,13 @@ export const isUnauthorizedError = (error: any): boolean => {
 export const handleMutationError = (error: any, toast: any, defaultMessage: string = "An error occurred") => {
   if (isUnauthorizedError(error)) {
     toast({
-      title: "Session Expired",
-      description: "Your session has expired. Please log in again.",
+      title: "Sitzung abgelaufen",
+      description: "Ihre Sitzung ist abgelaufen. Sie werden zur Startseite weitergeleitet.",
       variant: "destructive",
     });
     setTimeout(() => {
-      window.location.href = "/api/login";
+      // Redirect to landing page instead of Replit login
+      window.location.href = "/";
     }, 1500);
     return;
   }

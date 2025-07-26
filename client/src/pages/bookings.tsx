@@ -214,7 +214,7 @@ export default function Bookings() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/";
       }, 500);
       return;
     }
@@ -279,7 +279,7 @@ export default function Bookings() {
     },
     onError: (error: any) => {
       if (isUnauthorizedError(error)) {
-        window.location.href = "/api/login";
+        window.location.href = "/";
         return;
       }
       console.error("DEBUG: Create booking error:", error);
@@ -324,7 +324,7 @@ export default function Bookings() {
     },
     onError: (error: any) => {
       if (isUnauthorizedError(error)) {
-        window.location.href = "/api/login";
+        window.location.href = "/";
         return;
       }
       console.error("DEBUG: Update booking error:", error);
@@ -354,7 +354,7 @@ export default function Bookings() {
     },
     onError: (error: any) => {
       if (isUnauthorizedError(error)) {
-        window.location.href = "/api/login";
+        window.location.href = "/";
         return;
       }
       toast({
@@ -379,7 +379,7 @@ export default function Bookings() {
     },
     onError: (error: any) => {
       if (isUnauthorizedError(error)) {
-        window.location.href = "/api/login";
+        window.location.href = "/";
         return;
       }
       toast({

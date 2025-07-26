@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+// Avatar temporarily removed due to React context issues
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -972,11 +972,9 @@ export default function Communication() {
               {/* Original Message */}
               <div className="bg-white border rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarFallback>
-                      {selectedMessage?.sender?.firstName?.[0]}{selectedMessage?.sender?.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-medium">
+                    {selectedMessage?.sender?.firstName?.[0]}{selectedMessage?.sender?.lastName?.[0]}
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="font-medium">
@@ -1000,11 +998,9 @@ export default function Communication() {
               {(selectedMessage as any)?.replies?.map((reply: any, index: number) => (
                 <div key={reply.id} className="bg-gray-50 border rounded-lg p-4 ml-8">
                   <div className="flex items-start gap-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="text-xs">
-                        {reply.sender?.firstName?.[0]}{reply.sender?.lastName?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="w-8 h-8 bg-gray-500 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                      {reply.sender?.firstName?.[0]}{reply.sender?.lastName?.[0]}
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="font-medium text-sm">
@@ -1025,11 +1021,9 @@ export default function Communication() {
           {/* Reply Form */}
           <div className="border-t pt-4 mt-4">
             <div className="flex items-start gap-3">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="text-xs">
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
+              <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                {user?.firstName?.[0]}{user?.lastName?.[0]}
+              </div>
               <div className="flex-1">
                 <Textarea
                   value={replyText}

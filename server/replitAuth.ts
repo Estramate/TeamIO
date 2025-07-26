@@ -171,7 +171,15 @@ export async function setupAuth(app: Express) {
         : 'http://localhost:5000';
       
       console.log('LOGOUT COMPLETE - Redirecting to:', redirectUrl);
-      res.redirect(redirectUrl);
+      
+      // Add cache control headers to prevent caching of redirect
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
+      res.redirect(302, redirectUrl);
     });
   });
 }

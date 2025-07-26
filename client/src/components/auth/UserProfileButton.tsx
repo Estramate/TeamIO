@@ -59,6 +59,9 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
     try {
       console.log('UserProfileButton logout - starting complete logout process');
       
+      // Mark that we're logging out
+      sessionStorage.setItem('just_logged_out', 'true');
+      
       // Clear Firebase auth if present
       if (firebaseUser) {
         try {
@@ -71,7 +74,6 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
       
       // Clear all local data immediately
       localStorage.clear();
-      sessionStorage.clear();
       
       // Clear any cached query data
       try {

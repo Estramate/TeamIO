@@ -394,9 +394,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   size="sm"
                   onClick={() => {
                     console.log('Sidebar logout clicked - clearing all data and redirecting');
+                    
+                    // Mark that we're logging out
+                    sessionStorage.setItem('just_logged_out', 'true');
+                    
                     // Clear all local storage
                     localStorage.clear();
-                    sessionStorage.clear();
                     
                     // Clear any cached query data
                     try {

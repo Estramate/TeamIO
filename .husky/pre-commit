@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Linting und Formatierung prüfen
+npm run lint:check
+npm run format:check
+
+# TypeScript prüfen
+npm run check
+
+# Tests ausführen (optional - kann zeitaufwändig sein)
+# npm run test:ci

@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Plus, MapPin, Mail, Globe, Search } from 'lucide-react';
-import type { Club } from '@shared/schemas/core';
+import type { Club } from '@shared/schemas';
 import { useClubStore } from '@/lib/clubStore';
 
 interface OnboardingWizardProps {

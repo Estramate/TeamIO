@@ -61,7 +61,7 @@ import {
   type CommunicationStats,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, gte, ne, or, sql } from "drizzle-orm";
+import { eq, and, desc, asc, gte, ne, or, sql, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -973,7 +973,7 @@ export class DatabaseStorage implements IStorage {
   // User permission operations
   async getUserClubMembership(userId: string, clubId: number): Promise<any> {
     try {
-      const membership = await this.db
+      const membership = await db
         .select()
         .from(clubMemberships)
         .where(and(
@@ -992,7 +992,7 @@ export class DatabaseStorage implements IStorage {
   async getUserTeamAssignments(userId: string, clubId: number): Promise<any[]> {
     try {
       // First get user as member
-      const member = await this.db
+      const member = await db
         .select()
         .from(members)
         .where(and(
@@ -1006,7 +1006,7 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Get team assignments for this member
-      const assignments = await this.db
+      const assignments = await db
         .select({
           teamId: teamMemberships.teamId,
           role: teamMemberships.role,
@@ -1038,7 +1038,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(messages.senderId, users.id))
       .where(and(
         eq(messages.clubId, clubId),
-        eq(messages.deletedAt, null) // Only non-deleted messages
+        isNull(messages.deletedAt) // Only non-deleted messages
       ))
       .orderBy(desc(messages.createdAt));
 
@@ -1175,7 +1175,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(announcements.authorId, users.id))
       .where(and(
         eq(announcements.clubId, clubId),
-        eq(announcements.deletedAt, null),
+        isNull(announcements.deletedAt),
         eq(announcements.isPublished, true)
       ))
       .orderBy(desc(announcements.isPinned), desc(announcements.publishedAt));
@@ -1201,7 +1201,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(announcements.authorId, users.id))
       .where(and(
         eq(announcements.id, id),
-        eq(announcements.deletedAt, null)
+        isNull(announcements.deletedAt)
       ));
 
     if (!announcementData) return undefined;
@@ -1359,7 +1359,7 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .where(and(
         eq(messages.clubId, clubId),
-        eq(messages.deletedAt, null)
+        isNull(messages.deletedAt)
       ));
 
     const [announcementStats] = await db
@@ -1367,7 +1367,7 @@ export class DatabaseStorage implements IStorage {
       .from(announcements)
       .where(and(
         eq(announcements.clubId, clubId),
-        eq(announcements.deletedAt, null),
+        isNull(announcements.deletedAt),
         eq(announcements.isPublished, true)
       ));
 
@@ -1395,7 +1395,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         eq(messages.clubId, clubId),
         gte(messages.createdAt, new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)), // Last 7 days
-        eq(messages.deletedAt, null)
+        isNull(messages.deletedAt)
       ));
 
     return {
@@ -1425,7 +1425,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(messages.senderId, users.id))
       .where(and(
         eq(messages.clubId, clubId),
-        eq(messages.deletedAt, null),
+        isNull(messages.deletedAt),
         or(
           sql`lower(${messages.content}) like ${searchTerm}`,
           sql`lower(${messages.subject}) like ${searchTerm}`
@@ -1476,7 +1476,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(announcements.authorId, users.id))
       .where(and(
         eq(announcements.clubId, clubId),
-        eq(announcements.deletedAt, null),
+        isNull(announcements.deletedAt),
         eq(announcements.isPublished, true),
         or(
           sql`lower(${announcements.content}) like ${searchTerm}`,

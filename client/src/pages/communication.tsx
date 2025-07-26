@@ -391,13 +391,9 @@ export default function Communication() {
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <MessageCircle className="w-12 h-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Keine Nachrichten</h3>
-                  <p className="text-gray-600 text-center mb-4">
+                  <p className="text-gray-600 text-center">
                     Sie haben noch keine Nachrichten erhalten. Sobald Ihnen jemand schreibt, erscheinen die Nachrichten hier.
                   </p>
-                  <Button onClick={() => setShowNewMessage(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Erste Nachricht senden
-                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -457,13 +453,9 @@ export default function Communication() {
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Megaphone className="w-12 h-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Keine Ankündigungen</h3>
-                  <p className="text-gray-600 text-center mb-4">
-                    Es wurden noch keine Ankündigungen veröffentlicht. Erstellen Sie die erste Ankündigung für Ihren Verein.
+                  <p className="text-gray-600 text-center">
+                    Es wurden noch keine Ankündigungen veröffentlicht.
                   </p>
-                  <Button onClick={() => setShowNewAnnouncement(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Erste Ankündigung erstellen
-                  </Button>
                 </CardContent>
               </Card>
             )}

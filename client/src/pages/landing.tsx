@@ -67,7 +67,7 @@ export function Landing() {
     {
       name: "Thomas Müller",
       role: "Vorstand, FC Oberberg",
-      content: "TeamIO hat unsere Vereinsarbeit deutlich vereinfacht. Die intuitive Bedienung und alle wichtigen Funktionen in einer Plattform - genau das haben wir gebraucht.",
+      content: "ClubFlow hat unsere Vereinsarbeit deutlich vereinfacht. Die intuitive Bedienung und alle wichtigen Funktionen in einer Plattform - genau das haben wir gebraucht.",
       avatar: "TM"
     },
     {
@@ -261,7 +261,7 @@ export function Landing() {
               <span className="font-medium">Erfahrung</span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Feedback von Vereinsvertretern zur TeamIO Plattform.
+              Feedback von Vereinsvertretern zur ClubFlow Plattform.
             </p>
           </div>
 

@@ -54,7 +54,7 @@ export function LoginPage() {
               </svg>
             </div>
             <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white">
-              TeamIO
+              ClubFlow
             </CardTitle>
             <CardDescription className="text-lg text-gray-600 dark:text-gray-400">
               Vereinsverwaltung für die Zukunft

@@ -1,4 +1,4 @@
-// OpenAPI/Swagger documentation setup for TeamIO API
+// OpenAPI/Swagger documentation setup for ClubFlow API
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import type { Express } from 'express';
@@ -6,11 +6,11 @@ import type { Express } from 'express';
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'TeamIO API',
+    title: 'ClubFlow API',
     version: '1.0.0',
     description: 'Comprehensive sports club management platform API',
     contact: {
-      name: 'TeamIO Support',
+      name: 'ClubFlow Support',
       email: 'support@teamio.app'
     },
     license: {
@@ -160,7 +160,7 @@ export const setupApiDocs = (app: Express) => {
   // Serve API documentation
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'TeamIO API Documentation',
+    customSiteTitle: 'ClubFlow API Documentation',
     swaggerOptions: {
       persistAuthorization: true,
       displayRequestDuration: true,

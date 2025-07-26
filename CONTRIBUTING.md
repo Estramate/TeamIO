@@ -1,6 +1,6 @@
-# Contributing to TeamIO
+# Contributing to ClubFlow
 
-Thank you for your interest in contributing to TeamIO! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to ClubFlow! This document provides guidelines and information for contributors.
 
 ## Development Setup
 
@@ -160,4 +160,4 @@ teamio/
 - Help others learn and grow
 - Follow project guidelines and standards
 
-Thank you for contributing to TeamIO!
+Thank you for contributing to ClubFlow!

@@ -118,7 +118,7 @@ The application will be available at `http://localhost:5000`
 
 ## 📚 API Documentation
 
-TeamIO includes comprehensive API documentation powered by Swagger/OpenAPI:
+ClubFlow includes comprehensive API documentation powered by Swagger/OpenAPI:
 
 - **Interactive Documentation**: Visit `/api-docs` when the server is running
 - **OpenAPI Spec**: Available at `/api-docs.json`
@@ -226,7 +226,7 @@ LOG_LEVEL=info
 
 ## 🧪 Testing
 
-TeamIO includes comprehensive testing infrastructure:
+ClubFlow includes comprehensive testing infrastructure:
 
 ### Test Types
 - **Unit Tests**: Individual component and function testing
@@ -492,4 +492,4 @@ For support and questions:
 
 ---
 
-**TeamIO** - Professional club management made simple and powerful. Built with modern web technologies for scalability, performance, and accessibility.
+**ClubFlow** - Professional club management made simple and powerful. Built with modern web technologies for scalability, performance, and accessibility.

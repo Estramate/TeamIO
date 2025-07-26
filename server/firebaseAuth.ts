@@ -1,5 +1,5 @@
 /**
- * Firebase authentication integration for TeamIO
+ * Firebase authentication integration for ClubFlow
  * Handles Google and Facebook OAuth authentication alongside existing Replit auth
  */
 

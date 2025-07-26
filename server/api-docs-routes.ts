@@ -1,4 +1,4 @@
-// OpenAPI route documentation for TeamIO API
+// OpenAPI route documentation for ClubFlow API
 // This file contains detailed API documentation for all routes
 
 /**

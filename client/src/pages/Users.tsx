@@ -154,7 +154,9 @@ export default function Users() {
       `${member.firstName} ${member.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || 
+      (statusFilter === 'pending' && member.status === 'inactive') ||
+      member.status === statusFilter;
     const matchesRole = roleFilter === 'all' || member.role === roleFilter;
     
     return matchesSearch && matchesStatus && matchesRole;
@@ -179,7 +181,7 @@ export default function Users() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active': return <Badge variant="default" className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Aktiv</Badge>;
-      case 'inactive': return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Inaktiv</Badge>;
+      case 'inactive': return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Ausstehend</Badge>;
       case 'pending': return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Ausstehend</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
@@ -241,7 +243,6 @@ export default function Users() {
                 <SelectItem value="all">Alle Status</SelectItem>
                 <SelectItem value="active">Aktiv</SelectItem>
                 <SelectItem value="pending">Ausstehend</SelectItem>
-                <SelectItem value="inactive">Inaktiv</SelectItem>
               </SelectContent>
             </Select>
 
@@ -321,7 +322,7 @@ export default function Users() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           {/* Approve/Reject for pending members */}
-                          {member.status === 'pending' && (
+                          {(member.status === 'pending' || member.status === 'inactive') && (
                             <>
                               <Button
                                 size="sm"

@@ -393,12 +393,26 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    console.log('Sidebar logout clicked');
+                    console.log('Sidebar logout clicked - clearing all data and redirecting');
+                    // Clear all local storage
                     localStorage.clear();
                     sessionStorage.clear();
+                    
+                    // Clear any cached query data
+                    try {
+                      // @ts-expect-error - queryClient may be available globally
+                      if (window.queryClient) {
+                        window.queryClient.clear();
+                      }
+                    } catch (e) {
+                      // Ignore queryClient errors
+                    }
+                    
+                    // Force logout and redirect
                     window.location.href = "/api/logout";
                   }}
-                  className="text-muted-foreground hover:text-foreground p-1 h-8 w-8"
+                  className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 h-8 w-8"
+                  title="Abmelden"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

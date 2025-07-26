@@ -117,9 +117,10 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
-    console.log('=== LOGOUT DEBUG ===');
+    console.log('=== COMPLETE LOGOUT PROCESS ===');
     console.log('Session exists before logout:', !!req.session);
     console.log('Is authenticated before logout:', req.isAuthenticated?.());
+    console.log('Cookies before logout:', Object.keys(req.cookies || {}));
     
     // Clear session and Firebase cookies
     req.logout((err) => {
@@ -127,25 +128,26 @@ export async function setupAuth(app: Express) {
         console.error('Logout error:', err);
       }
       
-      console.log('After req.logout - clearing cookies and session');
+      console.log('After req.logout - clearing ALL cookies and session data');
       
-      // Clear Firebase auth cookie
-      res.clearCookie('firebase-auth', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/'
+      // Clear ALL possible auth cookies
+      const cookiesToClear = ['firebase-auth', 'connect.sid', 'session', 'auth-token'];
+      cookiesToClear.forEach(cookieName => {
+        res.clearCookie(cookieName, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/'
+        });
+        // Also clear without httpOnly for client-side cookies
+        res.clearCookie(cookieName, {
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/'
+        });
       });
       
-      // Clear session cookie properly
-      res.clearCookie('connect.sid', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/'
-      });
-      
-      // Destroy session completely
+      // Destroy session completely and forcefully
       if (req.session) {
         req.session.destroy((destroyErr) => {
           if (destroyErr) {
@@ -156,12 +158,19 @@ export async function setupAuth(app: Express) {
         });
       }
       
-      // For development, redirect to localhost with proper port
+      // Set additional headers to prevent caching
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
+      // For development, redirect to localhost with proper port and clear query params
       const redirectUrl = process.env.NODE_ENV === 'production' 
         ? `${req.protocol}://${req.hostname}` 
         : 'http://localhost:5000';
       
-      console.log('Redirecting after logout to:', redirectUrl);
+      console.log('LOGOUT COMPLETE - Redirecting to:', redirectUrl);
       res.redirect(redirectUrl);
     });
   });

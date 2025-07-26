@@ -57,16 +57,41 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
 
   const handleLogout = async () => {
     try {
-      // Always clear Firebase auth if present
+      console.log('UserProfileButton logout - starting complete logout process');
+      
+      // Clear Firebase auth if present
       if (firebaseUser) {
-        await firebaseSignOut();
+        try {
+          await firebaseSignOut();
+          console.log('Firebase sign out successful');
+        } catch (firebaseError) {
+          console.error('Firebase sign out error:', firebaseError);
+        }
       }
+      
+      // Clear all local data immediately
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Clear any cached query data
+      try {
+        // @ts-expect-error - queryClient may be available globally
+        if (window.queryClient) {
+          window.queryClient.clear();
+        }
+      } catch (e) {
+        // Ignore queryClient errors
+      }
+      
+      console.log('Local data cleared, redirecting to server logout');
       
       // Always call server logout to clear cookies and sessions
       window.location.href = "/api/logout";
     } catch (error) {
-      console.error('Logout error:', error);
-      // Fallback: Still redirect to logout even if Firebase signout fails
+      console.error('Logout process error:', error);
+      // Fallback: Force logout even if something fails
+      localStorage.clear();
+      sessionStorage.clear();
       window.location.href = "/api/logout";
     }
   };

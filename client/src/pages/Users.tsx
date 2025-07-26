@@ -49,7 +49,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import type { User, Member } from '@shared/schema';
+import type { User } from '@shared/schema';
 
 export default function Users() {
   const { selectedClub } = useClub();

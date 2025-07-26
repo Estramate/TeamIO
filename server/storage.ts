@@ -236,21 +236,43 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserByEmailAndProvider(email: string, authProvider: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.email, email), eq(users.authProvider, authProvider)));
+    return user;
+  }
+
   async upsertUser(userData: UpsertUser): Promise<User> {
-    // First check if user exists by email to handle duplicate email scenario
-    if (userData.email) {
-      const existingUser = await this.getUserByEmail(userData.email);
+    // First check if user exists by email + authProvider combination
+    if (userData.email && userData.authProvider) {
+      const existingUser = await this.getUserByEmailAndProvider(userData.email, userData.authProvider);
       if (existingUser) {
-        // User with this email already exists - return existing user
-        return existingUser;
+        // User with this email + provider combination exists - update and return
+        const [updatedUser] = await db
+          .update(users)
+          .set({
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            profileImageUrl: userData.profileImageUrl,
+            lastLoginAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(and(eq(users.email, userData.email), eq(users.authProvider, userData.authProvider)))
+          .returning();
+        return updatedUser;
       }
     }
 
     try {
-      // Try normal upsert by ID
+      // Try to insert new user
       const [user] = await db
         .insert(users)
-        .values(userData)
+        .values({
+          ...userData,
+          authProvider: userData.authProvider || 'replit',
+        })
         .onConflictDoUpdate({
           target: users.id,
           set: {
@@ -270,6 +292,14 @@ export class DatabaseStorage implements IStorage {
       }
       throw error;
     }
+  }
+
+  async getUserByEmailAndProvider(email: string, authProvider: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.email, email), eq(users.authProvider, authProvider)));
+    return user;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {

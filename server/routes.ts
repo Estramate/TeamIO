@@ -72,10 +72,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     try {
-      // Upsert Firebase user to database
+      // Upsert Firebase user to database with provider info
       const dbUser = await storage.upsertUser({
         id: userData.uid,
         email: userData.email,
+        authProvider: 'firebase',
         firstName: userData.displayName?.split(' ')[0] || null,
         lastName: userData.displayName?.split(' ').slice(1).join(' ') || null,
         profileImageUrl: userData.photoURL,
@@ -148,7 +149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     if (firebaseAuth) {
       try {
-        const userData = JSON.parse(Buffer.from(firebaseAuth, 'base64').toString());
+        const userData = JSON.parse(Buffer.from(decodeURIComponent(firebaseAuth), 'base64').toString());
         
         if (userData.exp > Date.now()) {
           // Create compatible user object for downstream middleware
@@ -165,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return next();
         }
       } catch (error) {
-        // Invalid Firebase token, fall through
+        console.log('Firebase token decode error:', error.message);
       }
     }
 

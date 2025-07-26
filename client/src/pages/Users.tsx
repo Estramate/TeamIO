@@ -551,7 +551,7 @@ export default function Users() {
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-6">
-          {selectedClub && <ActivityLogTab clubId={selectedClub.id} />}
+          {selectedClub && <ActivityLogTab clubId={selectedClub.id} viewMode={viewMode} />}
         </TabsContent>
       </Tabs>
 
@@ -616,8 +616,7 @@ export default function Users() {
 }
 
 // Activity Log Component
-function ActivityLogTab({ clubId }: { clubId: number }) {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+function ActivityLogTab({ clubId, viewMode }: { clubId: number, viewMode: 'grid' | 'list' }) {
   
   const { data: logs = [], isLoading, error } = useQuery<any[]>({
     queryKey: [`/api/clubs/${clubId}/activity-logs`],
@@ -677,39 +676,13 @@ function ActivityLogTab({ clubId }: { clubId: number }) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-3">
-              <Activity className="h-5 w-5 text-green-600" />
-              Aktivitätsprotokoll
-            </CardTitle>
-            <CardDescription>
-              Chronologische Übersicht aller Benutzeraktivitäten und Systemereignisse.
-            </CardDescription>
-          </div>
-          
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-              className="flex items-center gap-2"
-            >
-              <LayoutGrid className="h-4 w-4" />
-              Karten
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="flex items-center gap-2"
-            >
-              <List className="h-4 w-4" />
-              Liste
-            </Button>
-          </div>
-        </div>
+        <CardTitle className="flex items-center gap-3">
+          <Activity className="h-5 w-5 text-green-600" />
+          Aktivitätsprotokoll
+        </CardTitle>
+        <CardDescription>
+          Chronologische Übersicht aller Benutzeraktivitäten und Systemereignisse.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {!logs || logs.length === 0 ? (

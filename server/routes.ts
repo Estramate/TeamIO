@@ -36,7 +36,10 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Firebase authentication endpoint (FIRST - BYPASS ALL MIDDLEWARE)
+  // Auth middleware (Replit OpenID Connect) - MUST BE FIRST for session setup
+  await setupAuth(app);
+
+  // Firebase authentication endpoint - Simple approach without session dependency
   app.post('/api/auth/firebase', async (req: any, res: any) => {
     const { userData } = req.body;
     
@@ -54,24 +57,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         profileImageUrl: userData.photoURL,
       });
       
-      // Create session user object compatible with existing auth system
-      req.session.user = {
-        claims: {
-          sub: userData.uid,
-          email: userData.email,
-          first_name: userData.displayName?.split(' ')[0] || null,
-          last_name: userData.displayName?.split(' ').slice(1).join(' ') || null,
-          profile_image_url: userData.photoURL,
-        },
-        authProvider: 'firebase'
-      };
+      // Create simple session cookie manually
+      const userToken = Buffer.from(JSON.stringify({
+        sub: userData.uid,
+        email: userData.email,
+        first_name: userData.displayName?.split(' ')[0] || null,
+        last_name: userData.displayName?.split(' ').slice(1).join(' ') || null,
+        profile_image_url: userData.photoURL,
+        authProvider: 'firebase',
+        exp: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+      })).toString('base64');
       
-      // Save session
-      await new Promise((resolve, reject) => {
-        req.session.save((err: any) => {
-          if (err) reject(err);
-          else resolve(true);
-        });
+      // Set cookie manually
+      res.cookie('firebase-auth', userToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: 'lax'
       });
       
       logger.info('Firebase user authenticated', { userId: userData.uid, email: userData.email });
@@ -82,9 +84,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Firebase authentication failed', details: errorMessage });
     }
   });
-
-  // Auth middleware (Replit OpenID Connect)
-  await setupAuth(app);
   
   // Firebase auth setup (Google & Facebook)
   setupFirebaseAuth(app);

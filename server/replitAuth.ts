@@ -130,28 +130,49 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
-    return res.status(401).json({ message: "Unauthorized" });
+  // Check Replit auth first
+  if (req.isAuthenticated() && user && user.expires_at) {
+    const now = Math.floor(Date.now() / 1000);
+    if (now <= user.expires_at) {
+      return next();
+    }
+
+    const refreshToken = user.refresh_token;
+    if (refreshToken) {
+      try {
+        const config = await getOidcConfig();
+        const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
+        updateUserSession(user, tokenResponse);
+        return next();
+      } catch (error) {
+        // Fall through to Firebase auth check
+      }
+    }
   }
 
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= user.expires_at) {
-    return next();
+  // Check Firebase auth cookie
+  const firebaseAuth = req.cookies['firebase-auth'];
+  if (firebaseAuth) {
+    try {
+      const userData = JSON.parse(Buffer.from(firebaseAuth, 'base64').toString());
+      if (userData.exp > Date.now()) {
+        // Create compatible user object for downstream middleware
+        req.user = {
+          claims: {
+            sub: userData.sub,
+            email: userData.email,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            profile_image_url: userData.profile_image_url,
+          },
+          authProvider: userData.authProvider
+        };
+        return next();
+      }
+    } catch (error) {
+      // Invalid Firebase token, fall through
+    }
   }
 
-  const refreshToken = user.refresh_token;
-  if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-
-  try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
-    updateUserSession(user, tokenResponse);
-    return next();
-  } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
+  return res.status(401).json({ message: "Unauthorized" });
 };

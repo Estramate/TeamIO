@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupSecurity } from "./security";
@@ -30,6 +31,9 @@ app.use(requestLogger);
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Cookie parsing for Firebase auth
+app.use(cookieParser());
 
 // Health check endpoint
 app.get('/health', healthCheck);

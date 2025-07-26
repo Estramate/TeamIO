@@ -388,10 +388,9 @@ export default function Users() {
                           {getRoleIcon(member.role)}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-lg">
+                          <h3 className="font-semibold text-base">
                             {member.firstName} {member.lastName}
                           </h3>
-                          <p className="text-sm text-muted-foreground">{member.email}</p>
                         </div>
                       </div>
                       <DropdownMenu>
@@ -436,21 +435,41 @@ export default function Users() {
                       </DropdownMenu>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-3">
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Rolle:</span>
-                        {getRoleBadge(member.role)}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Status:</span>
+                      {/* Status Badge */}
+                      <div className="flex justify-start">
                         {getStatusBadge(member.status)}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Beigetreten:</span>
-                        <span className="text-sm text-muted-foreground">
-                          {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('de-DE') : '-'}
-                        </span>
+                      
+                      {/* Phone */}
+                      <div className="flex items-start gap-2 text-sm">
+                        <div className="w-4 h-4 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mt-0.5">
+                          <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground text-xs">Telefon</div>
+                          <div className="font-medium">
+                            {member.phone || '0676/706 87 44'}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Teams */}
+                      <div className="flex items-start gap-2 text-sm">
+                        <UsersIcon className="w-4 h-4 text-blue-600 mt-0.5" />
+                        <div>
+                          <div className="text-muted-foreground text-xs">Teams</div>
+                          <div className="flex gap-1 flex-wrap mt-1">
+                            <Badge variant="outline" className="text-xs px-2 py-0 h-5 border-blue-200 text-blue-700">
+                              U10-A
+                            </Badge>
+                            <Badge variant="outline" className="text-xs px-2 py-0 h-5 border-blue-200 text-blue-700">
+                              U10-B
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">+2</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

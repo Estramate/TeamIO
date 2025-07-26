@@ -415,46 +415,47 @@ export default function Communication() {
                                 description: "Nachricht wurde angezeigt",
                               });
                             }
-                        }}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        Als gelesen
-                      </Button>
-                      {/* Delete button for message creator */}
-                      {message.senderId === (user as any)?.id && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            if (confirm('Möchten Sie diese Nachricht wirklich löschen?')) {
-                              try {
-                                const response = await fetch(`/api/clubs/${selectedClub?.id}/messages/${message.id}`, {
-                                  method: 'DELETE',
-                                  credentials: 'include',
-                                });
-                                if (response.ok) {
-                                  toast({
-                                    title: "Nachricht gelöscht",
-                                    description: "Die Nachricht wurde erfolgreich gelöscht",
-                                  });
-                                  queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/messages`] });
-                                }
-                              } catch (error) {
-                                toast({
-                                  title: "Fehler",
-                                  description: "Nachricht konnte nicht gelöscht werden",
-                                  variant: "destructive",
-                                });
-                              }
-                            }
                           }}
-                          className="text-gray-500 hover:text-red-600"
+                          className="text-gray-500 hover:text-gray-700"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Eye className="w-4 h-4 mr-1" />
+                          Als gelesen
                         </Button>
-                      )}
+                        {/* Delete button for message creator */}
+                        {message.senderId === (user as any)?.id && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (confirm('Möchten Sie diese Nachricht wirklich löschen?')) {
+                                try {
+                                  const response = await fetch(`/api/clubs/${selectedClub?.id}/messages/${message.id}`, {
+                                    method: 'DELETE',
+                                    credentials: 'include',
+                                  });
+                                  if (response.ok) {
+                                    toast({
+                                      title: "Nachricht gelöscht",
+                                      description: "Die Nachricht wurde erfolgreich gelöscht",
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/messages`] });
+                                  }
+                                } catch (error) {
+                                  toast({
+                                    title: "Fehler",
+                                    description: "Nachricht konnte nicht gelöscht werden",
+                                    variant: "destructive",
+                                  });
+                                }
+                              }
+                            }}
+                            className="text-gray-500 hover:text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Card>

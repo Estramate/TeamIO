@@ -21,6 +21,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { InviteUserDialog } from "@/components/InviteUserDialog";
 
 // Form validation schema mit Datumsvalidierung
 const memberFormSchema = z.object({
@@ -474,14 +475,25 @@ export default function Members() {
               </Button>
             </div>
 
-            {/* Add Button */}
-            <Button 
-              onClick={handleAddMember}
-              className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Mitglied hinzufügen
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
+              <InviteUserDialog 
+                clubId={selectedClub?.id || 0}
+                trigger={
+                  <Button className="h-10 rounded-xl bg-green-600 hover:bg-green-700 text-white">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Per E-Mail einladen
+                  </Button>
+                }
+              />
+              <Button 
+                onClick={handleAddMember}
+                className="h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Mitglied hinzufügen
+              </Button>
+            </div>
           </div>
         </div>
       </div>

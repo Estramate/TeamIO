@@ -28,6 +28,21 @@ import {
   insertNotificationSchema,
   insertCommunicationPreferencesSchema,
 } from "@shared/schema";
+import {
+  emailInvitationFormSchema,
+  userRegistrationSchema,
+  loginSchema,
+  twoFactorSetupSchema,
+  type EmailInvitation
+} from "@shared/schemas/core";
+import { 
+  sendUserInvitation, 
+  registerUserFromInvitation, 
+  authenticateUser, 
+  setup2FA, 
+  enable2FA, 
+  disable2FA 
+} from './auth';
 
 // OpenID client for Replit authentication
 import * as client from "openid-client";
@@ -57,6 +72,19 @@ function updateUserSession(
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
+
+// Enhanced authentication middleware that supports both Replit and email/password auth
+function isAuthenticatedEnhanced(req: any, res: any, next: any) {
+  // Check if user has a session (either from Replit or email auth)
+  if (req.session && req.session.user) {
+    // Email/password authentication
+    req.user = { id: req.session.user.id };
+    return next();
+  }
+  
+  // Fall back to standard Replit authentication
+  return isAuthenticated(req, res, next);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (Replit OpenID Connect) - MUST BE FIRST for session setup
@@ -2049,6 +2077,181 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const announcements = await storage.searchAnnouncements(clubId, query);
     logger.info('Announcements searched', { clubId, query, results: announcements.length, requestId: req.id });
     res.json(announcements);
+  }));
+
+  // ====== EMAIL INVITATION SYSTEM ======
+
+  // Send email invitation
+  app.post('/api/clubs/:clubId/invitations/send', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    try {
+      const { clubId } = req.params;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Benutzer nicht authentifiziert' });
+      }
+
+      // Validate input
+      const validatedData = emailInvitationFormSchema.parse(req.body);
+      
+      const result = await sendUserInvitation({
+        clubId: parseInt(clubId),
+        email: validatedData.email,
+        role: validatedData.role,
+        invitedBy: userId,
+        personalMessage: validatedData.personalMessage
+      });
+
+      if (result.success) {
+        // Log activity
+        await storage.logActivity({
+          clubId: parseInt(clubId),
+          userId,
+          action: 'user_invited',
+          description: `Einladung an ${validatedData.email} als ${validatedData.role} gesendet`,
+          targetResource: 'invitation',
+          targetResourceId: result.invitationId,
+          metadata: { email: validatedData.email, role: validatedData.role }
+        });
+
+        res.json({ message: 'Einladung erfolgreich gesendet', invitationId: result.invitationId });
+      } else {
+        res.status(400).json({ message: result.error });
+      }
+    } catch (error: any) {
+      logger.error('Failed to send invitation', { error: error.message, clubId: req.params.clubId });
+      res.status(500).json({ message: 'Fehler beim Senden der Einladung' });
+    }
+  }));
+
+  // Get club invitations
+  app.get('/api/clubs/:clubId/invitations', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    try {
+      const { clubId } = req.params;
+      const invitations = await storage.getClubEmailInvitations(parseInt(clubId));
+      res.json(invitations);
+    } catch (error: any) {
+      logger.error('Failed to get invitations', { error: error.message, clubId: req.params.clubId });
+      res.status(500).json({ message: 'Fehler beim Laden der Einladungen' });
+    }
+  }));
+
+  // ====== EMAIL/PASSWORD AUTHENTICATION ======
+
+  // Register user from invitation
+  app.post('/api/auth/register', asyncHandler(async (req: any, res: any) => {
+    try {
+      const validatedData = userRegistrationSchema.parse(req.body);
+      
+      const result = await registerUserFromInvitation(validatedData);
+      
+      if (result.success) {
+        res.json({ message: 'Registrierung erfolgreich', user: result.user });
+      } else {
+        res.status(400).json({ message: result.error });
+      }
+    } catch (error: any) {
+      logger.error('Failed to register user', { error: error.message });
+      res.status(500).json({ message: 'Fehler bei der Registrierung' });
+    }
+  }));
+
+  // Email/password login
+  app.post('/api/auth/login', asyncHandler(async (req: any, res: any) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      
+      const result = await authenticateUser(validatedData);
+      
+      if (result.success) {
+        // Set up user session
+        req.session.user = {
+          id: result.user!.id,
+          email: result.user!.email,
+          authProvider: 'email'
+        };
+        
+        res.json({ message: 'Anmeldung erfolgreich', user: result.user });
+      } else if (result.requires2FA) {
+        res.status(200).json({ requires2FA: true, message: result.error });
+      } else {
+        res.status(401).json({ message: result.error });
+      }
+    } catch (error: any) {
+      logger.error('Failed to login user', { error: error.message });
+      res.status(500).json({ message: 'Fehler bei der Anmeldung' });
+    }
+  }));
+
+  // ====== 2FA ENDPOINTS ======
+
+  // Setup 2FA
+  app.post('/api/auth/2fa/setup', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Benutzer nicht authentifiziert' });
+      }
+
+      const result = await setup2FA(userId);
+      
+      if (result.success) {
+        res.json({ setup: result.setup });
+      } else {
+        res.status(400).json({ message: result.error });
+      }
+    } catch (error: any) {
+      logger.error('Failed to setup 2FA', { error: error.message });
+      res.status(500).json({ message: 'Fehler beim Einrichten der 2FA' });
+    }
+  }));
+
+  // Enable 2FA
+  app.post('/api/auth/2fa/enable', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    try {
+      const userId = req.user?.id;
+      const { secret, verificationCode, backupCodes } = req.body;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Benutzer nicht authentifiziert' });
+      }
+
+      const validatedData = twoFactorSetupSchema.parse({ verificationCode });
+      
+      const result = await enable2FA(userId, secret, validatedData.verificationCode, backupCodes);
+      
+      if (result.success) {
+        res.json({ message: '2FA erfolgreich aktiviert' });
+      } else {
+        res.status(400).json({ message: result.error });
+      }
+    } catch (error: any) {
+      logger.error('Failed to enable 2FA', { error: error.message });
+      res.status(500).json({ message: 'Fehler beim Aktivieren der 2FA' });
+    }
+  }));
+
+  // Disable 2FA
+  app.post('/api/auth/2fa/disable', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Benutzer nicht authentifiziert' });
+      }
+
+      const result = await disable2FA(userId);
+      
+      if (result.success) {
+        res.json({ message: '2FA erfolgreich deaktiviert' });
+      } else {
+        res.status(400).json({ message: result.error });
+      }
+    } catch (error: any) {
+      logger.error('Failed to disable 2FA', { error: error.message });
+      res.status(500).json({ message: 'Fehler beim Deaktivieren der 2FA' });
+    }
   }));
 
   const httpServer = createServer(app);

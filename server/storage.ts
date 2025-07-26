@@ -334,6 +334,15 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id));
   }
 
+  async updateUser(id: string, data: Partial<User>): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
   // Club operations
   async getClubs(): Promise<Club[]> {
     return await db.select().from(clubs).orderBy(asc(clubs.name));
@@ -2070,6 +2079,76 @@ export class DatabaseStorage implements IStorage {
       console.error('Failed to log activity:', error);
       // Don't throw - logging failures shouldn't break the main operation
     }
+  }
+
+  // Email invitation operations
+  async createEmailInvitation(invitation: InsertEmailInvitation): Promise<EmailInvitation> {
+    const [newInvitation] = await db.insert(emailInvitations).values(invitation).returning();
+    return newInvitation;
+  }
+
+  async getEmailInvitationByToken(token: string): Promise<EmailInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(emailInvitations)
+      .where(eq(emailInvitations.token, token));
+    return invitation;
+  }
+
+  async getInvitationByToken(token: string): Promise<EmailInvitation | undefined> {
+    return this.getEmailInvitationByToken(token);
+  }
+
+  async getPendingInvitation(email: string, clubId: number): Promise<EmailInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(emailInvitations)
+      .where(
+        and(
+          eq(emailInvitations.email, email),
+          eq(emailInvitations.clubId, clubId),
+          eq(emailInvitations.status, 'pending')
+        )
+      );
+    return invitation;
+  }
+
+  async updateEmailInvitation(id: number, data: Partial<EmailInvitation>): Promise<EmailInvitation> {
+    const [updatedInvitation] = await db
+      .update(emailInvitations)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(emailInvitations.id, id))
+      .returning();
+    return updatedInvitation;
+  }
+
+  async deleteEmailInvitation(id: number): Promise<void> {
+    await db.delete(emailInvitations).where(eq(emailInvitations.id, id));
+  }
+
+  async updateEmailInvitationStatus(token: string, status: 'accepted' | 'expired'): Promise<void> {
+    await db
+      .update(emailInvitations)
+      .set({ 
+        status, 
+        ...(status === 'accepted' && { acceptedAt: new Date() }),
+        updatedAt: new Date() 
+      })
+      .where(eq(emailInvitations.token, token));
+  }
+
+  async getClubEmailInvitations(clubId: number): Promise<EmailInvitation[]> {
+    return await db
+      .select()
+      .from(emailInvitations)
+      .where(eq(emailInvitations.clubId, clubId))
+      .orderBy(desc(emailInvitations.createdAt));
+  }
+
+  // Club membership operations
+  async createClubMembership(membership: InsertClubMembership): Promise<ClubMembership> {
+    const [newMembership] = await db.insert(clubMemberships).values(membership).returning();
+    return newMembership;
   }
 }
 

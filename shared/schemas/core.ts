@@ -68,15 +68,20 @@ export const emailInvitations = pgTable("email_invitations", {
   index("idx_email_invitations_token").on(table.token),
 ]);
 
-// User storage table (supports multiple auth providers)
+// User storage table (supports multiple auth providers + password auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
+  passwordHash: varchar("password_hash"), // For email/password authentication
+  // 2FA Settings
+  twoFactorSecret: varchar("two_factor_secret"), // TOTP secret key
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
+  twoFactorBackupCodes: jsonb("two_factor_backup_codes"), // Array of backup codes
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   // OAuth provider information
-  authProvider: varchar("auth_provider", { length: 50 }).notNull().default("replit"), // replit, google, facebook
+  authProvider: varchar("auth_provider", { length: 50 }).notNull().default("replit"), // replit, email, google
   providerUserId: varchar("provider_user_id"), // original user ID from provider
   providerData: jsonb("provider_data"), // additional provider-specific data
   // User preferences and status
@@ -202,6 +207,7 @@ export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({
   id: true,
   createdAt: true,
 });
+
 export const insertEmailInvitationSchema = createInsertSchema(emailInvitations).omit({
   id: true,
   createdAt: true,
@@ -232,6 +238,39 @@ export const clubJoinRequestFormSchema = createInsertSchema(clubJoinRequests, {
   approvedRole: true,
   createdAt: true,
   updatedAt: true,
+});
+
+// Email Invitation Form Schema
+export const emailInvitationFormSchema = z.object({
+  email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein"),
+  role: z.enum(["member", "trainer", "club-administrator"]).default("member"),
+  personalMessage: z.string().optional(),
+});
+
+// User Registration Form Schema (for invited users)
+export const userRegistrationSchema = z.object({
+  email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein"),
+  password: z.string().min(8, "Passwort muss mindestens 8 Zeichen lang sein")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben und eine Zahl enthalten"),
+  confirmPassword: z.string(),
+  firstName: z.string().min(1, "Vorname ist erforderlich"),
+  lastName: z.string().min(1, "Nachname ist erforderlich"),
+  token: z.string().min(1, "Einladungstoken ist erforderlich"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwörter stimmen nicht überein",
+  path: ["confirmPassword"],
+});
+
+// Login Form Schema  
+export const loginSchema = z.object({
+  email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein"),
+  password: z.string().min(1, "Passwort ist erforderlich"),
+  twoFactorCode: z.string().optional(),
+});
+
+// 2FA Setup Schema
+export const twoFactorSetupSchema = z.object({
+  verificationCode: z.string().length(6, "Verifikationscode muss 6 Zeichen lang sein"),
 });
 
 // Export types for core entities

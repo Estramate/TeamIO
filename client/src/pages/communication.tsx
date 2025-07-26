@@ -427,19 +427,41 @@ export default function Communication() {
                             onClick={async (e) => {
                               e.stopPropagation();
                               if (confirm('Möchten Sie diese Nachricht wirklich löschen?')) {
+                                // Optimistic update - remove message from UI immediately
+                                const messagesQueryKey = [`/api/clubs/${selectedClub?.id}/messages`];
+                                const previousMessages = queryClient.getQueryData(messagesQueryKey);
+                                
+                                // Remove message from cache immediately
+                                queryClient.setQueryData(messagesQueryKey, (oldData: any) => {
+                                  if (!oldData) return oldData;
+                                  return oldData.filter((msg: any) => msg.id !== message.id);
+                                });
+
                                 try {
                                   const response = await fetch(`/api/clubs/${selectedClub?.id}/messages/${message.id}`, {
                                     method: 'DELETE',
                                     credentials: 'include',
                                   });
+                                  
                                   if (response.ok) {
                                     toast({
                                       title: "Nachricht gelöscht",
                                       description: "Die Nachricht wurde erfolgreich gelöscht",
                                     });
-                                    queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/messages`] });
+                                    // Refetch to ensure consistency
+                                    queryClient.invalidateQueries({ queryKey: messagesQueryKey });
+                                  } else {
+                                    // Revert optimistic update on error
+                                    queryClient.setQueryData(messagesQueryKey, previousMessages);
+                                    toast({
+                                      title: "Fehler",
+                                      description: "Nachricht konnte nicht gelöscht werden",
+                                      variant: "destructive",
+                                    });
                                   }
                                 } catch (error) {
+                                  // Revert optimistic update on error
+                                  queryClient.setQueryData(messagesQueryKey, previousMessages);
                                   toast({
                                     title: "Fehler",
                                     description: "Nachricht konnte nicht gelöscht werden",

@@ -57,6 +57,8 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - ✅ TeamStatus component completely fixed with null-safety and error handling
 - ✅ Server-side logout clears all possible auth cookies and destroys sessions
 - ✅ Client-side logout clears localStorage, sessionStorage, and cached query data
+- ✅ **LOGOUT URL PROBLEM RESOLVED** - Server now redirects to correct Replit domain instead of localhost:5000
+- ✅ Proper domain detection using req.get('host') for accurate redirects after logout
 
 **Recent Fixes**: 
 - Fixed React duplicate key warning in Members component - unique keys now include member ID and index for team mappings

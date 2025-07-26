@@ -7,14 +7,14 @@
 - Fügen Sie diese URIs zu Ihrer Facebook-App hinzu:
   ```
   https://teamio-1be61.firebaseapp.com/__/auth/handler  ← Bereits hinzugefügt
-  https://IHRE-FINALE-REPLIT-DOMAIN.replit.app  ← JETZT HINZUFÜGEN
+  https://clubflow.replit.app  ← JETZT HINZUFÜGEN
   ```
 
 ### 2. Firebase Console - Authorized Domains  
 **Firebase Console → Authentication → Settings → Authorized domains:**
-- Fügen Sie Ihre finale Replit-Domain hinzu:
+- Fügen Sie diese Domain hinzu:
   ```
-  IHRE-FINALE-REPLIT-DOMAIN.replit.app  ← JETZT HINZUFÜGEN
+  clubflow.replit.app  ← JETZT HINZUFÜGEN
   teamio-1be61.firebaseapp.com  ← Bereits vorhanden
   ```
 
@@ -55,7 +55,7 @@
 ### ⚠️ NOCH ZU TUN:
 1. **Firebase Console öffnen**: https://console.firebase.google.com/project/teamio-1be61
 2. **Authentication → Settings → Authorized domains**
-3. **Ihre finale Replit-Domain hinzufügen** (z.B. `meine-app.replit.app`)
-4. **Facebook Developer Console**: Finale Domain auch dort hinzufügen
+3. **Domain hinzufügen**: `clubflow.replit.app`
+4. **Facebook Developer Console**: Domain `clubflow.replit.app` zu Valid OAuth Redirect URIs hinzufügen
 
 ### 🎯 Nach diesen Einstellungen ist Firebase vollständig konfiguriert!

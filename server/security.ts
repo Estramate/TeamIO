@@ -36,7 +36,8 @@ export const setupSecurity = (app: Express) => {
           "https://www.facebook.com",
           "https://teamio-1be61.firebaseapp.com",
           "https://*.googleapis.com",
-          "https://securetoken.googleapis.com"
+          "https://securetoken.googleapis.com",
+          "https://clubflow.replit.app"
         ],
         frameSrc: [
           "'self'",

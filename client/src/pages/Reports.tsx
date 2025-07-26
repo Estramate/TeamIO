@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,34 +33,40 @@ export default function ReportsPage() {
   }, [setPage]);
 
   // Data queries
-  const { data: members } = useQuery({
+  const { data: members = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'members'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const { data: teams } = useQuery({
+  const { data: teams = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const { data: finances } = useQuery({
+  const { data: finances = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'finances'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const { data: memberFees } = useQuery({
+  const { data: memberFees = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'member-fees'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const { data: trainingFees } = useQuery({
+  const { data: trainingFees = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'training-fees'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const { data: players } = useQuery({
+  const { data: players = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'players'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
   // Report types configuration

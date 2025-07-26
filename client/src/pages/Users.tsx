@@ -65,7 +65,7 @@ export default function Users() {
   const [showEditDialog, setShowEditDialog] = useState(false);
 
   // Fetch club members with user details
-  const { data: members, isLoading } = useQuery({
+  const { data: members = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'users'],
     enabled: !!selectedClub?.id,
     retry: false,

@@ -15,8 +15,34 @@ export const setupSecurity = (app: Express) => {
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https:"],
-        scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
-        connectSrc: ["'self'", "ws:", "wss:", "*.neon.tech"],
+        scriptSrc: [
+          "'self'", 
+          "'unsafe-eval'", 
+          "'unsafe-inline'",
+          "https://apis.google.com",
+          "https://www.google.com",
+          "https://www.gstatic.com",
+          "https://connect.facebook.net"
+        ],
+        connectSrc: [
+          "'self'", 
+          "ws:", 
+          "wss:", 
+          "*.neon.tech",
+          "https://apis.google.com",
+          "https://accounts.google.com",
+          "https://www.googleapis.com",
+          "https://graph.facebook.com",
+          "https://www.facebook.com",
+          "https://teamio-1be61.firebaseapp.com",
+          "https://*.googleapis.com",
+          "https://securetoken.googleapis.com"
+        ],
+        frameSrc: [
+          "'self'",
+          "https://accounts.google.com",
+          "https://www.facebook.com"
+        ],
       },
     },
     crossOriginEmbedderPolicy: false, // Disable for Vite compatibility

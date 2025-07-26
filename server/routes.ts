@@ -217,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.status(401).json({ message: "Not authenticated" });
   };
 
-  // Auth routes (supports both Replit and Firebase auth)
+  // Auth routes (supports both Replit and Firebase auth) - NO MIDDLEWARE, handles auth internally
   app.get('/api/auth/user', async (req: any, res: any) => {
     try {
       console.log('=== GET /api/auth/user DEBUG ===');
@@ -232,6 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Using Replit auth, user ID:', userId);
         const user = await storage.getUser(userId);
         if (user) {
+          console.log('Replit user found:', { id: user.id, email: user.email });
           return res.json(user);
         }
       }
@@ -241,10 +242,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (firebaseAuthCookie) {
         console.log('Found Firebase auth cookie, decoding...');
         try {
-          const decoded = JSON.parse(Buffer.from(firebaseAuthCookie, 'base64').toString());
-          console.log('Decoded Firebase token:', { sub: decoded.sub, email: decoded.email, exp: decoded.exp });
+          let decodedCookie = firebaseAuthCookie;
           
-          if (decoded.exp && Date.now() < decoded.exp) {
+          // Handle URL-encoded cookies
+          try {
+            decodedCookie = decodeURIComponent(firebaseAuthCookie);
+          } catch (e) {
+            // Cookie might not be URL encoded, use as-is
+            console.log('Cookie not URL encoded, using as-is');
+          }
+          
+          const decoded = JSON.parse(Buffer.from(decodedCookie, 'base64').toString());
+          console.log('Decoded Firebase token:', { 
+            sub: decoded.sub, 
+            email: decoded.email, 
+            exp: decoded.exp,
+            expDate: new Date(decoded.exp).toISOString(),
+            now: new Date().toISOString(),
+            valid: decoded.exp > Date.now()
+          });
+          
+          if (decoded.exp && decoded.exp > Date.now()) {
             const firebaseUserId = decoded.sub;
             console.log('Looking up Firebase user:', firebaseUserId);
             const user = await storage.getUser(firebaseUserId);
@@ -252,13 +270,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log('Firebase user found in DB:', { id: user.id, email: user.email });
               return res.json(user);
             } else {
-              console.log('Firebase user not found in database');
+              console.log('Firebase user not found in database, user ID:', firebaseUserId);
+              // Return 401 instead of trying to create user here
+              return res.status(401).json({ message: "Firebase user not found in database" });
             }
           } else {
-            console.log('Firebase token expired');
+            console.log('Firebase token expired', {
+              exp: decoded.exp,
+              now: Date.now(),
+              expired: decoded.exp <= Date.now()
+            });
+            return res.status(401).json({ message: "Firebase token expired" });
           }
         } catch (cookieError) {
           console.error('Firebase cookie parsing error:', cookieError);
+          console.log('Raw cookie (first 100 chars):', firebaseAuthCookie?.substring(0, 100));
+          return res.status(401).json({ message: "Invalid Firebase cookie" });
         }
       } else {
         console.log('No Firebase auth cookie found');

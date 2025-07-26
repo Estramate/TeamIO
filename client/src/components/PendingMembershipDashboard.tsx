@@ -7,11 +7,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Clock, CheckCircle, XCircle, UserPlus, Building } from 'lucide-react';
+import { Loader2, Clock, CheckCircle, XCircle, UserPlus, Building, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useClubStore } from '@/lib/clubStore';
 
 export function PendingMembershipDashboard() {
   const { toast } = useToast();
+  const { setSelectedClub } = useClubStore();
 
   // Get user's membership status
   const { data: membershipStatus, isLoading } = useQuery({
@@ -35,9 +37,57 @@ export function PendingMembershipDashboard() {
   };
 
   const handleJoinAnotherClub = () => {
-    // Reset club selection to show onboarding wizard
+    // Clear club selection and force onboarding to show
+    setSelectedClub(null);
     localStorage.removeItem('selectedClub');
-    window.location.reload();
+    sessionStorage.removeItem('selectedClub');
+    
+    toast({
+      title: "Vereinsauswahl zurückgesetzt",
+      description: "Sie können jetzt einem anderen Verein beitreten.",
+    });
+    
+    // Reload to trigger onboarding wizard
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Clear all local state first
+      setSelectedClub(null);
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Show logout notification
+      toast({
+        title: "Abmeldung...",
+        description: "Sie werden abgemeldet.",
+      });
+
+      // Try Firebase logout first if available
+      if (window.firebase && window.firebase.auth) {
+        try {
+          await window.firebase.auth().signOut();
+        } catch (e) {
+          console.log('Firebase logout not available or failed');
+        }
+      }
+
+      // Server-side logout with delay for toast to show
+      setTimeout(() => {
+        sessionStorage.setItem('just_logged_out', 'true');
+        window.location.href = '/api/logout';
+      }, 500);
+      
+    } catch (error) {
+      toast({
+        title: "Fehler beim Abmelden",
+        description: "Es gab ein Problem beim Abmelden. Bitte versuchen Sie es erneut.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -112,6 +162,10 @@ export function PendingMembershipDashboard() {
           <Button onClick={handleJoinAnotherClub} variant="default" className="flex items-center gap-2">
             <Building className="w-4 h-4" />
             Anderem Verein beitreten
+          </Button>
+          <Button onClick={handleLogout} variant="destructive" className="flex items-center gap-2">
+            <LogOut className="w-4 h-4" />
+            Abmelden
           </Button>
         </div>
 

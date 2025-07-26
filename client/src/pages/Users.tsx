@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useClub } from '@/hooks/use-club';
 import { usePage } from '@/contexts/PageContext';
@@ -36,7 +37,10 @@ import {
   UserCheck,
   UserX,
   Activity,
-  AlertCircle
+  AlertCircle,
+  LayoutGrid,
+  List,
+  MoreHorizontal
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -64,6 +68,7 @@ export default function Users() {
   
   // For tabbed navigation
   const [activeTab, setActiveTab] = useState('users');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending'>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'member' | 'coach' | 'club-administrator'>('all');
@@ -253,7 +258,7 @@ export default function Users() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -290,6 +295,28 @@ export default function Users() {
                 <SelectItem value="member">Mitglied</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="flex items-center gap-2"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                Karten
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="flex items-center gap-2"
+              >
+                <List className="h-4 w-4" />
+                Liste
+              </Button>
+            </div>
 
             {/* Stats */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -336,6 +363,86 @@ export default function Users() {
                   ? 'Keine Mitglieder entsprechen den aktuellen Filterkriterien.'
                   : 'Dieser Verein hat noch keine Mitglieder.'}
               </p>
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredMembers.map((member) => (
+                <Card key={member.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          {getRoleIcon(member.role)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg">
+                            {member.firstName} {member.lastName}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">{member.email}</p>
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <span className="sr-only">Menü öffnen</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedUser(member);
+                            setShowEditDialog(true);
+                          }}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Rolle bearbeiten
+                          </DropdownMenuItem>
+                          {(member.status === 'pending' || member.status === 'inactive') && (
+                            <>
+                              <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ memberId: member.membershipId, status: 'active' })}>
+                                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                                Genehmigen
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ memberId: member.membershipId, status: 'inactive' })}>
+                                <XCircle className="mr-2 h-4 w-4 text-red-600" />
+                                Ablehnen
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => {
+                              if (confirm(`${member.firstName} ${member.lastName} wirklich aus dem Verein entfernen?`)) {
+                                removeMemberMutation.mutate(member.membershipId);
+                              }
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Entfernen
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Rolle:</span>
+                        {getRoleBadge(member.role)}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Status:</span>
+                        {getStatusBadge(member.status)}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Beigetreten:</span>
+                        <span className="text-sm text-muted-foreground">
+                          {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('de-DE') : '-'}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : (
             <div className="rounded-md border">

@@ -72,7 +72,7 @@ function Router() {
   const { isAuthenticated: firebaseAuth, loading: firebaseLoading } = useFirebaseAuth();
   const { selectedClub } = useClubStore();
   const [showOnboarding, setShowOnboarding] = useState<boolean | 'pending'>(false);
-  const [forceOnboardingChecked, setForceOnboardingChecked] = useState(false);
+  const [membershipChecked, setMembershipChecked] = useState(false);
 
   // Check if user is authenticated with either provider
   const isAuthenticated = replitAuth || firebaseAuth;
@@ -98,17 +98,8 @@ function Router() {
 
   // Check if authenticated user needs club selection or auto-select first club
   useEffect(() => {
-    if (isAuthenticated && !isLoading && !forceOnboardingChecked) {
-      // Check if user explicitly wants to join another club (reset flag)
-      const forceOnboarding = sessionStorage.getItem('force_onboarding');
-      if (forceOnboarding === 'true') {
-        sessionStorage.removeItem('force_onboarding');
-        setShowOnboarding(true);
-        setForceOnboardingChecked(true);
-        return;
-      }
-      
-      setForceOnboardingChecked(true);
+    if (isAuthenticated && !isLoading && !membershipChecked) {
+      setMembershipChecked(true);
 
       // If no club is selected, check user's membership status
       if (!selectedClub) {
@@ -147,7 +138,7 @@ function Router() {
         setShowOnboarding(false);
       }
     }
-  }, [isAuthenticated, isLoading, selectedClub, forceOnboardingChecked]);
+  }, [isAuthenticated, isLoading, selectedClub, membershipChecked]);
 
   if (isLoading) {
     return (
@@ -172,7 +163,11 @@ function Router() {
 
   // Show pending dashboard for users with inactive memberships
   if (showOnboarding === 'pending' && isAuthenticated) {
-    return <PendingMembershipDashboard />;
+    return (
+      <PendingMembershipDashboard 
+        onJoinAnotherClub={() => setShowOnboarding(true)}
+      />
+    );
   }
 
   // Show club selection for users without a club

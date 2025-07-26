@@ -12,7 +12,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useClubStore } from '@/lib/clubStore';
 import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
 
-export function PendingMembershipDashboard() {
+interface PendingMembershipDashboardProps {
+  onJoinAnotherClub?: () => void;
+}
+
+export function PendingMembershipDashboard({ onJoinAnotherClub }: PendingMembershipDashboardProps) {
   const { toast } = useToast();
   const { setSelectedClub } = useClubStore();
   const queryClient = useQueryClient();
@@ -41,26 +45,24 @@ export function PendingMembershipDashboard() {
 
   const handleJoinAnotherClub = () => {
     try {
-      // Clear all club-related data
+      // Clear club-related data
       setSelectedClub(null);
       localStorage.removeItem('selectedClub');
       sessionStorage.removeItem('selectedClub');
       
-      // Set flag to force onboarding on next page load
-      sessionStorage.setItem('force_onboarding', 'true');
-      
       // Clear cache to force fresh data
-      queryClient.clear();
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/memberships/status'] });
       
       toast({
         title: "Vereinsauswahl zurückgesetzt",
         description: "Weiterleitung zur Vereinsauswahl...",
       });
       
-      // Force a full page reload to reset all state and show onboarding
-      setTimeout(() => {
-        window.location.href = window.location.origin;
-      }, 500);
+      // Call parent callback to switch to onboarding
+      if (onJoinAnotherClub) {
+        onJoinAnotherClub();
+      }
     } catch (error) {
       toast({
         title: "Fehler",

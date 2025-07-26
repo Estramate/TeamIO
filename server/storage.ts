@@ -455,6 +455,32 @@ export class DatabaseStorage implements IStorage {
     await db.delete(clubMemberships).where(eq(clubMemberships.id, membershipId));
   }
 
+  async getClubUsersWithMembership(clubId: number): Promise<any[]> {
+    const result = await db
+      .select({
+        // User fields
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        profileImageUrl: users.profileImageUrl,
+        authProvider: users.authProvider,
+        createdAt: users.createdAt,
+        // Membership fields
+        membershipId: clubMemberships.id,
+        role: clubMemberships.role,
+        status: clubMemberships.status,
+        joinDate: clubMemberships.joinDate,
+        joinedAt: clubMemberships.joinDate, // Alias für UI-Kompatibilität
+      })
+      .from(users)
+      .innerJoin(clubMemberships, eq(users.id, clubMemberships.userId))
+      .where(eq(clubMemberships.clubId, clubId))
+      .orderBy(asc(users.firstName), asc(users.lastName));
+
+    return result;
+  }
+
   // Club join request operations
   async createJoinRequest(request: InsertClubJoinRequest): Promise<ClubJoinRequest> {
     // Check if user already has a pending request for this club

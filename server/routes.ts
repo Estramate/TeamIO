@@ -568,6 +568,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ stats, activities });
   }));
 
+  // Users management route (admin only)
+  app.get('/api/clubs/:clubId/users', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    // Check if user is club admin
+    const adminMembership = await storage.getUserClubMembership(userId, clubId);
+    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+      throw new AuthorizationError('You must be a club administrator to manage users');
+    }
+    
+    const users = await storage.getClubUsersWithMembership(clubId);
+    
+    logger.info('Club users retrieved', { clubId, count: users.length, requestId: req.id });
+    res.json(users);
+  }));
+
+  // Update member role (admin only)
+  app.patch('/api/clubs/:clubId/members/:memberId/role', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const memberId = parseInt(req.params.memberId);
+    const userId = req.user.claims.sub;
+    const { role } = req.body;
+    
+    // Check if user is club admin
+    const adminMembership = await storage.getUserClubMembership(userId, clubId);
+    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+      throw new AuthorizationError('You must be a club administrator to manage member roles');
+    }
+    
+    const updatedMembership = await storage.updateClubMembershipById(memberId, { role });
+    
+    logger.info('Member role updated', { clubId, memberId, newRole: role, updatedBy: userId, requestId: req.id });
+    res.json(updatedMembership);
+  }));
+
+  // Update member status (admin only)
+  app.patch('/api/clubs/:clubId/members/:memberId/status', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const memberId = parseInt(req.params.memberId);
+    const userId = req.user.claims.sub;
+    const { status } = req.body;
+    
+    // Check if user is club admin
+    const adminMembership = await storage.getUserClubMembership(userId, clubId);
+    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+      throw new AuthorizationError('You must be a club administrator to manage member status');
+    }
+    
+    const updatedMembership = await storage.updateClubMembershipById(memberId, { status });
+    
+    logger.info('Member status updated', { clubId, memberId, newStatus: status, updatedBy: userId, requestId: req.id });
+    res.json(updatedMembership);
+  }));
+
+  // Remove member (admin only)
+  app.delete('/api/clubs/:clubId/members/:memberId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const memberId = parseInt(req.params.memberId);
+    const userId = req.user.claims.sub;
+    
+    // Check if user is club admin
+    const adminMembership = await storage.getUserClubMembership(userId, clubId);
+    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+      throw new AuthorizationError('You must be a club administrator to remove members');
+    }
+    
+    await storage.deleteClubMembershipById(memberId);
+    
+    logger.info('Member removed from club', { clubId, memberId, removedBy: userId, requestId: req.id });
+    res.json({ success: true });
+  }));
+
   // Member routes
   app.get('/api/clubs/:clubId/members', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);

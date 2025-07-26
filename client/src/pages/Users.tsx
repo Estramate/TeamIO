@@ -103,6 +103,12 @@ export default function Users() {
     retry: false,
   });
 
+  // Fetch team memberships for detailed member data
+  const { data: teamMemberships = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'],
+    enabled: !!selectedClub?.id,
+  });
+
   // Update member role mutation
   const updateRoleMutation = useMutation({
     mutationFn: async ({ memberId, role }: { memberId: number; role: string }) => {
@@ -202,6 +208,23 @@ export default function Users() {
       });
     },
   });
+
+  // Helper function to get teams for a member by matching member name with team memberships
+  const getMemberTeams = (member: any) => {
+    const memberFullName = `${member.firstName} ${member.lastName}`.toLowerCase();
+    return teamMemberships.filter((tm: any) => 
+      `${tm.memberFirstName} ${tm.memberLastName}`.toLowerCase() === memberFullName
+    );
+  };
+
+  // Helper function to get member phone from team memberships data
+  const getMemberPhone = (member: any) => {
+    const memberFullName = `${member.firstName} ${member.lastName}`.toLowerCase();
+    const teamMembership = teamMemberships.find((tm: any) => 
+      `${tm.memberFirstName} ${tm.memberLastName}`.toLowerCase() === memberFullName
+    );
+    return teamMembership?.memberPhone || null;
+  };
 
   // Filter members based on search and filters
   const filteredMembers = (members as any[] || []).filter((member: any) => {
@@ -450,7 +473,7 @@ export default function Users() {
                         <div>
                           <div className="text-muted-foreground text-xs">Telefon</div>
                           <div className="font-medium">
-                            {member.phone || '0676/706 87 44'}
+                            {getMemberPhone(member) || 'Keine Telefonnummer'}
                           </div>
                         </div>
                       </div>
@@ -461,13 +484,32 @@ export default function Users() {
                         <div>
                           <div className="text-muted-foreground text-xs">Teams</div>
                           <div className="flex gap-1 flex-wrap mt-1">
-                            <Badge variant="outline" className="text-xs px-2 py-0 h-5 border-blue-200 text-blue-700">
-                              U10-A
-                            </Badge>
-                            <Badge variant="outline" className="text-xs px-2 py-0 h-5 border-blue-200 text-blue-700">
-                              U10-B
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">+2</span>
+                            {(() => {
+                              const memberTeams = getMemberTeams(member);
+                              if (memberTeams.length === 0) {
+                                return <span className="text-xs text-muted-foreground">Kein Team zugewiesen</span>;
+                              }
+                              
+                              const displayTeams = memberTeams.slice(0, 2);
+                              const remainingCount = memberTeams.length - 2;
+                              
+                              return (
+                                <>
+                                  {displayTeams.map((team: any, index: number) => (
+                                    <Badge 
+                                      key={`${team.teamId}-${index}`}
+                                      variant="outline" 
+                                      className="text-xs px-2 py-0 h-5 border-blue-200 text-blue-700"
+                                    >
+                                      {team.teamAgeGroup ? `${team.teamAgeGroup}-${team.teamName.split(' ').pop()}` : team.teamName}
+                                    </Badge>
+                                  ))}
+                                  {remainingCount > 0 && (
+                                    <span className="text-xs text-muted-foreground">+{remainingCount}</span>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>

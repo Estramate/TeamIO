@@ -191,6 +191,9 @@ export interface IStorage {
 
   // User permission operations  
   getUserTeamAssignments(userId: string, clubId: number): Promise<any[]>;
+  
+  // Club team memberships with detailed data
+  getClubTeamMemberships(clubId: number): Promise<any[]>;
 
   // Dashboard operations
   getDashboardStats(clubId: number): Promise<any>;
@@ -503,6 +506,46 @@ export class DatabaseStorage implements IStorage {
       return result;
     } catch (error) {
       console.error('❌ Error in getClubUsersWithMembership:', error);
+      throw error;
+    }
+  }
+
+  async getClubTeamMemberships(clubId: number): Promise<any[]> {
+    try {
+      const result = await db
+        .select({
+          // Member fields
+          memberId: members.id,
+          memberFirstName: members.firstName,
+          memberLastName: members.lastName,
+          memberEmail: members.email,
+          memberPhone: members.phone,
+          memberStatus: members.status,
+          memberJoinDate: members.joinDate,
+          
+          // Team fields
+          teamId: teams.id,
+          teamName: teams.name,
+          teamCategory: teams.category,
+          teamAgeGroup: teams.ageGroup,
+          
+          // Membership fields
+          membershipId: teamMemberships.id,
+          membershipRole: teamMemberships.role,
+          membershipPosition: teamMemberships.position,
+          membershipJerseyNumber: teamMemberships.jerseyNumber,
+          membershipStatus: teamMemberships.status,
+          membershipJoinedAt: teamMemberships.joinedAt,
+        })
+        .from(teamMemberships)
+        .innerJoin(members, eq(teamMemberships.memberId, members.id))
+        .innerJoin(teams, eq(teamMemberships.teamId, teams.id))
+        .where(eq(teams.clubId, clubId))
+        .orderBy(asc(members.firstName), asc(members.lastName), asc(teams.name));
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error in getClubTeamMemberships:', error);
       throw error;
     }
   }

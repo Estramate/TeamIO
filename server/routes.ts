@@ -780,6 +780,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(users);
   }));
 
+  // Team memberships route for detailed member data
+  app.get('/api/clubs/:clubId/team-memberships', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    
+    const teamMemberships = await storage.getClubTeamMemberships(clubId);
+    
+    logger.info('Team memberships retrieved', { clubId, count: teamMemberships.length, requestId: req.id });
+    res.json(teamMemberships);
+  }));
+
   // Update member role (admin only)
   app.patch('/api/clubs/:clubId/members/:memberId/role', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);

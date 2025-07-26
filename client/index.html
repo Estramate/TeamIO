@@ -3,6 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <script>
+      // Disable WebSocket completely in development to prevent Replit internal errors
+      if (location.hostname.includes('replit.dev') || location.hostname === 'localhost') {
+        console.log('WebSocket globally disabled in development');
+        window.WebSocket = function() {
+          this.readyState = 3; // CLOSED
+          this.url = '';
+          setTimeout(() => {
+            if (this.onerror) this.onerror(new Error('WebSocket disabled'));
+          }, 0);
+        };
+        window.WebSocket.prototype.close = function() {};
+        window.WebSocket.prototype.send = function() {};
+        window.WebSocket.prototype.addEventListener = function() {};
+        window.WebSocket.prototype.removeEventListener = function() {};
+        window.WebSocket.CONNECTING = 0;
+        window.WebSocket.OPEN = 1;
+        window.WebSocket.CLOSING = 2;
+        window.WebSocket.CLOSED = 3;
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

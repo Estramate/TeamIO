@@ -1219,15 +1219,20 @@ export class DatabaseStorage implements IStorage {
       const [reply] = await db.insert(messages).values(replyData).returning();
       console.log('Reply created successfully:', reply);
       
-      // Create simple recipient - the original sender
+      // Create simple recipient - get original message sender
       try {
-        await db.insert(messageRecipients).values({
-          messageId: reply.id,
-          recipientType: 'user',
-          recipientId: messageData.senderId, // Reply goes to the person replying (for now)
-          status: 'sent'
-        });
-        console.log('Reply recipient created');
+        const originalMessage = await this.getMessage(parentMessageId);
+        if (originalMessage) {
+          await db.insert(messageRecipients).values({
+            messageId: reply.id,
+            recipientType: 'user',
+            recipientId: originalMessage.senderId, // Reply goes to original message sender
+            status: 'sent'
+          });
+          console.log('Reply recipient created for original sender:', originalMessage.senderId);
+        } else {
+          console.warn('Could not find original message to create recipient');
+        }
       } catch (recipientError) {
         console.error('Error creating reply recipient:', recipientError);
         // Continue anyway - reply was created

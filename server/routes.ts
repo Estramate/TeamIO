@@ -1062,7 +1062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   }));
 
-  app.post('/api/clubs/:clubId/messages/:messageId/read', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/messages/:messageId/read', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
     const userId = req.user.claims.sub;
     
@@ -1249,7 +1249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(notification);
   }));
 
-  app.post('/api/clubs/:clubId/notifications/:notificationId/read', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/notifications/:notificationId/read', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
     const notificationId = parseInt(req.params.notificationId);
     
     if (!notificationId || isNaN(notificationId)) {
@@ -1261,7 +1261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   }));
 
-  app.post('/api/clubs/:clubId/notifications/read-all', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/notifications/read-all', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     

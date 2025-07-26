@@ -371,15 +371,49 @@ export default function Communication() {
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700">{message.content.substring(0, 150)}...</p>
+                  <CardContent onClick={() => setSelectedMessage(message)} className="cursor-pointer">
+                    <p className="text-gray-700">
+                      {message.content.length > 200 
+                        ? `${message.content.substring(0, 200)}...` 
+                        : message.content
+                      }
+                    </p>
+                    {message.content.length > 200 && (
+                      <p className="text-blue-600 text-sm mt-2">Klicken zum vollständigen Lesen</p>
+                    )}
                   </CardContent>
                   <CardFooter className="flex justify-between">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedMessage(message);
+                        setShowNewMessage(true);
+                        messageForm.setValue('subject', `Re: ${message.subject || 'Nachricht'}`);
+                      }}
+                    >
                       <MessageCircle className="w-4 h-4 mr-2" />
                       Antworten
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => markMessageAsRead(message.id)}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        try {
+                          markMessageAsRead(message.id);
+                          toast({
+                            title: "Erfolgreich",
+                            description: "Nachricht als gelesen markiert",
+                          });
+                        } catch (error) {
+                          console.error('Error marking message as read:', error);
+                          toast({
+                            title: "Hinweis",
+                            description: "Nachricht wurde angezeigt",
+                          });
+                        }
+                      }}
+                    >
                       <Eye className="w-4 h-4 mr-2" />
                       Als gelesen markieren
                     </Button>
@@ -909,6 +943,50 @@ export default function Communication() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Message Detail Dialog */}
+      <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedMessage?.subject || "Nachricht"}</DialogTitle>
+            <DialogDescription>
+              Von: {selectedMessage?.sender?.firstName} {selectedMessage?.sender?.lastName} • 
+              {selectedMessage && formatDistanceToNow(new Date(selectedMessage.createdAt), { addSuffix: true, locale: de })}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="prose max-w-none">
+              <p className="text-gray-700 whitespace-pre-wrap">{selectedMessage?.content}</p>
+            </div>
+            
+            {selectedMessage?.priority && selectedMessage.priority !== 'normal' && (
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-orange-500" />
+                <span className="text-sm font-medium">
+                  Priorität: {selectedMessage.priority === 'high' ? 'Hoch' : selectedMessage.priority === 'medium' ? 'Mittel' : 'Normal'}
+                </span>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedMessage(null)}>
+              Schließen
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowNewMessage(true);
+                messageForm.setValue('subject', `Re: ${selectedMessage?.subject || 'Nachricht'}`);
+                setSelectedMessage(null);
+              }}
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Antworten
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

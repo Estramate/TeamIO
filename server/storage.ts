@@ -1119,7 +1119,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async markMessageAsRead(messageId: number, userId: string): Promise<void> {
-    await db
+    // Try to update existing recipient record
+    const updated = await db
       .update(messageRecipients)
       .set({ 
         status: 'read',
@@ -1129,7 +1130,22 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         eq(messageRecipients.messageId, messageId),
         eq(messageRecipients.recipientId, userId)
-      ));
+      ))
+      .returning();
+
+    // If no record was updated, create a new one
+    if (updated.length === 0) {
+      await db.insert(messageRecipients).values({
+        messageId,
+        recipientType: 'user',
+        recipientId: userId,
+        status: 'read',
+        readAt: new Date(),
+        deliveredAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    }
   }
 
   // Message recipient operations

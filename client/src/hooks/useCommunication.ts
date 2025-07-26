@@ -131,8 +131,7 @@ export function useWebSocket(clubId: number, userId: string) {
     if (!clubId || !userId) return;
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const port = window.location.port || (protocol === "wss:" ? "443" : "80");
-    const wsUrl = `${protocol}//${window.location.hostname}:${port}/ws`;
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
     
     let ws: WebSocket;
     try {
@@ -305,10 +304,47 @@ export function useCommunication(clubId: number) {
   const markMessageAsReadMutation = useMutation({
     mutationFn: (messageId: number) => 
       apiRequest('POST', `/api/clubs/${clubId}/messages/${messageId}/read`),
-    onSuccess: () => {
+    onMutate: async (messageId: number) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/clubs', clubId, 'messages'] });
+      await queryClient.cancelQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
+      
+      // Snapshot the previous values
+      const previousMessages = queryClient.getQueryData(['/api/clubs', clubId, 'messages']);
+      const previousStats = queryClient.getQueryData(['/api/clubs', clubId, 'communication-stats']);
+      
+      // Optimistically update messages
+      queryClient.setQueryData(['/api/clubs', clubId, 'messages'], (old: any) => {
+        if (!old) return old;
+        return old.map((msg: any) => 
+          msg.id === messageId 
+            ? { ...msg, recipients: msg.recipients.map((r: any) => ({ ...r, readAt: new Date().toISOString() })) }
+            : msg
+        );
+      });
+      
+      // Optimistically update stats
+      queryClient.setQueryData(['/api/clubs', clubId, 'communication-stats'], (old: any) => {
+        if (!old) return old;
+        return { ...old, unreadMessages: Math.max(0, old.unreadMessages - 1) };
+      });
+      
+      return { previousMessages, previousStats };
+    },
+    onError: (err, messageId, context) => {
+      // Rollback on error
+      if (context?.previousMessages) {
+        queryClient.setQueryData(['/api/clubs', clubId, 'messages'], context.previousMessages);
+      }
+      if (context?.previousStats) {
+        queryClient.setQueryData(['/api/clubs', clubId, 'communication-stats'], context.previousStats);
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'messages'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
-    },
+    }
   });
 
   // Mark notification as read mutation

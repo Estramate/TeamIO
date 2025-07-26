@@ -1053,13 +1053,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/clubs/:clubId/messages/:messageId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
+    const userId = req.user.claims.sub;
     
     if (!messageId || isNaN(messageId)) {
       throw new ValidationError('Invalid message ID', 'messageId');
     }
     
+    // Check if user is the sender of the message
+    const message = await storage.getMessage(messageId);
+    if (!message) {
+      throw new NotFoundError('Message not found');
+    }
+    
+    if (message.senderId !== userId) {
+      throw new AuthorizationError('You can only delete your own messages');
+    }
+    
     await storage.deleteMessage(messageId);
-    logger.info('Message deleted', { messageId, requestId: req.id });
+    logger.info('Message deleted', { messageId, userId, requestId: req.id });
     res.status(204).send();
   }));
 
@@ -1128,6 +1139,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       throw error;
     }
+  }));
+
+  // Delete a specific reply
+  app.delete('/api/clubs/:clubId/messages/:messageId/replies/:replyId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+    const replyId = parseInt(req.params.replyId);
+    const messageId = parseInt(req.params.messageId);
+    const userId = req.user.claims.sub;
+    
+    if (!replyId || isNaN(replyId)) {
+      throw new ValidationError('Invalid reply ID', 'replyId');
+    }
+    
+    // Check if user is the sender of the reply
+    const reply = await storage.getMessage(replyId);
+    if (!reply) {
+      throw new NotFoundError('Reply not found');
+    }
+    
+    if (reply.senderId !== userId) {
+      throw new AuthorizationError('You can only delete your own replies');
+    }
+    
+    // Verify reply belongs to the specified message thread
+    if (reply.threadId !== messageId) {
+      throw new ValidationError('Reply does not belong to this message thread');
+    }
+    
+    await storage.deleteMessage(replyId);
+    logger.info('Reply deleted', { replyId, messageId, userId, requestId: req.id });
+    res.status(204).send();
   }));
 
   // Delete message endpoint

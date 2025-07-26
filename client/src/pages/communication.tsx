@@ -289,7 +289,7 @@ export default function Communication() {
           <CardContent>
             <div className="text-2xl font-bold">{stats?.totalMessages || displayMessages.length}</div>
             <p className="text-xs text-muted-foreground">
-              {stats?.unreadMessages || displayMessages.length} ungelesen
+              {stats?.unreadMessages || 0} ungelesen
             </p>
           </CardContent>
         </Card>
@@ -311,8 +311,8 @@ export default function Communication() {
             <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.unreadNotifications || 7}</div>
-            <p className="text-xs text-muted-foreground">3 ungelesen</p>
+            <div className="text-2xl font-bold">{stats?.unreadNotifications || 0}</div>
+            <p className="text-xs text-muted-foreground">{stats?.unreadNotifications || 0} ungelesen</p>
           </CardContent>
         </Card>
         
@@ -322,7 +322,7 @@ export default function Communication() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">42</div>
+            <div className="text-2xl font-bold">{members?.length || 0}</div>
             <p className="text-xs text-muted-foreground">Aktive Mitglieder</p>
           </CardContent>
         </Card>
@@ -393,7 +393,7 @@ export default function Communication() {
                       >
                         <MessageCircle className="w-3 h-3 mr-1" />
                         {(message as any).replyCount > 0 
-                          ? `${(message as any).replyCount} ${(message as any).replyCount === 1 ? 'Antwort' : 'Antworten'} · Antworten`
+                          ? `${(message as any).replyCount} ${(message as any).replyCount === 1 ? 'Antwort' : 'Antworten'} anzeigen`
                           : 'Antworten'
                         }
                       </Button>

@@ -1469,12 +1469,14 @@ export class DatabaseStorage implements IStorage {
 
   // Communication statistics
   async getCommunicationStats(clubId: number, userId?: string): Promise<CommunicationStats> {
+    // Count only main messages (not replies)
     const [messageStats] = await db
       .select({ count: sql<number>`count(*)` })
       .from(messages)
       .where(and(
         eq(messages.clubId, clubId),
-        isNull(messages.deletedAt)
+        isNull(messages.deletedAt),
+        isNull(messages.threadId) // Only count main messages, not replies
       ));
 
     const [announcementStats] = await db

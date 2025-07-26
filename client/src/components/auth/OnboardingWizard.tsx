@@ -19,10 +19,11 @@ import { useClubStore } from '@/lib/clubStore';
 
 interface OnboardingWizardProps {
   onComplete: (clubId?: number) => void;
+  onClose?: () => void;
   isOpen: boolean;
 }
 
-export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) {
+export function OnboardingWizard({ onComplete, onClose, isOpen }: OnboardingWizardProps) {
   const [step, setStep] = useState<'welcome' | 'browse'>('welcome');
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
@@ -340,9 +341,9 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
-      if (!open) {
-        // When dialog is closed, act like "Später entscheiden"
-        onComplete();
+      if (!open && onClose) {
+        // When dialog is closed via X button or Escape, use onClose callback
+        onClose();
       }
     }}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">

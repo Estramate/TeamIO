@@ -25,15 +25,33 @@ export function SocialLoginButtons({
   showExistingAuth = true 
 }: SocialLoginButtonsProps) {
   const { 
-    signInWithGoogle, 
-    signInWithFacebook, 
+    signInWithGooglePopup, 
+    signInWithGoogleRedirectMethod,
+    signInWithFacebookPopup, 
+    signInWithFacebookRedirectMethod,
     loading, 
     error 
   } = useFirebaseAuth();
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      // Use redirect instead of popup for better compatibility
+      if (window.innerWidth < 768) {
+        // Mobile: always use redirect
+        await signInWithGoogleRedirectMethod();
+      } else {
+        // Desktop: try popup first, fallback to redirect
+        try {
+          await signInWithGooglePopup();
+        } catch (popupError: any) {
+          if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
+            console.log('Popup blocked or closed, trying redirect...');
+            await signInWithGoogleRedirectMethod();
+          } else {
+            throw popupError;
+          }
+        }
+      }
       onSuccess?.();
     } catch (error) {
       // Error handling is done in the hook
@@ -42,7 +60,23 @@ export function SocialLoginButtons({
 
   const handleFacebookSignIn = async () => {
     try {
-      await signInWithFacebook();
+      // Use redirect instead of popup for better compatibility  
+      if (window.innerWidth < 768) {
+        // Mobile: always use redirect
+        await signInWithFacebookRedirectMethod();
+      } else {
+        // Desktop: try popup first, fallback to redirect
+        try {
+          await signInWithFacebookPopup();
+        } catch (popupError: any) {
+          if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
+            console.log('Popup blocked or closed, trying redirect...');
+            await signInWithFacebookRedirectMethod();
+          } else {
+            throw popupError;
+          }
+        }
+      }
       onSuccess?.();
     } catch (error) {
       // Error handling is done in the hook

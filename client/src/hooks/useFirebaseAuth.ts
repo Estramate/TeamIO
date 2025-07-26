@@ -197,6 +197,11 @@ export function useFirebaseAuth() {
     user: authState.user,
     loading: authState.loading,
     error: authState.error,
+    signInWithGooglePopup,
+    signInWithFacebookPopup,
+    signInWithGoogleRedirectMethod,
+    signInWithFacebookRedirectMethod,
+    // Legacy aliases for backward compatibility
     signInWithGoogle: signInWithGooglePopup,
     signInWithFacebook: signInWithFacebookPopup,
     signInWithGoogleRedirect: signInWithGoogleRedirectMethod,

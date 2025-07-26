@@ -130,9 +130,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     <Shield className="text-white text-lg" />
                   </div>
                   <div className="overflow-hidden">
-                    <h1 className="text-xl font-bold text-club-primary whitespace-nowrap">TeamIO</h1>
+                    <h1 className="text-xl font-bold text-club-primary whitespace-nowrap">ClubFlow</h1>
                     <p className="text-sm text-muted-foreground truncate">
-                      {selectedClub?.name || "Kein Verein"}
+                      {selectedClub?.name || "Verein auswählen"}
                     </p>
                   </div>
                 </div>

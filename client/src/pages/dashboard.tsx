@@ -46,7 +46,7 @@ export default function Dashboard() {
     return (
       <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
         <div className="text-center py-12">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">Willkommen bei TeamIO</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">Willkommen bei ClubFlow</h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-6">Bitte wählen Sie einen Verein aus, um zu beginnen.</p>
         </div>
       </div>

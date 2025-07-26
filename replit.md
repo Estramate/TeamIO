@@ -49,6 +49,7 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 - ✅ System runs cleanly without console spam from Replit's internal WebSocket attempts
 
 **LATEST UPDATE (July 26, 2025):**
+✅ **SIDEBAR BRANDING AKTUALISIERT** - TeamIO → ClubFlow in Sidebar-Header und Dashboard komplett geändert
 ✅ **CLUB-AUSWAHL NUR FÜR AKTIVE MITGLIEDSCHAFTEN** - /api/clubs zeigt nur status='active' Vereine, inaktive User sehen leeres Dropdown
 ✅ **MITGLIEDSCHAFTS-GENEHMIGUNGSSYSTEM IMPLEMENTIERT** - User werden als inaktive Mitglieder eingetragen, Admin kann genehmigen/ablehnen
 ✅ **PROJEKT VON TEAMIO ZU CLUBFLOW UMBENANNT** - Komplette Umbenennung in allen Dateien, UI-Texten und Dokumentation

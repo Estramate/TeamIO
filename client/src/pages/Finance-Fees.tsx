@@ -183,37 +183,42 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
   }, [editingTrainingFee, trainingFeeForm]);
 
   // Data fetching
-  const memberFeesQuery = useQuery({
+  const memberFeesQuery = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'member-fees'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const trainingFeesQuery = useQuery({
+  const trainingFeesQuery = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'training-fees'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const memberFees = memberFeesQuery.data || [];
-  const trainingFees = trainingFeesQuery.data || [];
+  const memberFees = Array.isArray(memberFeesQuery.data) ? memberFeesQuery.data : [];
+  const trainingFees = Array.isArray(trainingFeesQuery.data) ? trainingFeesQuery.data : [];
 
-  const membersQuery = useQuery({
+  const membersQuery = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'members'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const playersQuery = useQuery({
+  const playersQuery = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'players'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const teamsQuery = useQuery({
+  const teamsQuery = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
     enabled: !!selectedClub?.id,
+    retry: false,
   });
 
-  const members = membersQuery.data || [];
-  const players = playersQuery.data || [];
-  const teams = teamsQuery.data || [];
+  const members = Array.isArray(membersQuery.data) ? membersQuery.data : [];
+  const players = Array.isArray(playersQuery.data) ? playersQuery.data : [];
+  const teams = Array.isArray(teamsQuery.data) ? teamsQuery.data : [];
 
   // Mutations
   const createMemberFeeMutation = useMutation({

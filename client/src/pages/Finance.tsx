@@ -444,7 +444,7 @@ export default function Finance() {
     
     // Pre-populate edit form with existing data
     editFinanceForm.reset({
-      type: finance.type,
+      type: finance.type as 'income' | 'expense',
       category: finance.category,
       subcategory: finance.subcategory || '',
       amount: finance.amount.toString(),
@@ -452,8 +452,8 @@ export default function Finance() {
       date: finance.date,
       dueDate: finance.dueDate || '',
       paymentMethod: finance.paymentMethod || '',
-      status: finance.status,
-      priority: finance.priority,
+      status: finance.status as 'pending' | 'paid' | 'overdue' | 'cancelled',
+      priority: (finance.priority as 'low' | 'normal' | 'high' | 'urgent') || 'normal',
       recurring: finance.recurring || false,
       recurringInterval: finance.recurringInterval || '',
       notes: finance.notes || '',

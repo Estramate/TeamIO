@@ -164,11 +164,11 @@ Falls Sie diese E-Mail irrtümlich erhalten haben, können Sie sie einfach ignor
   `;
 
   console.log('📧 Sending invitation email to:', to);
-  console.log('📧 From email:', process.env.FROM_EMAIL || 'noreply@clubflow.app');
+  console.log('📧 From email:', process.env.FROM_EMAIL || 'noreply@replit.app');
   
   return await sendEmail({
     to,
-    from: process.env.FROM_EMAIL || 'koglerf@gmail.com', // Use verified SendGrid sender
+    from: process.env.FROM_EMAIL || 'noreply@replit.app', // Use Replit verified sender
     subject,
     html,
     text

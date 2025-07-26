@@ -57,15 +57,28 @@ export const signInWithGoogle = async (): Promise<FirebaseUser> => {
       projectId: firebaseConfig.projectId
     });
     
-    const result = await signInWithPopup(auth, googleProvider);
-    console.log('✅ Google sign-in successful:', {
-      uid: result.user.uid,
-      email: result.user.email,
-      displayName: result.user.displayName
-    });
-    return result.user;
+    // Check if we're in production environment - prefer redirect method
+    const isProduction = typeof window !== 'undefined' && 
+                        (window.location.hostname.includes('replit.app') || 
+                         window.location.hostname.includes('clubflow'));
+    
+    if (isProduction) {
+      console.log('🌐 Production environment detected - using redirect method');
+      await signInWithRedirect(auth, googleProvider);
+      // Redirect will handle the authentication
+      return new Promise(() => {}); // This will never resolve as page redirects
+    } else {
+      console.log('🏠 Development environment - using popup method');
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('✅ Google sign-in successful:', {
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName
+      });
+      return result.user;
+    }
   } catch (error: any) {
-    console.error('❌ Google sign-in popup error:', {
+    console.error('❌ Google sign-in error:', {
       code: error.code,
       message: error.message,
       domain: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
@@ -78,7 +91,7 @@ export const signInWithGoogle = async (): Promise<FirebaseUser> => {
       throw new Error(`Domain ${typeof window !== 'undefined' ? window.location.hostname : 'unknown'} ist nicht für Firebase OAuth autorisiert. Kontaktieren Sie den Administrator.`);
     }
     
-    // If popup fails, try redirect method
+    // Fallback to redirect if popup fails in any environment
     if (error.code === 'auth/popup-closed-by-user' || 
         error.code === 'auth/popup-blocked' || 
         error.code === 'auth/cancelled-popup-request') {
@@ -86,7 +99,7 @@ export const signInWithGoogle = async (): Promise<FirebaseUser> => {
       try {
         await signInWithRedirect(auth, googleProvider);
         // The redirect will happen, so we don't return anything here
-        throw new Error('Redirecting to Google sign-in...');
+        return new Promise(() => {}); // This will never resolve as page redirects
       } catch (redirectError: any) {
         console.error('❌ Redirect sign-in also failed:', redirectError);
         throw new Error(`Google sign-in failed: ${redirectError.message || 'Unknown error'}`);

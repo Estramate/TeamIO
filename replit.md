@@ -103,13 +103,15 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 - ✅ Toast notification system fully implemented replacing all console.log/window.confirm
 - ✅ **LOGOUT/LOGIN CYCLE WORKING PERFECTLY** - Users can now logout and login repeatedly without issues
 
-**CURRENT ISSUE (July 26, 2025 - 17:52):**
-❌ **FIREBASE PRODUCTION AUTHENTICATION DOMAIN ISSUE IDENTIFIED**:
-- ✅ Firebase authentication works perfectly in development environment  
-- ✅ All backend authentication, cookie system, and database integration functional
-- ❌ Production fails because `clubflow.replit.app` is not in Firebase authorized domains
-- 🔧 **ACTION REQUIRED**: Add `clubflow.replit.app` to Firebase Console → Authentication → Settings → Authorized domains
-- 📄 **GUIDE CREATED**: FIREBASE_DOMAIN_FIX.md with step-by-step instructions
+**LATEST FIX (July 26, 2025 - 18:30):**
+✅ **FIREBASE DOUBLE-AUTHENTICATION PROBLEM RESOLVED**:
+- ✅ Root cause identified: Popup fails in production → Redirect triggered → Double auth attempts
+- ✅ Environment-specific authentication strategy implemented
+- ✅ Development: Uses popup method (faster, works in dev)
+- ✅ Production: Uses redirect method directly (prevents double authentication)
+- ✅ Enhanced auth state management to prevent duplicate backend calls
+- ✅ Improved error handling with detailed logging for debugging
+- 📄 **SOLUTION**: Smart environment detection prevents popup/redirect conflicts
 
 **Recent Fixes**: 
 - ✅ **AUSSTEHENDE MITGLIEDSCHAFTSANFRAGEN REPARIERT** - getClubUsersWithMembership SQL-Fehler behoben, Admin-Berechtigungen korrekt gesetzt, inactive Status wird als "Ausstehend" angezeigt

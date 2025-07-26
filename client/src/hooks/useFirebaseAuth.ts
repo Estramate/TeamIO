@@ -29,22 +29,39 @@ export function useFirebaseAuth() {
 
   // Listen to Firebase auth state changes and check for redirect result
   useEffect(() => {
-    // Setting up Firebase auth state listener
+    let isComponentMounted = true;
     
-    // Check for redirect result first
+    // Setting up Firebase auth state listener
+    console.log('🔧 Setting up Firebase auth listener...');
+    
+    // Check for redirect result first (important for production)
     checkRedirectResult().then((redirectUser) => {
-      if (redirectUser) {
-        // Found redirect result user: redirectUser.uid
+      if (redirectUser && isComponentMounted) {
+        console.log('🔄 Found redirect result user:', redirectUser.uid);
+        // Don't set state here - let onAuthStateChange handle it
       }
     }).catch((error) => {
       console.error('Error checking redirect result:', error);
     });
     
     const unsubscribe = onAuthStateChange(async (user) => {
-      // Firebase auth state changed: { user: !!user, uid: user?.uid }
+      if (!isComponentMounted) return;
+      
+      console.log('🔥 Firebase auth state changed:', { 
+        hasUser: !!user, 
+        uid: user?.uid,
+        email: user?.email 
+      });
       
       if (user) {
         try {
+          // Avoid double authentication by checking current state
+          if (authState.user?.uid === user.uid) {
+            console.log('⚡ User already authenticated, skipping backend call');
+            return;
+          }
+          
+          setAuthState(prev => ({ ...prev, loading: true }));
           // Authenticate with backend when user signs in
           await authenticateWithBackend(user);
           setAuthState({ user, loading: false, error: null });
@@ -63,13 +80,16 @@ export function useFirebaseAuth() {
 
     // Check if user is already signed in
     const currentUser = getCurrentUser();
-    // User already signed in check completed
+    if (currentUser && isComponentMounted) {
+      console.log('👤 User already signed in on mount:', currentUser.uid);
+    }
 
     return () => {
-      // Cleaning up Firebase auth listener
+      console.log('🧹 Cleaning up Firebase auth listener');
+      isComponentMounted = false;
       unsubscribe();
     };
-  }, []);
+  }, []); // Remove authState dependency to prevent infinite loops
 
   const signInWithGooglePopup = async () => {
     try {

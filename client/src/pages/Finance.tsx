@@ -56,12 +56,13 @@ import {
   User,
   CheckCircle
 } from "lucide-react";
-import { FeesTabContent } from "./finance-fees";
+import { FeesTabContent } from "./Finance-Fees";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import type { Finance } from "../../../shared/schemas/finances";
 import { apiRequest } from "@/lib/queryClient";
 
 // Form schemas mit Datumsvalidierung
@@ -272,7 +273,7 @@ export default function Finance() {
   }, [isAuthenticated, isLoading, toast]);
 
   // Data fetching
-  const { data: finances = [], isLoading: isFinancesLoading } = useQuery({
+  const { data: finances = [], isLoading: isFinancesLoading } = useQuery<Finance[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'finances'],
     enabled: !!selectedClub?.id,
     retry: false,
@@ -393,21 +394,21 @@ export default function Finance() {
 
   // Computed values
   const totalIncome = finances
-    .filter((f: any) => f.type === 'income' && f.isActive)
-    .reduce((sum: number, f: any) => sum + Number(f.amount), 0);
+    .filter((f) => f.type === 'income' && f.isActive)
+    .reduce((sum: number, f) => sum + Number(f.amount), 0);
 
   const totalExpenses = finances
-    .filter((f: any) => f.type === 'expense' && f.isActive)
-    .reduce((sum: number, f: any) => sum + Number(f.amount), 0);
+    .filter((f) => f.type === 'expense' && f.isActive)
+    .reduce((sum: number, f) => sum + Number(f.amount), 0);
 
   const balance = totalIncome - totalExpenses;
 
   const pendingAmount = finances
-    .filter((f: any) => f.status === 'pending' && f.isActive)
-    .reduce((sum: number, f: any) => sum + Number(f.amount), 0);
+    .filter((f) => f.status === 'pending' && f.isActive)
+    .reduce((sum: number, f) => sum + Number(f.amount), 0);
 
   // Filtered finances
-  const filteredFinances = finances.filter((finance: any) => {
+  const filteredFinances = finances.filter((finance) => {
     const matchesSearch = searchTerm === '' || 
       finance.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       finance.category.toLowerCase().includes(searchTerm.toLowerCase());
@@ -424,7 +425,7 @@ export default function Finance() {
     deleteFinanceMutation.mutate(id);
   };
 
-  const toggleFinanceStatus = (finance: any) => {
+  const toggleFinanceStatus = (finance: Finance) => {
     const newStatus = !finance.isActive;
     updateFinanceMutation.mutate({
       id: finance.id,
@@ -433,12 +434,12 @@ export default function Finance() {
   };
 
   // Modal handlers
-  const handleViewDetails = (finance: any) => {
+  const handleViewDetails = (finance: Finance) => {
     setSelectedFinance(finance);
     setIsDetailsDialogOpen(true);
   };
 
-  const handleEditFinance = (finance: any) => {
+  const handleEditFinance = (finance: Finance) => {
     setEditingFinance(finance);
     
     // Pre-populate edit form with existing data
@@ -1510,7 +1511,7 @@ export default function Finance() {
                       <label className="text-sm font-medium text-muted-foreground">Erstellt am</label>
                       <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{selectedFinance.createdAt ? formatDate(new Date(selectedFinance.createdAt)) : 'Nicht verfügbar'}</span>
+                        <span className="text-sm">{selectedFinance.createdAt ? formatDate(selectedFinance.createdAt.toString()) : 'Nicht verfügbar'}</span>
                       </div>
                     </div>
 

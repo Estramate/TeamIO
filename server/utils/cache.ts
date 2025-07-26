@@ -75,7 +75,7 @@ export class MemoryCache {
     const now = Date.now();
     let cleaned = 0;
     
-    for (const [key, item] of this.cache.entries()) {
+    for (const [key, item] of Array.from(this.cache.entries())) {
       if (now > item.expiry) {
         this.cache.delete(key);
         cleaned++;

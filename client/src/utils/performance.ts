@@ -113,10 +113,6 @@ export const optimizeImageSrc = (src: string, width?: number, quality?: number):
 // Bundle analyzer helper
 export const analyzeBundle = () => {
   if (process.env.NODE_ENV === 'development') {
-    import('webpack-bundle-analyzer').then(({ BundleAnalyzerPlugin }) => {
-      console.log('Bundle analysis available at: http://localhost:8888');
-    }).catch(() => {
-      console.log('Bundle analyzer not available in this environment');
-    });
+    console.log('Bundle analysis would be available if webpack-bundle-analyzer was installed');
   }
 };

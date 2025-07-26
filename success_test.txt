@@ -1,25 +1,24 @@
-🎉 FIREBASE GOOGLE-AUTHENTIFIZIERUNG VOLLSTÄNDIG ERFOLGREICH!
+🚀 GOOGLE LOGIN ROBUSTHEITS-VERBESSERUNG IMPLEMENTIERT!
 
-**BESTÄTIGT FUNKTIONIERT:**
-✅ Google-Login Button öffnet Google OAuth-Popup
-✅ Erfolgreiche Anmeldung mit Google-Account (koglerf@gmail.com)
-✅ User wird automatisch in ClubFlow-Datenbank gespeichert
-✅ User-Profil "Florian Kogler" mit Profilbild wird angezeigt
-✅ Logout-Funktionen arbeiten korrekt
-✅ Multi-Provider-Auth (Replit + Google) läuft parallel
+**NEUE FUNKTIONEN:**
+✅ Popup + Redirect Fallback System:
+   - Erstes Versuch: signInWithPopup
+   - Bei Popup-Problemen: Automatischer Fallback zu signInWithRedirect
+   - Redirect-Ergebnis wird beim Seitenladen überprüft
 
-**TECHNISCHE DETAILS:**
-- Firebase-Konfiguration korrekt übernommen
-- User-ID: google_p6qYfprInaUC1t7LiOylhCtVXLU2
-- Database-Integration funktioniert
-- Session-Management arbeitet korrekt
+✅ Erweiterte Fehlerbehandlung:
+   - auth/popup-closed-by-user → Redirect-Fallback
+   - auth/popup-blocked → Redirect-Fallback  
+   - auth/cancelled-popup-request → Redirect-Fallback
 
-**EINZIGES VERBLEIBENDES PROBLEM:**
-Produktions-Deployment (clubflow.replit.app) hat ein statisches Asset-Routing-Problem.
-Die lokale Entwicklung funktioniert vollständig!
+**TESTEN SIE JETZT:**
+1. Klicken Sie "Mit Google anmelden"
+2. Falls Popup fehlschlägt → automatische Weiterleitung zur Google-Seite
+3. Nach Google-Login → Rückkehr zu ClubFlow mit Authentifizierung
 
-**FÜR DEN USER:**
-Sie können jetzt in der lokalen Entwicklung vollständig mit Google + Replit login arbeiten.
-Das Produktions-Problem ist ein technisches Deployment-Issue, nicht die Authentifizierung.
+**TECHNISCHE VERBESSERUNGEN:**
+- checkRedirectResult() beim App-Start
+- Robuste Fehlerbehandlung für alle Popup-Probleme
+- Nahtloser Wechsel zwischen Popup und Redirect-Methoden
 
-FIREBASE-ÜBERARBEITUNG: 100% ERFOLGREICH ABGESCHLOSSEN! 🚀
+Das Google-Login sollte jetzt zuverlässig funktionieren! 🎯

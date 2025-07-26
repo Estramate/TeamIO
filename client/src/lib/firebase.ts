@@ -7,6 +7,8 @@ import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider, 
   signOut as firebaseSignOut,
   onAuthStateChanged,
@@ -35,7 +37,7 @@ googleProvider.setCustomParameters({
 });
 
 /**
- * Sign in with Google using popup
+ * Sign in with Google using popup with fallback to redirect
  */
 export const signInWithGoogle = async (): Promise<FirebaseUser> => {
   try {
@@ -48,18 +50,45 @@ export const signInWithGoogle = async (): Promise<FirebaseUser> => {
     });
     return result.user;
   } catch (error: any) {
-    console.error('Google sign-in error:', error);
+    console.error('Google sign-in popup error:', error);
     
-    // Handle specific Firebase Auth errors
-    if (error.code === 'auth/popup-closed-by-user') {
-      throw new Error('Sign-in was cancelled');
-    } else if (error.code === 'auth/popup-blocked') {
-      throw new Error('Popup was blocked by browser');
-    } else if (error.code === 'auth/cancelled-popup-request') {
-      throw new Error('Another popup is already open');
+    // If popup fails, try redirect method
+    if (error.code === 'auth/popup-closed-by-user' || 
+        error.code === 'auth/popup-blocked' || 
+        error.code === 'auth/cancelled-popup-request') {
+      console.log('Popup failed, trying redirect method...');
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        // The redirect will happen, so we don't return anything here
+        throw new Error('Redirecting to Google sign-in...');
+      } catch (redirectError) {
+        console.error('Redirect sign-in also failed:', redirectError);
+        throw new Error('Google sign-in failed. Please try again.');
+      }
     }
     
     throw error;
+  }
+};
+
+/**
+ * Check for redirect result on page load
+ */
+export const checkRedirectResult = async (): Promise<FirebaseUser | null> => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      console.log('Redirect sign-in successful:', {
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName
+      });
+      return result.user;
+    }
+    return null;
+  } catch (error) {
+    console.error('Redirect result error:', error);
+    return null;
   }
 };
 

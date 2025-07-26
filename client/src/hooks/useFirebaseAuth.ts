@@ -9,6 +9,7 @@ import {
   signOut, 
   onAuthStateChange, 
   getCurrentUser,
+  checkRedirectResult,
   authenticateWithBackend,
   type FirebaseUser 
 } from '@/lib/firebase';
@@ -26,9 +27,18 @@ export function useFirebaseAuth() {
     error: null
   });
 
-  // Listen to Firebase auth state changes
+  // Listen to Firebase auth state changes and check for redirect result
   useEffect(() => {
     console.log('Setting up Firebase auth state listener...');
+    
+    // Check for redirect result first
+    checkRedirectResult().then((redirectUser) => {
+      if (redirectUser) {
+        console.log('Found redirect result user:', redirectUser.uid);
+      }
+    }).catch((error) => {
+      console.error('Error checking redirect result:', error);
+    });
     
     const unsubscribe = onAuthStateChange(async (user) => {
       console.log('Firebase auth state changed:', { user: !!user, uid: user?.uid });

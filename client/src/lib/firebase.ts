@@ -98,7 +98,7 @@ export const checkRedirectResult = async (): Promise<FirebaseUser | null> => {
 export const signOut = async (): Promise<void> => {
   try {
     await firebaseSignOut(auth);
-    console.log('Firebase sign-out successful');
+    // Firebase sign-out successful
   } catch (error) {
     console.error('Firebase sign-out error:', error);
     throw error;
@@ -144,7 +144,7 @@ export const extractUserData = (user: FirebaseUser) => {
  */
 export const authenticateWithBackend = async (user: FirebaseUser): Promise<boolean> => {
   try {
-    console.log('Sending user data to backend...');
+    // Sending user data to backend...
     const userData = extractUserData(user);
     
     const response = await fetch('/api/auth/firebase', {
@@ -163,7 +163,7 @@ export const authenticateWithBackend = async (user: FirebaseUser): Promise<boole
     }
 
     const result = await response.json();
-    console.log('Backend authentication successful:', result);
+    // Backend authentication successful
     return true;
   } catch (error) {
     console.error('Backend authentication error:', error);

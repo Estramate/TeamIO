@@ -81,7 +81,7 @@ function Router() {
       // If we're authenticated but we're on root and have no session data
       // this likely means we just logged out and need to refresh
       if (!isLoading && !isAuthenticated && window.location.pathname === '/') {
-        console.log('User not authenticated, ensuring landing page is shown');
+        // User not authenticated, ensuring landing page is shown
         // Force a page reload to ensure clean state
         if (sessionStorage.getItem('just_logged_out') === 'true') {
           sessionStorage.removeItem('just_logged_out');
@@ -96,10 +96,14 @@ function Router() {
   // Check if authenticated user needs onboarding
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      // Only show onboarding when user explicitly needs club selection
-      // Not automatically for all Firebase users
-      // This should be triggered by explicit user action (e.g., "Join Club" button)
-      setShowOnboarding(false); // Disable auto-onboarding
+      // Firebase users need onboarding (club selection)
+      // Replit users likely already have club associations
+      if (firebaseAuth && !replitAuth) {
+        // Firebase user authenticated, showing onboarding
+        setShowOnboarding(true);
+      } else {
+        setShowOnboarding(false);
+      }
     }
   }, [isAuthenticated, isLoading, firebaseAuth, replitAuth]);
 

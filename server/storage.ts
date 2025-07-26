@@ -456,29 +456,36 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getClubUsersWithMembership(clubId: number): Promise<any[]> {
-    const result = await db
-      .select({
-        // User fields
-        id: users.id,
-        email: users.email,
-        firstName: users.firstName,
-        lastName: users.lastName,
-        profileImageUrl: users.profileImageUrl,
-        authProvider: users.authProvider,
-        createdAt: users.createdAt,
-        // Membership fields
-        membershipId: clubMemberships.id,
-        role: clubMemberships.role,
-        status: clubMemberships.status,
-        joinDate: clubMemberships.joinDate,
-        joinedAt: clubMemberships.joinDate, // Alias für UI-Kompatibilität
-      })
-      .from(users)
-      .innerJoin(clubMemberships, eq(users.id, clubMemberships.userId))
-      .where(eq(clubMemberships.clubId, clubId))
-      .orderBy(asc(users.firstName), asc(users.lastName));
+    try {
+      console.log(`📊 Getting club users for club ${clubId}`);
+      
+      const result = await db
+        .select({
+          // User fields
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          authProvider: users.authProvider,
+          createdAt: users.createdAt,
+          // Membership fields with correct column names
+          membershipId: clubMemberships.id,
+          role: clubMemberships.role,
+          status: clubMemberships.status,
+          joinedAt: clubMemberships.joinedAt, // Use the actual DB column name
+        })
+        .from(users)
+        .innerJoin(clubMemberships, eq(users.id, clubMemberships.userId))
+        .where(eq(clubMemberships.clubId, clubId))
+        .orderBy(asc(users.firstName), asc(users.lastName));
 
-    return result;
+      console.log(`📊 Found ${result.length} users for club ${clubId}`);
+      return result;
+    } catch (error) {
+      console.error('❌ Error in getClubUsersWithMembership:', error);
+      throw error;
+    }
   }
 
   // Club join request operations

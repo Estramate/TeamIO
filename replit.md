@@ -79,6 +79,7 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 - ✅ **LOGOUT/LOGIN CYCLE WORKING PERFECTLY** - Users can now logout and login repeatedly without issues
 
 **Recent Fixes**: 
+- ✅ **AUSSTEHENDE MITGLIEDSCHAFTSANFRAGEN REPARIERT** - getClubUsersWithMembership SQL-Fehler behoben, Admin-Berechtigungen korrekt gesetzt, inactive Status wird als "Ausstehend" angezeigt
 - ✅ **TOAST-NOTIFICATION-SYSTEM VOLLSTÄNDIG IMPLEMENTIERT** - Alle window.confirm(), console.log/error, und alert() durch einheitliche Toast-Benachrichtigungen ersetzt
 - ✅ Zentraler toastService mit deutschen Lokalisierung und spezialisierten Kategorien (database, auth, form, network)
 - ✅ Communication-System verwendet jetzt schöne Bestätigungsdialoge statt Browser-Popups

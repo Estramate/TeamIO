@@ -1,17 +1,54 @@
-🔧 CSP PROBLEM BEHOBEN - GOOGLE LOGIN SOLLTE JETZT FUNKTIONIEREN!
+✅ AUTO-CLUB-SELECTION IMPLEMENTIERT!
 
-**PROBLEM IDENTIFIZIERT:**
-❌ Content Security Policy blockierte Firebase-Domain
-❌ "Refused to frame 'https://teamio-1be61.firebaseapp.com'"
+**WAS PASSIERT IM SYSTEM:**
 
-**LÖSUNG IMPLEMENTIERT:**
-✅ frameSrc CSP Direktive erweitert:
-   - "https://accounts.google.com" (bereits vorhanden)
-   - "https://teamio-1be61.firebaseapp.com" (NEU HINZUGEFÜGT)
+1. **Benutzer loggt sich ein:**
+   - Google-Login erfolgreich ✅
+   - Firebase-Authentifizierung an Backend gesendet ✅
 
-**JETZT TESTEN:**
-1. Server ist automatisch neu gestartet
-2. Google-Login-Button sollte jetzt das Popup öffnen können
-3. Keine CSP-Blockierung mehr
+2. **Auto-Club-Selection-Logik:**
+   ```javascript
+   // If no club is selected, check if user has club memberships
+   if (!selectedClub) {
+     // Fetch user's clubs to auto-select the first one
+     fetch('/api/clubs', { credentials: 'include' })
+       .then(res => res.ok ? res.json() : [])
+       .then(clubs => {
+         if (clubs && clubs.length > 0) {
+           // Auto-select the first club the user is member of
+           const { setSelectedClub } = useClubStore.getState();
+           setSelectedClub(clubs[0].id);
+           setShowOnboarding(false);
+         } else {
+           // No club memberships - show onboarding
+           setShowOnboarding(true);
+         }
+       })
+   }
+   ```
 
-Das Firebase-Login sollte jetzt funktionieren! 🚀
+3. **AKTUELLER TEST-FALL:**
+   - `/api/clubs` returned `[]` (leeres Array)
+   - Benutzer ist noch keinem Verein zugeordnet
+   - OnboardingWizard wird angezeigt ✅
+
+4. **ERWARTETES VERHALTEN FÜR BENUTZER MIT VEREINEN:**
+   - `/api/clubs` returns `[{id: 1, name: "SV Oberglan"}, {id: 2, name: "FC Bayern"}]`
+   - `setSelectedClub(clubs[0].id)` wird aufgerufen
+   - Erster Verein automatisch ausgewählt
+   - Dashboard wird sofort angezeigt
+
+**IMPLEMENTIERTE FEATURES:**
+- ✅ Auto-Selection des ersten Vereins bei mehreren Mitgliedschaften
+- ✅ OnboardingWizard nur wenn keine Vereinszuordnung vorhanden
+- ✅ Fehlerbehandlung falls `/api/clubs` Request fehlschlägt
+- ✅ Seamless Integration mit clubStore
+
+**TEST-SZENARIEN:**
+1. **Neuer Benutzer** (aktuell): Login → Vereinsauswahl
+2. **Benutzer mit 1 Verein**: Login → Auto-Select → Dashboard
+3. **Benutzer mit mehreren Vereinen**: Login → Auto-Select ersten → Dashboard
+
+**STATUS: 🎯 FEATURE VOLLSTÄNDIG IMPLEMENTIERT!**
+
+Das System ist jetzt intelligent genug, um automatisch den ersten Verein auszuwählen!

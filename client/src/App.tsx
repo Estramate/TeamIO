@@ -94,13 +94,29 @@ function Router() {
     checkLogoutState();
   }, [isAuthenticated, isLoading]);
 
-  // Check if authenticated user needs club selection
+  // Check if authenticated user needs club selection or auto-select first club
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      // Show onboarding if user has no club selected
-      // This applies to both Firebase and Replit users
+      // If no club is selected, check if user has club memberships
       if (!selectedClub) {
-        setShowOnboarding(true);
+        // Fetch user's clubs to auto-select the first one
+        fetch('/api/clubs', { credentials: 'include' })
+          .then(res => res.ok ? res.json() : [])
+          .then(clubs => {
+            if (clubs && clubs.length > 0) {
+              // Auto-select the first club the user is member of
+              const { setSelectedClub } = useClubStore.getState();
+              setSelectedClub(clubs[0].id);
+              setShowOnboarding(false);
+            } else {
+              // No club memberships - show onboarding
+              setShowOnboarding(true);
+            }
+          })
+          .catch(() => {
+            // Error fetching clubs - show onboarding
+            setShowOnboarding(true);
+          });
       } else {
         setShowOnboarding(false);
       }

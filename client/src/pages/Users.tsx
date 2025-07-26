@@ -31,6 +31,7 @@ import {
   Clock,
   Shield,
   Users as UsersIcon,
+
   AlertTriangle,
   Mail,
   Send,
@@ -380,7 +381,7 @@ export default function Users() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredMembers.map((member) => (
                 <Card key={member.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
+                  <CardHeader className="bg-gray-50 dark:bg-gray-800/50 rounded-t-lg pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-primary/10 rounded-lg">
@@ -616,6 +617,8 @@ export default function Users() {
 
 // Activity Log Component
 function ActivityLogTab({ clubId }: { clubId: number }) {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
   const { data: logs = [], isLoading, error } = useQuery<any[]>({
     queryKey: [`/api/clubs/${clubId}/activity-logs`],
     enabled: !!clubId,
@@ -674,13 +677,39 @@ function ActivityLogTab({ clubId }: { clubId: number }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-3">
-          <Activity className="h-5 w-5 text-green-600" />
-          Aktivitätsprotokoll
-        </CardTitle>
-        <CardDescription>
-          Chronologische Übersicht aller Benutzeraktivitäten und Systemereignisse.
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-3">
+              <Activity className="h-5 w-5 text-green-600" />
+              Aktivitätsprotokoll
+            </CardTitle>
+            <CardDescription>
+              Chronologische Übersicht aller Benutzeraktivitäten und Systemereignisse.
+            </CardDescription>
+          </div>
+          
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="flex items-center gap-2"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Karten
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="flex items-center gap-2"
+            >
+              <List className="h-4 w-4" />
+              Liste
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {!logs || logs.length === 0 ? (
@@ -694,6 +723,46 @@ function ActivityLogTab({ clubId }: { clubId: number }) {
             <p className="text-muted-foreground">
               Aktivitäten werden hier angezeigt, sobald Benutzeraktionen stattfinden.
             </p>
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {logs.map((log: any) => (
+              <Card key={log.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="bg-gray-50 dark:bg-gray-800/50 rounded-t-lg pb-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 p-2 bg-white dark:bg-gray-900 rounded-full border">
+                      {getActionIcon(log.action)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm leading-tight">
+                        {log.description}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatDate(log.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {log.userFirstName && log.userLastName && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <UsersIcon className="h-4 w-4" />
+                      von {log.userFirstName} {log.userLastName}
+                    </div>
+                  )}
+                  {log.metadata && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      <details className="cursor-pointer">
+                        <summary>Details anzeigen</summary>
+                        <pre className="mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-auto">
+                          {JSON.stringify(log.metadata, null, 2)}
+                        </pre>
+                      </details>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
         ) : (
           <div className="space-y-3">
@@ -714,9 +783,9 @@ function ActivityLogTab({ clubId }: { clubId: number }) {
                       {formatDate(log.createdAt)}
                     </time>
                   </div>
-                  {log.user && (
+                  {log.userFirstName && log.userLastName && (
                     <p className="text-xs text-muted-foreground">
-                      von {log.user.firstName} {log.user.lastName}
+                      von {log.userFirstName} {log.userLastName}
                     </p>
                   )}
                 </div>

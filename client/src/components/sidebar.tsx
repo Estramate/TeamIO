@@ -63,6 +63,18 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     enabled: true, // This should work for authenticated users
   });
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['/api/auth/user'],
+    retry: false,
+    enabled: true,
+  });
+
+  const { data: userMembership } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'user-membership'],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
   const { data: members } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'members'],
     enabled: !!selectedClub?.id,
@@ -386,8 +398,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 </TooltipTrigger>
                 <TooltipContent side="right" className="bg-popover border border-border shadow-md">
                   <div>
-                    <p className="font-medium">Administrator</p>
-                    <p className="text-xs text-muted-foreground">Vereinsadministrator</p>
+                    <p className="font-medium">
+                      {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Benutzer'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {userMembership?.role === 'club-administrator' ? 'Vereinsadministrator' : 
+                       userMembership?.role === 'member' ? 'Mitglied' :
+                       userMembership?.role === 'coach' ? 'Trainer' : 'Benutzer'}
+                    </p>
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -398,10 +416,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
-                    Administrator
+                    {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Benutzer'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    Vereinsadministrator
+                    {userMembership?.role === 'club-administrator' ? 'Vereinsadministrator' : 
+                     userMembership?.role === 'member' ? 'Mitglied' :
+                     userMembership?.role === 'coach' ? 'Trainer' : 'Benutzer'}
                   </p>
                 </div>
                 <Button

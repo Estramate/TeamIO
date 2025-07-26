@@ -51,9 +51,13 @@ export function SocialLoginButtons({
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
-      {/* Replit Auth - Primary Option */}
-      <Card className="border-2 border-primary/20">
-        <CardContent className="p-6">
+      <Card>
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl font-semibold">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Replit Login Button - Primary */}
           <Button
             size="lg"
             className="w-full h-12 bg-primary hover:bg-primary/90 font-medium"
@@ -62,28 +66,20 @@ export function SocialLoginButtons({
             <SiReplit className="mr-2 h-5 w-5" />
             Mit Replit anmelden
           </Button>
-          <p className="text-xs text-center text-muted-foreground mt-3">
-            Empfohlene Anmeldeoption für die beste Erfahrung
+          <p className="text-xs text-center text-muted-foreground">
+            Empfohlene Option für die beste Erfahrung
           </p>
-        </CardContent>
-      </Card>
 
-      {/* Alternative Options */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">oder</span>
-        </div>
-      </div>
-      
-      <Card>
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-xl font-semibold">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+          {/* Separator */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">oder</span>
+            </div>
+          </div>
+
           {/* Google Login Button */}
           <Button
             variant="outline"

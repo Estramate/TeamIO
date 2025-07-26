@@ -42,7 +42,7 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - **Memory**: Always remember and document current project settings and state
 - **Project Management**: Systematic implementation of improvements with documentation
 
-**Latest User Request**: "Implementiere moderne Kommunikationssystem mit allen Standards dieses Projektes!" - Complete communication system with all project standards implemented.
+**Latest User Request**: "kann man das nicht vereinheitlichen? in der Landingpage mit einem Button "Weiter zum Login" oder "Kostenlos starten" und dann auf die Loginpage weitergeleitet wird?" - User wants unified authentication flow: Landing page → Login page → Authentication options (instead of mixed direct/redirect flows).
 
 **Recent Fixes**: 
 - Fixed React duplicate key warning in Members component - unique keys now include member ID and index for team mappings

@@ -163,6 +163,9 @@ Diese Einladung läuft am ${expiresAt.toLocaleDateString('de-DE')} ab.
 Falls Sie diese E-Mail irrtümlich erhalten haben, können Sie sie einfach ignorieren.
   `;
 
+  console.log('📧 Sending invitation email to:', to);
+  console.log('📧 From email:', process.env.FROM_EMAIL || 'noreply@clubflow.app');
+  
   return await sendEmail({
     to,
     from: process.env.FROM_EMAIL || 'noreply@clubflow.app',

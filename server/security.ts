@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 import type { Express } from 'express';
 import { logger, AuthorizationError } from './logger';
 
-// Security configuration
+// Security configuration for Google-only Firebase auth
 export const setupSecurity = (app: Express) => {
   // Conditional CSP configuration - disabled in development for Vite compatibility
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -21,8 +21,7 @@ export const setupSecurity = (app: Express) => {
           "'unsafe-inline'",
           "https://apis.google.com",
           "https://www.google.com",
-          "https://www.gstatic.com",
-          "https://connect.facebook.net"
+          "https://www.gstatic.com"
         ],
         connectSrc: [
           "'self'", 
@@ -32,8 +31,6 @@ export const setupSecurity = (app: Express) => {
           "https://apis.google.com",
           "https://accounts.google.com",
           "https://www.googleapis.com",
-          "https://graph.facebook.com",
-          "https://www.facebook.com",
           "https://teamio-1be61.firebaseapp.com",
           "https://*.googleapis.com",
           "https://securetoken.googleapis.com",
@@ -41,8 +38,7 @@ export const setupSecurity = (app: Express) => {
         ],
         frameSrc: [
           "'self'",
-          "https://accounts.google.com",
-          "https://www.facebook.com"
+          "https://accounts.google.com"
         ],
       },
     },
@@ -75,8 +71,7 @@ export const setupSecurity = (app: Express) => {
           type: 'RateLimitError',
           message: 'Too many requests from this IP, please try again later.',
           timestamp: new Date().toISOString(),
-          requestId: (req as any).id || 'rate-limit',
-        },
+        }
       });
     },
   });
@@ -84,7 +79,7 @@ export const setupSecurity = (app: Express) => {
   // Stricter rate limiting for auth endpoints
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 50, // Increased limit to prevent auth loops
+    max: 10, // Limit each IP to 10 auth attempts per windowMs
     message: {
       error: {
         type: 'AuthRateLimitError',
@@ -95,143 +90,37 @@ export const setupSecurity = (app: Express) => {
     },
     standardHeaders: true,
     legacyHeaders: false,
+    handler: (req, res) => {
+      logger.warn('Auth rate limit exceeded', {
+        ip: req.ip,
+        url: req.url,
+        method: req.method,
+        userAgent: req.get('User-Agent'),
+      });
+      res.status(429).json({
+        error: {
+          type: 'AuthRateLimitError',
+          message: 'Too many authentication attempts, please try again later.',
+          timestamp: new Date().toISOString(),
+        }
+      });
+    },
   });
 
   // Apply rate limiting
-  app.use('/api/', generalLimiter);
+  app.use(generalLimiter);
+  app.use('/api/auth', authLimiter);
   app.use('/api/login', authLimiter);
-  app.use('/api/auth/', authLimiter);
+  app.use('/api/logout', authLimiter);
 
-  logger.info('Security middleware configured');
-};
-
-// Enhanced club access middleware with better error handling
-export const requireClubAccess = async (req: any, res: any, next: any) => {
-  try {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.user?.claims?.sub;
-    
-    if (!userId) {
-      throw new AuthorizationError('Authentication required');
-    }
-
-    if (!clubId || isNaN(clubId)) {
-      return res.status(400).json({
-        error: {
-          type: 'ValidationError',
-          message: 'Invalid club ID',
-          field: 'clubId',
-          timestamp: new Date().toISOString(),
-          requestId: (req as any).id,
-        },
-      });
-    }
-
-    // Import storage here to avoid circular dependency
-    const { storage } = await import('./storage');
-    
-    // Check if user is member of the club
-    const userClubs = await storage.getUserClubs(userId);
-    const hasAccess = userClubs.some(membership => 
-      membership.clubId === clubId && membership.status === 'active'
-    );
-
-    if (!hasAccess) {
-      throw new AuthorizationError('Access denied. You are not a member of this club.');
-    }
-
-    // Add club access info to request for downstream use
-    req.clubAccess = {
-      clubId,
-      userId,
-      membership: userClubs.find(m => m.clubId === clubId),
-    };
-
+  // Security headers
+  app.use((req, res, next) => {
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
     next();
-  } catch (error) {
-    if (error instanceof AuthorizationError) {
-      return res.status(error.statusCode).json({
-        error: {
-          type: error.type,
-          message: error.message,
-          timestamp: new Date().toISOString(),
-          requestId: (req as any).id,
-        },
-      });
-    }
+  });
 
-    logger.error('Error checking club access', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      userId: req.user?.claims?.sub,
-      clubId: req.params.clubId,
-      requestId: (req as any).id,
-    });
-
-    res.status(500).json({
-      error: {
-        type: 'InternalServerError',
-        message: 'Failed to verify club access',
-        timestamp: new Date().toISOString(),
-        requestId: (req as any).id,
-      },
-    });
-  }
-};
-
-// CSRF protection for state-changing operations
-export const csrfProtection = (req: any, res: any, next: any) => {
-  // Skip CSRF for GET and HEAD requests
-  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
-    return next();
-  }
-
-  // Whitelist routes that don't need CSRF protection
-  const csrfWhitelist = [
-    '/api/auth/firebase',
-    '/api/login',
-    '/api/logout', 
-    '/api/callback',
-    '/api/errors',
-    '/api/performance'
-  ];
-
-  // Skip CSRF for whitelisted routes
-  if (csrfWhitelist.some(route => req.path.startsWith(route))) {
-    return next();
-  }
-
-  // Check for CSRF token in header
-  const token = req.get('X-CSRF-Token') || req.body._csrf;
-  const sessionToken = req.session?.csrfToken;
-
-  if (!token || !sessionToken || token !== sessionToken) {
-    logger.warn('CSRF token validation failed', {
-      hasToken: !!token,
-      hasSessionToken: !!sessionToken,
-      tokensMatch: token === sessionToken,
-      method: req.method,
-      url: req.url,
-      userId: req.user?.claims?.sub,
-      requestId: (req as any).id,
-    });
-
-    return res.status(403).json({
-      error: {
-        type: 'CSRFError',
-        message: 'Invalid CSRF token',
-        timestamp: new Date().toISOString(),
-        requestId: (req as any).id,
-      },
-    });
-  }
-
-  next();
-};
-
-// Generate CSRF token endpoint
-export const generateCSRFToken = (req: any, res: any) => {
-  const token = Math.random().toString(36).substr(2, 16);
-  req.session.csrfToken = token;
-  res.json({ csrfToken: token });
+  logger.info('Security middleware configured successfully');
 };

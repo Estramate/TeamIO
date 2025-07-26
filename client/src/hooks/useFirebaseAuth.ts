@@ -1,23 +1,17 @@
 /**
- * React hook for Firebase authentication management
- * Provides Google and Facebook sign-in functionality
+ * Firebase authentication hook - Google only
+ * Simplified implementation without Facebook support
  */
 
 import { useState, useEffect } from 'react';
 import { 
   signInWithGoogle, 
-  signInWithFacebook,
-  signInWithGoogleRedirect,
-  signInWithFacebookRedirect,
-  handleAuthRedirect,
-  signOut,
-  onAuthStateChange,
+  signOut, 
+  onAuthStateChange, 
   getCurrentUser,
-  extractUserData
+  authenticateWithBackend,
+  type FirebaseUser 
 } from '@/lib/firebase';
-import type { User as FirebaseUser } from 'firebase/auth';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
 
 interface AuthState {
   user: FirebaseUser | null;
@@ -29,160 +23,88 @@ export function useFirebaseAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     loading: true,
-    error: null,
+    error: null
   });
-  const { toast } = useToast();
 
-  // Simplified auth state management - no automatic backend sync
+  // Listen to Firebase auth state changes
   useEffect(() => {
+    console.log('Setting up Firebase auth state listener...');
+    
     const unsubscribe = onAuthStateChange(async (user) => {
+      console.log('Firebase auth state changed:', { user: !!user, uid: user?.uid });
+      
       if (user) {
-        console.log('Firebase user authenticated:', { uid: user.uid, email: user.email });
-        setAuthState({ user, loading: false, error: null });
+        try {
+          // Authenticate with backend when user signs in
+          await authenticateWithBackend(user);
+          setAuthState({ user, loading: false, error: null });
+        } catch (error) {
+          console.error('Backend authentication failed:', error);
+          setAuthState({ 
+            user: null, 
+            loading: false, 
+            error: error instanceof Error ? error.message : 'Authentication failed' 
+          });
+        }
       } else {
         setAuthState({ user: null, loading: false, error: null });
       }
     });
 
-    // Check for redirect result on app load
-    handleAuthRedirect().catch(console.error);
+    // Check if user is already signed in
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      console.log('User already signed in:', currentUser.uid);
+    }
 
-    return () => unsubscribe();
+    return () => {
+      console.log('Cleaning up Firebase auth listener');
+      unsubscribe();
+    };
   }, []);
 
-  // Simplified Google sign-in with immediate backend sync
   const signInWithGooglePopup = async () => {
     try {
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
+      console.log('Starting Google sign-in flow...');
       
-      // Perform Firebase authentication
-      const userCredential = await signInWithGoogle();
-      const user = userCredential?.user;
+      const user = await signInWithGoogle();
+      console.log('Google sign-in completed, user:', user.uid);
       
-      if (!user) {
-        throw new Error('No user returned from Firebase');
-      }
-      
-      console.log('Firebase authentication successful:', { uid: user.uid, email: user.email });
-      
-      // Immediately sync with backend
-      const userData = extractUserData(user);
-      const response = await fetch('/api/auth/firebase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userData }),
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Backend sync failed' }));
-        throw new Error(`Backend sync failed: ${errorData.error}`);
-      }
-      
-      const result = await response.json();
-      console.log('Backend sync successful:', result);
-      
-      setAuthState({ user, loading: false, error: null });
-      toast({
-        title: "Erfolgreich angemeldet",
-        description: `Willkommen, ${user.displayName || user.email}!`,
-      });
-      
-      // Reload page to pick up new authentication state
-      setTimeout(() => window.location.reload(), 1000);
-      
-    } catch (error: any) {
-      console.error('Google sign-in error:', error);
-      
-      // Sign out from Firebase if backend sync failed
-      try {
-        await signOut();
-      } catch (signOutError) {
-        console.error('Sign out error:', signOutError);
-      }
-      
-      const errorMessage = error?.code === 'auth/popup-closed-by-user' 
-        ? 'Anmeldung wurde abgebrochen'
-        : `Anmeldung fehlgeschlagen: ${error.message || 'Unbekannter Fehler'}`;
-      
-      setAuthState(prev => ({ ...prev, loading: false, error: errorMessage }));
-      toast({
-        title: "Anmeldung fehlgeschlagen",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Facebook sign-in with popup
-  const signInWithFacebookPopup = async () => {
-    try {
-      setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      await signInWithFacebook();
-      // Auth state change will handle the rest
-    } catch (error: any) {
-      console.error('Facebook sign-in error:', error);
-      const errorMessage = error?.code === 'auth/popup-closed-by-user'
-        ? 'Anmeldung wurde abgebrochen'
-        : 'Facebook-Anmeldung fehlgeschlagen';
-      
-      setAuthState(prev => ({ ...prev, loading: false, error: errorMessage }));
-      toast({
-        title: "Anmeldung fehlgeschlagen",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Google sign-in with redirect (better for mobile)
-  const signInWithGoogleRedirectMethod = async () => {
-    try {
-      setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      await signInWithGoogleRedirect();
+      // Backend authentication is handled in onAuthStateChange
+      return user;
     } catch (error) {
-      console.error('Google redirect sign-in error:', error);
-      setAuthState(prev => ({ ...prev, loading: false, error: 'Google-Anmeldung fehlgeschlagen' }));
+      const errorMessage = error instanceof Error ? error.message : 'Google sign-in failed';
+      console.error('Google sign-in error:', errorMessage);
+      setAuthState(prev => ({ ...prev, loading: false, error: errorMessage }));
+      throw error;
     }
   };
 
-  // Facebook sign-in with redirect (better for mobile)
-  const signInWithFacebookRedirectMethod = async () => {
-    try {
-      setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      await signInWithFacebookRedirect();
-    } catch (error) {
-      console.error('Facebook redirect sign-in error:', error);
-      setAuthState(prev => ({ ...prev, loading: false, error: 'Facebook-Anmeldung fehlgeschlagen' }));
-    }
-  };
-
-  // Sign out
   const handleSignOut = async () => {
     try {
-      setAuthState(prev => ({ ...prev, loading: true }));
+      setAuthState(prev => ({ ...prev, loading: true, error: null }));
+      console.log('Starting sign-out...');
       
-      // Sign out from Firebase
       await signOut();
+      console.log('Firebase sign-out completed');
       
-      // Sign out from backend
-      await fetch('/api/auth/firebase/logout', {
-        method: 'POST',
-      });
+      // Clear any backend session
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (logoutError) {
+        console.warn('Backend logout failed (non-critical):', logoutError);
+      }
       
       setAuthState({ user: null, loading: false, error: null });
-      toast({
-        title: "Erfolgreich abgemeldet",
-        description: "Sie wurden sicher abgemeldet.",
-      });
     } catch (error) {
-      console.error('Sign out error:', error);
-      setAuthState(prev => ({ ...prev, loading: false, error: 'Abmeldung fehlgeschlagen' }));
-      toast({
-        title: "Abmeldung fehlgeschlagen",
-        description: "Bitte versuchen Sie es erneut.",
-        variant: "destructive",
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Sign-out failed';
+      console.error('Sign-out error:', errorMessage);
+      setAuthState(prev => ({ ...prev, loading: false, error: errorMessage }));
+      throw error;
     }
   };
 
@@ -190,15 +112,7 @@ export function useFirebaseAuth() {
     user: authState.user,
     loading: authState.loading,
     error: authState.error,
-    signInWithGooglePopup,
-    signInWithFacebookPopup,
-    signInWithGoogleRedirectMethod,
-    signInWithFacebookRedirectMethod,
-    // Legacy aliases for backward compatibility
     signInWithGoogle: signInWithGooglePopup,
-    signInWithFacebook: signInWithFacebookPopup,
-    signInWithGoogleRedirect: signInWithGoogleRedirectMethod,
-    signInWithFacebookRedirect: signInWithFacebookRedirectMethod,
     signOut: handleSignOut,
     isAuthenticated: !!authState.user,
   };

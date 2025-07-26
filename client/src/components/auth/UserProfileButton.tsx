@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { LogOut, User, Settings, Shield } from "lucide-react";
-import { FaGoogle, FaFacebook } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 import { SiReplit } from "react-icons/si";
 
 interface UserProfileButtonProps {
@@ -52,7 +52,7 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
         name: firebaseUser?.displayName || firebaseUser?.email || 'User',
         email: firebaseUser?.email || '',
         avatar: firebaseUser?.photoURL || null,
-        initials: firebaseUser?.displayName?.split(' ').map(n => n[0]).join('').toUpperCase() || firebaseUser?.email?.[0]?.toUpperCase() || 'U',
+        initials: firebaseUser?.displayName?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || firebaseUser?.email?.[0]?.toUpperCase() || 'U',
       };
 
   const handleLogout = async () => {
@@ -78,8 +78,8 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
       // Clear any cached query data
       try {
         // @ts-expect-error - queryClient may be available globally
-        if (window.queryClient) {
-          window.queryClient.clear();
+        if ((window as any).queryClient) {
+          (window as any).queryClient.clear();
         }
       } catch (e) {
         // Ignore queryClient errors
@@ -107,8 +107,6 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
     const providerId = firebaseUser?.providerData?.[0]?.providerId;
     if (providerId === 'google.com') {
       return <FaGoogle className="h-3 w-3" />;
-    } else if (providerId === 'facebook.com') {
-      return <FaFacebook className="h-3 w-3" />;
     }
     
     return <User className="h-3 w-3" />;
@@ -119,7 +117,6 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
     
     const providerId = firebaseUser?.providerData?.[0]?.providerId;
     if (providerId === 'google.com') return 'Google';
-    if (providerId === 'facebook.com') return 'Facebook';
     
     return 'Firebase';
   };

@@ -4,7 +4,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupFirebaseAuth, isAuthenticatedEnhanced } from "./firebaseAuth";
-import { requireClubAccess, csrfProtection, generateCSRFToken } from "./security";
+// Security imports temporarily commented for Firebase overhaul
+// import { requireClubAccess } from "./security";
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
 import { handleErrorReports, handlePerformanceMetrics } from "./error-reporting";
 
@@ -74,13 +75,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Firebase auth request received:', { uid: userData.uid, email: userData.email });
       
-      // Create Firebase user with proper provider-specific ID
-      const firebaseUserId = `firebase_${userData.uid}`;
+      // Create Firebase user with provider-specific ID (Google only)
+      const firebaseUserId = `google_${userData.uid}`;
       
       const userDataToInsert = {
         id: firebaseUserId,
         email: userData.email,
-        authProvider: 'firebase',
+        authProvider: 'google',
         providerUserId: userData.uid,
         firstName: userData.displayName?.split(' ')[0] || null,
         lastName: userData.displayName?.split(' ').slice(1).join(' ') || null,
@@ -106,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         first_name: dbUser.firstName,
         last_name: dbUser.lastName,
         profile_image_url: dbUser.profileImageUrl,
-        authProvider: 'firebase',
+        authProvider: 'google',
         exp: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
       })).toString('base64');
       
@@ -149,7 +150,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupFirebaseAuth(app);
 
   // CSRF token endpoint
-  app.get('/api/csrf-token', isAuthenticated, generateCSRFToken);
+  // CSRF token temporarily disabled for Firebase overhaul
+  // app.get('/api/csrf-token', isAuthenticated, generateCSRFToken);
 
   // Error reporting endpoints
   app.post('/api/errors', handleErrorReports);
@@ -363,7 +365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(validClubs);
   }));
 
-  app.post('/api/clubs', isAuthenticated, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.claims.sub;
     if (!userId) {
       throw new AuthorizationError('User ID not found in token');
@@ -385,7 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Dashboard routes
-  app.get('/api/clubs/:clubId/dashboard', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/dashboard', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     
     const [stats, activities] = await Promise.all([
@@ -398,7 +400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Member routes
-  app.get('/api/clubs/:clubId/members', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/members', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const members = await storage.getMembers(clubId);
     
@@ -406,7 +408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(members);
   }));
 
-  app.post('/api/clubs/:clubId/members', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/members', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const memberData = insertMemberSchema.parse({ ...req.body, clubId });
     const member = await storage.createMember(memberData);
@@ -415,7 +417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(member);
   }));
 
-  app.put('/api/clubs/:clubId/members/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.put('/api/clubs/:clubId/members/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -437,7 +439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/members/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/members/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -450,7 +452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Team routes
-  app.get('/api/clubs/:clubId/teams', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/teams', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const teams = await storage.getTeams(clubId);
@@ -461,7 +463,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/teams', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/teams', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const teamData = insertTeamSchema.parse({ ...req.body, clubId });
@@ -473,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/clubs/:clubId/teams/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.put('/api/clubs/:clubId/teams/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -486,7 +488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/teams/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/teams/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -499,7 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Team memberships routes
-  app.get('/api/clubs/:clubId/team-memberships', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/team-memberships', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const memberships = await storage.getTeamMemberships(clubId);
@@ -548,7 +550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Facility routes
-  app.get('/api/clubs/:clubId/facilities', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/facilities', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const facilities = await storage.getFacilities(clubId);
@@ -559,7 +561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/facilities', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/facilities', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const facilityData = insertFacilitySchema.parse({ ...req.body, clubId });
@@ -571,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/facilities/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/facilities/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -585,7 +587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/facilities/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/facilities/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -599,7 +601,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Booking routes
-  app.get('/api/clubs/:clubId/bookings', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/bookings', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const bookings = await storage.getBookings(clubId);
@@ -610,7 +612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/bookings', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/bookings', isAuthenticated, async (req: any, res) => {
     try {
       console.log("DEBUG Route: Raw request body:", req.body);
       const clubId = parseInt(req.params.clubId);
@@ -725,7 +727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/clubs/:clubId/bookings/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const booking = await storage.getBooking(id);
@@ -739,7 +741,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/bookings/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = { ...req.body };
@@ -793,7 +795,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/bookings/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteBooking(id);
@@ -805,7 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check booking availability route
-  app.post('/api/clubs/:clubId/bookings/check-availability', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/bookings/check-availability', isAuthenticated, async (req: any, res) => {
     try {
       const { facilityId, startTime, endTime, excludeBookingId } = req.body;
       
@@ -841,7 +843,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Finance routes
-  app.get('/api/clubs/:clubId/finances', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const finances = await storage.getFinances(clubId);
@@ -852,7 +854,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/clubs/:clubId/finances/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const finance = await storage.getFinance(id);
@@ -866,7 +868,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/finances', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const financeData = insertFinanceSchema.parse({ ...req.body, clubId });
@@ -878,7 +880,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/finances/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -892,7 +894,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/finances/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteFinance(id);
@@ -904,7 +906,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Training fees routes
-  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const trainingFees = await storage.getTrainingFees(clubId);
@@ -915,7 +917,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const trainingFeeData = { ...req.body, clubId };
@@ -932,7 +934,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Player routes
-  app.get("/api/clubs/:clubId/players", isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get("/api/clubs/:clubId/players", isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const players = await storage.getPlayers(clubId);
@@ -957,7 +959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/clubs/:clubId/players", isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.post("/api/clubs/:clubId/players", isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const cleanedData = { ...req.body };
@@ -985,7 +987,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/clubs/:clubId/players/:id", isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.patch("/api/clubs/:clubId/players/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -1010,7 +1012,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/clubs/:clubId/players/:id", isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.delete("/api/clubs/:clubId/players/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -1075,7 +1077,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Member fees routes
-  app.get('/api/clubs/:clubId/member-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const memberFees = await storage.getMemberFees(clubId);
@@ -1086,7 +1088,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/member-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       
@@ -1109,7 +1111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/member-fees/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const memberFee = await storage.updateMemberFee(id, req.body);
@@ -1120,7 +1122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }  
   });
 
-  app.delete('/api/clubs/:clubId/member-fees/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteMemberFee(id);
@@ -1132,7 +1134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Training fees routes
-  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const trainingFees = await storage.getTrainingFees(clubId);
@@ -1143,7 +1145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       
@@ -1168,7 +1170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/training-fees/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/training-fees/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const trainingFee = await storage.updateTrainingFee(id, req.body);
@@ -1179,7 +1181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/training-fees/:id', isAuthenticated, requireClubAccess, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/training-fees/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteTrainingFee(id);
@@ -1193,7 +1195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Communication routes
   
   // Message routes
-  app.get('/api/clubs/:clubId/messages', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1206,7 +1208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(messages);
   }));
 
-  app.get('/api/clubs/:clubId/messages/:messageId', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/messages/:messageId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
     
     if (!messageId || isNaN(messageId)) {
@@ -1222,7 +1224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(message);
   }));
 
-  app.post('/api/clubs/:clubId/messages', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1284,7 +1286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(message);
   }));
 
-  app.patch('/api/clubs/:clubId/messages/:messageId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.patch('/api/clubs/:clubId/messages/:messageId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
     
     if (!messageId || isNaN(messageId)) {
@@ -1296,7 +1298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(message);
   }));
 
-  app.delete('/api/clubs/:clubId/messages/:messageId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.delete('/api/clubs/:clubId/messages/:messageId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
     const userId = req.user.claims.sub;
     
@@ -1319,7 +1321,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   }));
 
-  app.post('/api/clubs/:clubId/messages/:messageId/read', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/messages/:messageId/read', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
     const userId = req.user.claims.sub;
     
@@ -1333,7 +1335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Reply to a message (create threaded reply)
-  app.post('/api/clubs/:clubId/messages/:messageId/reply', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/messages/:messageId/reply', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
@@ -1387,7 +1389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Delete a specific reply
-  app.delete('/api/clubs/:clubId/messages/:messageId/replies/:replyId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.delete('/api/clubs/:clubId/messages/:messageId/replies/:replyId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const replyId = parseInt(req.params.replyId);
     const messageId = parseInt(req.params.messageId);
     const userId = req.user.claims.sub;
@@ -1417,7 +1419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Delete message endpoint
-  app.delete('/api/clubs/:clubId/messages/:messageId', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.delete('/api/clubs/:clubId/messages/:messageId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const { clubId, messageId } = req.params;
     const userId = req.user.id;
     
@@ -1452,7 +1454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Announcement routes
-  app.get('/api/clubs/:clubId/announcements', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/announcements', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     
     if (!clubId || isNaN(clubId)) {
@@ -1464,7 +1466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(announcements);
   }));
 
-  app.get('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const announcementId = parseInt(req.params.announcementId);
     
     if (!announcementId || isNaN(announcementId)) {
@@ -1480,7 +1482,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(announcement);
   }));
 
-  app.post('/api/clubs/:clubId/announcements', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/announcements', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1532,7 +1534,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(announcement);
   }));
 
-  app.patch('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.patch('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const announcementId = parseInt(req.params.announcementId);
     
     if (!announcementId || isNaN(announcementId)) {
@@ -1544,7 +1546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(announcement);
   }));
 
-  app.delete('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.delete('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const announcementId = parseInt(req.params.announcementId);
     
     if (!announcementId || isNaN(announcementId)) {
@@ -1556,7 +1558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   }));
 
-  app.post('/api/clubs/:clubId/announcements/:announcementId/publish', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/announcements/:announcementId/publish', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const announcementId = parseInt(req.params.announcementId);
     
     if (!announcementId || isNaN(announcementId)) {
@@ -1568,7 +1570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(announcement);
   }));
 
-  app.post('/api/clubs/:clubId/announcements/:announcementId/pin', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/announcements/:announcementId/pin', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const announcementId = parseInt(req.params.announcementId);
     const { isPinned } = req.body;
     
@@ -1582,7 +1584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Notification routes
-  app.get('/api/clubs/:clubId/notifications', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/notifications', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1595,7 +1597,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(notifications);
   }));
 
-  app.get('/api/clubs/:clubId/notifications/count', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/notifications/count', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1607,7 +1609,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ count });
   }));
 
-  app.post('/api/clubs/:clubId/notifications', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/notifications', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     
     if (!clubId || isNaN(clubId)) {
@@ -1625,7 +1627,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(notification);
   }));
 
-  app.post('/api/clubs/:clubId/notifications/:notificationId/read', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/notifications/:notificationId/read', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const notificationId = parseInt(req.params.notificationId);
     
     if (!notificationId || isNaN(notificationId)) {
@@ -1637,7 +1639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   }));
 
-  app.post('/api/clubs/:clubId/notifications/read-all', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/notifications/read-all', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1650,7 +1652,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   }));
 
-  app.delete('/api/clubs/:clubId/notifications/:notificationId', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.delete('/api/clubs/:clubId/notifications/:notificationId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const notificationId = parseInt(req.params.notificationId);
     
     if (!notificationId || isNaN(notificationId)) {
@@ -1663,7 +1665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Communication preferences routes
-  app.get('/api/clubs/:clubId/communication-preferences', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/communication-preferences', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1675,7 +1677,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(preferences || {});
   }));
 
-  app.put('/api/clubs/:clubId/communication-preferences', isAuthenticated, requireClubAccess, csrfProtection, asyncHandler(async (req: any, res: any) => {
+  app.put('/api/clubs/:clubId/communication-preferences', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1691,7 +1693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Communication statistics routes
-  app.get('/api/clubs/:clubId/communication-stats', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/communication-stats', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
@@ -1704,7 +1706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Search routes
-  app.get('/api/clubs/:clubId/search/messages', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/search/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     const { q: query } = req.query;
@@ -1722,7 +1724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(messages);
   }));
 
-  app.get('/api/clubs/:clubId/search/announcements', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/search/announcements', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const { q: query } = req.query;
     

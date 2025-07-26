@@ -1,16 +1,13 @@
 /**
- * Firebase configuration for Google and Facebook authentication
- * Supports multiple authentication providers alongside existing Replit auth
+ * Firebase configuration for Google authentication only
+ * Clean implementation without Facebook support
  */
 
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
-  signInWithPopup, 
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider, 
-  FacebookAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type User as FirebaseUser
@@ -29,63 +26,39 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// Configure providers
+// Configure Google provider
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
-
-const facebookProvider = new FacebookAuthProvider();
-facebookProvider.addScope('email');
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 /**
  * Sign in with Google using popup
  */
-export const signInWithGoogle = async () => {
+export const signInWithGoogle = async (): Promise<FirebaseUser> => {
   try {
+    console.log('Starting Google sign-in...');
     const result = await signInWithPopup(auth, googleProvider);
+    console.log('Google sign-in successful:', {
+      uid: result.user.uid,
+      email: result.user.email,
+      displayName: result.user.displayName
+    });
     return result.user;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Google sign-in error:', error);
-    throw error;
-  }
-};
-
-/**
- * Sign in with Facebook using popup
- */
-export const signInWithFacebook = async () => {
-  try {
-    const result = await signInWithPopup(auth, facebookProvider);
-    return result.user;
-  } catch (error) {
-    console.error('Facebook sign-in error:', error);
-    throw error;
-  }
-};
-
-/**
- * Sign in with Google using redirect (better for mobile)
- */
-export const signInWithGoogleRedirect = () => {
-  return signInWithRedirect(auth, googleProvider);
-};
-
-/**
- * Sign in with Facebook using redirect (better for mobile)
- */
-export const signInWithFacebookRedirect = () => {
-  return signInWithRedirect(auth, facebookProvider);
-};
-
-/**
- * Handle redirect result after OAuth redirect
- */
-export const handleAuthRedirect = async () => {
-  try {
-    const result = await getRedirectResult(auth);
-    return result?.user || null;
-  } catch (error) {
-    console.error('Auth redirect error:', error);
+    
+    // Handle specific Firebase Auth errors
+    if (error.code === 'auth/popup-closed-by-user') {
+      throw new Error('Sign-in was cancelled');
+    } else if (error.code === 'auth/popup-blocked') {
+      throw new Error('Popup was blocked by browser');
+    } else if (error.code === 'auth/cancelled-popup-request') {
+      throw new Error('Another popup is already open');
+    }
+    
     throw error;
   }
 };
@@ -93,8 +66,14 @@ export const handleAuthRedirect = async () => {
 /**
  * Sign out from Firebase
  */
-export const signOut = () => {
-  return firebaseSignOut(auth);
+export const signOut = async (): Promise<void> => {
+  try {
+    await firebaseSignOut(auth);
+    console.log('Firebase sign-out successful');
+  } catch (error) {
+    console.error('Firebase sign-out error:', error);
+    throw error;
+  }
 };
 
 /**
@@ -107,7 +86,7 @@ export const onAuthStateChange = (callback: (user: FirebaseUser | null) => void)
 /**
  * Get current Firebase user
  */
-export const getCurrentUser = () => {
+export const getCurrentUser = (): FirebaseUser | null => {
   return auth.currentUser;
 };
 
@@ -116,14 +95,14 @@ export const getCurrentUser = () => {
  */
 export const extractUserData = (user: FirebaseUser) => {
   return {
-    uid: user.uid,  // Backend expects 'uid' not 'id'
+    uid: user.uid,
     email: user.email,
     displayName: user.displayName,
     photoURL: user.photoURL,
-    authProvider: getProviderFromProviderId(user.providerData[0]?.providerId),
+    authProvider: 'google',
     providerUserId: user.uid,
     providerData: {
-      providerId: user.providerData[0]?.providerId,
+      providerId: user.providerData[0]?.providerId || 'google.com',
       displayName: user.displayName,
       photoURL: user.photoURL,
       phoneNumber: user.phoneNumber,
@@ -132,15 +111,33 @@ export const extractUserData = (user: FirebaseUser) => {
 };
 
 /**
- * Helper to determine auth provider from provider ID
+ * Send user data to backend after Firebase authentication
  */
-const getProviderFromProviderId = (providerId?: string): string => {
-  switch (providerId) {
-    case 'google.com':
-      return 'google';
-    case 'facebook.com':
-      return 'facebook';
-    default:
-      return 'firebase';
+export const authenticateWithBackend = async (user: FirebaseUser): Promise<boolean> => {
+  try {
+    console.log('Sending user data to backend...');
+    const userData = extractUserData(user);
+    
+    const response = await fetch('/api/auth/firebase', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ userData }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Backend authentication failed:', errorData);
+      throw new Error(`Backend auth failed: ${errorData.error || 'Unknown error'}`);
+    }
+
+    const result = await response.json();
+    console.log('Backend authentication successful:', result);
+    return true;
+  } catch (error) {
+    console.error('Backend authentication error:', error);
+    throw error;
   }
 };

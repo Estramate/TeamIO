@@ -7,10 +7,13 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ClubThemeProvider } from "@/contexts/ClubThemeContext";
 import { PageProvider } from "@/contexts/PageContext";
 import { useAuth } from "@/hooks/useAuth";
-import { lazy, Suspense } from 'react';
+import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { DashboardSkeleton, CardSkeleton } from '@/components/ui/loading-skeleton';
 import { Landing } from "@/pages/landing";
+import { LoginPage } from "@/pages/LoginPage";
+import { OnboardingWizard } from "@/components/auth/OnboardingWizard";
 import Layout from "@/components/layout";
 import NotFound from "@/pages/not-found";
 
@@ -62,8 +65,27 @@ function AuthenticatedApp() {
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-  
+  const { isAuthenticated: replitAuth, isLoading: replitLoading } = useAuth();
+  const { isAuthenticated: firebaseAuth, loading: firebaseLoading } = useFirebaseAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [needsClubSelection, setNeedsClubSelection] = useState(false);
+
+  // Check if user is authenticated with either provider
+  const isAuthenticated = replitAuth || firebaseAuth;
+  const isLoading = replitLoading || firebaseLoading;
+
+  // Check if authenticated user needs onboarding
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      // For new Firebase users who haven't joined a club yet
+      // This would be determined by checking user's club memberships
+      // For now, we'll show onboarding for Firebase auth users without clubs
+      if (firebaseAuth && !replitAuth) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [isAuthenticated, isLoading, firebaseAuth, replitAuth]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -74,8 +96,32 @@ function Router() {
       </div>
     );
   }
-  
-  return isAuthenticated ? <AuthenticatedApp /> : <Landing />;
+
+  // Show login page for unauthenticated users
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  // Show onboarding for new Firebase users
+  if (showOnboarding) {
+    return (
+      <>
+        <AuthenticatedApp />
+        <OnboardingWizard 
+          isOpen={showOnboarding}
+          onComplete={(clubId) => {
+            setShowOnboarding(false);
+            if (clubId) {
+              // Redirect or refresh to show club data
+              window.location.reload();
+            }
+          }}
+        />
+      </>
+    );
+  }
+
+  return <AuthenticatedApp />;
 }
 
 function App() {

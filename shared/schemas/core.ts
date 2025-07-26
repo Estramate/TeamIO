@@ -12,6 +12,7 @@ import {
   index,
   serial,
   integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
@@ -28,13 +29,22 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table (required for Replit Auth)
+// User storage table (supports multiple auth providers)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  // OAuth provider information
+  authProvider: varchar("auth_provider", { length: 50 }).notNull().default("replit"), // replit, google, facebook
+  providerUserId: varchar("provider_user_id"), // original user ID from provider
+  providerData: jsonb("provider_data"), // additional provider-specific data
+  // User preferences and status
+  hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
+  preferredLanguage: varchar("preferred_language", { length: 10 }).default("de"),
+  isActive: boolean("is_active").default(true),
+  lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

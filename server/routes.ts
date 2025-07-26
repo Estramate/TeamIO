@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupFirebaseAuth, isAuthenticatedEnhanced } from "./firebaseAuth";
 import { requireClubAccess, csrfProtection, generateCSRFToken } from "./security";
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
 import { handleErrorReports, handlePerformanceMetrics } from "./error-reporting";
@@ -35,8 +36,11 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
+  // Auth middleware (Replit OpenID Connect)
   await setupAuth(app);
+  
+  // Firebase auth setup (Google & Facebook)
+  setupFirebaseAuth(app);
 
   // CSRF token endpoint
   app.get('/api/csrf-token', isAuthenticated, generateCSRFToken);
@@ -45,8 +49,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/errors', handleErrorReports);
   app.post('/api/performance', handlePerformanceMetrics);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+  // Auth routes (supports both Replit and Firebase auth)
+  app.get('/api/auth/user', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.claims.sub;
     if (!userId) {
       throw new AuthorizationError('User ID not found in token');

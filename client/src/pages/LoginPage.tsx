@@ -17,7 +17,7 @@ import { Info, Mail, ExternalLink } from 'lucide-react';
 export function LoginPage() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState('replit');
+  const [activeTab, setActiveTab] = useState('email');
 
   useEffect(() => {
     // Redirect if already authenticated
@@ -66,28 +66,28 @@ export function LoginPage() {
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="replit" className="flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4" />
-                  Replit Login
-                </TabsTrigger>
                 <TabsTrigger value="email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
                   E-Mail Login
                 </TabsTrigger>
+                <TabsTrigger value="replit" className="flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  Replit Login
+                </TabsTrigger>
               </TabsList>
+              
+              <TabsContent value="email" className="mt-6">
+                <EmailLoginForm 
+                  onSuccess={handleLoginSuccess}
+                  onSwitchToReplit={() => setActiveTab('replit')}
+                />
+              </TabsContent>
               
               <TabsContent value="replit" className="mt-6">
                 <SocialLoginButtons 
                   title="Mit Replit anmelden"
                   description="Schnell und einfach mit Ihrem Replit-Konto"
                   onSuccess={handleLoginSuccess}
-                />
-              </TabsContent>
-              
-              <TabsContent value="email" className="mt-6">
-                <EmailLoginForm 
-                  onSuccess={handleLoginSuccess}
-                  onSwitchToReplit={() => setActiveTab('replit')}
                 />
               </TabsContent>
             </Tabs>

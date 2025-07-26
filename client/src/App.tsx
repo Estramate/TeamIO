@@ -98,6 +98,14 @@ function Router() {
   // Check if authenticated user needs club selection or auto-select first club
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
+      // Check if user explicitly wants to join another club (reset flag)
+      const forceOnboarding = sessionStorage.getItem('force_onboarding');
+      if (forceOnboarding === 'true') {
+        sessionStorage.removeItem('force_onboarding');
+        setShowOnboarding(true);
+        return;
+      }
+
       // If no club is selected, check user's membership status
       if (!selectedClub) {
         // First check if user has ANY memberships (active or inactive)

@@ -3,17 +3,20 @@
  * Shows status and information while waiting for approval
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, Clock, CheckCircle, XCircle, UserPlus, Building, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useClubStore } from '@/lib/clubStore';
+import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
 
 export function PendingMembershipDashboard() {
   const { toast } = useToast();
   const { setSelectedClub } = useClubStore();
+  const queryClient = useQueryClient();
+  const { signOut } = useFirebaseAuth();
 
   // Get user's membership status
   const { data: membershipStatus, isLoading } = useQuery({
@@ -37,56 +40,74 @@ export function PendingMembershipDashboard() {
   };
 
   const handleJoinAnotherClub = () => {
-    // Clear club selection and force onboarding to show
-    setSelectedClub(null);
-    localStorage.removeItem('selectedClub');
-    sessionStorage.removeItem('selectedClub');
-    
-    toast({
-      title: "Vereinsauswahl zurückgesetzt",
-      description: "Sie können jetzt einem anderen Verein beitreten.",
-    });
-    
-    // Reload to trigger onboarding wizard
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+    try {
+      // Clear all club-related data
+      setSelectedClub(null);
+      localStorage.removeItem('selectedClub');
+      sessionStorage.removeItem('selectedClub');
+      
+      // Set flag to force onboarding on next page load
+      sessionStorage.setItem('force_onboarding', 'true');
+      
+      // Clear cache to force fresh data
+      queryClient.clear();
+      
+      toast({
+        title: "Vereinsauswahl zurückgesetzt",
+        description: "Weiterleitung zur Vereinsauswahl...",
+      });
+      
+      // Force a full page reload to reset all state and show onboarding
+      setTimeout(() => {
+        window.location.href = window.location.origin;
+      }, 500);
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Vereinsauswahl konnte nicht zurückgesetzt werden.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLogout = async () => {
     try {
-      // Clear all local state first
-      setSelectedClub(null);
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Show logout notification
       toast({
         title: "Abmeldung...",
         description: "Sie werden abgemeldet.",
       });
 
-      // Try Firebase logout first if available
-      if (window.firebase && window.firebase.auth) {
+      // Clear all local data FIRST
+      setSelectedClub(null);
+      queryClient.clear();
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Firebase logout if available
+      if (signOut) {
         try {
-          await window.firebase.auth().signOut();
-        } catch (e) {
-          console.log('Firebase logout not available or failed');
+          await signOut();
+        } catch (firebaseError) {
+          console.log('Firebase logout failed:', firebaseError);
         }
       }
 
-      // Server-side logout with delay for toast to show
-      setTimeout(() => {
-        sessionStorage.setItem('just_logged_out', 'true');
-        window.location.href = '/api/logout';
-      }, 500);
+      // Mark logout state and redirect to server logout
+      sessionStorage.setItem('just_logged_out', 'true');
+      
+      // Immediate redirect to logout endpoint
+      window.location.href = '/api/logout';
       
     } catch (error) {
+      console.error('Logout error:', error);
       toast({
         title: "Fehler beim Abmelden",
-        description: "Es gab ein Problem beim Abmelden. Bitte versuchen Sie es erneut.",
+        description: "Versuche direkte Abmeldung...",
         variant: "destructive",
       });
+      
+      // Fallback: direct logout
+      window.location.href = '/api/logout';
     }
   };
 

@@ -36,8 +36,9 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
 
   // Get available clubs
   const { data: clubs, isLoading } = useQuery({
-    queryKey: ['/api/clubs'],
+    queryKey: ['/api/clubs/public'],
     enabled: isOpen && (step === 'browse' || step === 'join'),
+    retry: false,
   });
 
   // Create new club mutation

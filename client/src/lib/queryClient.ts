@@ -49,7 +49,7 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: false,
-      enabled: false, // Disable by default - components must explicitly enable
+      // Don't disable by default - let components control with enabled
     },
     mutations: {
       retry: false,

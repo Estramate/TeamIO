@@ -60,6 +60,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { data: clubs } = useQuery({
     queryKey: ['/api/clubs'],
     retry: false,
+    enabled: true, // This should work for authenticated users
   });
 
   const { data: members } = useQuery({

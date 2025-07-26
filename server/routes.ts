@@ -174,7 +174,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log('Firebase token expired:', { exp: userData.exp, now: Date.now() });
         }
       } catch (error) {
-        console.log('Firebase token decode error:', error.message, 'Cookie:', firebaseAuth?.substring(0, 50) + '...');
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.log('Firebase token decode error:', errorMessage, 'Cookie:', firebaseAuth?.substring(0, 50) + '...');
       }
     }
 
@@ -230,7 +231,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(teamAssignments);
   }));
 
-  // Club routes
+  // Public clubs route for landing page/onboarding (no auth required)
+  app.get('/api/clubs/public', asyncHandler(async (req: any, res: any) => {
+    const allClubs = await storage.getAllClubs();
+    logger.info('Public clubs retrieved', { count: allClubs.length, requestId: req.id });
+    res.json(allClubs);
+  }));
+
+  // Club routes (authenticated - returns user's clubs with membership info)
   app.get('/api/clubs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.claims.sub;
     if (!userId) {

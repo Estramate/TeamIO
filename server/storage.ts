@@ -75,6 +75,7 @@ export interface IStorage {
 
   // Club operations
   getClubs(): Promise<Club[]>;
+  getAllClubs(): Promise<Club[]>; // Public method for landingpage/onboarding
   getClub(id: number): Promise<Club | undefined>;
   createClub(club: InsertClub): Promise<Club>;
   updateClub(id: number, club: Partial<InsertClub>): Promise<Club>;
@@ -294,18 +295,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getUserByEmailAndProvider(email: string, authProvider: string): Promise<User | undefined> {
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(and(eq(users.email, email), eq(users.authProvider, authProvider)));
-    return user;
-  }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
-  }
 
   async updateUserLastLogin(id: string): Promise<void> {
     await db
@@ -316,6 +306,11 @@ export class DatabaseStorage implements IStorage {
 
   // Club operations
   async getClubs(): Promise<Club[]> {
+    return await db.select().from(clubs).orderBy(asc(clubs.name));
+  }
+
+  async getAllClubs(): Promise<Club[]> {
+    // Public method to get all clubs for landing page/onboarding
     return await db.select().from(clubs).orderBy(asc(clubs.name));
   }
 

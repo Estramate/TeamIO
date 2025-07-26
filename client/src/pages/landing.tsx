@@ -26,41 +26,41 @@ export function Landing() {
   const features = [
     {
       icon: Users,
-      title: "Mitgliederverwaltung",
-      description: "Zentrale Verwaltung aller Mitglieder mit Profilen, Kontaktdaten und Rollen. Kategorisierung nach Teams, Alter und Aktivitätsstatus."
+      title: "Smart Mitgliederverwaltung",
+      description: "Erweiterte Mitgliederprofile mit Rollen-Management, Multi-Club-Support und intelligenter Suche. Vollständig WCAG-barrierefrei mit Tastaturnavigation."
     },
     {
       icon: Trophy,
-      title: "Team-Organisation", 
-      description: "Verwaltung von Mannschaften und Spielern mit Aufstellungen, Trainingsgruppen und Leistungsübersicht."
+      title: "Team & Spieler Hub", 
+      description: "Professionelle Team-Organisation mit Spielerzuordnungen, Vertragsmanagement und Leistungsstatistiken. Drag-and-Drop Interface für einfache Verwaltung."
     },
     {
       icon: Calendar,
-      title: "Terminplanung",
-      description: "Koordination von Trainings, Spielen und Veranstaltungen mit Verfügbarkeitsprüfung und Benachrichtigungen."
+      title: "Real-Time Terminplanung",
+      description: "Interaktive Kalender mit Drag-and-Drop, Verfügbarkeitsprüfung und automatischen Konfliktmeldungen. Mehrere Ansichten (Tag, Woche, Monat)."
     },
     {
       icon: MapPin,
-      title: "Anlagenverwaltung", 
-      description: "Buchung und Verwaltung von Sportplätzen, Hallen und Räumen mit Verfügbarkeitsübersicht."
+      title: "Facility Management", 
+      description: "Intelligente Anlagenbuchung mit Echtzeit-Verfügbarkeit, wiederkehrenden Terminen und Konfliktprävention. Vollständig digitalisierte Raumverwaltung."
     },
     {
       icon: BarChart3,
-      title: "Finanz-Dashboard",
-      description: "Übersicht über Mitgliedsbeiträge, Ausgaben und Budgetplanung mit grundlegenden Auswertungen."
+      title: "Enterprise Dashboard",
+      description: "Live-Statistiken mit interaktiven Charts, automatisierte PDF-Berichte und Finanz-Tracking. Performance-optimiert mit virtualisierter Datenbehandlung."
     },
     {
       icon: MessageSquare,
-      title: "Kommunikation",
-      description: "Interne Kommunikationstools für Trainer, Spieler und Vereinsführung mit Benachrichtigungen."
+      title: "WebSocket Kommunikation",
+      description: "Echtzeit-Messaging mit WebSocket-Technologie, Benachrichtigungssystem und Kommunikations-Hub. Vollständig responsiv und mobiloptimiert."
     }
   ];
 
   const stats = [
     { number: "100%", label: "Cloud-basiert" },
-    { number: "24/7", label: "Verfügbar" },
-    { number: "DSGVO", label: "Konform" },
-    { number: "2025", label: "Modern" }
+    { number: "Real-Time", label: "WebSocket" },
+    { number: "WCAG", label: "Barrierefrei" },
+    { number: "Enterprise", label: "Standard" }
   ];
 
   const testimonials = [
@@ -95,12 +95,12 @@ export function Landing() {
             {/* Premium badge */}
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Moderne Vereinsverwaltung • 2025</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enterprise-Ready • WCAG-Konform • 2025</span>
             </div>
             
             {/* Hero headline - Clean typography */}
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-light text-gray-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
-              Die Zukunft der
+              Professionelle
               <br />
               <span className="font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
                 Vereinsverwaltung
@@ -109,9 +109,9 @@ export function Landing() {
             
             {/* Elegant subtitle */}
             <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-              Eine moderne All-in-One-Plattform für Sportvereine.
+              Komplette Management-Lösung für Sportvereine mit Real-Time Dashboard, 
               <br className="hidden sm:block" />
-              Vereinsverwaltung neu gedacht.
+              WebSocket-Kommunikation und Enterprise-Standards.
             </p>
 
             {/* Premium CTA */}
@@ -130,15 +130,15 @@ export function Landing() {
             <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                Kostenlos registrieren
+                Multi-Provider Login
               </div>
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                Keine Kreditkarte erforderlich
+                Real-Time WebSocket
               </div>
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                DSGVO-konform
+                WCAG-Barrierefrei
               </div>
             </div>
           </div>
@@ -312,9 +312,9 @@ export function Landing() {
           </h2>
           
           <p className="text-xl text-gray-300 dark:text-gray-600 mb-12 max-w-3xl mx-auto font-light">
-            Starten Sie noch heute und erleben Sie, wie einfach
+            Enterprise-Standards mit Real-Time Dashboard, WebSocket-Kommunikation und WCAG-Barrierefreiheit.
             <br className="hidden sm:block" />
-            moderne Vereinsverwaltung sein kann.
+            Professional. Sicher. Zukunftssicher.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -330,9 +330,9 @@ export function Landing() {
 
           {/* Final trust indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 mt-12 text-sm text-gray-400 dark:text-gray-600">
-            <span>✓ Kostenlos starten</span>
-            <span>✓ Jederzeit kündbar</span>
-            <span>✓ Deutscher Support</span>
+            <span>✓ TypeScript Enterprise-Ready</span>
+            <span>✓ WebSocket Real-Time</span>
+            <span>✓ WCAG 2.1 AA Konform</span>
           </div>
         </div>
       </section>

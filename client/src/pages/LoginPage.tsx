@@ -3,18 +3,21 @@
  * Simplified login with only Replit OAuth support
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons';
+import { EmailLoginForm } from '@/components/auth/EmailLoginForm';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Info, Mail, ExternalLink } from 'lucide-react';
 
 export function LoginPage() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState('replit');
 
   useEffect(() => {
     // Redirect if already authenticated
@@ -61,11 +64,33 @@ export function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <SocialLoginButtons 
-              title="Anmelden"
-              description="Wählen Sie Ihre bevorzugte Anmeldemethode"
-              onSuccess={handleLoginSuccess}
-            />
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="replit" className="flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  Replit Login
+                </TabsTrigger>
+                <TabsTrigger value="email" className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  E-Mail Login
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="replit" className="mt-6">
+                <SocialLoginButtons 
+                  title="Mit Replit anmelden"
+                  description="Schnell und einfach mit Ihrem Replit-Konto"
+                  onSuccess={handleLoginSuccess}
+                />
+              </TabsContent>
+              
+              <TabsContent value="email" className="mt-6">
+                <EmailLoginForm 
+                  onSuccess={handleLoginSuccess}
+                  onSwitchToReplit={() => setActiveTab('replit')}
+                />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
@@ -73,8 +98,10 @@ export function LoginPage() {
         <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
           <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           <AlertDescription className="text-blue-800 dark:text-blue-200">
-            <strong>Neuer Benutzer?</strong> Melden Sie sich einfach mit Ihrem Replit-Konto an, 
-            um sofort loszulegen.
+            <strong>Neuer Benutzer?</strong> {activeTab === 'replit' 
+              ? 'Melden Sie sich einfach mit Ihrem Replit-Konto an, um sofort loszulegen.'
+              : 'Registrieren Sie sich über eine E-Mail-Einladung von Ihrem Vereinsadministrator.'
+            }
           </AlertDescription>
         </Alert>
 

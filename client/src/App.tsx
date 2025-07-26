@@ -14,6 +14,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { DashboardSkeleton, CardSkeleton } from '@/components/ui/loading-skeleton';
 import { Landing } from "@/pages/Landing";
 import { LoginPage } from "@/pages/LoginPage";
+import { RegisterPage } from "@/pages/RegisterPage";
 import { OnboardingWizard } from "@/components/auth/OnboardingWizard";
 import { PendingMembershipDashboard } from "@/components/PendingMembershipDashboard";
 import Layout from "@/components/layout";
@@ -160,6 +161,7 @@ function Router() {
     return (
       <Switch>
         <Route path="/login" component={LoginPage} />
+        <Route path="/register" component={RegisterPage} />
         <Route component={Landing} />
       </Switch>
     );

@@ -1104,6 +1104,20 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  async deleteMessage(messageId: number): Promise<void> {
+    // Soft delete by setting deletedAt timestamp
+    await db
+      .update(messages)
+      .set({ deletedAt: new Date() })
+      .where(eq(messages.id, messageId));
+      
+    // Also delete related replies
+    await db
+      .update(messages)
+      .set({ deletedAt: new Date() })
+      .where(eq(messages.threadId, messageId));
+  }
+
   async createMessage(messageData: InsertMessage): Promise<Message> {
     const [message] = await db.insert(messages).values(messageData).returning();
     return message;

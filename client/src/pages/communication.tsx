@@ -330,14 +330,10 @@ export default function Communication() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="messages" className="flex items-center gap-2">
             <MessageCircle className="w-4 h-4" />
             Nachrichten
-          </TabsTrigger>
-          <TabsTrigger value="announcements" className="flex items-center gap-2">
-            <Megaphone className="w-4 h-4" />
-            Ankündigungen
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
@@ -386,49 +382,79 @@ export default function Communication() {
                     )}
                   </CardContent>
                   
-                  {/* Reply Count and Actions */}
+                  {/* Actions */}
                   <div className="px-6 py-2 border-t bg-gray-50">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        {(message as any).replyCount > 0 && (
-                          <span className="flex items-center gap-1">
-                            <MessageCircle className="w-4 h-4" />
-                            {(message as any).replyCount} {(message as any).replyCount === 1 ? 'Antwort' : 'Antworten'}
-                          </span>
-                        )}
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => setSelectedMessage(message)}
-                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded-md font-medium"
-                        >
-                          <MessageCircle className="w-3 h-3 mr-1" />
-                          Antworten
-                        </Button>
-                      </div>
                       <Button 
                         variant="ghost" 
-                        size="sm" 
-                        onClick={() => {
-                          try {
-                            markMessageAsRead(message.id);
-                            toast({
-                              title: "Erfolgreich",
-                              description: "Nachricht als gelesen markiert",
-                            });
-                          } catch (error) {
-                            console.error('Error marking message as read:', error);
-                            toast({
-                              title: "Hinweis",
-                              description: "Nachricht wurde angezeigt",
-                            });
-                          }
+                        size="sm"
+                        onClick={() => setSelectedMessage(message)}
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded-md font-medium"
+                      >
+                        <MessageCircle className="w-3 h-3 mr-1" />
+                        {(message as any).replyCount > 0 
+                          ? `${(message as any).replyCount} ${(message as any).replyCount === 1 ? 'Antwort' : 'Antworten'} · Antworten`
+                          : 'Antworten'
+                        }
+                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            try {
+                              markMessageAsRead(message.id);
+                              toast({
+                                title: "Erfolgreich",
+                                description: "Nachricht als gelesen markiert",
+                              });
+                            } catch (error) {
+                              console.error('Error marking message as read:', error);
+                              toast({
+                                title: "Hinweis",
+                                description: "Nachricht wurde angezeigt",
+                              });
+                            }
                         }}
                         className="text-gray-500 hover:text-gray-700"
                       >
                         <Eye className="w-4 h-4 mr-1" />
                         Als gelesen
                       </Button>
+                      {/* Delete button for message creator */}
+                      {message.senderId === user?.id && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (confirm('Möchten Sie diese Nachricht wirklich löschen?')) {
+                              try {
+                                const response = await fetch(`/api/clubs/${selectedClub?.id}/messages/${message.id}`, {
+                                  method: 'DELETE',
+                                  credentials: 'include',
+                                });
+                                if (response.ok) {
+                                  toast({
+                                    title: "Nachricht gelöscht",
+                                    description: "Die Nachricht wurde erfolgreich gelöscht",
+                                  });
+                                  queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/messages`] });
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Fehler",
+                                  description: "Nachricht konnte nicht gelöscht werden",
+                                  variant: "destructive",
+                                });
+                              }
+                            }
+                          }}
+                          className="text-gray-500 hover:text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -440,68 +466,6 @@ export default function Communication() {
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Keine Nachrichten</h3>
                   <p className="text-gray-600 text-center">
                     Sie haben noch keine Nachrichten erhalten. Sobald Ihnen jemand schreibt, erscheinen die Nachrichten hier.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
-
-        {/* Announcements Tab */}
-        <TabsContent value="announcements" className="space-y-4" style={{ touchAction: 'pan-y', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Ankündigungen</h2>
-            <Button onClick={() => setShowNewAnnouncement(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Neue Ankündigung
-            </Button>
-          </div>
-
-          <div className="grid gap-4" style={{ touchAction: 'pan-y', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-            {announcements?.length > 0 ? (
-              announcements.map((announcement) => (
-                <Card key={announcement.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      {announcement.isPinned && <Pin className="w-5 h-5 text-blue-600" />}
-                      {announcement.title}
-                    </CardTitle>
-                    <CardDescription>
-                      Veröffentlicht von {announcement.author?.firstName} {announcement.author?.lastName} • 
-                      {formatDistanceToNow(new Date(announcement.createdAt), { addSuffix: true, locale: de })}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700">{announcement.content}</p>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <div className="flex gap-2">
-                      <Badge variant="secondary">
-                        <Megaphone className="w-3 h-3 mr-1" />
-                        {announcement.category === 'general' ? 'Allgemein' :
-                         announcement.category === 'training' ? 'Training' :
-                         announcement.category === 'event' ? 'Veranstaltung' :
-                         announcement.category === 'important' ? 'Wichtig' : announcement.category}
-                      </Badge>
-                      {announcement.isPinned && <Badge variant="outline">Angepinnt</Badge>}
-                      <Badge variant={announcement.priority === 'high' ? 'destructive' : announcement.priority === 'medium' ? 'default' : 'secondary'}>
-                        {announcement.priority === 'high' ? 'Hoch' : announcement.priority === 'medium' ? 'Mittel' : 'Normal'}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Eye className="w-4 h-4 mr-1" />
-                      <span>{announcement.viewCount} Aufrufe</span>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))
-            ) : (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Megaphone className="w-12 h-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Keine Ankündigungen</h3>
-                  <p className="text-gray-600 text-center">
-                    Es wurden noch keine Ankündigungen veröffentlicht.
                   </p>
                 </CardContent>
               </Card>

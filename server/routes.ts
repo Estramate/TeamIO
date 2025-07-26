@@ -1130,6 +1130,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Delete message endpoint
+  app.delete('/api/clubs/:clubId/messages/:messageId', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
+    const { clubId, messageId } = req.params;
+    const userId = req.user.id;
+    
+    try {
+      logger.info('Deleting message', { messageId, clubId, userId, requestId: req.id });
+      
+      // Check if user is the message creator
+      const message = await storage.getMessage(Number(messageId));
+      if (!message) {
+        throw new NotFoundError('Message not found');
+      }
+      
+      if (message.senderId !== userId) {
+        throw new AuthorizationError('You can only delete your own messages');
+      }
+      
+      // Soft delete the message
+      await storage.deleteMessage(Number(messageId));
+      
+      logger.info('Message deleted successfully', { messageId, clubId, userId, requestId: req.id });
+      res.status(204).send();
+    } catch (error) {
+      logger.error('Error deleting message', { 
+        error: error instanceof Error ? error.message : 'Unknown error', 
+        messageId, 
+        clubId, 
+        userId, 
+        requestId: req.id 
+      });
+      throw error;
+    }
+  }));
+
   // Announcement routes
   app.get('/api/clubs/:clubId/announcements', isAuthenticated, requireClubAccess, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);

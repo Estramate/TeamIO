@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
+import { SiReplit } from "react-icons/si";
 import { Loader2 } from "lucide-react";
 
 interface SocialLoginButtonsProps {
@@ -49,80 +50,81 @@ export function SocialLoginButtons({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Google Login Button */}
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full h-12 text-base font-medium border-2 hover:bg-blue-50 dark:hover:bg-blue-950"
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-        >
-          {loading ? (
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          ) : (
-            <FaGoogle className="mr-2 h-5 w-5 text-red-500" />
-          )}
-          Mit Google anmelden
-        </Button>
+    <div className="w-full max-w-md mx-auto space-y-6">
+      {/* Replit Auth - Primary Option */}
+      <Card className="border-2 border-primary/20">
+        <CardContent className="p-6">
+          <Button
+            size="lg"
+            className="w-full h-12 bg-primary hover:bg-primary/90 font-medium"
+            onClick={() => window.location.href = "/api/login"}
+          >
+            <SiReplit className="mr-2 h-5 w-5" />
+            Mit Replit anmelden
+          </Button>
+          <p className="text-xs text-center text-muted-foreground mt-3">
+            Empfohlene Anmeldeoption für die beste Erfahrung
+          </p>
+        </CardContent>
+      </Card>
 
-        {/* Facebook Login Button */}
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full h-12 text-base font-medium border-2 hover:bg-blue-50 dark:hover:bg-blue-950"
-          onClick={handleFacebookSignIn}
-          disabled={loading}
-        >
-          {loading ? (
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          ) : (
-            <FaFacebook className="mr-2 h-5 w-5 text-blue-600" />
-          )}
-          Mit Facebook anmelden
-        </Button>
+      {/* Alternative Options */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">oder</span>
+        </div>
+      </div>
+      
+      <Card>
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-xl font-semibold">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* Google Login Button */}
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full h-11 text-base font-medium border-2 hover:bg-red-50 dark:hover:bg-red-950"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <FaGoogle className="mr-2 h-5 w-5 text-red-500" />
+            )}
+            Mit Google anmelden
+          </Button>
 
-        {/* Error Display */}
-        {error && (
-          <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800">
-            {error}
-          </div>
-        )}
+          {/* Facebook Login Button */}
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full h-11 text-base font-medium border-2 hover:bg-blue-50 dark:hover:bg-blue-950"
+            onClick={handleFacebookSignIn}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <FaFacebook className="mr-2 h-5 w-5 text-blue-600" />
+            )}
+            Mit Facebook anmelden
+          </Button>
 
-        {/* Separator and existing auth options */}
-        {showExistingAuth && (
-          <>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Oder
-                </span>
-              </div>
+          {/* Error Display */}
+          {error && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800">
+              {error}
             </div>
-
-            {/* Replit Auth Link */}
-            <div className="text-center">
-              <Button
-                variant="link"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => window.location.href = '/api/login'}
-              >
-                Mit Replit-Konto anmelden
-              </Button>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -159,6 +161,14 @@ export function CompactSocialLoginButtons() {
         ) : (
           <FaFacebook className="h-4 w-4" />
         )}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => window.location.href = '/api/login'}
+        className="flex-1"
+      >
+        <SiReplit className="h-4 w-4" />
       </Button>
     </div>
   );

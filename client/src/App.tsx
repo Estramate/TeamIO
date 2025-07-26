@@ -97,9 +97,14 @@ function Router() {
     );
   }
 
-  // Show landing page for unauthenticated users
+  // Show landing page for unauthenticated users  
   if (!isAuthenticated) {
-    return <Landing />;
+    return (
+      <Switch>
+        <Route path="/login" component={LoginPage} />
+        <Route component={Landing} />
+      </Switch>
+    );
   }
 
   // Show onboarding for new Firebase users

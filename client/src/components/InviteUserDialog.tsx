@@ -59,10 +59,7 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
 
   const inviteUserMutation = useMutation({
     mutationFn: async (data: InviteFormData) => {
-      return await apiRequest(`/api/clubs/${clubId}/invitations/send`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return await apiRequest('POST', `/api/clubs/${clubId}/invitations/send`, data);
     },
     onSuccess: () => {
       toast({

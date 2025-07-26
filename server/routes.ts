@@ -2082,46 +2082,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ====== EMAIL INVITATION SYSTEM ======
 
   // Send email invitation
-  app.post('/api/clubs/:clubId/invitations/send', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
-    try {
-      const { clubId } = req.params;
-      const userId = req.user?.id;
-      
-      if (!userId) {
-        return res.status(401).json({ message: 'Benutzer nicht authentifiziert' });
-      }
-
-      // Validate input
-      const validatedData = emailInvitationFormSchema.parse(req.body);
-      
-      const result = await sendUserInvitation({
-        clubId: parseInt(clubId),
-        email: validatedData.email,
-        role: validatedData.role,
-        invitedBy: userId,
-        personalMessage: validatedData.personalMessage
-      });
-
-      if (result.success) {
-        // Log activity
-        await storage.logActivity({
-          clubId: parseInt(clubId),
-          userId,
-          action: 'user_invited',
-          description: `Einladung an ${validatedData.email} als ${validatedData.role} gesendet`,
-          targetResource: 'invitation',
-          targetResourceId: result.invitationId,
-          metadata: { email: validatedData.email, role: validatedData.role }
-        });
-
-        res.json({ message: 'Einladung erfolgreich gesendet', invitationId: result.invitationId });
-      } else {
-        res.status(400).json({ message: result.error });
-      }
-    } catch (error: any) {
-      logger.error('Failed to send invitation', { error: error.message, clubId: req.params.clubId });
-      res.status(500).json({ message: 'Fehler beim Senden der Einladung' });
+  app.post('/api/clubs/:clubId/invitations/send', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    const { email, role, personalMessage } = req.body;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
     }
+    
+    if (!email || !email.includes('@')) {
+      throw new ValidationError('Valid email address is required', 'email');
+    }
+    
+    // Check if user is club admin
+    const adminMembership = await storage.getUserClubMembership(userId, clubId);
+    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+      throw new AuthorizationError('You must be a club administrator to send invitations');
+    }
+    
+    // Check if user already exists and has membership
+    const existingUser = await storage.getUserByEmail(email);
+    if (existingUser) {
+      const existingMembership = await storage.getUserClubMembership(existingUser.id, clubId);
+      if (existingMembership) {
+        throw new ValidationError('User is already a member of this club', 'email');
+      }
+    }
+    
+    // Check for existing pending invitation
+    const existingInvitations = await storage.getClubEmailInvitations(clubId);
+    const pendingInvitation = existingInvitations.find(inv => 
+      inv.email === email && inv.status === 'pending'
+    );
+    
+    if (pendingInvitation) {
+      throw new ValidationError('Invitation already sent to this email', 'email');
+    }
+    
+    // Generate invitation token
+    const crypto = await import('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    
+    // Create invitation record
+    const invitation = await storage.createEmailInvitation({
+      clubId,
+      invitedBy: userId,
+      email,
+      role: role || 'member',
+      token,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    });
+    
+    // Send invitation email
+    const club = await storage.getClub(clubId);
+    const inviter = await storage.getUser(userId);
+    
+    if (club && inviter) {
+      const { sendInvitationEmail } = await import('./emailService');
+      
+      const invitationUrl = `${req.protocol}://${req.get('host')}/register?token=${token}`;
+      
+      const emailSent = await sendInvitationEmail({
+        to: email,
+        clubName: club.name,
+        inviterName: `${inviter.firstName} ${inviter.lastName}`,
+        role: role || 'member',
+        personalMessage,
+        invitationUrl,
+        expiresAt: invitation.expiresAt,
+      });
+      
+      // Log the invitation activity
+      await storage.createActivityLog({
+        clubId,
+        userId,
+        action: 'user_invited',
+        targetResource: 'invitation',
+        targetResourceId: invitation.id,
+        description: `${inviter.firstName} ${inviter.lastName} hat ${email} als ${role === 'club-administrator' ? 'Administrator' : role === 'trainer' ? 'Trainer' : 'Mitglied'} eingeladen`,
+        metadata: { email, role: role || 'member', emailSent },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      logger.info('User invitation sent', { 
+        userId, 
+        clubId, 
+        invitedEmail: email, 
+        role: role || 'member', 
+        emailSent,
+        requestId: req.id 
+      });
+    }
+    
+    res.json({ 
+      message: 'Einladung erfolgreich versendet',
+      invitation: { ...invitation, token: undefined } // Don't expose token
+    });
   }));
 
   // Get club invitations

@@ -439,6 +439,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     const membership = await storage.addUserToClub(membershipData);
     
+    // Log club join request activity
+    const user = await storage.getUser(userId);
+    const club = await storage.getClub(clubId);
+    if (user && club) {
+      await storage.createActivityLog({
+        clubId,
+        userId,
+        action: 'membership_requested',
+        targetResource: 'membership',
+        targetResourceId: membership.id,
+        description: `${user.firstName} ${user.lastName} hat eine Mitgliedschaft im Verein ${club.name} beantragt`,
+        metadata: { role: 'member', status: 'inactive' },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+    }
+    
     logger.info('Club membership request created (inactive)', { 
       membershipId: membership.id, 
       clubId, 
@@ -520,6 +537,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       updatedMembership = await storage.updateClubMembershipById(membershipId, updateData);
       
+      // Log membership approval activity
+      const approvedUser = await storage.getUser(membership.userId);
+      const admin = await storage.getUser(userId);
+      if (approvedUser && admin) {
+        await storage.createActivityLog({
+          clubId,
+          userId,
+          action: 'membership_approved',
+          targetUserId: approvedUser.id,
+          targetResource: 'membership',
+          targetResourceId: membershipId,
+          description: `${admin.firstName} ${admin.lastName} hat die Mitgliedschaft von ${approvedUser.firstName} ${approvedUser.lastName} genehmigt`,
+          metadata: { previousStatus: 'inactive', newStatus: 'active', role: role || membership.role },
+          ipAddress: req.ip,
+          userAgent: req.get('User-Agent'),
+        });
+      }
+      
       logger.info('Membership approved', { 
         membershipId, 
         clubId, 
@@ -529,6 +564,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         requestId: req.id 
       });
     } else {
+      // Log rejection before deletion
+      const rejectedUser = await storage.getUser(membership.userId);
+      const admin = await storage.getUser(userId);
+      if (rejectedUser && admin) {
+        await storage.createActivityLog({
+          clubId,
+          userId,
+          action: 'membership_rejected',
+          targetUserId: rejectedUser.id,
+          targetResource: 'membership',
+          targetResourceId: membershipId,
+          description: `${admin.firstName} ${admin.lastName} hat die Mitgliedschaftsanfrage von ${rejectedUser.firstName} ${rejectedUser.lastName} abgelehnt`,
+          metadata: { previousStatus: 'inactive', action: 'rejected' },
+          ipAddress: req.ip,
+          userAgent: req.get('User-Agent'),
+        });
+      }
+      
       // Reject membership by deleting it
       await storage.deleteClubMembershipById(membershipId);
       

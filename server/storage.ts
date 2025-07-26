@@ -1995,15 +1995,15 @@ export class DatabaseStorage implements IStorage {
           email: users.email,
         },
         targetUser: {
-          id: targetUsers.id,
-          firstName: targetUsers.firstName,
-          lastName: targetUsers.lastName,
-          email: targetUsers.email,
+          id: sql`target_users.id`,
+          firstName: sql`target_users.first_name`,
+          lastName: sql`target_users.last_name`,
+          email: sql`target_users.email`,
         },
       })
       .from(activityLogs)
       .innerJoin(users, eq(activityLogs.userId, users.id))
-      .leftJoin(users.as('targetUsers'), eq(activityLogs.targetUserId, users.as('targetUsers').id))
+      .leftJoin(users.as('target_users'), eq(activityLogs.targetUserId, sql`target_users.id`))
       .where(eq(activityLogs.clubId, clubId))
       .orderBy(desc(activityLogs.createdAt))
       .limit(limit);

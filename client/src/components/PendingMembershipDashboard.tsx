@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Clock, CheckCircle, XCircle, UserPlus, Building, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useClubStore } from '@/lib/clubStore';
-import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
+// Firebase auth removed - using only Replit auth
 
 interface PendingMembershipDashboardProps {
   onJoinAnotherClub?: () => void;
@@ -20,7 +20,7 @@ export function PendingMembershipDashboard({ onJoinAnotherClub }: PendingMembers
   const { toast } = useToast();
   const { setSelectedClub } = useClubStore();
   const queryClient = useQueryClient();
-  const { signOut } = useFirebaseAuth();
+  // Firebase authentication removed - using only Replit auth
 
   // Get user's membership status
   const { data: membershipStatus, isLoading } = useQuery({
@@ -85,14 +85,7 @@ export function PendingMembershipDashboard({ onJoinAnotherClub }: PendingMembers
       localStorage.clear();
       sessionStorage.clear();
 
-      // Firebase logout if available
-      if (signOut) {
-        try {
-          await signOut();
-        } catch (firebaseError) {
-          console.log('Firebase logout failed:', firebaseError);
-        }
-      }
+      // Firebase auth removed - using only Replit auth
 
       // Mark logout state and redirect to server logout
       sessionStorage.setItem('just_logged_out', 'true');
@@ -137,7 +130,7 @@ export function PendingMembershipDashboard({ onJoinAnotherClub }: PendingMembers
               Antragsstatus
             </CardTitle>
             <CardDescription className="text-orange-700 dark:text-orange-300">
-              {membershipStatus?.pendingMemberships || 0} ausstehende Mitgliedschaftsanträge
+              {(membershipStatus as any)?.pendingMemberships || 0} ausstehende Mitgliedschaftsanträge
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

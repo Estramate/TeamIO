@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ClubThemeProvider } from "@/contexts/ClubThemeContext";
 import { PageProvider } from "@/contexts/PageContext";
 import { useAuth } from "@/hooks/useAuth";
-import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+
 import { useClub } from "@/hooks/use-club";
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
@@ -59,7 +59,7 @@ function AuthenticatedApp() {
           <Route path="/reports" component={() => <LazyPage component={Reports} />} />
           <Route path="/users" component={() => <LazyPage component={Users} />} />
           <Route path="/settings" component={() => <LazyPage component={Settings} />} />
-          <Route path="/auth-test" component={() => <LazyPage component={lazy(() => import("@/pages/Auth-Test"))} />} />
+
           <Route component={NotFound} />
         </Switch>
       </Layout>
@@ -68,15 +68,10 @@ function AuthenticatedApp() {
 }
 
 function Router() {
-  const { isAuthenticated: replitAuth, isLoading: replitLoading } = useAuth();
-  const { isAuthenticated: firebaseAuth, loading: firebaseLoading } = useFirebaseAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub, setSelectedClub } = useClub();
   const [showOnboarding, setShowOnboarding] = useState<boolean | 'pending'>(false);
   const [membershipChecked, setMembershipChecked] = useState(false);
-
-  // Check if user is authenticated with either provider
-  const isAuthenticated = replitAuth || firebaseAuth;
-  const isLoading = replitLoading || firebaseLoading;
   
   // Force redirect to landing page after logout
   useEffect(() => {

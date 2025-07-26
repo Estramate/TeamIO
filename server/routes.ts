@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { setupFirebaseAuth, isAuthenticatedEnhanced } from "./firebaseAuth";
+// Firebase authentication removed - using only Replit auth
 // Security imports temporarily commented for Firebase overhaul
 // import { requireClubAccess } from "./security";
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
@@ -64,90 +64,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (Replit OpenID Connect) - MUST BE FIRST for session setup
   await setupAuth(app);
 
-  // Firebase authentication endpoint - Robust approach with proper error handling
-  app.post('/api/auth/firebase', async (req: any, res: any) => {
-    const { userData } = req.body;
-    
-    if (!userData || !userData.uid) {
-      return res.status(400).json({ error: 'Invalid user data - missing uid' });
-    }
-    
-    try {
-      console.log('Firebase auth request received:', { uid: userData.uid, email: userData.email });
-      
-      // Create Firebase user with provider-specific ID (Google only)
-      const firebaseUserId = `google_${userData.uid}`;
-      
-      const userDataToInsert = {
-        id: firebaseUserId,
-        email: userData.email,
-        authProvider: 'google',
-        providerUserId: userData.uid,
-        firstName: userData.displayName?.split(' ')[0] || null,
-        lastName: userData.displayName?.split(' ').slice(1).join(' ') || null,
-        profileImageUrl: userData.photoURL,
-        lastLoginAt: new Date(),
-      };
-      
-      console.log('=== FIREBASE AUTH DEBUG ===');
-      console.log('Original userData:', userData);
-      console.log('Processed userDataToInsert:', userDataToInsert);
-      
-      console.log('User data to insert:', userDataToInsert);
-      
-      // Upsert Firebase user to database with provider info
-      const dbUser = await storage.upsertUser(userDataToInsert);
-      
-      console.log('Database user created/updated:', { id: dbUser.id, email: dbUser.email });
-      
-      // Create simple session cookie manually - use database user data
-      const userToken = Buffer.from(JSON.stringify({
-        sub: dbUser.id, // Use actual database user ID
-        email: dbUser.email,
-        first_name: dbUser.firstName,
-        last_name: dbUser.lastName,
-        profile_image_url: dbUser.profileImageUrl,
-        authProvider: 'google',
-        exp: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
-      })).toString('base64');
-      
-      // Set cookie manually
-      res.cookie('firebase-auth', userToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        sameSite: 'lax'
-      });
-      
-      logger.info('Firebase user authenticated successfully', { 
-        userId: dbUser.id, 
-        email: dbUser.email, 
-        provider: 'firebase' 
-      });
-      
-      res.json({ 
-        success: true, 
-        userId: dbUser.id, 
-        message: 'Firebase authentication successful' 
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error('Firebase authentication error:', error);
-      logger.error('Firebase authentication failed', { 
-        error: errorMessage, 
-        userId: userData.uid, 
-        email: userData.email 
-      });
-      res.status(500).json({ 
-        error: 'Firebase authentication failed', 
-        details: errorMessage,
-        userData: userData
-      });
-    }
-  });
+
   
-  // Firebase auth setup (Google & Facebook)
-  setupFirebaseAuth(app);
+  // Firebase authentication removed - using only Replit auth
 
   // CSRF token endpoint
   // CSRF token temporarily disabled for Firebase overhaul
@@ -157,11 +76,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/errors', handleErrorReports);
   app.post('/api/performance', handlePerformanceMetrics);
 
-  // Enhanced isAuthenticated middleware for both Replit and Firebase
+  // Enhanced isAuthenticated middleware for Replit auth only
   const isAuthenticatedEnhanced = async (req: any, res: any, next: any) => {
     const user = req.user as any;
 
-    // Check Replit auth first
+    // Check Replit auth
     if (req.isAuthenticated && req.isAuthenticated() && user && user.expires_at) {
       const now = Math.floor(Date.now() / 1000);
       if (now <= user.expires_at) {
@@ -176,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updateUserSession(user, tokenResponse);
           return next();
         } catch (error) {
-          // Fall through to Firebase auth check
+          console.error('Token refresh failed:', error);
         }
       }
     }
@@ -239,59 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Try Firebase authentication
-      const firebaseAuthCookie = req.cookies['firebase-auth'];
-      if (firebaseAuthCookie) {
-        console.log('Found Firebase auth cookie, decoding...');
-        try {
-          let decodedCookie = firebaseAuthCookie;
-          
-          // Handle URL-encoded cookies
-          try {
-            decodedCookie = decodeURIComponent(firebaseAuthCookie);
-          } catch (e) {
-            // Cookie might not be URL encoded, use as-is
-            console.log('Cookie not URL encoded, using as-is');
-          }
-          
-          const decoded = JSON.parse(Buffer.from(decodedCookie, 'base64').toString());
-          console.log('Decoded Firebase token:', { 
-            sub: decoded.sub, 
-            email: decoded.email, 
-            exp: decoded.exp,
-            expDate: new Date(decoded.exp).toISOString(),
-            now: new Date().toISOString(),
-            valid: decoded.exp > Date.now()
-          });
-          
-          if (decoded.exp && decoded.exp > Date.now()) {
-            const firebaseUserId = decoded.sub;
-            console.log('Looking up Firebase user:', firebaseUserId);
-            const user = await storage.getUser(firebaseUserId);
-            if (user) {
-              console.log('Firebase user found in DB:', { id: user.id, email: user.email });
-              return res.json(user);
-            } else {
-              console.log('Firebase user not found in database, user ID:', firebaseUserId);
-              // Return 401 instead of trying to create user here
-              return res.status(401).json({ message: "Firebase user not found in database" });
-            }
-          } else {
-            console.log('Firebase token expired', {
-              exp: decoded.exp,
-              now: Date.now(),
-              expired: decoded.exp <= Date.now()
-            });
-            return res.status(401).json({ message: "Firebase token expired" });
-          }
-        } catch (cookieError) {
-          console.error('Firebase cookie parsing error:', cookieError);
-          console.log('Raw cookie (first 100 chars):', firebaseAuthCookie?.substring(0, 100));
-          return res.status(401).json({ message: "Invalid Firebase cookie" });
-        }
-      } else {
-        console.log('No Firebase auth cookie found');
-      }
+
 
       console.log('No valid authentication found');
       res.status(401).json({ message: "Not authenticated" });

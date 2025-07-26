@@ -32,7 +32,7 @@ app.use(requestLogger);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
-// Cookie parsing for Firebase auth
+// Cookie parsing
 app.use(cookieParser());
 
 // Health check endpoint

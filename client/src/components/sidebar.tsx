@@ -408,15 +408,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={async () => {
-                    // Complete Firebase logout first
-                    try {
-                      // Import Firebase auth dynamically
-                      const { auth } = await import('@/lib/firebase');
-                      await auth.signOut();
-                      // Firebase logout successful
-                    } catch (error) {
-                      console.error('Firebase logout error:', error);
-                    }
+                    // Firebase auth removed - using only Replit auth
                     
                     // Clear all local data
                     localStorage.clear();

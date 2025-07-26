@@ -16,7 +16,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+// Firebase auth removed - using only Replit auth
 import { LogOut, User, Settings, Shield } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 import { SiReplit } from "react-icons/si";
@@ -27,63 +27,35 @@ interface UserProfileButtonProps {
 
 export function UserProfileButton({ className }: UserProfileButtonProps) {
   const authData = useAuth();
-  const { user: firebaseUser, signOut: firebaseSignOut } = useFirebaseAuth();
   
   const replitUser = authData?.user;
   const replitLogout = authData?.logout;
 
-  // Determine which user and auth provider to display
-  const currentUser = replitUser || firebaseUser;
-  const authProvider = replitUser ? 'replit' : firebaseUser ? 'firebase' : null;
+  // Using only Replit authentication
+  const currentUser = replitUser;
+  const authProvider = replitUser ? 'replit' : null;
 
   if (!currentUser) {
     return null;
   }
 
-  // Extract user info based on auth provider
-  const userInfo = replitUser 
-    ? {
-        name: `${replitUser.firstName || ''} ${replitUser.lastName || ''}`.trim() || replitUser.email || 'User',
-        email: replitUser.email || '',
-        avatar: replitUser.profileImageUrl || null,
-        initials: `${replitUser.firstName?.[0] || ''}${replitUser.lastName?.[0] || ''}`.toUpperCase() || replitUser.email?.[0]?.toUpperCase() || 'U',
-      }
-    : {
-        name: firebaseUser?.displayName || firebaseUser?.email || 'User',
-        email: firebaseUser?.email || '',
-        avatar: firebaseUser?.photoURL || null,
-        initials: firebaseUser?.displayName?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || firebaseUser?.email?.[0]?.toUpperCase() || 'U',
-      };
+  // Extract user info from Replit auth
+  const userInfo = {
+    name: `${replitUser.firstName || ''} ${replitUser.lastName || ''}`.trim() || replitUser.email || 'User',
+    email: replitUser.email || '',
+    avatar: replitUser.profileImageUrl || null,
+    initials: `${replitUser.firstName?.[0] || ''}${replitUser.lastName?.[0] || ''}`.toUpperCase() || replitUser.email?.[0]?.toUpperCase() || 'U',
+  };
 
   const handleLogout = async () => {
     try {
-      console.log('UserProfileButton logout - starting complete logout process');
+      console.log('UserProfileButton logout - starting logout process');
       
       // Mark that we're logging out
       sessionStorage.setItem('just_logged_out', 'true');
       
-      // Clear Firebase auth if present
-      if (firebaseUser) {
-        try {
-          await firebaseSignOut();
-          console.log('Firebase sign out successful');
-        } catch (firebaseError) {
-          console.error('Firebase sign out error:', firebaseError);
-        }
-      }
-      
       // Clear all local data immediately
       localStorage.clear();
-      
-      // Clear any cached query data
-      try {
-        // @ts-expect-error - queryClient may be available globally
-        if ((window as any).queryClient) {
-          (window as any).queryClient.clear();
-        }
-      } catch (e) {
-        // Ignore queryClient errors
-      }
       
       console.log('Local data cleared, redirecting to server logout');
       
@@ -103,22 +75,13 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
       return <SiReplit className="h-3 w-3" />;
     }
     
-    // For Firebase, check the specific provider
-    const providerId = firebaseUser?.providerData?.[0]?.providerId;
-    if (providerId === 'google.com') {
-      return <FaGoogle className="h-3 w-3" />;
-    }
-    
     return <User className="h-3 w-3" />;
   };
 
   const getProviderName = () => {
     if (authProvider === 'replit') return 'Replit';
     
-    const providerId = firebaseUser?.providerData?.[0]?.providerId;
-    if (providerId === 'google.com') return 'Google';
-    
-    return 'Firebase';
+    return 'Unknown';
   };
 
   return (

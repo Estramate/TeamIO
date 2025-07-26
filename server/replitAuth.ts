@@ -185,29 +185,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     }
   }
 
-  // Check Firebase auth cookie
-  const firebaseAuth = req.cookies['firebase-auth'];
-  if (firebaseAuth) {
-    try {
-      const userData = JSON.parse(Buffer.from(firebaseAuth, 'base64').toString());
-      if (userData.exp > Date.now()) {
-        // Create compatible user object for downstream middleware
-        req.user = {
-          claims: {
-            sub: userData.sub,
-            email: userData.email,
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-            profile_image_url: userData.profile_image_url,
-          },
-          authProvider: userData.authProvider
-        };
-        return next();
-      }
-    } catch (error) {
-      // Invalid Firebase token, fall through
-    }
-  }
+  // Firebase authentication removed - using only Replit auth
 
   return res.status(401).json({ message: "Unauthorized" });
 };

@@ -30,6 +30,30 @@ import {
   insertCommunicationPreferencesSchema,
 } from "@shared/schema";
 
+// Additional imports for Firebase auth
+import * as client from "openid-client";
+import memoize from "memoizee";
+
+const getOidcConfig = memoize(
+  async () => {
+    return await client.discovery(
+      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
+      process.env.REPL_ID!
+    );
+  },
+  { maxAge: 3600 * 1000 }
+);
+
+function updateUserSession(
+  user: any,
+  tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers
+) {
+  user.claims = tokens.claims();
+  user.access_token = tokens.access_token;
+  user.refresh_token = tokens.refresh_token;
+  user.expires_at = user.claims?.exp;
+}
+
 // Helper function to handle async route errors
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -94,6 +118,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Error reporting endpoints
   app.post('/api/errors', handleErrorReports);
   app.post('/api/performance', handlePerformanceMetrics);
+
+  // Enhanced isAuthenticated middleware for both Replit and Firebase
+  const isAuthenticatedEnhanced = async (req: any, res: any, next: any) => {
+    const user = req.user as any;
+
+    // Check Replit auth first
+    if (req.isAuthenticated && req.isAuthenticated() && user && user.expires_at) {
+      const now = Math.floor(Date.now() / 1000);
+      if (now <= user.expires_at) {
+        return next();
+      }
+
+      const refreshToken = user.refresh_token;
+      if (refreshToken) {
+        try {
+          const config = await getOidcConfig();
+          const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
+          updateUserSession(user, tokenResponse);
+          return next();
+        } catch (error) {
+          // Fall through to Firebase auth check
+        }
+      }
+    }
+
+    // Check Firebase auth cookie
+    const firebaseAuth = req.cookies['firebase-auth'];
+    console.log('Firebase auth cookie:', firebaseAuth ? 'present' : 'missing');
+    
+    if (firebaseAuth) {
+      try {
+        const userData = JSON.parse(Buffer.from(firebaseAuth, 'base64').toString());
+        console.log('Firebase user data:', { sub: userData.sub, exp: userData.exp, now: Date.now() });
+        
+        if (userData.exp > Date.now()) {
+          // Create compatible user object for downstream middleware
+          req.user = {
+            claims: {
+              sub: userData.sub,
+              email: userData.email,
+              first_name: userData.first_name,
+              last_name: userData.last_name,
+              profile_image_url: userData.profile_image_url,
+            },
+            authProvider: userData.authProvider
+          };
+          console.log('Firebase auth successful for user:', userData.sub);
+          return next();
+        } else {
+          console.log('Firebase token expired');
+        }
+      } catch (error) {
+        console.log('Firebase token parse error:', error);
+      }
+    }
+
+    return res.status(401).json({ message: "Not authenticated" });
+  };
 
   // Auth routes (supports both Replit and Firebase auth)
   app.get('/api/auth/user', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {

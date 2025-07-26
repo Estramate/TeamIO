@@ -62,7 +62,9 @@ export function useFirebaseAuth() {
               window.location.href = '/';
             }, 1000);
           } else {
-            throw new Error('Backend authentication failed');
+            const errorText = await response.text();
+            console.error('Backend response:', response.status, errorText);
+            throw new Error(`Backend authentication failed: ${response.status}`);
           }
         } else {
           // User signed out

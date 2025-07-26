@@ -386,7 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(club);
   }));
 
-  // Club join request route
+  // Club join request route - Creates inactive membership for admin approval
   app.post('/api/clubs/:id/join', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.id);
     const userId = req.user.claims.sub;
@@ -399,44 +399,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('User ID not found in token');
     }
 
-    // Check if user is already a member of this club
+    // Check if user is already a member of this club (active or inactive)
     const existingMembership = await storage.getUserClubMembership(userId, clubId);
     if (existingMembership) {
-      throw new ValidationError('You are already a member of this club', 'membership');
+      if (existingMembership.status === 'active') {
+        throw new ValidationError('You are already an active member of this club', 'membership');
+      } else if (existingMembership.status === 'inactive') {
+        throw new ValidationError('Your membership request is pending admin approval', 'membership');
+      }
     }
 
-    // Check if user already has a pending request
-    const userRequests = await storage.getUserJoinRequests(userId);
-    const pendingRequest = userRequests.find(request => 
-      request.clubId === clubId && request.status === 'pending'
-    );
-    
-    if (pendingRequest) {
-      throw new ValidationError('You already have a pending request for this club', 'request');
-    }
-
-    // Create join request
-    const requestData = {
+    // Create inactive membership for admin approval
+    const membershipData = {
       userId,
       clubId,
-      message: req.body.message || '',
-      requestedRole: req.body.role || 'member'
+      role: 'member', // Default role, admin can change later
+      status: 'inactive', // Requires admin approval
     };
 
-    const joinRequest = await storage.createJoinRequest(requestData);
+    const membership = await storage.addUserToClub(membershipData);
     
-    logger.info('Club join request created', { 
-      requestId: joinRequest.id, 
+    logger.info('Club membership request created (inactive)', { 
+      membershipId: membership.id, 
       clubId, 
       userId, 
+      status: 'inactive',
       requestId: req.id 
     });
     
     res.status(201).json({
       success: true,
-      message: 'Join request submitted successfully',
-      requestId: joinRequest.id,
-      status: 'pending'
+      message: 'Membership request submitted successfully - awaiting admin approval',
+      membershipId: membership.id,
+      status: 'inactive'
+    });
+  }));
+
+  // Get pending membership requests for club administrators
+  app.get('/api/clubs/:clubId/pending-memberships', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+
+    // Check if user is club admin
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership || membership.role !== 'club-administrator') {
+      throw new AuthorizationError('You must be a club administrator to view pending memberships');
+    }
+
+    const pendingMemberships = await storage.getPendingClubMemberships(clubId);
+    
+    logger.info('Pending memberships retrieved', { clubId, userId, count: pendingMemberships.length, requestId: req.id });
+    res.json(pendingMemberships);
+  }));
+
+  // Approve or reject membership request
+  app.put('/api/clubs/:clubId/memberships/:membershipId/approve', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const membershipId = parseInt(req.params.membershipId);
+    const userId = req.user.claims.sub;
+    const { action, role } = req.body; // action: 'approve' | 'reject', role: optional new role
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    if (!membershipId || isNaN(membershipId)) {
+      throw new ValidationError('Invalid membership ID', 'membershipId');
+    }
+
+    if (!action || !['approve', 'reject'].includes(action)) {
+      throw new ValidationError('Action must be "approve" or "reject"', 'action');
+    }
+
+    // Check if user is club admin
+    const adminMembership = await storage.getUserClubMembership(userId, clubId);
+    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+      throw new AuthorizationError('You must be a club administrator to approve memberships');
+    }
+
+    // Get the membership to approve/reject
+    const membership = await storage.getClubMembershipById(membershipId);
+    if (!membership || membership.clubId !== clubId) {
+      throw new ValidationError('Membership not found in this club', 'membershipId');
+    }
+
+    if (membership.status !== 'inactive') {
+      throw new ValidationError('Only inactive memberships can be approved or rejected', 'status');
+    }
+
+    let updatedMembership;
+    if (action === 'approve') {
+      // Approve membership and optionally update role
+      const updateData = {
+        status: 'active' as const,
+        ...(role && { role })
+      };
+      updatedMembership = await storage.updateClubMembershipById(membershipId, updateData);
+      
+      logger.info('Membership approved', { 
+        membershipId, 
+        clubId, 
+        userId: membership.userId,
+        approvedBy: userId,
+        newRole: role || membership.role,
+        requestId: req.id 
+      });
+    } else {
+      // Reject membership by deleting it
+      await storage.deleteClubMembershipById(membershipId);
+      
+      logger.info('Membership rejected', { 
+        membershipId, 
+        clubId, 
+        userId: membership.userId,
+        rejectedBy: userId,
+        requestId: req.id 
+      });
+      
+      return res.json({ 
+        success: true, 
+        message: 'Membership request rejected and removed',
+        action: 'rejected'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Membership request approved',
+      membership: updatedMembership,
+      action: 'approved'
     });
   }));
 

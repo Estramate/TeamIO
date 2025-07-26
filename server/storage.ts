@@ -88,6 +88,10 @@ export interface IStorage {
   removeUserFromClub(userId: string, clubId: number): Promise<void>;
   updateClubMembership(userId: string, clubId: number, updates: Partial<InsertClubMembership>): Promise<ClubMembership>;
   getUserClubMembership(userId: string, clubId: number): Promise<ClubMembership | undefined>;
+  getPendingClubMemberships(clubId: number): Promise<ClubMembership[]>;
+  getClubMembershipById(membershipId: number): Promise<ClubMembership | undefined>;
+  updateClubMembershipById(membershipId: number, updates: Partial<InsertClubMembership>): Promise<ClubMembership>;
+  deleteClubMembershipById(membershipId: number): Promise<void>;
 
   // Club join request operations
   createJoinRequest(request: InsertClubJoinRequest): Promise<ClubJoinRequest>;
@@ -405,6 +409,40 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return membership;
+  }
+
+  async getPendingClubMemberships(clubId: number): Promise<ClubMembership[]> {
+    return await db
+      .select()
+      .from(clubMemberships)
+      .where(
+        and(
+          eq(clubMemberships.clubId, clubId),
+          eq(clubMemberships.status, 'inactive')
+        )
+      )
+      .orderBy(desc(clubMemberships.createdAt));
+  }
+
+  async getClubMembershipById(membershipId: number): Promise<ClubMembership | undefined> {
+    const [membership] = await db
+      .select()
+      .from(clubMemberships)
+      .where(eq(clubMemberships.id, membershipId));
+    return membership;
+  }
+
+  async updateClubMembershipById(membershipId: number, updates: Partial<InsertClubMembership>): Promise<ClubMembership> {
+    const [updatedMembership] = await db
+      .update(clubMemberships)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(clubMemberships.id, membershipId))
+      .returning();
+    return updatedMembership;
+  }
+
+  async deleteClubMembershipById(membershipId: number): Promise<void> {
+    await db.delete(clubMemberships).where(eq(clubMemberships.id, membershipId));
   }
 
   // Club join request operations

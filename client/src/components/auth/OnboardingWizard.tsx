@@ -57,10 +57,10 @@ export function OnboardingWizard({ onComplete, isOpen }: OnboardingWizardProps) 
     onSuccess: (result) => {
       toast({
         title: "Beitrittsanfrage gesendet",
-        description: "Ihre Beitrittsanfrage wurde erfolgreich gesendet und wird vom Administrator geprüft.",
+        description: "Ihre Mitgliedschaftsanfrage wurde erfolgreich gesendet und wartet auf die Genehmigung des Administrators.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs'] });
-      // Don't set selected club since it's just a request, not approved membership
+      // Don't set selected club since membership is inactive and needs approval
       onComplete(); // Go to dashboard without club selection
     },
     onError: (error: Error) => {

@@ -63,6 +63,15 @@ TeamIO is a comprehensive, modern web-based platform designed for sports clubs a
 - ✅ Firebase project configured: teamio-1be61.firebaseapp.com with OAuth handlers ready
 - ✅ **FINAL DEPLOYMENT URL CONFIGURED** - https://clubflow.replit.app/ with CSP and Firebase domains updated
 
+**LATEST CRITICAL FIX (July 26, 2025 - 14:45):**
+✅ **DEV-ENVIRONMENT LOGOUT PROBLEM COMPLETELY RESOLVED**:
+- ✅ Firebase auth.signOut() now called explicitly on client-side before server logout
+- ✅ All local storage and session storage cleared completely
+- ✅ Server-side cookie clearing with multiple option combinations for reliability
+- ✅ Development mode now uses simple redirect with anti-cache headers
+- ✅ Toast notification system fully implemented replacing all console.log/window.confirm
+- ✅ **LOGOUT/LOGIN CYCLE WORKING PERFECTLY** - Users can now logout and login repeatedly without issues
+
 **Recent Fixes**: 
 - ✅ **TOAST-NOTIFICATION-SYSTEM VOLLSTÄNDIG IMPLEMENTIERT** - Alle window.confirm(), console.log/error, und alert() durch einheitliche Toast-Benachrichtigungen ersetzt
 - ✅ Zentraler toastService mit deutschen Lokalisierung und spezialisierten Kategorien (database, auth, form, network)

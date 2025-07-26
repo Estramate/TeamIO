@@ -392,12 +392,22 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    // Development-friendly logout
-                    sessionStorage.setItem('just_logged_out', 'true');
-                    localStorage.clear();
+                  onClick={async () => {
+                    // Complete Firebase logout first
+                    try {
+                      // Import Firebase auth dynamically
+                      const { auth } = await import('@/lib/firebase');
+                      await auth.signOut();
+                      console.log('Firebase logout successful');
+                    } catch (error) {
+                      console.error('Firebase logout error:', error);
+                    }
                     
-                    // Simply redirect to logout
+                    // Clear all local data
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    // Now go to server logout
                     window.location.href = "/api/logout";
                   }}
                   className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 h-8 w-8"

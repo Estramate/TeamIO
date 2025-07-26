@@ -117,34 +117,36 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
-    console.log('=== LOGOUT PROCESS (DEV-FRIENDLY) ===');
+    console.log('=== COMPLETE LOGOUT PROCESS ===');
     
-    // Clear Firebase auth cookie
-    res.clearCookie('firebase-auth', { 
-      path: '/', 
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    });
-    
-    // Clear session cookie
-    res.clearCookie('connect.sid', { 
-      path: '/', 
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
+    // Clear ALL auth cookies with different options
+    const cookiesToClear = ['firebase-auth', 'connect.sid', 'session', '__session'];
+    cookiesToClear.forEach(cookieName => {
+      // Clear with all possible configurations
+      res.clearCookie(cookieName, { path: '/', httpOnly: true, secure: false });
+      res.clearCookie(cookieName, { path: '/', httpOnly: false, secure: false });
+      res.clearCookie(cookieName, { path: '/', domain: undefined });
+      res.clearCookie(cookieName);
     });
 
-    // Destroy session
+    // Destroy session completely
     if (req.session) {
       req.session.destroy((err) => {
         if (err) console.error('Session destruction error:', err);
       });
     }
 
-    // Development mode - simple redirect to avoid auth loops
+    // Development mode - simple redirect after cookie clearing
     if (process.env.NODE_ENV === 'development') {
-      console.log('DEV MODE - Simple redirect to home page');
+      console.log('DEV MODE - Simple redirect after clearing cookies');
+      
+      // Anti-cache headers
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       return res.redirect('/');
     }
 

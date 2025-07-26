@@ -1,12 +1,12 @@
 /**
- * Login page with multiple authentication options
- * Supports Google, Facebook, and Replit authentication
+ * Login page with Replit authentication
+ * Simplified login with only Replit OAuth support
  */
 
 import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons';
-import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -14,20 +14,20 @@ import { Info } from 'lucide-react';
 
 export function LoginPage() {
   const [, setLocation] = useLocation();
-  const { isAuthenticated, loading } = useFirebaseAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     // Redirect if already authenticated
-    if (isAuthenticated && !loading) {
+    if (isAuthenticated && !isLoading) {
       setLocation('/');
     }
-  }, [isAuthenticated, loading, setLocation]);
+  }, [isAuthenticated, isLoading, setLocation]);
 
   const handleLoginSuccess = () => {
     setLocation('/');
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="text-center">
@@ -73,8 +73,8 @@ export function LoginPage() {
         <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
           <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           <AlertDescription className="text-blue-800 dark:text-blue-200">
-            <strong>Neuer Benutzer?</strong> Sie können sich mit allen drei Optionen anmelden. 
-            Replit wird für die beste Erfahrung empfohlen.
+            <strong>Neuer Benutzer?</strong> Melden Sie sich einfach mit Ihrem Replit-Konto an, 
+            um sofort loszulegen.
           </AlertDescription>
         </Alert>
 

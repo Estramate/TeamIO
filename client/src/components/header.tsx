@@ -84,7 +84,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   <DropdownMenuLabel>Benachrichtigungen</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   
-                  {stats?.unreadMessages > 0 && (
+                  {stats?.unreadMessages && stats.unreadMessages > 0 && (
                     <DropdownMenuItem asChild>
                       <Link href="/communication" className="flex items-center gap-2 cursor-pointer">
                         <MessageCircle className="h-4 w-4 text-blue-500" />
@@ -96,7 +96,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     </DropdownMenuItem>
                   )}
                   
-                  {stats?.unreadNotifications > 0 && (
+                  {stats?.unreadNotifications && stats.unreadNotifications > 0 && (
                     <DropdownMenuItem asChild>
                       <Link href="/communication" className="flex items-center gap-2 cursor-pointer">
                         <Megaphone className="h-4 w-4 text-orange-500" />

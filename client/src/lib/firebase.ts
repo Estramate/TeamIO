@@ -15,6 +15,9 @@ import {
   type User as FirebaseUser
 } from "firebase/auth";
 
+// Re-export FirebaseUser type
+export type { FirebaseUser };
+
 // Firebase configuration using environment variables
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

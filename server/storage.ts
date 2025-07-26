@@ -986,11 +986,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(finances).where(eq(finances.id, id));
   }
 
-  // Activity Log operations
-  async createActivityLog(activityLog: InsertActivityLog): Promise<ActivityLog> {
-    const [newLog] = await db.insert(activityLogs).values(activityLog).returning();
-    return newLog;
-  }
+
 
   async getClubActivityLogs(clubId: number): Promise<any[]> {
     return await db
@@ -1987,32 +1983,18 @@ export class DatabaseStorage implements IStorage {
         ipAddress: activityLogs.ipAddress,
         userAgent: activityLogs.userAgent,
         createdAt: activityLogs.createdAt,
-        // Join user information
-        user: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email,
-        },
-        targetUser: {
-          id: sql`target_users.id`,
-          firstName: sql`target_users.first_name`,
-          lastName: sql`target_users.last_name`,
-          email: sql`target_users.email`,
-        },
+        // Join user information (actor)
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        userEmail: users.email,
       })
       .from(activityLogs)
       .innerJoin(users, eq(activityLogs.userId, users.id))
-      .leftJoin(users.as('target_users'), eq(activityLogs.targetUserId, sql`target_users.id`))
       .where(eq(activityLogs.clubId, clubId))
       .orderBy(desc(activityLogs.createdAt))
       .limit(limit);
 
-    return logs.map(log => ({
-      ...log,
-      user: log.user,
-      targetUser: log.targetUser || undefined,
-    })) as ActivityLog[];
+    return logs as ActivityLog[];
   }
 
   // Helper method to log user activities

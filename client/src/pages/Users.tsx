@@ -717,7 +717,7 @@ function ActivityLogTab({ clubId, viewMode }: { clubId: number, viewMode: 'grid'
             </p>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto pr-2">
             {logs.map((log: any) => (
               <Card key={log.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="bg-gray-50 dark:bg-gray-800/50 rounded-t-lg pb-3">
@@ -757,7 +757,7 @@ function ActivityLogTab({ clubId, viewMode }: { clubId: number, viewMode: 'grid'
             ))}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
             {logs.map((log: any) => (
               <div
                 key={log.id}

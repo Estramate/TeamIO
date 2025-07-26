@@ -422,7 +422,7 @@ export default function Communication() {
                         Als gelesen
                       </Button>
                       {/* Delete button for message creator */}
-                      {message.senderId === user?.id && (
+                      {message.senderId === (user as any)?.id && (
                         <Button 
                           variant="ghost" 
                           size="sm" 
@@ -988,7 +988,7 @@ export default function Communication() {
           <div className="border-t pt-4 mt-4">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-medium">
-                {user?.firstName?.[0]}{user?.lastName?.[0]}
+                {(user as any)?.firstName?.[0]}{(user as any)?.lastName?.[0]}
               </div>
               <div className="flex-1">
                 <Textarea
@@ -1073,7 +1073,7 @@ export default function Communication() {
                         console.error('Error sending reply:', error);
                         toast({
                           title: "Fehler",
-                          description: `Antwort konnte nicht gesendet werden: ${error.message}`,
+                          description: `Antwort konnte nicht gesendet werden: ${(error as any).message}`,
                           variant: "destructive",
                         });
                       }

@@ -1081,6 +1081,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user.claims.sub;
     
+    logger.info('Reply request received', { messageId, clubId, userId, body: req.body, requestId: req.id });
+    
     if (!messageId || isNaN(messageId)) {
       throw new ValidationError('Invalid message ID', 'messageId');
     }
@@ -1089,27 +1091,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Invalid club ID', 'clubId');
     }
     
-    // Validate request body
-    const validationSchema = z.object({
-      content: z.string().min(1, "Content is required"),
-      subject: z.string().optional(),
-    });
-    
-    const validatedData = validationSchema.parse(req.body);
-    
-    const replyData = {
-      clubId,
-      senderId: userId,
-      subject: validatedData.subject || `Re: ${req.body.originalSubject || 'Message'}`,
-      content: validatedData.content,
-      messageType: 'reply',
-      priority: 'normal',
-      status: 'sent',
-    };
-    
-    const reply = await storage.createMessageReply(messageId, replyData);
-    logger.info('Message reply created', { replyId: reply.id, parentMessageId: messageId, clubId, userId, requestId: req.id });
-    res.status(201).json(reply);
+    try {
+      // Validate request body
+      const validationSchema = z.object({
+        content: z.string().min(1, "Content is required"),
+        subject: z.string().optional(),
+        originalSubject: z.string().optional(),
+      });
+      
+      const validatedData = validationSchema.parse(req.body);
+      logger.info('Validation successful', { validatedData, requestId: req.id });
+      
+      const replyData = {
+        clubId,
+        senderId: userId,
+        subject: validatedData.subject || `Re: ${validatedData.originalSubject || 'Message'}`,
+        content: validatedData.content,
+        messageType: 'reply' as const,
+        priority: 'normal' as const,
+        status: 'sent' as const,
+      };
+      
+      logger.info('Creating reply with data', { replyData, requestId: req.id });
+      const reply = await storage.createMessageReply(messageId, replyData);
+      logger.info('Message reply created successfully', { replyId: reply.id, parentMessageId: messageId, clubId, userId, requestId: req.id });
+      res.status(201).json(reply);
+    } catch (error) {
+      logger.error('Error creating reply', { error: error.message, stack: error.stack, messageId, clubId, userId, requestId: req.id });
+      throw error;
+    }
   }));
 
   // Announcement routes

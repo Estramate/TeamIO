@@ -308,13 +308,13 @@ export type InsertCommunicationPreferences = z.infer<typeof insertCommunicationP
 // Extended types with relations
 export type MessageWithRecipients = Message & {
   recipients: MessageRecipient[];
-  sender: { id: string; firstName?: string; lastName?: string; email?: string };
+  sender: { id: string; firstName?: string | null; lastName?: string | null; email?: string | null };
   replies?: MessageWithRecipients[];
   replyCount?: number;
 };
 
 export type AnnouncementWithAuthor = Announcement & {
-  author: { id: string; firstName?: string; lastName?: string; email?: string };
+  author: { id: string; firstName?: string | null; lastName?: string | null; email?: string | null };
 };
 
 // Communication statistics type

@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { useCommunication, useWebSocket } from "@/hooks/useCommunication";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,6 +81,7 @@ export default function Communication() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const queryClient = useQueryClient();
   
   // Get members and teams for recipient selection
   const { data: members = [] } = useQuery<any[]>({
@@ -1072,8 +1073,8 @@ export default function Communication() {
                           description: "Ihre Antwort wurde hinzugefügt",
                         });
                         
-                        // Refresh messages to show the new reply
-                        window.location.reload();
+                        // Refresh messages to show the new reply without page reload
+                        queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/messages`] });
                       } catch (error) {
                         console.error('Error sending reply:', error);
                         toast({

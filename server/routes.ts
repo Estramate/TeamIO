@@ -149,7 +149,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     if (firebaseAuth) {
       try {
-        const userData = JSON.parse(Buffer.from(decodeURIComponent(firebaseAuth), 'base64').toString());
+        let decodedCookie = firebaseAuth;
+        try {
+          decodedCookie = decodeURIComponent(firebaseAuth);
+        } catch (e) {
+          // Cookie might not be URL encoded
+        }
+        const userData = JSON.parse(Buffer.from(decodedCookie, 'base64').toString());
         
         if (userData.exp > Date.now()) {
           // Create compatible user object for downstream middleware
@@ -164,9 +170,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             authProvider: userData.authProvider
           };
           return next();
+        } else {
+          console.log('Firebase token expired:', { exp: userData.exp, now: Date.now() });
         }
       } catch (error) {
-        console.log('Firebase token decode error:', error.message);
+        console.log('Firebase token decode error:', error.message, 'Cookie:', firebaseAuth?.substring(0, 50) + '...');
       }
     }
 

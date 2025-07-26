@@ -57,14 +57,12 @@ export function useFirebaseAuth() {
               description: `Willkommen zurück, ${user.displayName || user.email}!`,
             });
             
-            // Redirect to home page after successful authentication
-            setTimeout(() => {
-              window.location.href = '/';
-            }, 1000);
+            // No automatic redirect - let React handle state changes
           } else {
             const errorText = await response.text();
             console.error('Backend response:', response.status, errorText);
-            throw new Error(`Backend authentication failed: ${response.status}`);
+            // Don't throw error for authentication failures to prevent infinite loops
+            setAuthState({ user: null, loading: false, error: 'Backend-Synchronisation fehlgeschlagen' });
           }
         } else {
           // User signed out

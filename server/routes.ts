@@ -2574,7 +2574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Invalid club ID', 'clubId');
     }
 
-    await storage.updateUserActivity(userId, clubId, true);
+    await storage.updateUserActivity(userId, clubId);
     res.json({ success: true });
   }));
 

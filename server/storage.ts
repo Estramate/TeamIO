@@ -3030,10 +3030,15 @@ export class DatabaseStorage implements IStorage {
       const [room] = await db
         .insert(chatRooms)
         .values({
-          ...roomData,
+          clubId: roomData.clubId,
+          name: roomData.name,
+          type: roomData.type || 'group',
+          description: roomData.description || null,
+          createdBy: roomData.createdBy,
+          isActive: true,
+          lastActivity: new Date(),
           createdAt: new Date(),
-          updatedAt: new Date(),
-          lastActivity: new Date()
+          updatedAt: new Date()
         })
         .returning();
 
@@ -3048,7 +3053,7 @@ export class DatabaseStorage implements IStorage {
           isActive: true
         });
 
-      console.log(`💬 Created chat room: ${room.name} (ID: ${room.id})`);
+      console.log(`💬 Created chat room: ${room.name} (ID: ${room.id}) for club ${room.clubId}`);
       return room;
     } catch (error) {
       console.error('Error creating chat room:', error);
@@ -3061,20 +3066,24 @@ export class DatabaseStorage implements IStorage {
       const [message] = await db
         .insert(liveChatMessages)
         .values({
-          ...messageData,
+          roomId: messageData.roomId,
+          senderId: messageData.senderId,
+          content: messageData.content,
+          messageType: messageData.messageType || 'text',
+          isDeleted: false,
           createdAt: new Date()
         })
         .returning();
 
       // Update room last activity
       await db
-        .update(liveChatRooms)
+        .update(chatRooms)
         .set({ 
           lastActivity: new Date(),
           lastMessageId: message.id,
           updatedAt: new Date()
         })
-        .where(eq(liveChatRooms.id, messageData.roomId));
+        .where(eq(chatRooms.id, messageData.roomId));
 
       console.log(`💬 Message sent in room ${messageData.roomId} by ${messageData.senderId}`);
       return message;
@@ -3102,9 +3111,10 @@ export class DatabaseStorage implements IStorage {
           eq(liveChatMessages.roomId, roomId),
           eq(liveChatMessages.isDeleted, false)
         ))
-        .orderBy(desc(liveChatMessages.createdAt))
+        .orderBy(liveChatMessages.createdAt) // Ascending for chronological order
         .limit(limit);
 
+      console.log(`💬 Found ${messages.length} messages for room ${roomId}`);
       return messages.map(row => ({
         ...row.message,
         sender: row.sender
@@ -3112,6 +3122,79 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error getting chat messages:', error);
       return [];
+    }
+  }
+
+  // Join a chat room
+  async joinChatRoom(roomId: number, userId: string): Promise<any> {
+    try {
+      const [participant] = await db
+        .insert(chatRoomParticipants)
+        .values({
+          roomId,
+          userId,
+          joinedAt: new Date(),
+          lastReadAt: new Date(),
+          isActive: true
+        })
+        .returning();
+
+      console.log(`💬 User ${userId} joined room ${roomId}`);
+      return participant;
+    } catch (error) {
+      console.error('Error joining chat room:', error);
+      throw error;
+    }
+  }
+
+  // Leave a chat room
+  async leaveChatRoom(roomId: number, userId: string): Promise<void> {
+    try {
+      await db
+        .update(chatRoomParticipants)
+        .set({ 
+          isActive: false,
+          lastReadAt: new Date()
+        })
+        .where(and(
+          eq(chatRoomParticipants.roomId, roomId),
+          eq(chatRoomParticipants.userId, userId)
+        ));
+
+      console.log(`💬 User ${userId} left room ${roomId}`);
+    } catch (error) {
+      console.error('Error leaving chat room:', error);
+      throw error;
+    }
+  }
+
+  // Update user activity for online status
+  async updateUserActivity(userId: string, clubId: number): Promise<void> {
+    try {
+      // Simplified approach - just insert/update user activity
+      await db
+        .insert(userActivity)
+        .values({
+          userId,
+          clubId,
+          lastSeen: new Date(),
+          isOnline: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [userActivity.userId, userActivity.clubId],
+          set: {
+            lastSeen: new Date(),
+            isOnline: true,
+            updatedAt: new Date()
+          }
+        });
+
+      console.log(`👤 Updated activity for user ${userId} in club ${clubId}`);
+    } catch (error) {
+      console.error('Error updating user activity:', error);
+      // Don't throw - this is not critical
     }
   }
 

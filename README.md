@@ -145,8 +145,9 @@ FIREBASE_API_KEY=your-api-key
 FIREBASE_PROJECT_ID=your-project-id
 # ... weitere Firebase-Konfiguration
 
-# E-Mail (optional)
-SENDGRID_API_KEY=your-sendgrid-key
+# E-Mail Service (SendGrid)
+SENDGRID_API_KEY=your-sendgrid-api-key-here
+# Note: Using verified sender address club.flow.2025@gmail.com
 ```
 
 ## 📋 Verfügbare Scripts

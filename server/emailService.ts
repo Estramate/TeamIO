@@ -4,11 +4,15 @@ import { logger } from './logger';
 // Check for SendGrid API key
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 
+// Verified sender address for club.flow.2025 domain
+const FROM_EMAIL = 'club.flow.2025@gmail.com';
+
 let mailService: MailService | null = null;
 
 if (SENDGRID_API_KEY) {
   mailService = new MailService();
   mailService.setApiKey(SENDGRID_API_KEY);
+  logger.info('SendGrid configured with verified sender: ' + FROM_EMAIL);
 } else {
   logger.warn('SendGrid API key not found. Email functionality will be disabled.');
 }
@@ -164,11 +168,11 @@ Falls Sie diese E-Mail irrtümlich erhalten haben, können Sie sie einfach ignor
   `;
 
   console.log('📧 Sending invitation email to:', to);
-  console.log('📧 From email:', process.env.FROM_EMAIL || 'noreply@replit.app');
+  console.log('📧 From email:', FROM_EMAIL);
   
   return await sendEmail({
     to,
-    from: process.env.FROM_EMAIL || 'noreply@replit.app', // Use Replit verified sender
+    from: FROM_EMAIL,
     subject,
     html,
     text

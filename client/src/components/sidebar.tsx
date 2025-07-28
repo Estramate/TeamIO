@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useClub } from "@/hooks/use-club";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSubscription } from "@/hooks/use-subscription";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import {
@@ -24,35 +25,39 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import { SuperAdminBadge } from "@/components/SuperAdminBadge";
 import { SuperAdminNavigation } from "@/components/SuperAdminNavigation";
+import type { FeatureName } from "@shared/lib/subscription-manager";
 
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
 }
 
+// Navigation items with required features
 const navigation = [
-  { name: "Dashboard", href: "/", icon: BarChart3 },
-  { name: "Mitglieder", href: "/members", icon: Users, badge: true },
-  { name: "Spieler", href: "/players", icon: Users2, badge: true },
-  { name: "Teams", href: "/teams", icon: UsersRound, badge: true },
-  { name: "Kalender", href: "/calendar", icon: Calendar },
-  { name: "Anlagen", href: "/facilities", icon: MapPin },
-  { name: "Buchungen", href: "/bookings", icon: BookOpen },
-  { name: "Finanzen", href: "/finance", icon: Euro },
-  { name: "Berichte", href: "/reports", icon: FileText },
-  { name: "Kommunikation", href: "/communication", icon: MessageCircle },
+  { name: "Dashboard", href: "/", icon: BarChart3, feature: "basicManagement" as FeatureName },
+  { name: "Mitglieder", href: "/members", icon: Users, badge: true, feature: "basicManagement" as FeatureName },
+  { name: "Spieler", href: "/players", icon: Users2, badge: true, feature: "basicManagement" as FeatureName },
+  { name: "Teams", href: "/teams", icon: UsersRound, badge: true, feature: "teamManagement" as FeatureName },
+  { name: "Kalender", href: "/calendar", icon: Calendar, feature: "basicManagement" as FeatureName },
+  { name: "Anlagen", href: "/facilities", icon: MapPin, feature: "facilityBooking" as FeatureName },
+  { name: "Buchungen", href: "/bookings", icon: BookOpen, feature: "facilityBooking" as FeatureName },
+  { name: "Finanzen", href: "/finance", icon: Euro, feature: "financialReports" as FeatureName },
+  { name: "Berichte", href: "/reports", icon: FileText, feature: "advancedReports" as FeatureName },
+  { name: "Kommunikation", href: "/communication", icon: MessageCircle, feature: "basicManagement" as FeatureName },
 ];
 
 const adminNavigation = [
-  { name: "Benutzer", href: "/users", icon: UserCog },
-  { name: "Subscription", href: "/subscription", icon: Crown },
-  { name: "Einstellungen", href: "/settings", icon: Settings },
+  { name: "Benutzer", href: "/users", icon: UserCog, feature: "multiAdmin" as FeatureName },
+  { name: "Subscription", href: "/subscription", icon: Crown, feature: "basicManagement" as FeatureName },
+  { name: "Einstellungen", href: "/settings", icon: Settings, feature: "basicManagement" as FeatureName },
 ];
 
 const superAdminNavigation = [
@@ -63,6 +68,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const [location, navigate] = useLocation();
   const { selectedClub, setSelectedClub } = useClub();
   const { theme, toggleTheme } = useTheme();
+  const { hasFeature, subscriptionManager } = useSubscription();
   const [collapsed, setCollapsed] = useState(false);
 
   const { data: clubs } = useQuery({
@@ -99,6 +105,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     queryKey: ['/api/clubs', selectedClub?.id, 'players'],
     enabled: !!selectedClub?.id,
     retry: false,
+  });
+
+  // Super Admin status
+  const { data: superAdminStatus } = useQuery({
+    queryKey: ['/api/subscriptions/super-admin/status'],
+    retry: false,
+    enabled: !!currentUser,
   });
 
   const handleClubChange = (clubId: string) => {
@@ -223,6 +236,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               {navigation.map((item) => {
                 const isActive = location === item.href;
                 const Icon = item.icon;
+                const hasAccess = hasFeature(item.feature);
+                const currentPlan = subscriptionManager.getCurrentPlan();
                 let badge = null;
                 
                 if (item.badge && item.href === "/members" && members) {
@@ -237,40 +252,61 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <button
                     key={item.name}
                     onClick={() => {
-                      navigate(item.href);
-                      onClose();
+                      if (hasAccess) {
+                        navigate(item.href);
+                        onClose();
+                      } else {
+                        navigate('/subscription');
+                        onClose();
+                      }
                     }}
                     className={cn(
-                      "w-full group flex items-center text-sm font-medium transition-all duration-200",
+                      "w-full group flex items-center text-sm font-medium transition-all duration-200 relative",
                       collapsed 
                         ? "justify-center p-2 rounded-lg hover:bg-muted/50" 
                         : "px-3 py-2.5 rounded-lg hover:bg-muted/80",
-                      isActive
+                      isActive && hasAccess
                         ? collapsed 
                           ? "bg-club-primary text-white" 
                           : "bg-club-primary/10 text-club-primary border-l-4 border-club-primary"
-                        : "text-muted-foreground hover:text-foreground"
+                        : hasAccess 
+                          ? "text-muted-foreground hover:text-foreground"
+                          : "text-muted-foreground/50 cursor-not-allowed"
                     )}
+                    disabled={!hasAccess}
                   >
                     <Icon
                       className={cn(
                         "flex-shrink-0 transition-colors",
                         collapsed ? "w-5 h-5" : "w-4 h-4 mr-3",
-                        isActive 
+                        isActive && hasAccess
                           ? collapsed 
                             ? "text-white" 
                             : "text-club-primary" 
-                          : "text-muted-foreground group-hover:text-foreground"
+                          : hasAccess 
+                            ? "text-muted-foreground group-hover:text-foreground"
+                            : "text-muted-foreground/50"
                       )}
                     />
                     {!collapsed && (
                       <>
                         <span className="flex-1 text-left font-medium">{item.name}</span>
-                        {badge && (
-                          <span className="ml-auto bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-xs font-medium">
-                            {badge}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2 ml-auto">
+                          {badge && hasAccess && (
+                            <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-xs font-medium">
+                              {badge}
+                            </span>
+                          )}
+                          {!hasAccess && (
+                            <div className="flex items-center gap-1">
+                              <Lock className="w-3 h-3 text-muted-foreground/70" />
+                              <Badge variant="outline" className="text-xs px-1 py-0 h-4">
+                                {currentPlan === 'free' ? 'Starter+' : 
+                                 currentPlan === 'starter' ? 'Pro+' : 'Enterprise'}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
                       </>
                     )}
                   </button>
@@ -283,10 +319,16 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     </TooltipTrigger>
                     <TooltipContent side="right" className="flex items-center gap-2 bg-popover border border-border shadow-md">
                       <span className="font-medium">{item.name}</span>
-                      {badge && (
+                      {badge && hasAccess && (
                         <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-xs font-medium">
                           {badge}
                         </span>
+                      )}
+                      {!hasAccess && (
+                        <div className="flex items-center gap-1">
+                          <Lock className="w-3 h-3 text-muted-foreground/70" />
+                          <Badge variant="outline" className="text-xs">Upgrade</Badge>
+                        </div>
                       )}
                     </TooltipContent>
                   </Tooltip>
@@ -307,38 +349,62 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     {adminNavigation.map((item) => {
                     const isActive = location === item.href;
                     const Icon = item.icon;
+                    const hasAccess = hasFeature(item.feature);
+                    const currentPlan = subscriptionManager.getCurrentPlan();
                     
                     const adminButton = (
                       <button
                         key={item.name}
                         onClick={() => {
-                          navigate(item.href);
-                          onClose();
+                          if (hasAccess) {
+                            navigate(item.href);
+                            onClose();
+                          } else {
+                            navigate('/subscription');
+                            onClose();
+                          }
                         }}
                         className={cn(
-                          "w-full group flex items-center text-sm font-medium transition-all duration-200",
+                          "w-full group flex items-center text-sm font-medium transition-all duration-200 relative",
                           collapsed 
                             ? "justify-center p-2 rounded-lg hover:bg-muted/50" 
                             : "px-3 py-2.5 rounded-lg hover:bg-muted/80",
-                          isActive
+                          isActive && hasAccess
                             ? collapsed 
                               ? "bg-club-primary text-white" 
                               : "bg-club-primary/10 text-club-primary border-l-4 border-club-primary"
-                            : "text-muted-foreground hover:text-foreground"
+                            : hasAccess 
+                              ? "text-muted-foreground hover:text-foreground"
+                              : "text-muted-foreground/50 cursor-not-allowed"
                         )}
+                        disabled={!hasAccess}
                       >
                         <Icon
                           className={cn(
                             "flex-shrink-0 transition-colors",
                             collapsed ? "w-5 h-5" : "w-4 h-4 mr-3",
-                            isActive 
+                            isActive && hasAccess
                               ? collapsed 
                                 ? "text-white" 
                                 : "text-club-primary" 
-                              : "text-muted-foreground group-hover:text-foreground"
+                              : hasAccess 
+                                ? "text-muted-foreground group-hover:text-foreground"
+                                : "text-muted-foreground/50"
                           )}
                         />
-                        {!collapsed && <span className="font-medium">{item.name}</span>}
+                        {!collapsed && (
+                          <div className="flex items-center justify-between w-full">
+                            <span className="font-medium">{item.name}</span>
+                            {!hasAccess && (
+                              <div className="flex items-center gap-1">
+                                <Lock className="w-3 h-3 text-muted-foreground/70" />
+                                <Badge variant="outline" className="text-xs px-1 py-0 h-4">
+                                  {currentPlan === 'free' ? 'Starter+' : 'Pro+'}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </button>
                     );
 
@@ -348,7 +414,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                           {adminButton}
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-popover border border-border shadow-md">
-                          <span className="font-medium">{item.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{item.name}</span>
+                            {!hasAccess && (
+                              <div className="flex items-center gap-1">
+                                <Lock className="w-3 h-3 text-muted-foreground/70" />
+                                <Badge variant="outline" className="text-xs">Upgrade</Badge>
+                              </div>
+                            )}
+                          </div>
                         </TooltipContent>
                       </Tooltip>
                     ) : adminButton;
@@ -359,14 +433,77 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             )}
 
             {/* Super Admin Navigation */}
-            {currentUser && (
-              <SuperAdminNavigation 
-                navigation={superAdminNavigation}
-                location={location}
-                navigate={navigate}
-                onClose={onClose}
-                collapsed={collapsed}
-              />
+            {(superAdminStatus as any)?.isSuperAdmin && (
+              <div className={cn("mt-6", collapsed ? "px-2" : "px-3")}>
+                <div className="border-t border-border pt-4">
+                  {!collapsed && (
+                    <div className="px-3 flex items-center gap-2 mb-3">
+                      <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                        Super Administrator
+                      </p>
+                      <Badge variant="outline" className="text-xs px-1 py-0 h-4 border-orange-400 text-orange-600">
+                        ADMIN
+                      </Badge>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    {superAdminNavigation.map((item) => {
+                      const isActive = location === item.href;
+                      const Icon = item.icon;
+                      
+                      const superAdminButton = (
+                        <button
+                          key={item.name}
+                          onClick={() => {
+                            navigate(item.href);
+                            onClose();
+                          }}
+                          className={cn(
+                            "w-full group flex items-center text-sm font-medium transition-all duration-200 relative",
+                            collapsed 
+                              ? "justify-center p-2 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20" 
+                              : "px-3 py-2.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20",
+                            isActive
+                              ? collapsed 
+                                ? "bg-orange-500 text-white" 
+                                : "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500"
+                              : "text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300"
+                          )}
+                        >
+                          <Icon
+                            className={cn(
+                              "flex-shrink-0 transition-colors",
+                              collapsed ? "w-5 h-5" : "w-4 h-4 mr-3",
+                              isActive 
+                                ? collapsed 
+                                  ? "text-white" 
+                                  : "text-orange-600 dark:text-orange-400" 
+                                : "text-orange-600 dark:text-orange-400"
+                            )}
+                          />
+                          {!collapsed && <span className="font-medium">{item.name}</span>}
+                        </button>
+                      );
+
+                      return collapsed ? (
+                        <Tooltip key={item.name}>
+                          <TooltipTrigger asChild>
+                            {superAdminButton}
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-popover border border-border shadow-md">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{item.name}</span>
+                              <Badge variant="outline" className="text-xs border-orange-400 text-orange-600">
+                                ADMIN
+                              </Badge>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : superAdminButton;
+                    })}
+                  </div>
+                </div>
+              </div>
             )}
           </nav>
 

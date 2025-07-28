@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useClub } from '@/hooks/use-club';
 import { usePage } from '@/contexts/PageContext';
 import { apiRequest } from '@/lib/queryClient';
+import { FeatureGate } from "@/components/FeatureGate";
 import { 
   UserCog, 
   Search, 
@@ -265,8 +266,9 @@ export default function Users() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-auto p-6 space-y-6">
+    <FeatureGate feature="userManagement">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-auto p-6 space-y-6">
 
       {/* Filters and Search */}
       <Card>
@@ -649,8 +651,9 @@ export default function Users() {
           )}
         </DialogContent>
       </Dialog>
+        </div>
       </div>
-    </div>
+    </FeatureGate>
   );
 }
 

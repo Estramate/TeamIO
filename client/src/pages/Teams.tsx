@@ -8,6 +8,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { invalidateEntityData } from "@/lib/cache-invalidation";
+import { FeatureGate, MemberLimitWarning } from "@/components/FeatureGate";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -463,7 +464,7 @@ export default function Teams() {
   }
 
   return (
-    <>
+    <FeatureGate feature="teamManagement">
       <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
         {/* Header Section with Search, Filters and Add Button */}
         <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
@@ -1229,6 +1230,7 @@ export default function Teams() {
           )}
         </DialogContent>
       </Dialog>
-    </>
+      </div>
+    </FeatureGate>
   );
 }

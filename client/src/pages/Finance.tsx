@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { FeatureGate } from "@/components/FeatureGate";
 import { 
   Euro, 
   Search, 
@@ -56,6 +57,7 @@ import {
   User,
   CheckCircle
 } from "lucide-react";
+import { FeatureGate } from "@/components/FeatureGate";
 import { FeesTabContent } from "./Finance-Fees";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -706,8 +708,9 @@ export default function Finance() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background">
-      <div className="p-4 sm:p-6">
+    <FeatureGate feature="financialReports">
+      <div className="flex-1 overflow-y-auto bg-background">
+        <div className="p-4 sm:p-6">
         <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3 bg-muted p-1 rounded-lg h-auto">
             <TabsTrigger value="overview" className="rounded-md text-xs sm:text-sm py-2 sm:py-2.5">Übersicht</TabsTrigger>
@@ -2089,7 +2092,8 @@ export default function Finance() {
             </Form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
-    </div>
+    </FeatureGate>
   );
 }

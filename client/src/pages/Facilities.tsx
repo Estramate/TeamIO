@@ -7,6 +7,7 @@ import { usePage } from "@/contexts/PageContext";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { invalidateEntityData } from "@/lib/cache-invalidation";
+import { FeatureGate } from "@/components/FeatureGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -439,7 +440,8 @@ export default function Facilities() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
+    <FeatureGate feature="facilityBooking">
+      <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
       {/* Header Section with Search, Filters and Add Button */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
         <div className="flex flex-col gap-4">
@@ -1053,6 +1055,7 @@ export default function Facilities() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </FeatureGate>
   );
 }

@@ -30,8 +30,7 @@ const requiresClubAdmin = async (req: any, res: any, next: any) => {
   }
   
   try {
-    const { getStorage } = await import("../storage");
-    const storage = getStorage();
+    const { storage } = await import("../storage");
     
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
     if (!adminMembership || adminMembership.role !== 'club-administrator') {

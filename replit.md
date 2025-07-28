@@ -7,6 +7,12 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 **Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. All critical bugs resolved and application running smoothly.
 
 ## Recent Changes
+- **2025-07-28**: SUBSCRIPTION-BERECHTIGUNGSFEHLER BEHOBEN - Club-Administratoren können jetzt Subscription-Daten laden
+  - **requiresClubAdmin Middleware repariert**: Prüft jetzt korrekt auf roleId und role.name statt veraltetes role-Feld
+  - **403-Forbidden-Fehler behoben**: GET /api/subscriptions/club/1 funktioniert jetzt für Club-Administratoren
+  - **Rollenbasierte Berechtigungsprüfung korrigiert**: System verwendet jetzt das normalisierte Rollen-System
+  - **Subscription-Interface funktionsfähig**: Club-Administratoren haben wieder Zugriff auf Plan-Verwaltung
+
 - **2025-07-28**: CLUB-ADMINISTRATOR ROLLENANZEIGE REPARIERT - Korrekte Darstellung der Vereins-Mitgliedschaftsrollen
   - **Hardcodierter Eventmanager-Fallback entfernt**: SuperAdminModals.tsx Zeile 565 hatte '|| 8' statt korrekter roleId
   - **Club-Administrator-Rolle korrekt angezeigt**: Benutzer mit roleId=3 zeigen jetzt "Club Administrator" statt "Eventmanager"

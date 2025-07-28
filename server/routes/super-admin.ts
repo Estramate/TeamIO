@@ -310,6 +310,7 @@ router.get("/subscription-analytics",
         if (sub.status === 'active') {
           // Check if subscription has unlimited end date (unbegrenzt = year 2099+)
           const endDate = new Date(sub.currentPeriodEnd || '2025-01-01');
+          console.log(`🔍 Checking subscription for club ${sub.clubId}: endDate=${endDate.getFullYear()}, currentPeriodEnd=${sub.currentPeriodEnd}`);
           if (endDate.getFullYear() > 2030) {
             console.log(`🚫 Skipping revenue for club ${sub.clubId} - Unlimited subscription (ends ${endDate.getFullYear()})`);
             return; // Skip this iteration - don't add to revenue

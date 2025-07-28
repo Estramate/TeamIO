@@ -460,7 +460,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             </div>
 
             {/* Admin Section - Only for club administrators */}
-            {(userMembership as any)?.role === 'club-administrator' && (
+            {(userMembership as any)?.roleName === 'club-administrator' && (
               <div className={cn("mt-6", collapsed ? "px-2" : "px-3")}>
                 <div className="border-t border-border pt-4">
                   {!collapsed && (
@@ -614,8 +614,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         (currentUser as any)?.email || 'Benutzer'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {roles && (userMembership as any)?.role 
-                        ? getRoleDisplayName((userMembership as any).role, roles)
+                      {roles && (userMembership as any)?.roleName 
+                        ? getRoleDisplayName((userMembership as any).roleName, roles)
                         : 'Benutzer'}
                     </p>
                   </div>
@@ -633,8 +633,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       (currentUser as any)?.email || 'Benutzer'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {roles && (userMembership as any)?.role 
-                      ? getRoleDisplayName((userMembership as any).role, roles)
+                    {roles && (userMembership as any)?.roleName 
+                      ? getRoleDisplayName((userMembership as any).roleName, roles)
                       : 'Benutzer'}
                   </p>
                 </div>

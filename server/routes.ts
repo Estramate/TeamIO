@@ -378,7 +378,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     res.json({
       isMember: !!membership,
-      role: roleName,
+      roleId: membership?.roleId || null,
+      roleName: roleName,
       joinedAt: membership?.joinedAt || null
     });
   }));
@@ -2865,8 +2866,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Super Admin - Subscription Management API Routes
   app.patch('/api/admin/subscription-plans/:planType/price', isAuthenticated, async (req: any, res) => {
     try {
-      // Check if user is super admin
-      if (!req.user || req.user.role !== 'super_admin') {
+      // Check if user is super admin using database
+      const user = await storage.getUserById(req.user.id);
+      if (!user || !user.isSuperAdmin) {
         return res.status(403).json({ message: "Super admin access required" });
       }
 
@@ -2893,8 +2895,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch('/api/admin/subscription-plans/:planType/limits', isAuthenticated, async (req: any, res) => {
     try {
-      // Check if user is super admin
-      if (!req.user || req.user.role !== 'super_admin') {
+      // Check if user is super admin using database
+      const user = await storage.getUserById(req.user.id);
+      if (!user || !user.isSuperAdmin) {
         return res.status(403).json({ message: "Super admin access required" });
       }
 
@@ -2921,8 +2924,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/upgrade-notifications', isAuthenticated, async (req: any, res) => {
     try {
-      // Check if user is super admin
-      if (!req.user || req.user.role !== 'super_admin') {
+      // Check if user is super admin using database
+      const user = await storage.getUserById(req.user.id);
+      if (!user || !user.isSuperAdmin) {
         return res.status(403).json({ message: "Super admin access required" });
       }
 

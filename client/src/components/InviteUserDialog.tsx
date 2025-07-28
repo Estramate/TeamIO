@@ -52,7 +52,7 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
     resolver: zodResolver(emailInvitationFormSchema),
     defaultValues: {
       email: '',
-      role: 'member',
+      roleId: 1, // Member role ID
       personalMessage: '',
     },
   });
@@ -87,9 +87,9 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
   };
 
   const roleOptions = [
-    { value: 'member', label: 'Mitglied' },
-    { value: 'trainer', label: 'Trainer' },
-    { value: 'club-administrator', label: 'Vereinsadministrator' },
+    { value: 1, label: 'Mitglied' },
+    { value: 2, label: 'Trainer' },
+    { value: 3, label: 'Vereinsadministrator' },
   ];
 
   return (
@@ -138,11 +138,11 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
 
             <FormField
               control={form.control}
-              name="role"
+              name="roleId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Rolle</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Rolle auswählen" />
@@ -150,7 +150,7 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
                     </FormControl>
                     <SelectContent>
                       {roleOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
+                        <SelectItem key={option.value} value={option.value.toString()}>
                           {option.label}
                         </SelectItem>
                       ))}

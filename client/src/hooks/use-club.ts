@@ -7,7 +7,8 @@ interface Club {
   name: string;
   shortName?: string;
   logoUrl?: string;
-  role: string;
+  roleId: number;
+  roleName: string;
   status: string;
 }
 

@@ -14,7 +14,7 @@ import type { User } from '@shared/schemas/core';
 export interface InvitationData {
   clubId: number;
   email: string;
-  role: string;
+  roleId: number;
   invitedBy: string;
   personalMessage?: string;
 }
@@ -77,7 +77,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
  */
 export async function sendUserInvitation(invitationData: InvitationData): Promise<{ success: boolean; invitationId?: number; error?: string }> {
   try {
-    const { clubId, email, role, invitedBy, personalMessage } = invitationData;
+    const { clubId, email, roleId, invitedBy, personalMessage } = invitationData;
     
     // Check if user already exists
     const existingUser = await storage.getUserByEmail(email);
@@ -105,7 +105,7 @@ export async function sendUserInvitation(invitationData: InvitationData): Promis
       clubId,
       invitedBy,
       email,
-      role,
+      roleId,
       token,
       expiresAt,
       status: 'pending'
@@ -119,12 +119,16 @@ export async function sendUserInvitation(invitationData: InvitationData): Promis
       throw new ValidationError('Club oder Einladender nicht gefunden');
     }
 
+    // Get role information
+    const role = await storage.getRoleById(roleId);
+    const roleName = role?.displayName || 'Mitglied';
+
     // Send invitation email
     const emailSent = await sendInvitationEmail({
       to: email,
       clubName: club.name,
       inviterName: `${inviter.firstName} ${inviter.lastName}`,
-      role: role,
+      role: roleName,
       personalMessage,
       invitationUrl: `${process.env.APP_URL || 'https://clubflow.replit.app'}/register?token=${token}`,
       expiresAt
@@ -201,7 +205,7 @@ export async function registerUserFromInvitation(registrationData: RegistrationD
     await storage.createClubMembership({
       userId: user.id,
       clubId: invitation.clubId,
-      role: invitation.role,
+      roleId: invitation.roleId,
       status: 'active'
     });
 

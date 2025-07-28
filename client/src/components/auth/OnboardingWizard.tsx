@@ -52,7 +52,7 @@ export function OnboardingWizard({ onComplete, onClose, isOpen }: OnboardingWiza
       const response = await fetch(`/api/clubs/${clubId}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'member' }),
+        body: JSON.stringify({ roleId: 1 }), // Member role ID
       });
       
       if (!response.ok) {

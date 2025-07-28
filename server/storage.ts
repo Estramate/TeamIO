@@ -280,7 +280,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select()
       .from(roles)
       .where(eq(roles.isActive, true))
-      .orderBy(roles.sortOrder);
+      .orderBy(asc(roles.sortOrder));
   }
 
   async getRoleById(id: number): Promise<Role | undefined> {

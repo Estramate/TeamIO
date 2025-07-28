@@ -28,7 +28,11 @@ export function useRoles() {
       return await apiRequest('/api/super-admin/roles');
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - roles don't change often
-    gcTime: 10 * 60 * 1000 // 10 minutes (updated from cacheTime)
+    gcTime: 10 * 60 * 1000, // 10 minutes (updated from cacheTime)
+    select: (data) => {
+      // Sort roles by sort_order for consistent display
+      return data?.sort((a: any, b: any) => (a.sortOrder || 999) - (b.sortOrder || 999));
+    }
   });
 }
 

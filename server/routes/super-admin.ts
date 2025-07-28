@@ -610,53 +610,94 @@ router.put("/users/:id",
       const { firstName, lastName, email, isActive, clubMemberships } = req.body;
       const { storage } = await import("../storage");
       
+      console.log(`🔧 SUPER ADMIN DEBUG: Updating user ${userId}`);
+      console.log(`🔧 SUPER ADMIN DEBUG: Request data:`, JSON.stringify(req.body, null, 2));
+      
       // Update user basic information
       const user = await storage.updateUser(userId, {
         firstName,
         lastName,
-        email,
+        email, 
         isActive,
       });
       
       // Handle club memberships if provided
       if (clubMemberships && Array.isArray(clubMemberships)) {
-        console.log(`Processing ${clubMemberships.length} club memberships for user ${userId}`);
+        console.log(`🔧 SUPER ADMIN DEBUG: Processing ${clubMemberships.length} club memberships for user ${userId}`);
         
         for (const membership of clubMemberships) {
+          console.log(`🔧 SUPER ADMIN DEBUG: Processing membership:`, JSON.stringify(membership, null, 2));
+          
           try {
             if (membership.toDelete && !membership.isNew) {
               // Delete existing membership
-              console.log(`Removing user ${userId} from club ${membership.clubId}`);
+              console.log(`🗑️ SUPER ADMIN: Removing user ${userId} from club ${membership.clubId}`);
               await storage.removeUserFromClub(userId, membership.clubId);
             } else if (membership.isNew) {
               // Add new membership
               const memberRole = await storage.getRoleById(membership.roleId);
-              console.log(`Adding user ${userId} to club ${membership.clubId} as ${memberRole?.name || 'member'}`);
+              console.log(`➕ SUPER ADMIN: Adding user ${userId} to club ${membership.clubId} as ${memberRole?.name} (roleId: ${membership.roleId})`);
               await storage.addUserToClub({
                 userId,
                 clubId: membership.clubId,
                 roleId: membership.roleId,
-                status: membership.status,
+                status: membership.status || 'active',
                 joinedAt: new Date(),
               });
             } else if (membership.isModified) {
-              // Update existing membership
-              console.log(`Updating membership for user ${userId} in club ${membership.clubId}`);
-              await storage.updateClubMembership(userId, membership.clubId, {
+              // Update existing membership - THIS IS THE CRITICAL PART FOR ROLE CHANGES
+              console.log(`🔧 SUPER ADMIN DEBUG: Updating membership for user ${userId} in club ${membership.clubId}`);
+              console.log(`🔧 SUPER ADMIN DEBUG: Setting roleId from ${membership.role} to ${membership.roleId}`);
+              
+              const updateResult = await storage.updateClubMembership(userId, membership.clubId, {
                 roleId: membership.roleId,
-                status: membership.status,
+                status: membership.status || 'active',
               });
+              console.log(`✅ SUPER ADMIN: Updated user ${userId} membership in club ${membership.clubId} to role ${membership.roleId}`);
+              console.log(`🔍 SUPER ADMIN DEBUG: Update result:`, updateResult);
             }
           } catch (membershipError) {
-            console.error(`Error processing membership for club ${membership.clubId}:`, membershipError);
+            console.error(`❌ Error processing membership for club ${membership.clubId}:`, membershipError);
             // Continue processing other memberships even if one fails
           }
         }
       }
       
-      res.json(user);
+      // Get updated user data with memberships
+      const updatedUser = await storage.getUser(userId);
+      const updatedMemberships = await storage.getUserClubMemberships(userId);
+      
+      // Get club names for memberships
+      const membershipDetails = await Promise.all(
+        updatedMemberships.map(async (membership: any) => {
+          const club = await storage.getClub(membership.clubId);
+          const role = await storage.getRoleById(membership.roleId);
+          return {
+            clubId: membership.clubId,
+            clubName: club?.name || 'Unknown Club',
+            role: role?.name || 'member',
+            roleName: role?.name || 'member',
+            roleDisplayName: role?.displayName || 'Member',
+            status: membership.status,
+            joinedAt: membership.joinedAt,
+            roleId: membership.roleId,
+          };
+        })
+      );
+      
+      console.log(`✅ SUPER ADMIN: User ${userId} updated successfully`);
+      console.log(`✅ SUPER ADMIN: Updated memberships:`, membershipDetails);
+      
+      res.json({
+        success: true,
+        user: {
+          ...updatedUser,
+          memberships: membershipDetails,
+        },
+        message: "User updated successfully"
+      });
     } catch (error) {
-      console.error("Error updating user:", error);
+      console.error("❌ Error updating user:", error);
       res.status(500).json({ error: "Failed to update user" });
     }
   }));

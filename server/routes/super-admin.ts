@@ -601,7 +601,7 @@ router.post("/clubs/:id/deactivate",
     }
   }));
 
-// PUT /api/super-admin/users/:id - Update user with club memberships
+// PUT /api/super-admin/users/:id - Update user with club memberships (NO ZOD VALIDATION)
 router.put("/users/:id",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
@@ -802,14 +802,17 @@ router.get("/email-stats",
     }
   }));
 
-// Schema for updating user
+// Schema for updating user (REMOVED ROLE VALIDATION - roleId is used instead)
 const updateUserSchema = z.object({
   email: z.string().email("Valid email is required"),
   isActive: z.boolean().default(true),
   clubMemberships: z.array(z.object({
     clubId: z.number(),
     clubName: z.string().optional(),
-    role: z.enum(['member', 'trainer', 'administrator', 'club-administrator']),
+    role: z.string().optional(), // Allow any role name string (no enum validation)
+    roleId: z.number().optional(), // Actual role ID used for updates
+    roleName: z.string().optional(),
+    roleDisplayName: z.string().optional(),
     status: z.enum(['active', 'inactive', 'suspended']),
     isNew: z.boolean().optional(),
     isModified: z.boolean().optional(),

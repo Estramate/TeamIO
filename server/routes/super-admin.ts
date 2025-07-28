@@ -984,4 +984,71 @@ router.get("/clubs-eligible/:targetPlan",
     }
   }));
 
+// GET /api/super-admin/subscription-plans - Get all subscription plans
+router.get("/subscription-plans",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const { storage } = await import("../storage");
+      
+      // Get all subscription plans from database
+      const subscriptionPlans = await storage.getSubscriptionPlans();
+      
+      console.log(`📋 Super Admin Subscription Plans - Found ${subscriptionPlans.length} plans`);
+      
+      res.json(subscriptionPlans);
+    } catch (error) {
+      console.error("Error fetching subscription plans:", error);
+      res.status(500).json({ error: "Failed to fetch subscription plans" });
+    }
+  }));
+
+// POST /api/super-admin/subscription-plans/update-price - Update plan price
+router.post("/subscription-plans/update-price",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const { planType, price, interval } = req.body;
+      const { storage } = await import("../storage");
+      
+      // Update plan price in database
+      const updatedPlan = await storage.updateSubscriptionPlanPrice(planType, price, interval);
+      
+      console.log(`💰 Super Admin Action: Updated ${planType} ${interval} price to €${price}`);
+      
+      res.json({
+        success: true,
+        plan: updatedPlan,
+        message: `Price updated successfully for ${planType} plan`
+      });
+    } catch (error) {
+      console.error("Error updating plan price:", error);
+      res.status(500).json({ error: "Failed to update plan price" });
+    }
+  }));
+
+// POST /api/super-admin/subscription-plans/update-limits - Update plan limits
+router.post("/subscription-plans/update-limits",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const { planType, limits } = req.body;
+      const { storage } = await import("../storage");
+      
+      // Update plan limits in database
+      const updatedPlan = await storage.updateSubscriptionPlanLimits(planType, limits);
+      
+      console.log(`📊 Super Admin Action: Updated ${planType} limits:`, limits);
+      
+      res.json({
+        success: true,
+        plan: updatedPlan,
+        message: `Limits updated successfully for ${planType} plan`
+      });
+    } catch (error) {
+      console.error("Error updating plan limits:", error);
+      res.status(500).json({ error: "Failed to update plan limits" });
+    }
+  }));
+
 export default router;

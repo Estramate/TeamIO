@@ -366,6 +366,13 @@ function PriceAdjustmentModal({ open, onClose }: PriceAdjustmentModalProps) {
     enabled: open,
   });
 
+  // Debug subscription plans data
+  if (subscriptionPlans) {
+    console.log('🔍 PRICE MODAL DEBUG - Subscription Plans:', subscriptionPlans);
+    console.log('🔍 Plans length:', subscriptionPlans?.length);
+    console.log('🔍 First plan:', subscriptionPlans?.[0]);
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -529,6 +536,13 @@ function PlanLimitsModal({ open, onClose }: PlanLimitsModalProps) {
     queryKey: ['/api/super-admin/subscription-plans'],
     enabled: open,
   });
+
+  // Debug subscription plans data
+  if (subscriptionPlans) {
+    console.log('🔍 LIMITS MODAL DEBUG - Subscription Plans:', subscriptionPlans);
+    console.log('🔍 Plans length:', subscriptionPlans?.length);
+    console.log('🔍 First plan:', subscriptionPlans?.[0]);
+  }
 
   // Update form when plan is selected
   const handlePlanSelect = (planType: string) => {

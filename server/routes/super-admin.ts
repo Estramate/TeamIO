@@ -281,17 +281,17 @@ router.delete("/clubs/:clubId",
     }
   }));
 
-// GET /api/super-admin/subscription-analytics - Get subscription analytics
+// GET /api/super-admin/subscription-analytics - Get subscription analytics (aggregated across all clubs)
 router.get("/subscription-analytics",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
       const { storage } = await import("../storage");
       
-      // Get all club subscriptions
+      // Get all club subscriptions (system-wide view for Super Admin)
       const clubSubscriptions = await storage.getAllClubSubscriptions();
       
-      // Count plans by type
+      // Count plans by type across all clubs
       const planCounts = {
         free: 0,
         starter: 0,
@@ -319,7 +319,7 @@ router.get("/subscription-analytics",
           // Check if subscription has unlimited end date (unbegrenzt = year 2099+)
           const endDate = new Date(sub.currentPeriodEnd || '2025-01-01');
           const endYear = endDate.getFullYear();
-          console.log(`🔍 Checking subscription for club ${sub.clubId}: endYear=${endYear}, currentPeriodEnd=${sub.currentPeriodEnd}`);
+          console.log(`🔍 Super Admin Analytics - Club ${sub.clubId}: endYear=${endYear}, currentPeriodEnd=${sub.currentPeriodEnd}`);
           if (endYear > 2030) {
             console.log(`🚫 Skipping revenue for club ${sub.clubId} - Unlimited subscription (ends ${endYear})`);
             return; // Skip this iteration - don't add to revenue

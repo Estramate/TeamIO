@@ -20,10 +20,10 @@ import { requiresSuperAdmin, hasSuperAdminAccess } from "../lib/super-admin";
 
 const router = Router();
 
-// Admin-only middleware for subscription routes
+// Club admin middleware - CLUB-SPECIFIC: Only allows access to own club's subscription
 const requiresClubAdmin = async (req: any, res: any, next: any) => {
   const clubId = parseInt(req.params.clubId);
-  const userId = req.user.claims.sub;
+  const userId = req.user.claims?.sub || req.user.id;
   
   if (!clubId || !userId) {
     return res.status(400).json({ error: "Missing club ID or user ID" });
@@ -32,11 +32,13 @@ const requiresClubAdmin = async (req: any, res: any, next: any) => {
   try {
     const { storage } = await import("../storage");
     
+    // Check if user is admin of THIS SPECIFIC CLUB
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
     if (!adminMembership || adminMembership.role !== 'club-administrator') {
       return res.status(403).json({ error: 'You must be a club administrator to access subscription management' });
     }
     
+    console.log(`✅ Club admin access granted for user ${userId} to club ${clubId}`);
     next();
   } catch (error) {
     console.error("Error checking admin permissions:", error);

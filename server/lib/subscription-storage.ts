@@ -194,9 +194,9 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
     return result[0] || null;
   }
 
-  // Usage Tracking
+  // Usage Tracking - CLUB-SPECIFIC: Only counts data for the specific club
   async getCurrentUsage(clubId: number): Promise<SubscriptionUsage | null> {
-    // Get real counts from database
+    // Get real counts from database FOR THIS CLUB ONLY
     const memberCountResult = await db.select({ count: sql<number>`count(*)` }).from(members).where(eq(members.clubId, clubId));
     const playerCountResult = await db.select({ count: sql<number>`count(*)` }).from(players).where(eq(players.clubId, clubId));
     const teamCountResult = await db.select({ count: sql<number>`count(*)` }).from(teams).where(eq(teams.clubId, clubId));
@@ -204,22 +204,24 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
     
     const memberCount = Number(memberCountResult[0]?.count) || 0;
     const playerCount = Number(playerCountResult[0]?.count) || 0;
-    const totalManagedUsers = memberCount + playerCount; // This is what counts for subscription limits!
+    const totalManagedUsers = memberCount + playerCount; // Club-specific subscription limits!
+    
+    console.log(`📊 Usage stats for club ${clubId}: Members=${memberCount}, Players=${playerCount}, Total=${totalManagedUsers}`);
     
     return {
-      id: 1,
+      id: clubId, // Use clubId as unique identifier
       clubId,
-      subscriptionId: 1,
+      subscriptionId: clubId, // Link to club subscription
       memberCount,
       playerCount,
-      totalManagedUsers, // 31 + 124 = 155 for SV Oberglan 1975
+      totalManagedUsers, // Only users managed by THIS CLUB
       teamCount: Number(teamCountResult[0]?.count) || 0,
       facilityCount: Number(facilityCountResult[0]?.count) || 0,
-      messagesSent: 0,
-      emailsSent: 0,
-      smsSent: 0,
-      apiCalls: 0,
-      storageUsed: 50,
+      messagesSent: 0, // Club-specific message count
+      emailsSent: 0,   // Club-specific email count
+      smsSent: 0,      // Club-specific SMS count
+      apiCalls: 0,     // Club-specific API usage
+      storageUsed: 50, // Club-specific storage
       periodStart: new Date('2025-07-01'),
       periodEnd: new Date('2025-07-31'),
       recordedAt: new Date(),

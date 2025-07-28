@@ -93,15 +93,15 @@ export function EmailSettingsModal({ open, onClose }: EmailSettingsModalProps) {
             ) : emailStats ? (
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold">{emailStats.sent.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">{(emailStats as any)?.sent?.toLocaleString() || 0}</div>
                   <div className="text-sm text-muted-foreground">Gesendet</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{emailStats.deliveryRate}%</div>
+                  <div className="text-2xl font-bold text-green-600">{(emailStats as any)?.deliveryRate || 0}%</div>
                   <div className="text-sm text-muted-foreground">Zugestellt</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">{emailStats.bounces}</div>
+                  <div className="text-2xl font-bold text-red-600">{(emailStats as any)?.bounces || 0}</div>
                   <div className="text-sm text-muted-foreground">Bounces</div>
                 </div>
               </div>
@@ -160,11 +160,11 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
   };
 
   // Debug revenue calculation
-  if (analytics && analytics.revenue) {
+  if (analytics && (analytics as any)?.revenue) {
     console.log('🔍 SUBSCRIPTION MODAL DEBUG - Revenue Calculation:');
     console.log('Analytics data:', analytics);
-    console.log('Current revenue:', analytics.revenue.current);
-    console.log('Previous revenue:', analytics.revenue.previous);
+    console.log('Current revenue:', (analytics as any)?.revenue?.current);
+    console.log('Previous revenue:', (analytics as any)?.revenue?.previous);
     console.log('Full analytics object:', JSON.stringify(analytics, null, 2));
   }
 
@@ -211,19 +211,19 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
             ) : analytics ? (
               <div className="grid grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{analytics.planCounts?.free || 0}</div>
+                  <div className="text-2xl font-bold text-blue-600">{(analytics as any)?.planCounts?.free || 0}</div>
                   <div className="text-sm text-blue-600">Free Plans</div>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{analytics.planCounts?.starter || 0}</div>
+                  <div className="text-2xl font-bold text-green-600">{(analytics as any)?.planCounts?.starter || 0}</div>
                   <div className="text-sm text-green-600">Starter Plans</div>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">{analytics.planCounts?.professional || 0}</div>
+                  <div className="text-2xl font-bold text-purple-600">{(analytics as any)?.planCounts?.professional || 0}</div>
                   <div className="text-sm text-purple-600">Professional Plans</div>
                 </div>
                 <div className="text-center p-4 bg-orange-50 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">{analytics.planCounts?.enterprise || 0}</div>
+                  <div className="text-2xl font-bold text-orange-600">{(analytics as any)?.planCounts?.enterprise || 0}</div>
                   <div className="text-sm text-orange-600">Enterprise Plans</div>
                 </div>
               </div>
@@ -239,22 +239,26 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
           {/* Monthly Revenue with real data */}
           <div>
             <h3 className="text-lg font-medium mb-3">Umsatz-Übersicht</h3>
-            {analytics && (
+            {analytics ? (
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">€{analytics.revenue?.current || 0}</div>
+                  <div className="text-2xl font-bold text-green-600">€{(analytics as any)?.revenue?.current || 0}</div>
                   <div className="text-sm text-green-600">Monatliches Einkommen</div>
                   <div className="text-xs text-green-500 mt-1">
                     Monatlich + Jährlich (anteilig)
                   </div>
                 </div>
                 <div className="p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">€{analytics.revenue?.previous || 0}</div>
+                  <div className="text-2xl font-bold text-blue-600">€{(analytics as any)?.revenue?.previous || 0}</div>
                   <div className="text-sm text-blue-600">Vorheriger Monat</div>
                   <div className="text-xs text-blue-500 mt-1">
                     Ohne unbegrenzte Pläne
                   </div>
                 </div>
+              </div>
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">
+                Keine Umsatz-Daten verfügbar
               </div>
             )}
           </div>
@@ -280,47 +284,6 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
               <Button 
                 variant="outline"
                 onClick={handleUpgradeNotifications}
-              >
-                Upgrade-Benachrichtigungen
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end pt-4">
-          <Button onClick={onClose}>Schließen</Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-                  toast({
-                    title: "Preise anpassen",
-                    description: "Funktion in Entwicklung - Preisanpassungen werden über die Datenbank verwaltet.",
-                  });
-                }}
-              >
-                Preise anpassen
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => {
-                  toast({
-                    title: "Plan-Limits bearbeiten", 
-                    description: "Benutzer-Limits können in der Plan-Konfiguration angepasst werden.",
-                  });
-                }}
-              >
-                Plan-Limits bearbeiten
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => {
-                  toast({
-                    title: "Upgrade-Benachrichtigungen",
-                    description: "E-Mail-System für Upgrade-Erinnerungen wird implementiert.",
-                  });
-                }}
               >
                 Upgrade-Benachrichtigungen
               </Button>

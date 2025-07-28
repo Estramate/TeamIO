@@ -57,7 +57,6 @@ import {
   User,
   CheckCircle
 } from "lucide-react";
-import { FeatureGate } from "@/components/FeatureGate";
 import { FeesTabContent } from "./Finance-Fees";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -218,15 +217,15 @@ export default function Finance() {
   const editFinanceForm = useForm({
     resolver: zodResolver(editFinanceFormSchema),
     defaultValues: {
-      type: 'income' as const,
+      type: 'income' as 'income' | 'expense',
       category: '',
       subcategory: '',
       amount: '',
       description: '',
       date: new Date().toISOString().split('T')[0],
       dueDate: '',
-      status: 'pending' as const,
-      priority: 'normal' as const,
+      status: 'pending' as 'pending' | 'paid' | 'overdue' | 'cancelled',
+      priority: 'normal' as 'low' | 'normal' | 'high' | 'urgent',
       paymentMethod: '',
       recurring: false,
       recurringInterval: '',
@@ -446,7 +445,7 @@ export default function Finance() {
     
     // Pre-populate edit form with existing data
     editFinanceForm.reset({
-      type: finance.type as 'income' | 'expense',
+      type: (finance.type === 'income' || finance.type === 'expense') ? finance.type : 'income',
       category: finance.category,
       subcategory: finance.subcategory || '',
       amount: finance.amount.toString(),
@@ -454,8 +453,8 @@ export default function Finance() {
       date: finance.date,
       dueDate: finance.dueDate || '',
       paymentMethod: finance.paymentMethod || '',
-      status: finance.status as 'pending' | 'paid' | 'overdue' | 'cancelled',
-      priority: (finance.priority as 'low' | 'normal' | 'high' | 'urgent') || 'normal',
+      status: (['pending', 'paid', 'overdue', 'cancelled'].includes(finance.status)) ? finance.status as 'pending' | 'paid' | 'overdue' | 'cancelled' : 'pending',
+      priority: (['low', 'normal', 'high', 'urgent'].includes(finance.priority || '')) ? finance.priority as 'low' | 'normal' | 'high' | 'urgent' : 'normal',
       recurring: finance.recurring || false,
       recurringInterval: finance.recurringInterval || '',
       notes: finance.notes || '',

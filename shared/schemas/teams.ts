@@ -76,21 +76,7 @@ export const playerTeamAssignments = pgTable("player_team_assignments", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Player statistics
-export const playerStats = pgTable("player_stats", {
-  id: serial("id").primaryKey(),
-  playerId: integer("player_id").notNull().references(() => players.id),
-  teamId: integer("team_id").notNull().references(() => teams.id),
-  season: varchar("season", { length: 20 }).notNull().default("2024/25"),
-  gamesPlayed: integer("games_played").notNull().default(0),
-  goals: integer("goals").notNull().default(0),
-  assists: integer("assists").notNull().default(0),
-  yellowCards: integer("yellow_cards").notNull().default(0),
-  redCards: integer("red_cards").notNull().default(0),
-  minutesPlayed: integer("minutes_played").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+// NOTE: playerStats table removed - was unused (0 rows)
 
 // Relations for teams and players
 export const teamsRelations = relations(teams, ({ one, many }) => ({
@@ -100,7 +86,7 @@ export const teamsRelations = relations(teams, ({ one, many }) => ({
   }),
   memberships: many(teamMemberships),
   playerAssignments: many(playerTeamAssignments),
-  playerStats: many(playerStats),
+  // playerStats removed - table deleted
 }));
 
 export const playersRelations = relations(players, ({ one, many }) => ({
@@ -109,7 +95,7 @@ export const playersRelations = relations(players, ({ one, many }) => ({
     references: [clubs.id],
   }),
   teamAssignments: many(playerTeamAssignments),
-  stats: many(playerStats),
+  // stats removed - playerStats table deleted
 }));
 
 export const playerTeamAssignmentsRelations = relations(playerTeamAssignments, ({ one }) => ({
@@ -123,16 +109,7 @@ export const playerTeamAssignmentsRelations = relations(playerTeamAssignments, (
   }),
 }));
 
-export const playerStatsRelations = relations(playerStats, ({ one }) => ({
-  player: one(players, {
-    fields: [playerStats.playerId],
-    references: [players.id],
-  }),
-  team: one(teams, {
-    fields: [playerStats.teamId],
-    references: [teams.id],
-  }),
-}));
+// NOTE: playerStatsRelations removed - playerStats table deleted
 
 // Insert schemas for teams and players
 export const insertTeamSchema = createInsertSchema(teams).omit({
@@ -153,11 +130,7 @@ export const insertPlayerTeamAssignmentSchema = createInsertSchema(playerTeamAss
   updatedAt: true,
 });
 
-export const insertPlayerStatsSchema = createInsertSchema(playerStats).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// NOTE: insertPlayerStatsSchema removed - playerStats table deleted
 
 // Form schemas for teams and players
 export const teamFormSchema = createInsertSchema(teams, {
@@ -199,5 +172,4 @@ export type Player = typeof players.$inferSelect;
 export type InsertPlayer = z.infer<typeof insertPlayerSchema>;
 export type PlayerTeamAssignment = typeof playerTeamAssignments.$inferSelect;
 export type InsertPlayerTeamAssignment = z.infer<typeof insertPlayerTeamAssignmentSchema>;
-export type PlayerStats = typeof playerStats.$inferSelect;
-export type InsertPlayerStats = z.infer<typeof insertPlayerStatsSchema>;
+// NOTE: PlayerStats types removed - playerStats table deleted

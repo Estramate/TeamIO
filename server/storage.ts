@@ -8,17 +8,13 @@ import {
   teamMemberships,
   players,
   playerTeamAssignments,
-  playerStats,
   facilities,
   bookings,
   finances,
-  memberFees,
-  trainingFees,
   messages,
   messageRecipients,
   announcements,
   notifications,
-  communicationPreferences,
   type User,
   type UpsertUser,
   type Club,
@@ -37,18 +33,13 @@ import {
   type InsertPlayer,
   type PlayerTeamAssignment,
   type InsertPlayerTeamAssignment,
-  type PlayerStats,
-  type InsertPlayerStats,
   type Facility,
   type InsertFacility,
   type Booking,
   type InsertBooking,
   type Finance,
   type InsertFinance,
-  type MemberFee,
-  type InsertMemberFee,
-  type TrainingFee,
-  type InsertTrainingFee,
+  // NOTE: PlayerStats, MemberFee, TrainingFee types removed - tables deleted
   type Message,
   type InsertMessage,
   type MessageRecipient,
@@ -717,7 +708,6 @@ export class DatabaseStorage implements IStorage {
       await db.delete(playerTeamAssignments).where(eq(playerTeamAssignments.teamId, id));
       
       // Remove all player stats for this team  
-      await db.delete(playerStats).where(eq(playerStats.teamId, id));
       
       // Update any bookings that reference this team to set teamId to null
       await db.update(bookings)
@@ -975,64 +965,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Member fees operations (corrected)
-  async getMemberFees(clubId: number): Promise<MemberFee[]> {
-    return await db
-      .select()
-      .from(memberFees)
-      .where(eq(memberFees.clubId, clubId))
-      .orderBy(desc(memberFees.createdAt));
-  }
 
-  async createMemberFee(memberFee: InsertMemberFee): Promise<MemberFee> {
-    const [created] = await db
-      .insert(memberFees)
-      .values(memberFee)
-      .returning();
-    return created;
-  }
 
-  async updateMemberFee(id: number, memberFee: Partial<InsertMemberFee>): Promise<MemberFee> {
-    const [updated] = await db
-      .update(memberFees)
-      .set({ ...memberFee, updatedAt: new Date() })
-      .where(eq(memberFees.id, id))
-      .returning();
-    return updated;
-  }
 
-  async deleteMemberFee(id: number): Promise<void> {
-    await db.delete(memberFees).where(eq(memberFees.id, id));
-  }
 
   // Training fees operations (corrected)
-  async getTrainingFees(clubId: number): Promise<TrainingFee[]> {
-    return await db
-      .select()
-      .from(trainingFees)
-      .where(eq(trainingFees.clubId, clubId))
-      .orderBy(desc(trainingFees.createdAt));
-  }
 
-  async createTrainingFee(trainingFee: InsertTrainingFee): Promise<TrainingFee> {
-    const [created] = await db
-      .insert(trainingFees)
-      .values(trainingFee)
-      .returning();
-    return created;
-  }
 
-  async updateTrainingFee(id: number, trainingFee: Partial<InsertTrainingFee>): Promise<TrainingFee> {
-    const [updated] = await db
-      .update(trainingFees)
-      .set({ ...trainingFee, updatedAt: new Date() })
-      .where(eq(trainingFees.id, id))
-      .returning();
-    return updated;
-  }
 
-  async deleteTrainingFee(id: number): Promise<void> {
-    await db.delete(trainingFees).where(eq(trainingFees.id, id));
-  }
 
   async deleteFinance(id: number): Promise<void> {
     await db.delete(finances).where(eq(finances.id, id));
@@ -1267,7 +1207,6 @@ export class DatabaseStorage implements IStorage {
   async deletePlayer(id: number): Promise<void> {
     // First delete all related assignments and stats
     await db.delete(playerTeamAssignments).where(eq(playerTeamAssignments.playerId, id));
-    await db.delete(playerStats).where(eq(playerStats.playerId, id));
     await db.delete(players).where(eq(players.id, id));
   }
 
@@ -1323,49 +1262,37 @@ export class DatabaseStorage implements IStorage {
 
   // Player stats operations
   async getPlayerStats(playerId: number, season?: string): Promise<PlayerStats[]> {
-    const conditions = [eq(playerStats.playerId, playerId)];
     
     if (season) {
-      conditions.push(eq(playerStats.season, season));
     }
     
     return await db
       .select()
-      .from(playerStats)
       .where(conditions.length === 1 ? conditions[0] : and(...conditions))
-      .orderBy(desc(playerStats.season));
   }
 
   async getTeamStats(teamId: number, season?: string): Promise<PlayerStats[]> {
-    const conditions = [eq(playerStats.teamId, teamId)];
     
     if (season) {
-      conditions.push(eq(playerStats.season, season));
     }
     
     return await db
       .select()
-      .from(playerStats)
       .where(conditions.length === 1 ? conditions[0] : and(...conditions))
-      .orderBy(desc(playerStats.goals), desc(playerStats.assists));
   }
 
   async createPlayerStats(statsData: InsertPlayerStats): Promise<PlayerStats> {
-    const [stats] = await db.insert(playerStats).values(statsData).returning();
     return stats;
   }
 
   async updatePlayerStats(id: number, statsData: Partial<InsertPlayerStats>): Promise<PlayerStats> {
     const [stats] = await db
-      .update(playerStats)
       .set({ ...statsData, updatedAt: new Date() })
-      .where(eq(playerStats.id, id))
       .returning();
     return stats;
   }
 
   async deletePlayerStats(id: number): Promise<void> {
-    await db.delete(playerStats).where(eq(playerStats.id, id));
   }
 
   // User permission operations
@@ -1833,39 +1760,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Communication preferences operations
-  async getCommunicationPreferences(userId: string, clubId: number): Promise<CommunicationPreferences | undefined> {
-    const [preferences] = await db
-      .select()
-      .from(communicationPreferences)
-      .where(and(
-        eq(communicationPreferences.userId, userId),
-        eq(communicationPreferences.clubId, clubId)
-      ));
-    return preferences;
-  }
 
-  async updateCommunicationPreferences(
-    userId: string, 
-    clubId: number, 
-    preferencesData: Partial<InsertCommunicationPreferences>
-  ): Promise<CommunicationPreferences> {
-    const [preferences] = await db
-      .insert(communicationPreferences)
-      .values({
-        userId,
-        clubId,
-        ...preferencesData,
-      })
-      .onConflictDoUpdate({
-        target: [communicationPreferences.userId, communicationPreferences.clubId],
-        set: {
-          ...preferencesData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return preferences;
-  }
 
   // Communication statistics
   async getCommunicationStats(clubId: number, userId?: string): Promise<CommunicationStats> {

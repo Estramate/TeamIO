@@ -20,14 +20,11 @@ import {
   insertPlayerSchema,
   insertPlayerTeamAssignmentSchema,
   insertTeamMembershipSchema,
-  memberFeeFormSchema,
-  trainingFeeFormSchema,
   messageFormSchema,
   announcementFormSchema,
   insertMessageSchema,
   insertAnnouncementSchema,
   insertNotificationSchema,
-  insertCommunicationPreferencesSchema,
 } from "@shared/schema";
 import {
   emailInvitationFormSchema,
@@ -1257,7 +1254,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const trainingFees = await storage.getTrainingFees(clubId);
       res.json(trainingFees);
     } catch (error) {
       console.error('Error fetching training fees:', error);
@@ -1268,8 +1264,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const trainingFeeData = { ...req.body, clubId };
-      const trainingFee = await storage.createTrainingFee(trainingFeeData);
       res.status(201).json(trainingFee);
     } catch (error) {
       console.error('Error creating training fee:', error);
@@ -1428,7 +1422,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/clubs/:clubId/member-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const memberFees = await storage.getMemberFees(clubId);
       res.json(memberFees);
     } catch (error) {
       console.error("Error fetching member fees:", error);
@@ -1441,8 +1434,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clubId = parseInt(req.params.clubId);
       
       // Parse and transform the form data
-      const formData = memberFeeFormSchema.parse(req.body);
-      const memberFeeData = {
         ...formData,
         clubId,
         memberId: parseInt(formData.memberId),
@@ -1451,7 +1442,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         nextDueDate: formData.startDate,
       };
       
-      const memberFee = await storage.createMemberFee(memberFeeData);
       res.json(memberFee);
     } catch (error) {
       console.error("Error creating member fee:", error);
@@ -1462,7 +1452,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
-      const memberFee = await storage.updateMemberFee(id, req.body);
       res.json(memberFee);
     } catch (error) {
       console.error("Error updating member fee:", error);
@@ -1473,7 +1462,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/clubs/:clubId/member-fees/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
-      await storage.deleteMemberFee(id);
       res.json({ message: "Member fee deleted successfully" });
     } catch (error) {
       console.error("Error deleting member fee:", error);
@@ -1485,7 +1473,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/clubs/:clubId/training-fees', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const trainingFees = await storage.getTrainingFees(clubId);
       res.json(trainingFees);
     } catch (error) {
       console.error("Error fetching training fees:", error);
@@ -1498,8 +1485,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clubId = parseInt(req.params.clubId);
       
       // Parse and transform the form data
-      const formData = trainingFeeFormSchema.parse(req.body);
-      const trainingFeeData = {
         ...formData,
         clubId,
         amount: formData.amount,
@@ -1510,7 +1495,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         nextDueDate: formData.startDate,
       };
       
-      const trainingFee = await storage.createTrainingFee(trainingFeeData);
       res.json(trainingFee);
     } catch (error) {
       console.error("Error creating training fee:", error);
@@ -1521,7 +1505,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/clubs/:clubId/training-fees/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
-      const trainingFee = await storage.updateTrainingFee(id, req.body);
       res.json(trainingFee);
     } catch (error) {
       console.error("Error updating training fee:", error);
@@ -1532,7 +1515,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/clubs/:clubId/training-fees/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
-      await storage.deleteTrainingFee(id);
       res.json({ message: "Training fee deleted successfully" });
     } catch (error) {
       console.error("Error deleting training fee:", error);
@@ -2021,7 +2003,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Invalid club ID', 'clubId');
     }
     
-    const preferences = await storage.getCommunicationPreferences(userId, clubId);
     res.json(preferences || {});
   }));
 
@@ -2033,8 +2014,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Invalid club ID', 'clubId');
     }
     
-    const validatedData = insertCommunicationPreferencesSchema.parse(req.body);
-    const preferences = await storage.updateCommunicationPreferences(userId, clubId, validatedData);
     
     logger.info('Communication preferences updated', { clubId, userId, requestId: req.id });
     res.json(preferences);

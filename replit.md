@@ -133,7 +133,16 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 - ✅ **ROUTING-PROBLEM BEHOBEN** - RegisterPage funktioniert auch für authentifizierte Benutzer
 - ✅ **DEPLOYMENT-BEREIT** - System automatisch für https://clubflow.replit.app/ optimiert
 
-**LATEST UPDATE (July 28, 2025 - 05:40):**
+**LATEST UPDATE (July 28, 2025 - 05:50):**
+✅ **DATENBANK-BEREINIGUNG ABGESCHLOSSEN**:
+- ✅ 4 ungenutzte Tabellen entfernt: communication_preferences, player_stats, training_fees, member_fees
+- ✅ Alle Schema-Definitionen aus shared/schemas/ bereinigt
+- ✅ Verbleibende Code-Referenzen aus server/storage.ts und server/routes.ts entfernt
+- ✅ Import-Statements und Type-Definitionen aktualisiert
+- ✅ Anwendung läuft stabil - alle verbleibenden 20 Tabellen enthalten aktive Daten
+- 📄 **ERGEBNIS**: Optimierte Datenbankstruktur ohne tote Tabellen
+
+**PREVIOUS UPDATE (July 28, 2025 - 05:40):**
 ✅ **TWILIO SENDGRID AUF CLUB.FLOW.2025 DOMAIN KONFIGURIERT**:
 - ✅ Verified sender address auf club.flow.2025@gmail.com aktualisiert
 - ✅ E-Mail-Service komplett auf neue Domain umgestellt

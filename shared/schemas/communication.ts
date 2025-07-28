@@ -152,35 +152,7 @@ export const notifications = pgTable(
   ],
 );
 
-// Communication preferences table - for user communication settings
-export const communicationPreferences = pgTable(
-  "communication_preferences",
-  {
-    id: serial("id").primaryKey(),
-    userId: varchar("user_id").notNull().references(() => users.id),
-    clubId: integer("club_id").notNull().references(() => clubs.id),
-    // Email preferences
-    emailNotifications: boolean("email_notifications").notNull().default(true),
-    emailAnnouncements: boolean("email_announcements").notNull().default(true),
-    emailReminders: boolean("email_reminders").notNull().default(true),
-    emailDigest: varchar("email_digest", { length: 20 }).notNull().default("daily"), // none, daily, weekly
-    // In-app preferences
-    pushNotifications: boolean("push_notifications").notNull().default(true),
-    soundNotifications: boolean("sound_notifications").notNull().default(true),
-    // Communication channels
-    preferredLanguage: varchar("preferred_language", { length: 5 }).notNull().default("de"), // de, en
-    timezone: varchar("timezone", { length: 50 }).notNull().default("Europe/Berlin"),
-    // Message filtering
-    messageFilters: jsonb("message_filters"), // custom filtering rules
-    blockedUsers: jsonb("blocked_users"), // array of blocked user IDs
-    mutedConversations: jsonb("muted_conversations"), // array of muted conversation IDs
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_communication_preferences_user_club").on(table.userId, table.clubId),
-  ],
-);
+// NOTE: communication_preferences table removed - was unused (0 rows)
 
 // Relations for communication entities
 export const messagesRelations = relations(messages, ({ one, many }) => ({
@@ -229,16 +201,7 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
-export const communicationPreferencesRelations = relations(communicationPreferences, ({ one }) => ({
-  user: one(users, {
-    fields: [communicationPreferences.userId],
-    references: [users.id],
-  }),
-  club: one(clubs, {
-    fields: [communicationPreferences.clubId],
-    references: [clubs.id],
-  }),
-}));
+// NOTE: communicationPreferencesRelations removed - communicationPreferences table deleted
 
 // Insert schemas for communication entities
 export const insertMessageSchema = createInsertSchema(messages).omit({
@@ -267,11 +230,7 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   updatedAt: true,
 });
 
-export const insertCommunicationPreferencesSchema = createInsertSchema(communicationPreferences).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// NOTE: insertCommunicationPreferencesSchema removed - communicationPreferences table deleted
 
 // Form schemas with validation
 export const messageFormSchema = insertMessageSchema.extend({
@@ -302,8 +261,7 @@ export type Announcement = typeof announcements.$inferSelect;
 export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
-export type CommunicationPreferences = typeof communicationPreferences.$inferSelect;
-export type InsertCommunicationPreferences = z.infer<typeof insertCommunicationPreferencesSchema>;
+// NOTE: CommunicationPreferences types removed - communicationPreferences table deleted
 
 // Extended types with relations
 export type MessageWithRecipients = Message & {

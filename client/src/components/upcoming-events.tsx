@@ -7,19 +7,19 @@ interface UpcomingEventsProps {
 }
 
 export default function UpcomingEvents({ clubId }: UpcomingEventsProps) {
-  // Nutze sehr lange staleTime da diese Daten nicht oft ändern
+  // Ausgewogener Cache für bessere Benutzerfreundlichkeit
   const { data: events = [] } = useQuery({
     queryKey: ['/api/clubs', clubId, 'events'],
     enabled: !!clubId,
     retry: false,
-    staleTime: 20 * 60 * 1000, // 20 Minuten Cache
+    staleTime: 5 * 60 * 1000, // 5 Minuten Cache - aktuell aber performant
   }) as { data: any[] };
 
   const { data: bookings = [] } = useQuery({
     queryKey: ['/api/clubs', clubId, 'bookings'],
     enabled: !!clubId,
     retry: false,
-    staleTime: 20 * 60 * 1000, // 20 Minuten Cache
+    staleTime: 5 * 60 * 1000, // 5 Minuten Cache - aktuell aber performant
   }) as { data: any[] };
 
   // Kombiniere Events und Buchungen für anstehende Termine

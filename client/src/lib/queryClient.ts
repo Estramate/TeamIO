@@ -48,8 +48,8 @@ export const queryClient = new QueryClient({
       refetchInterval: false,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      staleTime: 15 * 60 * 1000, // 15 minutes - viel länger für weniger API-Calls
-      gcTime: 30 * 60 * 1000, // 30 minutes cache retention
+      staleTime: 2 * 60 * 1000, // 2 Minuten - Balance zwischen Performance und Aktualität
+      gcTime: 10 * 60 * 1000, // 10 Minuten cache retention
       retry: false,
       // Don't disable by default - let components control with enabled
     },

@@ -1,24 +1,33 @@
 import { QueryClient } from "@tanstack/react-query";
 
 /**
- * OPTIMIERTE Cache-Invalidierung - nur das Nötigste aktualisieren
- * Deutlich reduziert für bessere Performance
+ * INTELLIGENTE Cache-Invalidierung - Balance zwischen Performance und Aktualität
  */
 export function invalidateAllData(queryClient: QueryClient, clubId: number) {
-  // Nur Dashboard aktualisieren - alle anderen werden bei Bedarf geladen
+  // Dashboard immer aktualisieren (zeigt Übersicht)
   queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'dashboard'] });
+  
+  // Communication-Daten auch aktualisieren für Benutzerfreundlichkeit
+  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
+  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'notifications'] });
 }
 
 /**
- * OPTIMIERTE Entity-Cache-Invalidierung - nur direkt betroffene Daten
+ * BENUTZERFREUNDLICHE Entity-Cache-Invalidierung
  */
 export function invalidateEntityData(queryClient: QueryClient, clubId: number, entity: string) {
-  // Nur die spezifische Entität invalidieren
+  // Spezifische Entität immer invalidieren
   queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, entity] });
   
-  // Dashboard nur bei wichtigen Änderungen
-  if (['members', 'teams', 'finances'].includes(entity)) {
+  // Dashboard bei wichtigen Änderungen
+  if (['members', 'teams', 'finances', 'bookings', 'events'].includes(entity)) {
     queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'dashboard'] });
+  }
+  
+  // Communication-bezogene Updates
+  if (['messages', 'announcements'].includes(entity)) {
+    queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'notifications'] });
   }
 }
 

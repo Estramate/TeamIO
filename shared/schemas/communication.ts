@@ -73,6 +73,24 @@ export const videoCallSessions = pgTable('video_call_sessions', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Announcements Table
+export const announcements = pgTable('announcements', {
+  id: serial('id').primaryKey(),
+  clubId: integer('club_id').references(() => clubs.id).notNull(),
+  authorId: varchar('author_id', { length: 255 }).references(() => users.id).notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  category: varchar('category', { length: 50 }).default('general').notNull(), // 'news', 'event', 'training', 'important', 'general'
+  priority: varchar('priority', { length: 20 }).default('normal').notNull(), // 'low', 'normal', 'high', 'urgent'
+  targetAudience: varchar('target_audience', { length: 50 }).default('all').notNull(), // 'all', 'members', 'players', 'staff'
+  isPinned: boolean('is_pinned').default(false).notNull(),
+  isPublished: boolean('is_published').default(true).notNull(),
+  publishedAt: timestamp('published_at').defaultNow(),
+  deletedAt: timestamp('deleted_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Relations
 export const chatRoomsRelations = relations(chatRooms, ({ one, many }) => ({
   club: one(clubs, {
@@ -137,6 +155,17 @@ export const videoCallSessionsRelations = relations(videoCallSessions, ({ one })
   }),
   initiator: one(users, {
     fields: [videoCallSessions.initiatorId],
+    references: [users.id],
+  }),
+}));
+
+export const announcementsRelations = relations(announcements, ({ one }) => ({
+  club: one(clubs, {
+    fields: [announcements.clubId],
+    references: [clubs.id],
+  }),
+  author: one(users, {
+    fields: [announcements.authorId],
     references: [users.id],
   }),
 }));
@@ -209,10 +238,25 @@ export const messageFormSchema = z.object({
 export const announcementFormSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   content: z.string().min(1, 'Content is required'),
+  category: z.string().default('general'),
   priority: z.string().default('normal'),
+  targetAudience: z.string().default('all'),
+  isPinned: z.boolean().default(false),
+  isPublished: z.boolean().default(true),
 });
 
-export const insertAnnouncementSchema = announcementFormSchema;
+export const insertAnnouncementSchema = createInsertSchema(announcements).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  publishedAt: true,
+});
+
+export const selectAnnouncementSchema = createSelectSchema(announcements);
+
+// Types
+export type Announcement = typeof announcements.$inferSelect;
+export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
 export type SelectVideoCallSession = z.infer<typeof selectVideoCallSessionSchema>;
 
 // Extended types for API responses

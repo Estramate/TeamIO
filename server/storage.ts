@@ -15,6 +15,7 @@ import {
   trainingFees,
   messages,
   notifications,
+  announcements,
   roles,
   type User,
   type UpsertUser,
@@ -48,8 +49,7 @@ import {
   type InsertMessage,
   type MessageRecipient,
   type InsertMessageRecipient,
-  type Announcement,
-  type InsertAnnouncement,
+
   type Notification,
   type InsertNotification,
   type Role,
@@ -74,8 +74,8 @@ import {
   type SubscriptionPlan,
 
 } from "@shared/schema";
+import { announcements, type Announcement, type InsertAnnouncement } from "@shared/schemas/communication";
 import { chatRooms, chatRoomParticipants, liveChatMessages, liveChatMessageReadStatus } from '@shared/schemas/chat';
-// announcements is already imported via @shared/schema
 import { db } from "./db";
 import { eq, and, desc, asc, gte, ne, or, sql, isNull } from "drizzle-orm";
 

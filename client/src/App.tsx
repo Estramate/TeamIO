@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 import { useClub } from "@/hooks/use-club";
 import { useNavigation } from "@/hooks/use-navigation";
+import { useSmartNotifications } from "@/hooks/use-smart-notifications";
 import { lazy, useState, useEffect } from 'react';
 import { LazyComponentWrapper } from '@/components/LazyPageWrapper';
 import { Landing } from "@/pages/Landing";
@@ -45,6 +46,9 @@ function AuthenticatedApp() {
   const [location, setLocation] = useLocation();
   const { setLastVisitedPage, getInitialRoute } = useNavigation();
   const [hasNavigatedToInitial, setHasNavigatedToInitial] = useState(false);
+  
+  // Initialize smart notifications
+  useSmartNotifications();
 
   // Track page visits for next time
   useEffect(() => {

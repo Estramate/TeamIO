@@ -8,8 +8,10 @@ import { useClub } from "@/hooks/use-club";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Database, Zap, Activity, Wifi, WifiOff } from "lucide-react";
+import { RefreshCw, Database, Zap, Activity, Wifi, WifiOff, Bell, Volume2, Monitor } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useNotifications } from "@/hooks/use-notifications";
+import { NotificationCenter } from "@/components/NotificationCenter";
 
 export default function SyncDemo() {
   const { selectedClub } = useClub();
@@ -26,6 +28,19 @@ export default function SyncDemo() {
   // Get sync status
   const syncStatus = useSyncStatus();
   const clubSyncStatus = useClubDataSyncStatus(selectedClub?.id);
+  
+  // Get notification system
+  const {
+    isDesktopSupported,
+    desktopPermission,
+    isSoundEnabled,
+    activeNotifications,
+    requestDesktopPermission,
+    showInfo,
+    showSuccess,
+    showWarning,
+    showError
+  } = useNotifications();
 
   // Demo queries that we can trigger
   const { data: clubData, isLoading: isClubLoading, refetch: refetchClub } = useQuery({
@@ -265,6 +280,150 @@ export default function SyncDemo() {
           </ul>
         </CardContent>
       </Card>
+
+      {/* Smart Notifications Demo Section */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Smart Notifications & Alerts</h2>
+          <NotificationCenter />
+        </div>
+
+        {/* Notification Status Cards */}
+        <div className="grid md:grid-cols-3 gap-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Monitor className="h-5 w-5 text-blue-500" />
+                <CardTitle className="text-sm">Desktop-Benachrichtigungen</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Status:</span>
+                  <Badge variant={desktopPermission === 'granted' ? 'default' : 'secondary'}>
+                    {desktopPermission === 'granted' ? 'Aktiv' : 
+                     desktopPermission === 'denied' ? 'Blockiert' : 'Nicht aktiviert'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Unterstützt:</span>
+                  <Badge variant={isDesktopSupported ? 'default' : 'secondary'}>
+                    {isDesktopSupported ? 'Ja' : 'Nein'}
+                  </Badge>
+                </div>
+                {desktopPermission !== 'granted' && isDesktopSupported && (
+                  <Button size="sm" onClick={requestDesktopPermission} className="w-full mt-2">
+                    Berechtigung anfordern
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Volume2 className="h-5 w-5 text-green-500" />
+                <CardTitle className="text-sm">Sound-Alerts</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Sounds:</span>
+                  <Badge variant={isSoundEnabled ? 'default' : 'secondary'}>
+                    {isSoundEnabled ? 'Ein' : 'Aus'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Aktive:</span>
+                  <Badge variant={activeNotifications > 0 ? 'destructive' : 'default'}>
+                    {activeNotifications}
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-orange-500" />
+                <CardTitle className="text-sm">Toast-Notifications</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">System:</span>
+                  <Badge variant="default">Immer aktiv</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Prioritäten:</span>
+                  <Badge variant="outline">4 Stufen</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Notification Test Buttons */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Test-Benachrichtigungen</CardTitle>
+            <CardDescription>
+              Testen Sie verschiedene Benachrichtigungstypen und -prioritäten
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => showInfo('Test Information', 'Dies ist eine Informationsbenachrichtigung mit niedriger Priorität')}
+                className="flex items-center gap-2"
+              >
+                <Activity className="h-4 w-4 text-blue-500" />
+                Info
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => showSuccess('Test Erfolg', 'Operation erfolgreich abgeschlossen!')}
+                className="flex items-center gap-2"
+              >
+                <Zap className="h-4 w-4 text-green-500" />
+                Erfolg
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => showWarning('Test Warnung', 'Bitte beachten Sie diese wichtige Information')}
+                className="flex items-center gap-2"
+              >
+                <Database className="h-4 w-4 text-orange-500" />
+                Warnung
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => showError('Test Fehler', 'Ein kritischer Fehler ist aufgetreten')}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4 text-red-500" />
+                Fehler
+              </Button>
+            </div>
+            
+            <div className="mt-4 p-3 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                💡 <strong>Tipp:</strong> Die Benachrichtigungen werden automatisch basierend auf echten Ereignissen 
+                in Ihrem System ausgelöst - neue Nachrichten, Ankündigungen, Systemupdates und mehr.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

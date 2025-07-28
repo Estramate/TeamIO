@@ -552,6 +552,12 @@ function CreateClubForm({ onSubmit, isLoading, onCancel }: {
     primaryColor: '#3b82f6',
     secondaryColor: '#64748b',
     accentColor: '#10b981',
+    planId: 2, // Default to Starter plan (ID 2)
+  });
+
+  // Fetch available subscription plans
+  const { data: subscriptionPlans = [] } = useQuery({
+    queryKey: ['/api/subscription-plans'],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -687,6 +693,31 @@ function CreateClubForm({ onSubmit, isLoading, onCancel }: {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Subscription Plan Selection */}
+      <div>
+        <Label htmlFor="planId" className="text-sm font-medium mb-3 block">Subscription-Plan *</Label>
+        <Select value={formData.planId.toString()} onValueChange={(value) => setFormData({ ...formData, planId: parseInt(value) })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Subscription-Plan auswählen" />
+          </SelectTrigger>
+          <SelectContent>
+            {subscriptionPlans?.map((plan: any) => (
+              <SelectItem key={plan.id} value={plan.id.toString()}>
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-medium">{plan.displayName}</span>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    €{plan.monthlyPrice}/Monat
+                  </span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground mt-1">
+          Standard: Starter-Plan. Kann später geändert werden.
+        </p>
       </div>
 
       <div className="flex justify-end gap-3 pt-4">

@@ -251,6 +251,9 @@ export interface IStorage {
   getEmailInvitationByToken(token: string): Promise<EmailInvitation | undefined>;
   updateEmailInvitationStatus(token: string, status: 'accepted' | 'expired'): Promise<void>;
   getClubEmailInvitations(clubId: number): Promise<EmailInvitation[]>;
+  
+  // Subscription plans operations
+  getSubscriptionPlans(): Promise<SubscriptionPlan[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2135,21 +2138,89 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createClub(clubData: any): Promise<Club> {
-    const [newClub] = await db.insert(clubs).values({
-      name: clubData.name,
-      description: clubData.description,
-      address: clubData.address,
-      phone: clubData.phone,
-      email: clubData.email,
-      website: clubData.website,
-      primaryColor: clubData.primaryColor,
-      secondaryColor: clubData.secondaryColor,
-      accentColor: clubData.accentColor,
-      settings: clubData.settings,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }).returning();
-    return newClub;
+    console.log("Creating club with data:", clubData);
+    
+    try {
+      // Extract planId from clubData
+      const { planId = 2, ...clubDataWithoutPlan } = clubData; // Default to Starter plan (ID 2)
+      
+      const [newClub] = await db.insert(clubs).values({
+        name: clubDataWithoutPlan.name,
+        description: clubDataWithoutPlan.description,
+        address: clubDataWithoutPlan.address,
+        phone: clubDataWithoutPlan.phone,
+        email: clubDataWithoutPlan.email,
+        website: clubDataWithoutPlan.website,
+        primaryColor: clubDataWithoutPlan.primaryColor,
+        secondaryColor: clubDataWithoutPlan.secondaryColor,
+        accentColor: clubDataWithoutPlan.accentColor,
+        settings: clubDataWithoutPlan.settings,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }).returning();
+
+      console.log("Club created successfully:", newClub);
+
+      // Create subscription for the new club
+      try {
+        await this.createClubSubscription({
+          clubId: newClub.id,
+          planId: planId,
+          status: 'active',
+          billingInterval: 'monthly',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        });
+        console.log(`Subscription created for club ${newClub.id} with plan ${planId}`);
+      } catch (subscriptionError) {
+        console.error("Error creating subscription for new club:", subscriptionError);
+        // Don't fail club creation if subscription creation fails
+      }
+      
+      return newClub;
+    } catch (error) {
+      console.error("Error creating club:", error);
+      throw error;
+    }
+  }
+
+  async createClubSubscription(subscriptionData: any): Promise<any> {
+    try {
+      const [subscription] = await db
+        .insert(subscriptions)
+        .values(subscriptionData)
+        .returning();
+      
+      // Also create initial usage tracking
+      await db
+        .insert(usageTracking)
+        .values({
+          clubId: subscription.clubId,
+          subscriptionId: subscription.id,
+          memberCount: 0,
+          playerCount: 0,
+          totalManagedUsers: 0,
+          teamCount: 0,
+          facilityCount: 0,
+          messagesSent: 0,
+          emailsSent: 0,
+          smsSent: 0,
+          apiCalls: 0,
+          storageUsed: 0,
+          periodStart: new Date(),
+          periodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        });
+        
+      return subscription;
+    } catch (error) {
+      console.error("Error creating subscription:", error);
+      throw error;
+    }
+  }
+
+  // Subscription plans operations
+  async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
+    return await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.isActive, true)).orderBy(subscriptionPlans.sortOrder);
   }
 
   async createUser(userData: any): Promise<User> {

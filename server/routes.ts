@@ -290,6 +290,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.status(401).json({ message: "Not authenticated" });
   };
 
+  // Subscription Plans Route (for club creation modal)
+  app.get('/api/subscription-plans', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    try {
+      const plans = await storage.getSubscriptionPlans();
+      res.json(plans);
+    } catch (error) {
+      console.error("Error fetching subscription plans:", error);
+      res.status(500).json({ error: "Failed to fetch subscription plans" });
+    }
+  }));
+
   // Auth routes (Multi-provider support) - NO MIDDLEWARE, handles auth internally
   app.get('/api/auth/user', async (req: any, res: any) => {
     try {

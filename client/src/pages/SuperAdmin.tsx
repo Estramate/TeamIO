@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSuperAdminStatus } from '@/components/SuperAdminBadge';
-import { useRoles, formatRoleBadge, getRoleDisplayName } from '@/hooks/use-roles';
+import { useRoles } from '@/hooks/useRoles';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { toastService } from '@/lib/toast-service';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,7 +53,7 @@ import {
 
 export default function SuperAdminPage() {
   const { data: superAdminStatus, isLoading } = useSuperAdminStatus();
-  const { data: roles } = useRoles();
+  const { roles } = useRoles();
   const [showCreateClub, setShowCreateClub] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [showClubDetails, setShowClubDetails] = useState<any>(null);
@@ -1030,7 +1030,7 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
   onEdit: (user: any) => void;
   onDeactivate: (user: any) => void;
 }) {
-  const { data: roles } = useRoles();
+  const { roles } = useRoles();
   if (!users?.length) {
     return (
       <div className="text-center py-8">
@@ -1074,7 +1074,7 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
                           variant={(m.roleName === 'club-administrator' || m.role === 'club-administrator') ? 'default' : 'secondary'}
                           className="text-xs"
                         >
-                          {roles ? formatRoleBadge(m.roleName || m.role, roles) : (m.roleDisplayName || m.roleName || m.role)}
+                          {m.roleDisplayName || m.roleName || m.role || 'Unbekannt'}
                         </Badge>
                         <Badge 
                           variant={m.status === 'active' ? 'default' : 'secondary'}

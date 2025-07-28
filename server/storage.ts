@@ -1172,12 +1172,54 @@ export class DatabaseStorage implements IStorage {
       .filter(f => f.type === 'expense')
       .reduce((sum, f) => sum + Number(f.amount), 0);
 
+    // Club-spezifische Kommunikationsdaten
+    const recentMessages = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.clubId, clubId))
+      .orderBy(desc(messages.createdAt))
+      .limit(3);
+
+    const recentAnnouncements = await db
+      .select()
+      .from(announcements)
+      .where(eq(announcements.clubId, clubId))
+      .orderBy(desc(announcements.createdAt))
+      .limit(2);
+
+    // Kommunikations-Feed für Dashboard
+    const communicationFeed = [
+      ...recentAnnouncements.map(a => ({
+        title: a.title,
+        description: a.content?.substring(0, 50) + '...',
+        timestamp: new Date(a.createdAt).toLocaleString('de-DE', { 
+          day: '2-digit', 
+          month: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        icon: '🔔'
+      })),
+      ...recentMessages.map(m => ({
+        title: `Nachricht: ${m.subject || 'Ohne Betreff'}`,
+        description: m.content?.substring(0, 50) + '...',
+        timestamp: new Date(m.createdAt).toLocaleString('de-DE', { 
+          day: '2-digit', 
+          month: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        icon: '💬'
+      }))
+    ].slice(0, 3);
+
     return {
       memberCount: memberCount.length,
       teamCount: teamCount.length,
       todayBookingsCount: todayBookings.length,
       pendingBookingsCount: todayBookings.filter(b => b.status === 'pending').length,
       monthlyBudget: totalIncome - totalExpenses,
+      communicationFeed
     };
   }
 

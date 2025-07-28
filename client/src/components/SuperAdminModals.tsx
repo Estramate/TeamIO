@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRoles, getRoleOptions, getRoleDisplayName, formatRoleBadge } from '@/hooks/use-roles';
 import { 
   Dialog, 
   DialogContent, 
@@ -358,7 +359,9 @@ export function UserDetailsModal({ user, open, onClose }: UserDetailsModalProps)
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">{club.name}</p>
-                      <p className="text-sm text-muted-foreground">{club.role}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {roles ? getRoleDisplayName(club.role, roles) : club.role}
+                      </p>
                     </div>
                     <Badge variant="outline">{club.status}</Badge>
                   </div>
@@ -388,6 +391,7 @@ interface EditUserModalProps {
 }
 
 export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUserModalProps) {
+  const { data: roles, isLoading: rolesLoading } = useRoles();
   const [formData, setFormData] = useState({
     email: user?.email || '',
     isActive: user?.isActive ?? true,
@@ -566,10 +570,17 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="member">Mitglied</SelectItem>
-                          <SelectItem value="trainer">Trainer</SelectItem>
-                          <SelectItem value="administrator">Administrator</SelectItem>
-                          <SelectItem value="club-administrator">Vereinsadministrator</SelectItem>
+                          {roles && !rolesLoading ? (
+                            getRoleOptions(roles).map((roleOption) => (
+                              <SelectItem key={roleOption.value} value={roleOption.value}>
+                                {roleOption.label}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="loading" disabled>
+                              Lade Rollen...
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -642,10 +653,17 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="member">Mitglied</SelectItem>
-                      <SelectItem value="trainer">Trainer</SelectItem>
-                      <SelectItem value="administrator">Administrator</SelectItem>
-                      <SelectItem value="club-administrator">Vereinsadministrator</SelectItem>
+                      {roles && !rolesLoading ? (
+                        getRoleOptions(roles).map((roleOption) => (
+                          <SelectItem key={roleOption.value} value={roleOption.value}>
+                            {roleOption.label}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="loading" disabled>
+                          Lade Rollen...
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

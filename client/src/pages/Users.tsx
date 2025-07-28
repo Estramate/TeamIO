@@ -426,7 +426,7 @@ export default function Users() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-primary/10 rounded-lg">
-                          {getRoleIcon(member.role)}
+                          {getRoleIcon(member.roleDisplayName || member.roleName)}
                         </div>
                         <div>
                           <h3 className="font-semibold text-base">
@@ -443,7 +443,11 @@ export default function Users() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => {
-                            setSelectedUser(member);
+                            setSelectedUser({
+                              ...member,
+                              role: member.roleName, // Add compatibility field
+                              roleId: member.roleId
+                            });
                             setShowEditDialog(true);
                           }}>
                             <Edit className="mr-2 h-4 w-4" />
@@ -500,7 +504,7 @@ export default function Users() {
                         <div>
                           <div className="text-muted-foreground text-xs">Rolle</div>
                           <div className="mt-1">
-                            {getRoleBadge(member.role)}
+                            {getRoleBadge(member.roleDisplayName || member.roleName)}
                           </div>
                         </div>
                       </div>
@@ -538,12 +542,12 @@ export default function Users() {
                     <TableRow key={member.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                          {getRoleIcon(member.role)}
+                          {getRoleIcon(member.roleDisplayName || member.roleName)}
                           {member.firstName} {member.lastName}
                         </div>
                       </TableCell>
                       <TableCell>{member.email}</TableCell>
-                      <TableCell>{getRoleBadge(member.role)}</TableCell>
+                      <TableCell>{getRoleBadge(member.roleDisplayName || member.roleName)}</TableCell>
                       <TableCell>{getStatusBadge(member.status)}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('de-DE') : '-'}
@@ -580,7 +584,11 @@ export default function Users() {
                             variant="outline"
                             className="h-8 px-2"
                             onClick={() => {
-                              setSelectedUser(member);
+                              setSelectedUser({
+                                ...member,
+                                role: member.roleName, // Add compatibility field
+                                roleId: member.roleId
+                              });
                               setShowEditDialog(true);
                             }}
                           >
@@ -634,7 +642,15 @@ export default function Users() {
                 <Label htmlFor="role">Rolle</Label>
                 <Select
                   value={selectedUser.roleId?.toString() || '1'}
-                  onValueChange={(value) => setSelectedUser({ ...selectedUser, roleId: parseInt(value) })}
+                  onValueChange={(value) => {
+                    const selectedRole = roles?.find(r => r.id === parseInt(value));
+                    setSelectedUser({ 
+                      ...selectedUser, 
+                      roleId: parseInt(value),
+                      role: selectedRole?.name || '',
+                      roleDisplayName: selectedRole?.displayName || ''
+                    });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -664,16 +680,17 @@ export default function Users() {
                 </Button>
                 <Button
                   onClick={() => {
-                    if (selectedUser && selectedUser.roleId) {
+                    if (selectedUser?.roleId && selectedUser?.membershipId) {
                       updateRoleMutation.mutate({
-                        memberId: selectedUser.membershipId,
+                        membershipId: selectedUser.membershipId,
                         roleId: selectedUser.roleId
                       });
+                      setShowEditDialog(false);
                     }
                   }}
-                  disabled={updateRoleMutation.isPending}
+                  disabled={updateRoleMutation.isPending || !selectedUser?.roleId}
                 >
-                  {updateRoleMutation.isPending ? 'Speichern...' : 'Speichern'}
+                  {updateRoleMutation.isPending ? 'Speichere...' : 'Speichern'}
                 </Button>
               </div>
             </div>

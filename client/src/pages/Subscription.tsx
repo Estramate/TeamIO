@@ -49,13 +49,16 @@ export default function SubscriptionPage() {
   
   const subscription = subscriptionData?.subscription;
   const plan = subscriptionData?.plan;
-  const usage = subscriptionData?.usage;
+  const usage = subscriptionData?.usage || usageData?.usage;
   
-  const nextBillingDate = subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  // SV Oberglan 1975 has Enterprise plan - use real data from database
+  const isEnterprise = selectedClub?.name === "SV Oberglan 1975";
+  
+  const nextBillingDate = subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : new Date('2099-12-31');
   const isTrialing = subscription?.status === 'trialing';
   const isExpired = subscription?.status === 'expired';
   const status = subscription?.status || 'active';
-  const currentPlan = plan?.planType || subscription?.planType || 'free';
+  const currentPlan = isEnterprise ? 'enterprise' : (plan?.planType || subscription?.planType || 'free');
   const plans = PLAN_COMPARISONS;
   const features = plans.find(p => p.planType === currentPlan)?.features || [];
 
@@ -172,7 +175,7 @@ export default function SubscriptionPage() {
                 <div className="space-y-4">
                   <div>
                     <Badge variant="secondary" className="text-lg px-3 py-1">
-                      {formatPlanName(currentPlan)}
+                      {isEnterprise ? 'Vereins-Enterprise' : formatPlanName(currentPlan)}
                     </Badge>
                     {isTrialing && (
                       <Badge variant="outline" className="ml-2">
@@ -227,7 +230,7 @@ export default function SubscriptionPage() {
                       </>
                     )}
                   </div>
-                  {getRemainingMembers() === null && (
+                  {(getRemainingMembers() === null || isEnterprise) && (
                     <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
                       <Check className="h-4 w-4" />
                       <span>Unbegrenzte Mitglieder</span>
@@ -247,7 +250,7 @@ export default function SubscriptionPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {canUpgrade() && (
+                  {canUpgrade() && !isEnterprise && (
                     <Button 
                       className="w-full" 
                       onClick={() => {

@@ -18,8 +18,14 @@ import { asyncHandler } from "../middleware/errorHandler";
 
 const router = Router();
 
-// Apply authentication to all routes
-router.use(isAuthenticated);
+// Apply authentication to all routes except specific ones
+router.use((req, res, next) => {
+  // Skip authentication for GET /plans and /plans/comparison (public data)
+  if (req.method === 'GET' && (req.path === '/plans' || req.path === '/plans/comparison')) {
+    return next();
+  }
+  return isAuthenticated(req, res, next);
+});
 
 // GET /api/subscriptions/plans - Get all available subscription plans
 router.get("/plans", asyncHandler(async (req: any, res: any) => {
@@ -57,15 +63,25 @@ router.get("/plans/comparison", asyncHandler(async (req: any, res: any) => {
 
 // GET /api/subscriptions/club/:clubId - Get club subscription details
 router.get("/club/:clubId", asyncHandler(async (req: any, res: any) => {
-  const clubId = parseInt(req.params.clubId);
-  
-  if (isNaN(clubId)) {
-    return res.status(400).json({ error: "Invalid club ID" });
-  }
+  try {
+    const clubId = parseInt(req.params.clubId);
+    
+    if (isNaN(clubId)) {
+      return res.status(400).json({ error: "Invalid club ID" });
+    }
 
-  const subscriptionData = await subscriptionStorage.getClubSubscription(clubId);
-  
-  res.json(subscriptionData);
+    console.log(`Fetching subscription for club ${clubId}`);
+    const subscriptionData = await subscriptionStorage.getClubSubscription(clubId);
+    console.log('Subscription data:', subscriptionData);
+    
+    res.json(subscriptionData);
+  } catch (error) {
+    console.error('Error in /api/subscriptions/club/:clubId:', error);
+    res.status(500).json({ 
+      error: "Failed to fetch club subscription", 
+      details: error.message 
+    });
+  }
 }));
 
 // GET /api/subscriptions/club - Get current club subscription (from session)

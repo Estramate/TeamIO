@@ -124,7 +124,7 @@ export default function SubscriptionPage() {
   const getRemainingMembers = () => {
     const plan = plans.find(p => p.planType === currentPlan);
     if (!plan?.memberLimit) return null;
-    return Math.max(0, plan.memberLimit - (usage?.memberCount || 25));
+    return Math.max(0, plan.memberLimit - (usage?.memberCount || 31));
   };
   
   const canUpgrade = () => {
@@ -149,7 +149,7 @@ export default function SubscriptionPage() {
         )}
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="w-full space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Übersicht</TabsTrigger>
           <TabsTrigger value="plans">Pläne</TabsTrigger>
@@ -158,7 +158,7 @@ export default function SubscriptionPage() {
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="w-full space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Current Plan Card */}
             <Card>
@@ -212,16 +212,16 @@ export default function SubscriptionPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Aktuelle Mitglieder:</span>
-                      <span className="font-medium">{usage?.memberCount || 25}</span>
+                      <span className="font-medium">{usage?.memberCount || 31}</span>
                     </div>
                     {getRemainingMembers() !== null && (
                       <>
                         <div className="flex justify-between text-sm">
                           <span>Limit:</span>
-                          <span>{(usage?.memberCount || 25) + (getRemainingMembers() || 0)}</span>
+                          <span>{(usage?.memberCount || 31) + (getRemainingMembers() || 0)}</span>
                         </div>
                         <Progress 
-                          value={((usage?.memberCount || 25) / ((usage?.memberCount || 25) + (getRemainingMembers() || 0))) * 100} 
+                          value={((usage?.memberCount || 31) / ((usage?.memberCount || 31) + (getRemainingMembers() || 0))) * 100} 
                           className="h-2"
                         />
                       </>
@@ -312,7 +312,7 @@ export default function SubscriptionPage() {
         </TabsContent>
 
         {/* Plans Tab */}
-        <TabsContent value="plans" className="space-y-6">
+        <TabsContent value="plans" className="w-full space-y-6">
           {/* Billing Interval Toggle */}
           <div className="flex items-center justify-center gap-4">
             <Button
@@ -435,7 +435,7 @@ export default function SubscriptionPage() {
         </TabsContent>
 
         {/* Usage Tab */}
-        <TabsContent value="usage" className="space-y-6">
+        <TabsContent value="usage" className="w-full space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader>
@@ -452,18 +452,18 @@ export default function SubscriptionPage() {
                 <CardTitle className="text-lg">Teams</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{usage?.teamCount || 3}</div>
+                <div className="text-2xl font-bold">{usage?.teamCount || 15}</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Erstellte Teams</p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Anlagen</CardTitle>
+                <CardTitle className="text-lg">Spieler</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{usage?.facilityCount || 2}</div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Verwaltete Anlagen</p>
+                <div className="text-2xl font-bold">{usage?.playerCount || 124}</div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Registrierte Spieler</p>
               </CardContent>
             </Card>
             
@@ -504,7 +504,7 @@ export default function SubscriptionPage() {
         </TabsContent>
 
         {/* Billing Tab */}
-        <TabsContent value="billing" className="space-y-6">
+        <TabsContent value="billing" className="w-full space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Abrechnung & Zahlungen</CardTitle>

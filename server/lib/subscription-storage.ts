@@ -2,8 +2,11 @@
  * Subscription storage interface and implementations
  */
 
-import { eq, and, desc, count, max, gte } from "drizzle-orm";
+import { eq, and, desc, count, max, gte, sql } from "drizzle-orm";
 import { db } from "../db";
+import { members } from "@shared/schemas/members";
+import { players, teams } from "@shared/schemas/teams";
+import { facilities } from "@shared/schemas/facilities";
 import {
   subscriptionPlans,
   clubSubscriptions,
@@ -199,15 +202,20 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
 
   // Usage Tracking
   async getCurrentUsage(clubId: number): Promise<SubscriptionUsage | null> {
-    // Since subscription_usage table doesn't exist yet, return mock data
-    // In a real implementation, this would track actual usage
+    // Get real counts from database
+    const memberCountResult = await db.select({ count: sql<number>`count(*)` }).from(members).where(eq(members.clubId, clubId));
+    const playerCountResult = await db.select({ count: sql<number>`count(*)` }).from(players).where(eq(players.clubId, clubId));
+    const teamCountResult = await db.select({ count: sql<number>`count(*)` }).from(teams).where(eq(teams.clubId, clubId));
+    const facilityCountResult = await db.select({ count: sql<number>`count(*)` }).from(facilities).where(eq(facilities.clubId, clubId));
+    
     return {
       id: 1,
       clubId,
       subscriptionId: 1,
-      memberCount: 25,
-      teamCount: 3,
-      facilityCount: 2,
+      memberCount: memberCountResult[0]?.count || 0,
+      teamCount: teamCountResult[0]?.count || 0,
+      facilityCount: facilityCountResult[0]?.count || 0,
+      playerCount: playerCountResult[0]?.count || 0,
       messagesSent: 0,
       emailsSent: 0,
       smsSent: 0,

@@ -323,7 +323,7 @@ export default function Users() {
               <SelectContent>
                 <SelectItem value="all">Alle Rollen</SelectItem>
                 {roles && !rolesLoading ? (
-                  roles.map((role) => (
+                  roles.map((role: any) => (
                     <SelectItem key={role.id} value={role.name}>
                       {role.displayName}
                     </SelectItem>
@@ -643,7 +643,7 @@ export default function Users() {
                 <Select
                   value={selectedUser.roleId?.toString() || '1'}
                   onValueChange={(value) => {
-                    const selectedRole = roles?.find(r => r.id === parseInt(value));
+                    const selectedRole = roles?.find((r: any) => r.id === parseInt(value));
                     setSelectedUser({ 
                       ...selectedUser, 
                       roleId: parseInt(value),
@@ -657,7 +657,7 @@ export default function Users() {
                   </SelectTrigger>
                   <SelectContent>
                     {roles && !rolesLoading ? (
-                      roles.map((role) => (
+                      roles.map((role: any) => (
                         <SelectItem key={role.id} value={role.id.toString()}>
                           {role.displayName}
                         </SelectItem>
@@ -680,9 +680,9 @@ export default function Users() {
                 </Button>
                 <Button
                   onClick={() => {
-                    if (selectedUser?.roleId && selectedUser?.membershipId) {
+                    if (selectedUser?.roleId && selectedUser?.memberId) {
                       updateRoleMutation.mutate({
-                        membershipId: selectedUser.membershipId,
+                        memberId: selectedUser.memberId,
                         roleId: selectedUser.roleId
                       });
                       setShowEditDialog(false);

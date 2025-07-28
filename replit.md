@@ -7,6 +7,15 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 **Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. Dual-admin-role system (club-administrator & obmann) with unified permissions across all backend routes and frontend interfaces. All critical bugs resolved and application running smoothly.
 
 ## Recent Changes
+- **2025-07-28**: EMAIL-EINLADUNGSSYSTEM VOLLSTÄNDIG AUF ROLEBASIERTES SYSTEM MIGRIERT - Komplette Umstellung von role-Feld auf roleId-Referenz
+  - **Backend-API vollständig aktualisiert**: Alle Einladungsrouten verwenden jetzt roleId statt role-String
+  - **Datenbankschema modernisiert**: email_invitations.roleId referenziert roles.id für konsistente Rollenverwaltung
+  - **Frontend-Komponenten repariert**: InviteUserDialog und Users.tsx verwenden roleId-basierte Einladungslogik
+  - **Super-Admin-System upgedatet**: createEmailInvitation für Super-Admin verwendet roleId=3 für club-administrator
+  - **Intelligente Rollenauflösung**: System lädt role.displayName für E-Mail-Templates und Activity-Logs
+  - **LSP-Diagnostics behoben**: TypeScript-Typfehler in Users.tsx durch roleId-Migration korrigiert
+  - **Nahtlose Kompatibilität**: Chat-System und Notifications bleiben vollständig funktionsfähig
+
 - **2025-07-28**: INTELLIGENTE BENACHRICHTIGUNGEN KOMPLETT INTEGRIERT - System-weite Aktivierung
   - **Vollständige Integration**: Notifications automatisch in allen Hauptfunktionen (Member, Team, Communication, Finance, Booking)
   - **Smart Triggers**: Mitglieder-Einladungen, Team-Erstellung, Nachrichten/Ankündigungen, Finanztransaktionen, Buchungen

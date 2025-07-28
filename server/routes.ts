@@ -832,7 +832,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('Only administrators can invite users');
     }
     
-    const { email, role = 'member' } = req.body;
+    const { email, roleId = 1 } = req.body; // Default to member role ID 1
     
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new ValidationError('Valid email address is required', 'email');
@@ -2498,19 +2498,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Simple validation (bypass Zod for now to get system working)
-    const { email, role, personalMessage } = req.body;
+    const { email, roleId, personalMessage } = req.body;
     
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       console.log('📧 ERROR: Invalid email format');
       throw new ValidationError('Valid email address is required', 'email');
     }
     
-    if (!role || typeof role !== 'string') {
-      console.log('📧 ERROR: Role is required');
-      throw new ValidationError('Role is required', 'role');
+    if (!roleId || typeof roleId !== 'number' || roleId <= 0) {
+      console.log('📧 ERROR: Role ID is required');
+      throw new ValidationError('Valid role ID is required', 'roleId');
     }
     
-    console.log('📧 Simple validation successful:', { email, role, personalMessage });
+    console.log('📧 Simple validation successful:', { email, roleId, personalMessage });
     
     // Check if user is club admin
     console.log('📧 Checking admin permissions for user:', userId, 'club:', clubId);
@@ -2557,7 +2557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       clubId,
       invitedBy: userId,
       email,
-      role: role || 'member',
+      roleId,
       token,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
@@ -2575,11 +2575,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : `${req.protocol}://${req.get('host')}`;
       const invitationUrl = `${baseUrl}/register?token=${token}`;
       
+      // Get role information for email
+      const role = await storage.getRoleById(roleId);
+      const roleName = role?.displayName || 'Mitglied';
+      
       const emailSent = await sendInvitationEmail({
         to: email,
         clubName: club.name,
         inviterName: `${inviter.firstName} ${inviter.lastName}`,
-        role: role || 'member',
+        role: roleName,
         personalMessage,
         invitationUrl,
         expiresAt: invitation.expiresAt,
@@ -2592,8 +2596,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         action: 'user_invited',
         targetResource: 'invitation',
         targetResourceId: invitation.id,
-        description: `${inviter.firstName} ${inviter.lastName} hat ${email} als ${role === 'club-administrator' ? 'Administrator' : role === 'trainer' ? 'Trainer' : 'Mitglied'} eingeladen`,
-        metadata: { email, role: role || 'member', emailSent },
+        description: `${inviter.firstName} ${inviter.lastName} hat ${email} als ${roleName} eingeladen`,
+        metadata: { email, roleId, roleName, emailSent },
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
       });
@@ -2602,7 +2606,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId, 
         clubId, 
         invitedEmail: email, 
-        role: role || 'member', 
+        roleId,
+        roleName, 
         emailSent,
         requestId: req.id 
       });

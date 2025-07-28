@@ -229,7 +229,7 @@ router.post("/create-admin",
       const membership = await storage.addUserToClub({
         userId: user.id,
         clubId: club.id,
-        role: 'club-administrator',
+        roleId: 3, // club-administrator role ID
         status: 'pending', // PENDING until invitation is accepted!
         joinedAt: new Date(),
         invitedBy: req.user?.claims?.sub || req.user?.id
@@ -241,13 +241,10 @@ router.post("/create-admin",
         email: validatedData.email,
         clubId: club.id,
         invitedBy: req.user?.claims?.sub || req.user?.id,
-        role: 'club-administrator',
+        roleId: 3, // club-administrator role ID
         token: invitationToken,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
         status: 'pending',
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days expiry
-        createdAt: new Date()
       });
 
       // DO NOT send welcome email - send invitation email instead!
@@ -264,7 +261,7 @@ router.post("/create-admin",
           token: invitationToken,
           email: validatedData.email,
           clubName: club.name,
-          role: 'club-administrator',
+          role: 'club-administrator', // Display name for response
           expiresAt: invitation.expiresAt,
           status: 'pending'
         },

@@ -44,18 +44,20 @@ export default function FloatingChatWidget() {
   const [newRoomName, setNewRoomName] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get chat rooms
+  // Get chat rooms only when widget is open to improve performance
   const { data: chatRooms = [], isLoading: roomsLoading } = useQuery({
     queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms`],
     enabled: !!selectedClub?.id && isOpen,
-    refetchInterval: 30000,
+    staleTime: 60000, // 1 minute cache
+    refetchInterval: isOpen ? 30000 : false, // Only poll when open
   });
 
-  // Get messages for selected room
+  // Get messages for selected room - optimized for performance
   const { data: messages = [], isLoading: messagesLoading } = useQuery({
     queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms/${selectedRoom?.id}/messages`],
-    enabled: !!selectedClub?.id && !!selectedRoom?.id && isOpen,
-    refetchInterval: 5000,
+    enabled: !!selectedClub?.id && !!selectedRoom?.id && isOpen && !isMinimized,
+    staleTime: 30000, // 30 seconds cache
+    refetchInterval: (isOpen && !isMinimized && selectedRoom) ? 10000 : false, // Only poll when actively viewing
   });
 
   // Calculate total unread messages
@@ -97,21 +99,24 @@ export default function FloatingChatWidget() {
     }
   }, [messages, isOpen, isMinimized, selectedRoom]);
 
-  // Update user activity periodically
+  // Update user activity only when widget is actively being used
   useEffect(() => {
-    if (!selectedClub?.id || !isOpen) return;
+    if (!selectedClub?.id || !isOpen || isMinimized) return;
     
     const updateActivity = () => {
-      apiRequest(`/api/clubs/${selectedClub.id}/chat/activity`, {
+      fetch(`/api/clubs/${selectedClub.id}/chat/activity`, {
         method: 'POST',
-      }).catch(console.error);
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(() => {}); // Silent fail to avoid console spam
     };
     
+    // Only update activity when actually using the chat
     updateActivity();
-    const interval = setInterval(updateActivity, 60000);
+    const interval = setInterval(updateActivity, 120000); // Reduced frequency to 2 minutes
     
     return () => clearInterval(interval);
-  }, [selectedClub?.id, isOpen]);
+  }, [selectedClub?.id, isOpen, isMinimized]);
 
   const handleCreateRoom = () => {
     if (!newRoomName.trim()) return;

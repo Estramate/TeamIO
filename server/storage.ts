@@ -74,6 +74,8 @@ import {
   type SubscriptionPlan,
 
 } from "@shared/schema";
+import { chatRooms, chatRoomParticipants, liveChatMessages, liveChatMessageReadStatus } from '@shared/schemas/chat';
+// announcements is already imported via @shared/schema
 import { db } from "./db";
 import { eq, and, desc, asc, gte, ne, or, sql, isNull } from "drizzle-orm";
 
@@ -3003,19 +3005,19 @@ export class DatabaseStorage implements IStorage {
     try {
       const rooms = await db
         .select()
-        .from(liveChatRooms)
-        .innerJoin(chatRoomParticipants, eq(liveChatRooms.id, chatRoomParticipants.roomId))
+        .from(chatRooms)
+        .innerJoin(chatRoomParticipants, eq(chatRooms.id, chatRoomParticipants.roomId))
         .where(and(
-          eq(liveChatRooms.clubId, clubId),
+          eq(chatRooms.clubId, clubId),
           eq(chatRoomParticipants.userId, userId),
-          eq(liveChatRooms.isActive, true),
+          eq(chatRooms.isActive, true),
           eq(chatRoomParticipants.isActive, true)
         ))
-        .orderBy(desc(liveChatRooms.lastActivity));
+        .orderBy(desc(chatRooms.lastActivity));
 
       console.log(`💬 Found ${rooms.length} chat rooms for user ${userId} in club ${clubId}`);
       return rooms.map(row => ({
-        ...row.live_chat_rooms,
+        ...row.chat_rooms,
         unreadCount: 0 // TODO: Calculate actual unread count
       }));
     } catch (error) {
@@ -3027,7 +3029,7 @@ export class DatabaseStorage implements IStorage {
   async createChatRoom(roomData: any): Promise<any> {
     try {
       const [room] = await db
-        .insert(liveChatRooms)
+        .insert(chatRooms)
         .values({
           ...roomData,
           createdAt: new Date(),

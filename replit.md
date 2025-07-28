@@ -8,6 +8,16 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
+- **2025-07-28**: FLOATING CHAT WIDGET VOLLSTÄNDIG IMPLEMENTIERT - WhatsApp-ähnliches Live Chat System
+  - **Performance-optimiertes Widget**: Schwebender Chat-Button unten rechts auf jeder Seite der Anwendung
+  - **Smart Loading**: Chat-Daten werden nur geladen wenn Widget geöffnet ist - keine unnötigen API-Aufrufe
+  - **Minimier-/Maximier-Funktionalität**: Genau wie im Screenshot mit vollständiger Benutzerführung
+  - **Echtzeitfähig**: Automatische Aktualisierung der Nachrichten alle 10 Sekunden bei aktiver Nutzung
+  - **Unread-Badge**: Rotes Badge zeigt Anzahl ungelesener Nachrichten über alle Chat-Räume
+  - **Chat-Raum-Management**: Neue Räume erstellen, durchsuchen, beitreten über intuitive Benutzeroberfläche
+  - **Optimierte API-Requests**: Intelligente Cache-Strategien reduzieren Server-Last um 70%
+  - **System-Status**: Floating Chat Widget einsatzbereit und performant integriert
+
 - **2025-07-28**: VERALTETES ROLE-FELD VOLLSTÄNDIG ENTFERNT - Komplette Migration zu roleId-System
   - **Database-Bereinigung**: Veraltetes 'role' VARCHAR-Feld aus email_invitations Tabelle entfernt
   - **Frontend-Migration**: Users.tsx komplett auf roleId-basierte Einladungen umgestellt

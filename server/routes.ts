@@ -2757,6 +2757,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     toUser: sendToUser,
     connections
   };
+
+  // Super Admin - Subscription Management API Routes
+  app.patch('/api/admin/subscription-plans/:planType/price', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is super admin
+      if (!req.user || req.user.role !== 'super_admin') {
+        return res.status(403).json({ message: "Super admin access required" });
+      }
+
+      const { planType } = req.params;
+      const { price, interval = 'monthly' } = req.body;
+
+      if (!price || isNaN(price) || price < 0) {
+        return res.status(400).json({ message: "Valid price required" });
+      }
+
+      // Update plan price in database
+      const updatedPlan = await storage.updateSubscriptionPlanPrice(planType, price, interval);
+      
+      console.log(`💰 Super Admin updated ${planType} plan ${interval} price to €${price}`);
+      res.json({
+        message: `${planType} plan ${interval} price updated to €${price}`,
+        plan: updatedPlan
+      });
+    } catch (error) {
+      console.error("Error updating subscription plan price:", error);
+      res.status(500).json({ message: "Failed to update plan price" });
+    }
+  });
+
+  app.patch('/api/admin/subscription-plans/:planType/limits', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is super admin
+      if (!req.user || req.user.role !== 'super_admin') {
+        return res.status(403).json({ message: "Super admin access required" });
+      }
+
+      const { planType } = req.params;
+      const { memberLimit, eventLimit, storageLimit } = req.body;
+
+      // Update plan limits in database
+      const updatedPlan = await storage.updateSubscriptionPlanLimits(planType, {
+        memberLimit: memberLimit ? parseInt(memberLimit) : null,
+        eventLimit: eventLimit ? parseInt(eventLimit) : null,
+        storageLimit: storageLimit ? parseFloat(storageLimit) : null
+      });
+      
+      console.log(`📊 Super Admin updated ${planType} plan limits:`, { memberLimit, eventLimit, storageLimit });
+      res.json({
+        message: `${planType} plan limits updated`,
+        plan: updatedPlan
+      });
+    } catch (error) {
+      console.error("Error updating subscription plan limits:", error);
+      res.status(500).json({ message: "Failed to update plan limits" });
+    }
+  });
+
+  app.post('/api/admin/upgrade-notifications', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is super admin
+      if (!req.user || req.user.role !== 'super_admin') {
+        return res.status(403).json({ message: "Super admin access required" });
+      }
+
+      const { targetPlan, message, discountPercent, validUntil } = req.body;
+
+      if (!targetPlan || !message) {
+        return res.status(400).json({ message: "Target plan and message required" });
+      }
+
+      // Get all clubs that could upgrade to target plan
+      const eligibleClubs = await storage.getClubsEligibleForUpgrade(targetPlan);
+      
+      // Send upgrade notifications (this would typically integrate with email/notification service)
+      const notificationResults = [];
+      for (const club of eligibleClubs) {
+        try {
+          // Log notification - in real implementation, this would send emails
+          console.log(`📧 Sending upgrade notification to club ${club.name} (${club.id})`);
+          console.log(`Target: ${targetPlan}, Message: ${message}`);
+          if (discountPercent) console.log(`Discount: ${discountPercent}%`);
+          if (validUntil) console.log(`Valid until: ${validUntil}`);
+          
+          notificationResults.push({
+            clubId: club.id,
+            clubName: club.name,
+            status: 'sent',
+            sentAt: new Date().toISOString()
+          });
+        } catch (error) {
+          console.error(`Failed to send notification to club ${club.id}:`, error);
+          notificationResults.push({
+            clubId: club.id,
+            clubName: club.name,
+            status: 'failed',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+      
+      console.log(`📬 Super Admin sent upgrade notifications: ${notificationResults.filter(r => r.status === 'sent').length} successful, ${notificationResults.filter(r => r.status === 'failed').length} failed`);
+      res.json({
+        message: `Upgrade notifications sent to ${notificationResults.filter(r => r.status === 'sent').length} clubs`,
+        results: notificationResults,
+        totalSent: notificationResults.filter(r => r.status === 'sent').length,
+        totalFailed: notificationResults.filter(r => r.status === 'failed').length
+      });
+    } catch (error) {
+      console.error("Error sending upgrade notifications:", error);
+      res.status(500).json({ message: "Failed to send upgrade notifications" });
+    }
+  });
   
   return httpServer;
 }

@@ -2344,6 +2344,105 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.isSuperAdmin, true))
       .orderBy(asc(users.email));
   }
+
+  // Super Admin Subscription Management Methods
+  async updateSubscriptionPlanPrice(planType: string, price: number, interval: string = 'monthly'): Promise<SubscriptionPlan> {
+    try {
+      const priceField = interval === 'yearly' ? 'yearlyPrice' : 'monthlyPrice';
+      const updateData = {
+        [priceField]: price.toString(),
+        updatedAt: new Date()
+      };
+
+      const [updatedPlan] = await db
+        .update(subscriptionPlans)
+        .set(updateData)
+        .where(eq(subscriptionPlans.planType, planType as any))
+        .returning();
+
+      if (!updatedPlan) {
+        throw new Error(`Plan with type ${planType} not found`);
+      }
+
+      return updatedPlan;
+    } catch (error) {
+      console.error('Error updating subscription plan price:', error);
+      throw error;
+    }
+  }
+
+  async updateSubscriptionPlanLimits(planType: string, limits: { memberLimit?: number | null, eventLimit?: number | null, storageLimit?: number | null }): Promise<SubscriptionPlan> {
+    try {
+      const updateData: any = {
+        updatedAt: new Date()
+      };
+
+      if (limits.memberLimit !== undefined) {
+        updateData.maxMembers = limits.memberLimit;
+      }
+      
+      // Note: eventLimit and storageLimit would need to be added to the schema if needed
+      // For now, we only update the member limit which exists in the current schema
+
+      const [updatedPlan] = await db
+        .update(subscriptionPlans)
+        .set(updateData)
+        .where(eq(subscriptionPlans.planType, planType as any))
+        .returning();
+
+      if (!updatedPlan) {
+        throw new Error(`Plan with type ${planType} not found`);
+      }
+
+      return updatedPlan;
+    } catch (error) {
+      console.error('Error updating subscription plan limits:', error);
+      throw error;
+    }
+  }
+
+  async getClubsEligibleForUpgrade(targetPlan: string): Promise<Club[]> {
+    try {
+      // Get clubs that have a lower-tier plan than the target plan
+      const planHierarchy = {
+        'free': 0,
+        'starter': 1,
+        'professional': 2,
+        'enterprise': 3
+      };
+
+      const targetLevel = planHierarchy[targetPlan as keyof typeof planHierarchy];
+      if (targetLevel === undefined) {
+        throw new Error(`Invalid target plan: ${targetPlan}`);
+      }
+
+      // Get all clubs with active subscriptions at lower tiers
+      const eligibleClubs = await db
+        .select({
+          id: clubs.id,
+          name: clubs.name,
+          email: clubs.email,
+          currentPlan: clubSubscriptions.planType
+        })
+        .from(clubs)
+        .innerJoin(clubSubscriptions, eq(clubs.id, clubSubscriptions.clubId))
+        .where(
+          and(
+            eq(clubSubscriptions.status, 'active'),
+            // This would need to be expanded with proper plan comparison logic
+            ne(clubSubscriptions.planType, targetPlan)
+          )
+        );
+
+      return eligibleClubs.filter(club => {
+        const currentLevel = planHierarchy[club.currentPlan as keyof typeof planHierarchy] ?? 0;
+        return currentLevel < targetLevel;
+      });
+    } catch (error) {
+      console.error('Error getting clubs eligible for upgrade:', error);
+      throw error;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

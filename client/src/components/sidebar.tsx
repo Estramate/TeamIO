@@ -147,10 +147,27 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center relative overflow-hidden">
+                      {selectedClub?.logoUrl ? (
+                        <img 
+                          src={selectedClub.logoUrl} 
+                          alt={`${selectedClub.name} Logo`}
+                          className="w-10 h-10 object-cover rounded-lg"
+                          onError={(e) => {
+                            // Fallback to ClubFlow icon if club logo fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const fallback = target.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'block';
+                          }}
+                        />
+                      ) : null}
                       <img 
                         src="/favicon-96x96.png" 
                         alt="ClubFlow" 
-                        className="w-10 h-10 object-contain"
+                        className={cn(
+                          "w-10 h-10 object-contain",
+                          selectedClub?.logoUrl ? "hidden" : "block"
+                        )}
                       />
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
                         <span className="text-[8px] font-bold text-white">β</span>
@@ -158,7 +175,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="right">
-                    <p>ClubFlow Beta</p>
+                    <p>{selectedClub?.name ? `${selectedClub.name} Beta` : "ClubFlow Beta"}</p>
                   </TooltipContent>
                 </Tooltip>
                 <Button
@@ -174,21 +191,40 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                    {selectedClub?.logoUrl ? (
+                      <img 
+                        src={selectedClub.logoUrl} 
+                        alt={`${selectedClub.name} Logo`}
+                        className="w-10 h-10 object-cover rounded-lg"
+                        onError={(e) => {
+                          // Fallback to ClubFlow icon if club logo fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = target.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'block';
+                        }}
+                      />
+                    ) : null}
                     <img 
                       src="/favicon-96x96.png" 
                       alt="ClubFlow" 
-                      className="w-10 h-10 object-contain"
+                      className={cn(
+                        "w-10 h-10 object-contain",
+                        selectedClub?.logoUrl ? "hidden" : "block"
+                      )}
                     />
                   </div>
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-bold text-club-primary whitespace-nowrap">ClubFlow</h1>
+                      <h1 className="text-xl font-bold text-club-primary whitespace-nowrap">
+                        {selectedClub?.name || "ClubFlow"}
+                      </h1>
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 whitespace-nowrap">
                         Beta
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground truncate">
-                      {selectedClub?.name || "Verein auswählen"}
+                      {selectedClub?.name ? "Vereinsverwaltung" : "Verein auswählen"}
                     </p>
                   </div>
                 </div>

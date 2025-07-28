@@ -2148,8 +2148,13 @@ export class DatabaseStorage implements IStorage {
     console.log("Creating club with data:", clubData);
     
     try {
-      // Extract planId from clubData
-      const { planId = 1, ...clubDataWithoutPlan } = clubData; // Default to Free plan (ID 1)
+      // Extract subscription data from clubData
+      const { 
+        planId = 1, 
+        subscriptionStartDate, 
+        billingInterval = 'yearly', 
+        ...clubDataWithoutPlan 
+      } = clubData;
       
       const [newClub] = await db.insert(clubs).values({
         name: clubDataWithoutPlan.name,
@@ -2168,17 +2173,31 @@ export class DatabaseStorage implements IStorage {
 
       console.log("Club created successfully:", newClub);
 
+      // Calculate subscription dates
+      const startDate = subscriptionStartDate ? new Date(subscriptionStartDate) : new Date();
+      const endDate = new Date(startDate);
+      
+      if (billingInterval === 'yearly') {
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        endDate.setDate(endDate.getDate() - 1); // End one day before next year starts
+        endDate.setHours(23, 59, 59, 999); // End of day
+      } else {
+        endDate.setMonth(endDate.getMonth() + 1);
+        endDate.setDate(endDate.getDate() - 1); // End one day before next month starts
+        endDate.setHours(23, 59, 59, 999); // End of day
+      }
+
       // Create subscription for the new club
       try {
         await this.createClubSubscription({
           clubId: newClub.id,
           planId: planId,
           status: 'active',
-          billingInterval: 'monthly',
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+          billingInterval: billingInterval,
+          currentPeriodStart: startDate,
+          currentPeriodEnd: endDate,
         });
-        console.log(`Subscription created for club ${newClub.id} with plan ${planId}`);
+        console.log(`Subscription created for club ${newClub.id} with plan ${planId}, billing: ${billingInterval}, period: ${startDate.toISOString()} - ${endDate.toISOString()}`);
       } catch (subscriptionError) {
         console.error("Error creating subscription for new club:", subscriptionError);
         // Don't fail club creation if subscription creation fails

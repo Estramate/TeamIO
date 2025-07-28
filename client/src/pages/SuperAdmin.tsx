@@ -537,6 +537,8 @@ function CreateClubForm({ onSubmit, isLoading, onCancel }: {
     secondaryColor: '#64748b',
     accentColor: '#10b981',
     planId: 1, // Default to Free plan (ID 1)
+    subscriptionStartDate: new Date().toISOString().split('T')[0], // Today
+    billingInterval: 'yearly' as 'monthly' | 'yearly', // Default to yearly
   });
 
   // Fetch available subscription plans
@@ -688,35 +690,77 @@ function CreateClubForm({ onSubmit, isLoading, onCancel }: {
         </div>
       </div>
 
-      {/* Subscription Plan Selection */}
-      <div>
-        <Label htmlFor="planId" className="text-sm font-medium mb-3 block">Subscription-Plan *</Label>
-        <Select value={formData.planId.toString()} onValueChange={(value) => setFormData({ ...formData, planId: parseInt(value) })}>
-          <SelectTrigger>
-            <SelectValue placeholder={plansLoading ? "Lade Pläne..." : "Subscription-Plan auswählen"} />
-          </SelectTrigger>
-          <SelectContent>
-            {plansLoading ? (
-              <SelectItem value="loading" disabled>
-                Lade verfügbare Pläne...
-              </SelectItem>
-            ) : (
-              subscriptionPlans?.map((plan: any) => (
-                <SelectItem key={plan.id} value={plan.id.toString()}>
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-medium">{plan.displayName}</span>
-                    <span className="text-sm text-muted-foreground ml-2">
-                      €{plan.monthlyPrice}/Monat
-                    </span>
-                  </div>
+      {/* Subscription Configuration */}
+      <div className="space-y-4 border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+        <h3 className="font-medium text-sm">Subscription-Konfiguration</h3>
+        
+        {/* Plan Selection */}
+        <div>
+          <Label htmlFor="planId">Subscription-Plan *</Label>
+          <Select value={formData.planId.toString()} onValueChange={(value) => setFormData({ ...formData, planId: parseInt(value) })}>
+            <SelectTrigger>
+              <SelectValue placeholder={plansLoading ? "Lade Pläne..." : "Subscription-Plan auswählen"} />
+            </SelectTrigger>
+            <SelectContent>
+              {plansLoading ? (
+                <SelectItem value="loading" disabled>
+                  Lade verfügbare Pläne...
                 </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-muted-foreground mt-1">
-          Standard: Starter-Plan. Kann später geändert werden.
-        </p>
+              ) : (
+                subscriptionPlans?.map((plan: any) => (
+                  <SelectItem key={plan.id} value={plan.id.toString()}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-medium">{plan.displayName}</span>
+                      <span className="text-sm text-muted-foreground ml-2">
+                        €{formData.billingInterval === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice}/{formData.billingInterval === 'yearly' ? 'Jahr' : 'Monat'}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Billing Interval */}
+        <div>
+          <Label htmlFor="billingInterval">Abrechnungsintervall *</Label>
+          <Select value={formData.billingInterval} onValueChange={(value: 'monthly' | 'yearly') => setFormData({ ...formData, billingInterval: value })}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="monthly">Monatlich</SelectItem>
+              <SelectItem value="yearly">Jährlich (günstiger)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Start Date */}
+        <div>
+          <Label htmlFor="subscriptionStartDate">Subscription-Startdatum *</Label>
+          <Input
+            id="subscriptionStartDate"
+            type="date"
+            value={formData.subscriptionStartDate}
+            onChange={(e) => setFormData({ ...formData, subscriptionStartDate: e.target.value })}
+            required
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Enddatum: {(() => {
+              const startDate = new Date(formData.subscriptionStartDate);
+              const endDate = new Date(startDate);
+              if (formData.billingInterval === 'yearly') {
+                endDate.setFullYear(endDate.getFullYear() + 1);
+                endDate.setDate(endDate.getDate() - 1);
+              } else {
+                endDate.setMonth(endDate.getMonth() + 1);
+                endDate.setDate(endDate.getDate() - 1);
+              }
+              return endDate.toLocaleDateString('de-DE');
+            })()}
+          </p>
+        </div>
       </div>
 
       <div className="flex justify-end gap-3 pt-4">

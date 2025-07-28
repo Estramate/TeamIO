@@ -22,7 +22,9 @@ const createClubSchema = z.object({
   primaryColor: z.string().regex(/^#[0-9A-F]{6}$/i).default("#3b82f6"),
   secondaryColor: z.string().regex(/^#[0-9A-F]{6}$/i).default("#64748b"),
   accentColor: z.string().regex(/^#[0-9A-F]{6}$/i).default("#10b981"),
-  subscriptionPlanId: z.number().optional(),
+  planId: z.number().default(1),
+  subscriptionStartDate: z.string().optional(),
+  billingInterval: z.enum(['monthly', 'yearly']).default('yearly'),
 });
 
 // Schema for creating administrators
@@ -77,7 +79,7 @@ router.post("/clubs",
       console.log("Validation successful:", JSON.stringify(validatedData, null, 2));
       const { storage } = await import("../storage");
       
-      // Create the club with subscription plan
+      // Create the club with subscription configuration
       const newClub = await storage.createClub({
         name: validatedData.name,
         description: validatedData.description,
@@ -93,7 +95,10 @@ router.post("/clubs",
           requireApproval: true,
           defaultMemberRole: 'member',
         }),
-      }, validatedData.subscriptionPlanId || 1); // Pass planId to createClub
+        planId: validatedData.planId || 1,
+        subscriptionStartDate: validatedData.subscriptionStartDate,
+        billingInterval: validatedData.billingInterval || 'yearly',
+      });
 
       // Log the super admin action
       console.log(`SUPER ADMIN ACTION: Club "${validatedData.name}" created by ${req.user.email}`);

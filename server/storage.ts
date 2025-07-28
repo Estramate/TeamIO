@@ -2149,7 +2149,7 @@ export class DatabaseStorage implements IStorage {
     
     try {
       // Extract planId from clubData
-      const { planId = 2, ...clubDataWithoutPlan } = clubData; // Default to Starter plan (ID 2)
+      const { planId = 1, ...clubDataWithoutPlan } = clubData; // Default to Free plan (ID 1)
       
       const [newClub] = await db.insert(clubs).values({
         name: clubDataWithoutPlan.name,
@@ -2193,9 +2193,16 @@ export class DatabaseStorage implements IStorage {
 
   async createClubSubscription(subscriptionData: any): Promise<any> {
     try {
+      // Get plan type from plan ID
+      const plan = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, subscriptionData.planId)).limit(1);
+      const planType = plan[0]?.planType || 'free';
+      
       const [subscription] = await db
         .insert(clubSubscriptions)
-        .values(subscriptionData)
+        .values({
+          ...subscriptionData,
+          planType: planType, // Add the missing plan_type
+        })
         .returning();
         
       return subscription;

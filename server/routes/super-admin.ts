@@ -77,7 +77,7 @@ router.post("/clubs",
       console.log("Validation successful:", JSON.stringify(validatedData, null, 2));
       const { storage } = await import("../storage");
       
-      // Create the club
+      // Create the club with subscription plan
       const newClub = await storage.createClub({
         name: validatedData.name,
         description: validatedData.description,
@@ -93,7 +93,7 @@ router.post("/clubs",
           requireApproval: true,
           defaultMemberRole: 'member',
         }),
-      });
+      }, validatedData.subscriptionPlanId || 1); // Pass planId to createClub
 
       // Log the super admin action
       console.log(`SUPER ADMIN ACTION: Club "${validatedData.name}" created by ${req.user.email}`);

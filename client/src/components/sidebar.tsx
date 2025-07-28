@@ -26,6 +26,10 @@ import {
   ChevronRight,
   Crown,
   Lock,
+  UserCheck,
+  Trophy,
+  Zap,
+  ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -40,12 +44,12 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-// Navigation items with required features
+// Navigation items with required features and unique icons
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3, feature: "basicManagement" as FeatureName },
-  { name: "Mitglieder", href: "/members", icon: Users, badge: true, feature: "basicManagement" as FeatureName },
-  { name: "Spieler", href: "/players", icon: Users2, badge: true, feature: "basicManagement" as FeatureName },
-  { name: "Teams", href: "/teams", icon: UsersRound, badge: true, feature: "teamManagement" as FeatureName },
+  { name: "Mitglieder", href: "/members", icon: UserCheck, badge: true, feature: "basicManagement" as FeatureName },
+  { name: "Spieler", href: "/players", icon: Users, badge: true, feature: "basicManagement" as FeatureName },
+  { name: "Teams", href: "/teams", icon: Trophy, badge: true, feature: "teamManagement" as FeatureName },
   { name: "Kalender", href: "/calendar", icon: Calendar, feature: "basicManagement" as FeatureName },
   { name: "Anlagen", href: "/facilities", icon: MapPin, feature: "facilityBooking" as FeatureName },
   { name: "Buchungen", href: "/bookings", icon: BookOpen, feature: "facilityBooking" as FeatureName },
@@ -56,12 +60,12 @@ const navigation = [
 
 const adminNavigation = [
   { name: "Benutzer", href: "/users", icon: UserCog, feature: "multiAdmin" as FeatureName },
-  { name: "Subscription", href: "/subscription", icon: Crown, feature: "basicManagement" as FeatureName },
+  { name: "Subscription", href: "/subscription", icon: Zap, feature: "basicManagement" as FeatureName },
   { name: "Einstellungen", href: "/settings", icon: Settings, feature: "basicManagement" as FeatureName },
 ];
 
 const superAdminNavigation = [
-  { name: "Super Admin", href: "/super-admin", icon: Crown },
+  { name: "Super Admin", href: "/super-admin", icon: ShieldCheck },
 ];
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
@@ -282,7 +286,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 mb-3">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                        <Crown className="w-3 h-3 text-white" />
+                        <ShieldCheck className="w-3 h-3 text-white" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-orange-800 dark:text-orange-200">
@@ -324,10 +328,21 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button 
-                        onClick={() => navigate('/super-admin')}
-                        className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center mb-2 cursor-pointer hover:from-orange-600 hover:to-amber-600 transition-all duration-200"
+                        onClick={() => {
+                          navigate('/super-admin');
+                          onClose();
+                        }}
+                        className={cn(
+                          "w-full flex justify-center p-2 rounded-lg transition-all duration-200 group mb-2",
+                          location === '/super-admin'
+                            ? "bg-gradient-to-br from-orange-500 to-amber-500 text-white"
+                            : "hover:bg-gradient-to-br hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-900/20 dark:hover:to-amber-900/20 text-muted-foreground hover:text-foreground"
+                        )}
                       >
-                        <Crown className="w-5 h-5 text-white" />
+                        <ShieldCheck className={cn(
+                          "w-5 h-5 transition-colors",
+                          location === '/super-admin' ? "text-white" : "text-muted-foreground group-hover:text-foreground"
+                        )} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="right">

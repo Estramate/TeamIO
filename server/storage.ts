@@ -1782,10 +1782,14 @@ export class DatabaseStorage implements IStorage {
       const result = await db
         .select()
         .from(announcements)
-        .where(eq(announcements.clubId, clubId))
-        .orderBy(desc(announcements.createdAt));
+        .where(and(
+          eq(announcements.clubId, clubId),
+          eq(announcements.isPublished, true),
+          isNull(announcements.deletedAt)
+        ))
+        .orderBy(desc(announcements.isPinned), desc(announcements.publishedAt));
       
-      console.log(`📢 Found ${result.length} announcements for club ${clubId}`);
+      console.log(`📢 Found ${result.length} published announcements for club ${clubId}`);
       return result || [];
     } catch (error) {
       console.error('Error getting announcements:', error);

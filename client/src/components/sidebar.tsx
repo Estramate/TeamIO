@@ -228,6 +228,66 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 </Select>
               </div>
             )}
+
+            {/* Super Admin Section - Under Club Selection */}
+            {(superAdminStatus as any)?.isSuperAdmin && (
+              <div className={cn("mt-3", collapsed ? "px-2" : "px-0")}>
+                {!collapsed && (
+                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 mb-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                        <Crown className="w-3 h-3 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-orange-800 dark:text-orange-200">
+                          Super Administrator
+                        </p>
+                        <p className="text-xs text-orange-600 dark:text-orange-400">
+                          Plattform-Verwaltung
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      {superAdminNavigation.map((item) => {
+                        const isActive = location === item.href;
+                        const Icon = item.icon;
+                        
+                        return (
+                          <button
+                            key={item.name}
+                            onClick={() => {
+                              navigate(item.href);
+                              onClose();
+                            }}
+                            className={cn(
+                              "w-full flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded transition-colors",
+                              isActive
+                                ? "bg-orange-200 dark:bg-orange-800 text-orange-900 dark:text-orange-100"
+                                : "text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-800/50"
+                            )}
+                          >
+                            <Icon className="w-3 h-3" />
+                            {item.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {collapsed && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center mb-2 cursor-pointer">
+                        <Crown className="w-5 h-5 text-white" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p className="font-medium">Super Administrator</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
@@ -432,79 +492,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               </div>
             )}
 
-            {/* Super Admin Navigation */}
-            {(superAdminStatus as any)?.isSuperAdmin && (
-              <div className={cn("mt-6", collapsed ? "px-2" : "px-3")}>
-                <div className="border-t border-border pt-4">
-                  {!collapsed && (
-                    <div className="px-3 flex items-center gap-2 mb-3">
-                      <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
-                        Super Administrator
-                      </p>
-                      <Badge variant="outline" className="text-xs px-1 py-0 h-4 border-orange-400 text-orange-600">
-                        ADMIN
-                      </Badge>
-                    </div>
-                  )}
-                  <div className="space-y-2">
-                    {superAdminNavigation.map((item) => {
-                      const isActive = location === item.href;
-                      const Icon = item.icon;
-                      
-                      const superAdminButton = (
-                        <button
-                          key={item.name}
-                          onClick={() => {
-                            navigate(item.href);
-                            onClose();
-                          }}
-                          className={cn(
-                            "w-full group flex items-center text-sm font-medium transition-all duration-200 relative",
-                            collapsed 
-                              ? "justify-center p-2 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20" 
-                              : "px-3 py-2.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20",
-                            isActive
-                              ? collapsed 
-                                ? "bg-orange-500 text-white" 
-                                : "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500"
-                              : "text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300"
-                          )}
-                        >
-                          <Icon
-                            className={cn(
-                              "flex-shrink-0 transition-colors",
-                              collapsed ? "w-5 h-5" : "w-4 h-4 mr-3",
-                              isActive 
-                                ? collapsed 
-                                  ? "text-white" 
-                                  : "text-orange-600 dark:text-orange-400" 
-                                : "text-orange-600 dark:text-orange-400"
-                            )}
-                          />
-                          {!collapsed && <span className="font-medium">{item.name}</span>}
-                        </button>
-                      );
 
-                      return collapsed ? (
-                        <Tooltip key={item.name}>
-                          <TooltipTrigger asChild>
-                            {superAdminButton}
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="bg-popover border border-border shadow-md">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{item.name}</span>
-                              <Badge variant="outline" className="text-xs border-orange-400 text-orange-600">
-                                ADMIN
-                              </Badge>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : superAdminButton;
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
           </nav>
 
           {/* Theme Toggle */}

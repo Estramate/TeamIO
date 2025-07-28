@@ -449,16 +449,9 @@ export default function Communication() {
                                 cancelText: "Abbrechen",
                                 variant: "destructive",
                                 onConfirm: async () => {
-                                  // Optimistic update - remove message from UI immediately
                                   const messagesQueryKey = [`/api/clubs/${selectedClub?.id}/messages`];
-                                  const previousMessages = queryClient.getQueryData(messagesQueryKey);
+                                  const statsQueryKey = [`/api/clubs/${selectedClub?.id}/communication-stats`];
                                   
-                                  // Remove message from cache immediately
-                                  queryClient.setQueryData(messagesQueryKey, (oldData: any) => {
-                                    if (!oldData) return oldData;
-                                    return oldData.filter((msg: any) => msg.id !== message.id);
-                                  });
-
                                   try {
                                     const response = await fetch(`/api/clubs/${selectedClub?.id}/messages/${message.id}`, {
                                       method: 'DELETE',
@@ -467,16 +460,13 @@ export default function Communication() {
                                     
                                     if (response.ok) {
                                       toastService.database.deleted("Nachricht");
-                                      // Refetch to ensure consistency
-                                      queryClient.invalidateQueries({ queryKey: messagesQueryKey });
+                                      // Invalidate both messages and stats caches to force immediate UI refresh
+                                      await queryClient.invalidateQueries({ queryKey: messagesQueryKey });
+                                      await queryClient.invalidateQueries({ queryKey: statsQueryKey });
                                     } else {
-                                      // Revert optimistic update on error
-                                      queryClient.setQueryData(messagesQueryKey, previousMessages);
                                       toastService.database.error("Löschen", "Nachricht");
                                     }
                                   } catch (error) {
-                                    // Revert optimistic update on error
-                                    queryClient.setQueryData(messagesQueryKey, previousMessages);
                                     toastService.database.error("Löschen", "Nachricht");
                                   }
                                 }
@@ -582,8 +572,9 @@ export default function Communication() {
                                 
                                 if (response.ok) {
                                   toastService.database.deleted("Ankündigung");
-                                  queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/announcements`] });
-                                  queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/communication-stats`] });
+                                  // Invalidate both announcements and stats caches to force immediate UI refresh
+                                  await queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/announcements`] });
+                                  await queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/communication-stats`] });
                                 } else {
                                   toastService.database.error("Löschen", "Ankündigung");
                                 }

@@ -7,6 +7,12 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 **Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. All critical bugs resolved and application running smoothly.
 
 ## Recent Changes
+- **2025-07-28**: COMMUNICATION UI-REFRESH PROBLEM BEHOBEN - Cache-Invalidierung für sofortige UI-Updates
+  - **Cache-Invalidierung optimiert**: Messages und Announcements verschwinden sofort nach Löschen ohne Page-Reload
+  - **Await-basierte Invalidierung**: queryClient.invalidateQueries mit await für zuverlässige Cache-Updates
+  - **Doppelte Cache-Bereinigung**: Sowohl Messages/Announcements als auch Communication-Stats werden invalidiert
+  - **Entfernung fehlerhafter Optimistic Updates**: Vereinfachung auf Standard Cache-Invalidierung für bessere Stabilität
+
 - **2025-07-28**: SIDEBAR-SCROLLBAR UND API-FEHLER BEHOBEN - Unsichtbare Scrollbar + Communication-API-Reparatur
   - **Sidebar Scrollbar**: CSS-Klasse .sidebar-scrollable für unsichtbare aber funktionale Scrollbar hinzugefügt
   - **Communication-API 500-Fehler behoben**: Try-catch-Blöcke und Default-Werte für fehlende Tabellen implementiert

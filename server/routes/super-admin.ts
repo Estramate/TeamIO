@@ -153,6 +153,20 @@ router.get("/users",
     }
   }));
 
+// GET /api/super-admin/club-subscriptions - Get all club subscriptions
+router.get("/club-subscriptions",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const { storage } = await import("../storage");
+      const subscriptions = await storage.getAllClubSubscriptions();
+      res.json(subscriptions);
+    } catch (error) {
+      console.error("Error fetching club subscriptions:", error);
+      res.status(500).json({ error: "Failed to fetch club subscriptions" });
+    }
+  }));
+
 // POST /api/super-admin/create-admin - Create new club administrator
 router.post("/create-admin",
   requiresSuperAdmin,

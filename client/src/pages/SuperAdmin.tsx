@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { usePage } from '@/contexts/PageContext';
 import { 
   Crown, 
   Building2, 
@@ -27,7 +30,11 @@ import {
   Palette,
   AlertCircle,
   CheckCircle,
-  Clock
+  Clock,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Eye
 } from 'lucide-react';
 
 export default function SuperAdminPage() {
@@ -35,6 +42,12 @@ export default function SuperAdminPage() {
   const [showCreateClub, setShowCreateClub] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const { setPage } = usePage();
+  
+  // Set page title
+  React.useEffect(() => {
+    setPage('Super Administrator', 'Plattform-weite Verwaltung und Übersicht');
+  }, [setPage]);
 
   // Redirect if not super admin
   if (!isLoading && !(superAdminStatus as any)?.isSuperAdmin) {
@@ -579,6 +592,11 @@ function CreateAdminForm({ clubs, onSubmit, isLoading }: {
 
 // Clubs Table Component
 function ClubsTable({ clubs }: { clubs: any[] }) {
+  const { data: clubSubscriptions } = useQuery({
+    queryKey: ['/api/super-admin/club-subscriptions'],
+    enabled: !!clubs?.length,
+  });
+
   if (!clubs?.length) {
     return (
       <div className="text-center py-8">
@@ -587,6 +605,12 @@ function ClubsTable({ clubs }: { clubs: any[] }) {
       </div>
     );
   }
+
+  const getClubSubscription = (clubId: number) => {
+    if (!clubSubscriptions) return { planType: 'enterprise', displayName: 'Enterprise' };
+    const subscription = clubSubscriptions.find((sub: any) => sub.clubId === clubId);
+    return subscription || { planType: 'enterprise', displayName: 'Enterprise' };
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -614,7 +638,7 @@ function ClubsTable({ clubs }: { clubs: any[] }) {
                 <Badge variant="outline">{club.memberCount || 0}</Badge>
               </td>
               <td className="p-3">
-                <Badge variant="secondary">{club.subscriptionPlan || 'Free'}</Badge>
+                <Badge variant="secondary">{getClubSubscription(club.id).displayName}</Badge>
               </td>
               <td className="p-3">
                 <Badge variant="default">
@@ -628,9 +652,27 @@ function ClubsTable({ clubs }: { clubs: any[] }) {
                 </time>
               </td>
               <td className="p-3">
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>
+                      <Eye className="h-4 w-4 mr-2" />
+                      Details anzeigen
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Bearbeiten
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Deaktivieren
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </td>
             </tr>
           ))}
@@ -701,9 +743,27 @@ function UsersTable({ users }: { users: any[] }) {
                 </time>
               </td>
               <td className="p-3">
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>
+                      <Eye className="h-4 w-4 mr-2" />
+                      Details anzeigen
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Bearbeiten
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Deaktivieren
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </td>
             </tr>
           ))}

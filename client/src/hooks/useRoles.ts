@@ -14,7 +14,10 @@ export interface Role {
 export function useRoles() {
   const { data: roles, isLoading, error } = useQuery<Role[]>({
     queryKey: ['/api/roles'],
-    queryFn: () => apiRequest('GET', '/api/roles'),
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/roles');
+      return response as Role[];
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes - roles don't change often
   });
 

@@ -49,7 +49,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         subscriptionData.plan,
         subscriptionData.usage ? {
           members: subscriptionData.usage.memberCount,
-          players: subscriptionData.usage.playerCount,
           teams: subscriptionData.usage.teamCount,
           facilities: subscriptionData.usage.facilityCount,
           storage: subscriptionData.usage.storageUsed,
@@ -99,14 +98,15 @@ export function useSubscription(): UseSubscriptionResult {
 // Hook for feature gating
 export function useFeatureGate(feature: FeatureName) {
   const { hasFeature, subscriptionManager } = useSubscription();
+  const { selectedClub } = useClub();
   
   return {
-    hasAccess: hasFeature(feature),
+    hasAccess: !selectedClub || hasFeature(feature), // Allow all features if no club selected
     planType: subscriptionManager.getCurrentPlan(),
     upgrade: () => {
       // Navigate to upgrade page
       window.location.href = '/subscription/upgrade';
-    },
+    }
   };
 }
 

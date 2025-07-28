@@ -96,53 +96,49 @@ function Router() {
     if (isAuthenticated && !isLoading && !membershipChecked) {
       setMembershipChecked(true);
 
-      // If no club is selected, check user's membership status
-      if (!selectedClub) {
-        // First check if user has ANY memberships (active or inactive)
-        fetch('/api/user/memberships/status', { credentials: 'include' })
-          .then(res => res.ok ? res.json() : { hasMemberships: false })
-          .then(membershipStatus => {
-            if (membershipStatus.hasMemberships) {
-              // User has memberships, check for active ones
-              if (membershipStatus.activeMemberships > 0) {
-                // Get active clubs to auto-select
+      // First check if user has ANY memberships (active or inactive)
+      fetch('/api/user/memberships/status', { credentials: 'include' })
+        .then(res => res.ok ? res.json() : { hasMemberships: false })
+        .then(membershipStatus => {
+          console.log('📊 Membership Status Check:', membershipStatus);
+          
+          if (membershipStatus.hasMemberships) {
+            // User has memberships, check for active ones
+            if (membershipStatus.activeMemberships > 0) {
+              // User has active memberships - skip onboarding entirely
+              console.log('✅ User has active memberships, bypassing onboarding');
+              setShowOnboarding(false);
+              
+              // If no club is selected, auto-select first available
+              if (!selectedClub) {
                 fetch('/api/clubs', { credentials: 'include' })
                   .then(res => res.ok ? res.json() : [])
                   .then(clubs => {
                     if (clubs && clubs.length > 0) {
-                      if (clubs.length === 1) {
-                        // Only one active club - auto-select and go directly to dashboard
-                        console.log('🎯 Auto-selecting single club:', clubs[0].name);
-                        setSelectedClub(clubs[0]);
-                        setShowOnboarding(false);
-                      } else {
-                        // Multiple active clubs - show selection (onboarding wizard)
-                        console.log('📋 Multiple clubs found, showing selection:', clubs.length);
-                        setShowOnboarding(true);
-                      }
-                    } else {
-                      setShowOnboarding(false);
+                      console.log('🎯 Auto-selecting first club:', clubs[0].name);
+                      setSelectedClub(clubs[0]);
                     }
                   })
-                  .catch(() => setShowOnboarding(false));
-              } else {
-                // User has pending memberships but no active ones - show pending dashboard
-                setShowOnboarding('pending');
+                  .catch(err => console.error('Error fetching clubs:', err));
               }
             } else {
-              // No memberships at all - show onboarding
-              setShowOnboarding(true);
+              // User has pending memberships but no active ones - show pending dashboard
+              console.log('⏳ User has pending memberships, showing pending dashboard');
+              setShowOnboarding('pending');
             }
-          })
-          .catch(() => {
-            // Error checking membership status - show onboarding as fallback
+          } else {
+            // No memberships at all - show onboarding
+            console.log('🆕 User has no memberships, showing onboarding');
             setShowOnboarding(true);
-          });
-      } else {
-        setShowOnboarding(false);
-      }
+          }
+        })
+        .catch(err => {
+          console.error('Error checking membership status:', err);
+          // Error checking membership status - show onboarding as fallback
+          setShowOnboarding(true);
+        });
     }
-  }, [isAuthenticated, isLoading, selectedClub, membershipChecked]);
+  }, [isAuthenticated, isLoading, membershipChecked]);
 
   if (isLoading) {
     return (

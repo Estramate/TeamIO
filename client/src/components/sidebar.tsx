@@ -146,8 +146,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               <div className="flex flex-col items-center space-y-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="w-10 h-10 bg-club-primary rounded-lg flex items-center justify-center relative">
-                      <Shield className="text-white w-5 h-5" />
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center relative overflow-hidden">
+                      <img 
+                        src="/favicon-96x96.png" 
+                        alt="ClubFlow" 
+                        className="w-10 h-10 object-contain"
+                      />
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
                         <span className="text-[8px] font-bold text-white">β</span>
                       </div>
@@ -169,8 +173,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             ) : (
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-club-primary rounded-lg flex items-center justify-center shrink-0">
-                    <Shield className="text-white text-lg" />
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                    <img 
+                      src="/favicon-96x96.png" 
+                      alt="ClubFlow" 
+                      className="w-10 h-10 object-contain"
+                    />
                   </div>
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-2">

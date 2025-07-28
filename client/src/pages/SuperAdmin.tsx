@@ -340,6 +340,7 @@ export default function SuperAdminPage() {
                     <CreateClubForm 
                       onSubmit={createClubMutation.mutate}
                       isLoading={createClubMutation.isPending}
+                      onCancel={() => setShowCreateClub(false)}
                     />
                   </DialogContent>
                 </Dialog>
@@ -385,6 +386,7 @@ export default function SuperAdminPage() {
                       clubs={allClubs as any[]}
                       onSubmit={createAdminMutation.mutate}
                       isLoading={createAdminMutation.isPending}
+                      onCancel={() => setShowCreateAdmin(false)}
                     />
                   </DialogContent>
                 </Dialog>
@@ -512,7 +514,11 @@ export default function SuperAdminPage() {
 }
 
 // Create Club Form Component
-function CreateClubForm({ onSubmit, isLoading }: { onSubmit: (data: any) => void; isLoading: boolean }) {
+function CreateClubForm({ onSubmit, isLoading, onCancel }: { 
+  onSubmit: (data: any) => void; 
+  isLoading: boolean;
+  onCancel: () => void;
+}) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -661,7 +667,7 @@ function CreateClubForm({ onSubmit, isLoading }: { onSubmit: (data: any) => void
       </div>
 
       <div className="flex justify-end gap-3 pt-4">
-        <Button type="button" variant="outline" onClick={() => setShowCreateClub(false)}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           Abbrechen
         </Button>
         <Button type="submit" disabled={isLoading}>
@@ -673,10 +679,11 @@ function CreateClubForm({ onSubmit, isLoading }: { onSubmit: (data: any) => void
 }
 
 // Create Admin Form Component
-function CreateAdminForm({ clubs, onSubmit, isLoading }: { 
+function CreateAdminForm({ clubs, onSubmit, isLoading, onCancel }: { 
   clubs: any[]; 
   onSubmit: (data: any) => void; 
   isLoading: boolean;
+  onCancel: () => void;
 }) {
   const [formData, setFormData] = useState({
     email: '',
@@ -759,7 +766,7 @@ function CreateAdminForm({ clubs, onSubmit, isLoading }: {
       </div>
 
       <div className="flex justify-end gap-3 pt-4">
-        <Button type="button" variant="outline" onClick={() => setShowCreateAdmin(false)}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           Abbrechen
         </Button>
         <Button type="submit" disabled={isLoading || !formData.clubId}>

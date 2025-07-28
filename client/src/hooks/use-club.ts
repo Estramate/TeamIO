@@ -4,6 +4,8 @@ import { persist } from 'zustand/middleware';
 interface Club {
   id: number;
   name: string;
+  shortName?: string;
+  logoUrl?: string;
   role: string;
   status: string;
 }
@@ -24,10 +26,10 @@ export const useClub = create<ClubStore>()(
     }),
     {
       name: 'clubflow-selected-club',
-      version: 2, // Increment version to clear old cache
+      version: 3, // Increment version to include shortName field
       migrate: (persistedState: any, version: number) => {
-        // Clear old state on version change
-        if (version < 2) {
+        // Clear old state on version change to include new fields
+        if (version < 3) {
           return { selectedClub: null };
         }
         return persistedState;

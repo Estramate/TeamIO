@@ -134,6 +134,31 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
     enabled: open,
   });
 
+  // Action handlers
+  const handlePriceAdjustment = () => {
+    toast({
+      title: "Preise anpassen",
+      description: "Funktion in Entwicklung - Preisanpassungen werden über die Datenbank verwaltet.",
+      duration: 3000,
+    });
+  };
+
+  const handlePlanLimitsEdit = () => {
+    toast({
+      title: "Plan-Limits bearbeiten", 
+      description: "Funktion in Entwicklung - Plan-Limits werden über die Datenbank verwaltet.",
+      duration: 3000,
+    });
+  };
+
+  const handleUpgradeNotifications = () => {
+    toast({
+      title: "Upgrade-Benachrichtigungen",
+      description: "Funktion in Entwicklung - Benachrichtigungen werden automatisch bei Plan-Limits versendet.",
+      duration: 3000,
+    });
+  };
+
   // Debug revenue calculation
   if (analytics && analytics.revenue) {
     console.log('🔍 SUBSCRIPTION MODAL DEBUG - Revenue Calculation:');
@@ -242,7 +267,33 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
             <div className="flex gap-3">
               <Button 
                 variant="outline"
-                onClick={() => {
+                onClick={handlePriceAdjustment}
+              >
+                Preise anpassen
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={handlePlanLimitsEdit}
+              >
+                Plan-Limits bearbeiten
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={handleUpgradeNotifications}
+              >
+                Upgrade-Benachrichtigungen
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-4">
+          <Button onClick={onClose}>Schließen</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
                   toast({
                     title: "Preise anpassen",
                     description: "Funktion in Entwicklung - Preisanpassungen werden über die Datenbank verwaltet.",

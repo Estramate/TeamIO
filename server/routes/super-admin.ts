@@ -312,7 +312,7 @@ router.get("/subscription-analytics",
           const endDate = new Date(sub.currentPeriodEnd || '2025-01-01');
           if (endDate.getFullYear() > 2030) {
             console.log(`🚫 Skipping revenue for club ${sub.clubId} - Unlimited subscription (ends ${endDate.getFullYear()})`);
-            return; // Skip unlimited subscriptions (no payment required)
+            return; // Skip this iteration - don't add to revenue
           }
           
           // Calculate revenue based on billing interval (monthly vs yearly)

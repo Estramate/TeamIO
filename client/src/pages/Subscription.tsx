@@ -75,6 +75,19 @@ export default function SubscriptionPage() {
     enabled: !!selectedClub?.id,
   });
 
+  // Club registered users query
+  const { data: clubUsers } = useQuery({
+    queryKey: ['/api/clubs', selectedClub?.id, 'users'],
+    queryFn: async () => {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/users`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch club users');
+      return response.json();
+    },
+    enabled: !!selectedClub?.id,
+  });
+
   const subscription = subscriptionData?.subscription;
   const plan = subscriptionData?.plan;
   const usage = subscriptionData?.usage || usageData?.usage;
@@ -231,24 +244,28 @@ export default function SubscriptionPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Gesamt verwaltete Benutzer:</span>
-                      <span className="font-medium">{(usage?.memberCount || 31) + (usage?.playerCount || 124)}</span>
+                      <span className="font-medium">{(usage?.memberCount || 0) + (usage?.playerCount || 0)}</span>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>→ Mitglieder:</span>
-                      <span>{usage?.memberCount || 31}</span>
+                      <span>{usage?.memberCount || 0}</span>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>→ Spieler:</span>
-                      <span>{usage?.playerCount || 124}</span>
+                      <span>{usage?.playerCount || 0}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>→ Registrierte aktive Benutzer:</span>
+                      <span>{clubUsers?.filter((u: any) => u.status === 'active').length || 0}</span>
                     </div>
                     {getRemainingUsers() !== null && (
                       <>
                         <div className="flex justify-between text-sm">
                           <span>Limit:</span>
-                          <span>{((usage?.memberCount || 31) + (usage?.playerCount || 124)) + (getRemainingUsers() || 0)}</span>
+                          <span>{((usage?.memberCount || 0) + (usage?.playerCount || 0)) + (getRemainingUsers() || 0)}</span>
                         </div>
                         <Progress 
-                          value={(((usage?.memberCount || 31) + (usage?.playerCount || 124)) / (((usage?.memberCount || 31) + (usage?.playerCount || 124)) + (getRemainingUsers() || 0))) * 100} 
+                          value={(((usage?.memberCount || 0) + (usage?.playerCount || 0)) / (((usage?.memberCount || 0) + (usage?.playerCount || 0)) + (getRemainingUsers() || 0))) * 100} 
                           className="h-2"
                         />
                       </>
@@ -619,7 +636,7 @@ export default function SubscriptionPage() {
                   <CardContent className="p-4">
                     <div className="text-center">
                       <Users className="h-8 w-8 mx-auto text-blue-500 mb-2" />
-                      <div className="text-2xl font-bold">{usage?.memberCount || 31}</div>
+                      <div className="text-2xl font-bold">{usage?.memberCount || 0}</div>
                       <div className="text-sm text-muted-foreground">Mitglieder</div>
                     </div>
                   </CardContent>
@@ -628,7 +645,7 @@ export default function SubscriptionPage() {
                   <CardContent className="p-4">
                     <div className="text-center">
                       <Shield className="h-8 w-8 mx-auto text-green-500 mb-2" />
-                      <div className="text-2xl font-bold">{usage?.playerCount || 124}</div>
+                      <div className="text-2xl font-bold">{usage?.playerCount || 0}</div>
                       <div className="text-sm text-muted-foreground">Spieler</div>
                     </div>
                   </CardContent>
@@ -637,7 +654,7 @@ export default function SubscriptionPage() {
                   <CardContent className="p-4">
                     <div className="text-center">
                       <BarChart3 className="h-8 w-8 mx-auto text-purple-500 mb-2" />
-                      <div className="text-2xl font-bold">{(usage?.memberCount || 31) + (usage?.playerCount || 124)}</div>
+                      <div className="text-2xl font-bold">{(usage?.memberCount || 0) + (usage?.playerCount || 0)}</div>
                       <div className="text-sm text-muted-foreground">Verwaltete Benutzer</div>
                     </div>
                   </CardContent>
@@ -656,11 +673,11 @@ export default function SubscriptionPage() {
                         <div className="flex justify-between items-center">
                           <span>Verwaltete Benutzer</span>
                           <span className="font-mono">
-                            {(usage?.memberCount || 31) + (usage?.playerCount || 124)} / {currentPlanData.memberLimit}
+                            {(usage?.memberCount || 0) + (usage?.playerCount || 0)} / {currentPlanData.memberLimit}
                           </span>
                         </div>
                         <Progress 
-                          value={((usage?.memberCount || 31) + (usage?.playerCount || 124)) / currentPlanData.memberLimit * 100} 
+                          value={((usage?.memberCount || 0) + (usage?.playerCount || 0)) / currentPlanData.memberLimit * 100} 
                           className="h-2"
                         />
                         <div className="text-sm text-muted-foreground">

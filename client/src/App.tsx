@@ -10,9 +10,8 @@ import { SubscriptionProvider } from "@/hooks/use-subscription";
 import { useAuth } from "@/hooks/useAuth";
 
 import { useClub } from "@/hooks/use-club";
-import { lazy, Suspense, useState, useEffect } from 'react';
-import { ErrorBoundary } from '@/components/ui/error-boundary';
-import { DashboardSkeleton, CardSkeleton } from '@/components/ui/loading-skeleton';
+import { lazy, useState, useEffect } from 'react';
+import { LazyComponentWrapper } from '@/components/LazyPageWrapper';
 import { Landing } from "@/pages/Landing";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
@@ -35,15 +34,9 @@ const Reports = lazy(() => import("@/pages/Reports"));
 const Users = lazy(() => import("@/pages/Users"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Subscription = lazy(() => import("@/pages/Subscription"));
+const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
 
-// Lazy loading wrapper component
-const LazyPage = ({ component: Component }: { component: React.ComponentType }) => (
-  <ErrorBoundary>
-    <Suspense fallback={<DashboardSkeleton />}>
-      <Component />
-    </Suspense>
-  </ErrorBoundary>
-);
+
 
 function AuthenticatedApp() {
   return (
@@ -51,20 +44,20 @@ function AuthenticatedApp() {
       <PageProvider>
         <Layout>
         <Switch>
-          <Route path="/" component={() => <LazyPage component={Dashboard} />} />
-          <Route path="/members" component={() => <LazyPage component={Members} />} />
-          <Route path="/players" component={() => <LazyPage component={Players} />} />
-          <Route path="/teams" component={() => <LazyPage component={Teams} />} />
-          <Route path="/bookings" component={() => <LazyPage component={Bookings} />} />
-          <Route path="/facilities" component={() => <LazyPage component={Facilities} />} />
-          <Route path="/finance" component={() => <LazyPage component={Finance} />} />
-          <Route path="/calendar" component={() => <LazyPage component={Calendar} />} />
-          <Route path="/communication" component={() => <LazyPage component={Communication} />} />
-          <Route path="/reports" component={() => <LazyPage component={Reports} />} />
-          <Route path="/users" component={() => <LazyPage component={Users} />} />
-          <Route path="/settings" component={() => <LazyPage component={Settings} />} />
-          <Route path="/subscription" component={() => <LazyPage component={Subscription} />} />
-          <Route path="/super-admin" component={lazy(() => import("@/pages/SuperAdmin"))} />
+          <Route path="/" component={() => <LazyComponentWrapper component={Dashboard} />} />
+          <Route path="/members" component={() => <LazyComponentWrapper component={Members} />} />
+          <Route path="/players" component={() => <LazyComponentWrapper component={Players} />} />
+          <Route path="/teams" component={() => <LazyComponentWrapper component={Teams} />} />
+          <Route path="/bookings" component={() => <LazyComponentWrapper component={Bookings} />} />
+          <Route path="/facilities" component={() => <LazyComponentWrapper component={Facilities} />} />
+          <Route path="/finance" component={() => <LazyComponentWrapper component={Finance} />} />
+          <Route path="/calendar" component={() => <LazyComponentWrapper component={Calendar} />} />
+          <Route path="/communication" component={() => <LazyComponentWrapper component={Communication} />} />
+          <Route path="/reports" component={() => <LazyComponentWrapper component={Reports} />} />
+          <Route path="/users" component={() => <LazyComponentWrapper component={Users} />} />
+          <Route path="/settings" component={() => <LazyComponentWrapper component={Settings} />} />
+          <Route path="/subscription" component={() => <LazyComponentWrapper component={Subscription} />} />
+          <Route path="/super-admin" component={() => <LazyComponentWrapper component={SuperAdmin} />} />
 
           <Route component={NotFound} />
         </Switch>

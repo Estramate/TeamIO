@@ -201,7 +201,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <SelectContent>
                     {(clubs as any[])?.map((club: any) => (
                       <SelectItem key={club.id} value={club.id.toString()}>
-                        {club.name} ({club.role})
+                        {club.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

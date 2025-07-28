@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requiresAuth, requiresClubMembership } from '../middleware/auth';
-import { storage } from '../storage';
+import storage from '../storage';
 
 const router = Router();
 
@@ -27,13 +27,7 @@ router.post('/clubs/:clubId/chat-rooms', requiresAuth, requiresClubMembership, a
     const userId = req.user!.id;
     const { name, type, participantIds } = req.body;
 
-    const room = await storage.createChatRoom({
-      clubId,
-      name,
-      type,
-      createdBy: userId,
-      participantIds: [...participantIds, userId], // Include creator
-    });
+    const room = await storage.createChatRoom(name, type, '', clubId, userId);
 
     res.status(201).json(room);
   } catch (error) {
@@ -52,12 +46,12 @@ router.get('/clubs/:clubId/chat-rooms/:roomId/messages', requiresAuth, requiresC
     const offset = parseInt(req.query.offset as string) || 0;
 
     // Verify user has access to this room
-    const hasAccess = await storage.userHasRoomAccess(roomId, userId);
+    const hasAccess = await storage.userHasRoomAccess(userId, roomId);
     if (!hasAccess) {
       return res.status(403).json({ error: 'Access denied to this chat room' });
     }
 
-    const messages = await storage.getChatMessages(roomId, limit, offset);
+    const messages = await storage.getChatMessages(roomId, limit);
     
     res.json(messages);
   } catch (error) {
@@ -75,7 +69,7 @@ router.post('/clubs/:clubId/chat-rooms/:roomId/messages', requiresAuth, requires
     const { content, messageType = 'text', replyTo } = req.body;
 
     // Verify user has access to this room
-    const hasAccess = await storage.userHasRoomAccess(roomId, userId);
+    const hasAccess = await storage.userHasRoomAccess(userId, roomId);
     if (!hasAccess) {
       return res.status(403).json({ error: 'Access denied to this chat room' });
     }
@@ -105,12 +99,12 @@ router.post('/clubs/:clubId/chat-rooms/:roomId/mark-read', requiresAuth, require
     const userId = req.user!.id;
 
     // Verify user has access to this room
-    const hasAccess = await storage.userHasRoomAccess(roomId, userId);
+    const hasAccess = await storage.userHasRoomAccess(userId, roomId);
     if (!hasAccess) {
       return res.status(403).json({ error: 'Access denied to this chat room' });
     }
 
-    await storage.markMessagesAsRead(roomId, userId);
+    await storage.markMessagesAsRead(userId, roomId);
 
     res.json({ success: true });
   } catch (error) {
@@ -140,7 +134,7 @@ router.post('/clubs/:clubId/update-activity', requiresAuth, requiresClubMembersh
     const clubId = parseInt(req.params.clubId);
     const userId = req.user!.id;
 
-    await storage.updateUserActivity(clubId, userId);
+    await storage.updateUserActivity(userId, clubId);
 
     res.json({ success: true });
   } catch (error) {
@@ -156,7 +150,7 @@ router.delete('/clubs/:clubId/chat-rooms/:roomId/messages/:messageId', requiresA
     const userId = req.user!.id;
 
     // Check if user can delete this message (sender or admin)
-    const canDelete = await storage.canDeleteMessage(messageId, userId);
+    const canDelete = await storage.canDeleteMessage(userId, messageId);
     if (!canDelete) {
       return res.status(403).json({ error: 'Cannot delete this message' });
     }
@@ -176,7 +170,7 @@ router.get('/clubs/:clubId/chat-unread-count', requiresAuth, requiresClubMembers
     const clubId = parseInt(req.params.clubId);
     const userId = req.user!.id;
 
-    const unreadCount = await storage.getTotalUnreadCount(clubId, userId);
+    const unreadCount = await storage.getTotalUnreadCount(userId, clubId);
     
     res.json(unreadCount);
   } catch (error) {

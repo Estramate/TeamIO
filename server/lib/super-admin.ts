@@ -3,7 +3,7 @@
  * Database-based elevated permissions for platform management
  */
 
-import { storage } from "../storage";
+import storage from "../storage";
 
 /**
  * Check if a user is a super administrator by database lookup

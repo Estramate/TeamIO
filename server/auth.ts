@@ -6,7 +6,7 @@
 import bcrypt from 'bcryptjs';
 import speakeasy from 'speakeasy';
 import crypto from 'crypto';
-import { storage } from './storage';
+import storage from './storage';
 import { sendInvitationEmail } from './emailService';
 import { logger, ValidationError, AuthorizationError } from './logger';
 import type { User } from '@shared/schemas/core';

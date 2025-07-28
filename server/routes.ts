@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
-import { storage } from "./storage";
+import storage from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { requiresClubMembership } from "./middleware/auth";
 // ClubFlow authentication system - Replit integration only
@@ -3185,7 +3185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/clubs/:clubId/chat-rooms', isAuthenticated, requiresClubMembership, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const userId = req.user!.id;
+      const userId = req.user!.id || req.user!.claims?.sub;
 
       console.log('🔍 CHAT-ROOMS DEBUG - Club ID:', clubId);
       console.log('🔍 CHAT-ROOMS DEBUG - User ID:', userId);
@@ -3194,46 +3194,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'User ID not found in session' });
       }
 
-      // For demo purposes, return mock chat rooms until database is fully ready
-      const mockRooms = [
-        {
-          id: '1',
-          name: 'Vorstand-Chat',
-          type: 'group',
-          participants: [
-            { id: userId, name: 'Sie', role: 'club-administrator', isOnline: true },
-            { id: '2', name: 'Maria Schmidt', role: 'obmann', isOnline: false, lastSeen: '2025-01-28T17:30:00Z' },
-          ],
-          lastMessage: {
-            id: '1',
-            content: 'Wann ist das nächste Vorstandsmeeting?',
-            senderId: '2',
-            timestamp: '2025-01-28T17:30:00Z'
-          },
-          unreadCount: 1,
-          createdAt: '2025-01-28T10:00:00Z'
-        },
-        {
-          id: '2',
-          name: 'Support-Chat',
-          type: 'support',
-          participants: [
-            { id: userId, name: 'Sie', role: 'club-administrator', isOnline: true },
-            { id: 'support', name: 'ClubFlow Support', role: 'support', isOnline: true },
-          ],
-          lastMessage: {
-            id: '2',
-            content: 'Wie kann ich Ihnen helfen?',
-            senderId: 'support',
-            timestamp: '2025-01-28T16:00:00Z'
-          },
-          unreadCount: 0,
-          createdAt: '2025-01-28T16:00:00Z'
-        }
-      ];
-
-      console.log('✅ CHAT-ROOMS - Returning mock rooms:', mockRooms.length);
-      res.json(mockRooms);
+      // Get real chat rooms from database
+      const chatRooms = await storage.getChatRooms(clubId, userId);
+      
+      console.log('✅ CHAT-ROOMS - Returning real rooms:', chatRooms.length);
+      res.json(chatRooms);
     } catch (error) {
       console.error('❌ Error fetching chat rooms:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -3252,11 +3217,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'User ID not found in session' });
       }
 
-      // Return mock unread count for now
-      const mockUnreadCount = { totalUnread: 1 };
+      // Get real unread count from database
+      const unreadCount = await storage.getChatUnreadCount(clubId, userId);
       
-      console.log('✅ CHAT-UNREAD - Returning mock count:', mockUnreadCount);
-      res.json(mockUnreadCount);
+      console.log('✅ CHAT-UNREAD - Returning real count:', unreadCount);
+      res.json({ totalUnread: unreadCount });
     } catch (error) {
       console.error('❌ Error fetching chat unread count:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -3344,19 +3309,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Message content is required' });
       }
 
-      // Create mock new message
-      const newMessage = {
-        id: `msg_${Date.now()}`,
-        chatRoomId: roomId,
+      // Create real message in database
+      const newMessage = await storage.createChatMessage({
+        roomId: parseInt(roomId),
         senderId: userId,
-        senderName: 'Sie',
-        senderRole: 'Club Administrator',
         content: content.trim(),
-        messageType,
-        timestamp: new Date().toISOString(),
-        isRead: true,
-        readBy: [userId]
-      };
+        messageType
+      });
 
       console.log('✅ SEND-MESSAGE - Message created:', newMessage.id);
       res.status(201).json(newMessage);

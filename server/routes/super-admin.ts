@@ -41,7 +41,7 @@ router.get("/clubs",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Get all clubs with additional statistics
       const clubs = await storage.getAllClubs();
@@ -77,7 +77,7 @@ router.post("/clubs",
       console.log("Received club creation request:", JSON.stringify(req.body, null, 2));
       const validatedData = createClubSchema.parse(req.body);
       console.log("Validation successful:", JSON.stringify(validatedData, null, 2));
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Create the club with subscription configuration
       const newClub = await storage.createClub({
@@ -125,7 +125,7 @@ router.get("/users",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Get ALL users across the entire system
       const users = await storage.getAllUsers();
@@ -177,7 +177,7 @@ router.get("/club-subscriptions",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       const subscriptions = await storage.getAllClubSubscriptions();
       res.json(subscriptions);
     } catch (error) {
@@ -192,7 +192,7 @@ router.post("/create-admin",
   asyncHandler(async (req: any, res: any) => {
     try {
       const validatedData = createAdminSchema.parse(req.body);
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Check if user already exists
       let user = await storage.getUserByEmail(validatedData.email);
@@ -294,7 +294,7 @@ router.delete("/clubs/:clubId",
   asyncHandler(async (req: any, res: any) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       const club = await storage.getClub(clubId);
       if (!club) {
@@ -322,7 +322,7 @@ router.get("/subscription-analytics",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Get ALL club subscriptions across the ENTIRE system
       const clubSubscriptions = await storage.getAllClubSubscriptions();
@@ -441,7 +441,7 @@ router.get("/email-stats",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Get real email invitation data from database
       const emailInvitations = await storage.getAllEmailInvitations();
@@ -564,7 +564,7 @@ router.put("/clubs/:id",
     try {
       const clubId = parseInt(req.params.id);
       const { name, description, address, phone, email, website } = req.body;
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       const club = await storage.updateClub(clubId, {
         name,
@@ -588,7 +588,7 @@ router.post("/clubs/:id/deactivate",
   asyncHandler(async (req: any, res: any) => {
     try {
       const clubId = parseInt(req.params.id);
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // For now, just mark as updated - isActive field would need to be added to schema
       const club = await storage.getClub(clubId);
@@ -608,7 +608,7 @@ router.put("/users/:id",
     try {
       const userId = req.params.id;
       const { firstName, lastName, email, isActive, clubMemberships } = req.body;
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       console.log(`🔧 SUPER ADMIN DEBUG: Updating user ${userId}`);
       console.log(`🔧 SUPER ADMIN DEBUG: Request data:`, JSON.stringify(req.body, null, 2));
@@ -708,7 +708,7 @@ router.post("/users/:id/deactivate",
   asyncHandler(async (req: any, res: any) => {
     try {
       const userId = req.params.id;
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       const user = await storage.updateUser(userId, {
         isActive: false,
@@ -726,7 +726,7 @@ router.get("/subscription-analytics",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Get all active subscriptions with plan details
       const subscriptions = await storage.getAllClubSubscriptions();
@@ -772,7 +772,7 @@ router.get("/email-stats",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Get all club subscriptions for stats
       const allSubscriptions = await storage.getAllClubSubscriptions();
@@ -827,7 +827,7 @@ router.patch("/users/:userId",
     try {
       const userId = req.params.userId;
       const validatedData = updateUserSchema.parse(req.body);
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Check if user exists
       const existingUser = await storage.getUser(userId);
@@ -927,7 +927,7 @@ router.post("/subscription-plans/update-limits",
         return res.status(400).json({ error: "Plan type is required" });
       }
 
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Get the subscription plan
       const plans = await storage.getAllSubscriptionPlans();
@@ -971,7 +971,7 @@ router.post("/subscription-plans/send-upgrade-notifications",
         return res.status(400).json({ error: "Target plan and message are required" });
       }
 
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Get clubs that could upgrade to the target plan
       const clubs = await storage.getAllClubs();
@@ -1014,7 +1014,7 @@ router.get("/clubs-eligible/:targetPlan",
     try {
       const { targetPlan } = req.params;
       
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       const clubs = await storage.getAllClubs();
       const subscriptions = await storage.getAllClubSubscriptions();
@@ -1047,7 +1047,7 @@ router.get("/subscription-plans",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Get all subscription plans from database
       const subscriptionPlans = await storage.getSubscriptionPlans();
@@ -1067,7 +1067,7 @@ router.post("/subscription-plans/update-price",
   asyncHandler(async (req: any, res: any) => {
     try {
       const { planType, price, interval } = req.body;
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Update plan price in database
       const updatedPlan = await storage.updateSubscriptionPlanPrice(planType, price, interval);
@@ -1091,7 +1091,7 @@ router.post("/subscription-plans/update-limits",
   asyncHandler(async (req: any, res: any) => {
     try {
       const { planType, limits } = req.body;
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       
       // Update plan limits in database
       const updatedPlan = await storage.updateSubscriptionPlanLimits(planType, limits);
@@ -1114,7 +1114,7 @@ router.get("/roles",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       const roles = await storage.getAllRoles();
       console.log('🔍 SUPER ADMIN ROLES DEBUG - Fetched roles:', roles);
       res.json(roles);

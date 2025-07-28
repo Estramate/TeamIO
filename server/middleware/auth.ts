@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { logger } from '../logger';
-import { storage } from '../storage';
+import storage from '../storage';
 
 // Extend Express Request interface
 declare global {

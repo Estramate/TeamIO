@@ -30,7 +30,7 @@ const requiresClubAdmin = async (req: any, res: any, next: any) => {
   }
   
   try {
-    const { storage } = await import("../storage");
+    const storage = (await import("../storage")).default;
     
     // Check if user is admin of THIS SPECIFIC CLUB
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
@@ -208,7 +208,7 @@ router.post("/club/:clubId",
 
         // Send notifications if plan changed
         if (oldPlan !== planType) {
-          const { storage } = await import("../storage");
+          const storage = (await import("../storage")).default;
           const club = await storage.getClub(clubId);
           const userInfo = await storage.getUser(user.claims?.sub);
 
@@ -259,7 +259,7 @@ router.post("/club/:clubId",
 
         // Send notifications for new subscription
         if (oldPlan !== planType) {
-          const { storage } = await import("../storage");
+          const storage = (await import("../storage")).default;
           const club = await storage.getClub(clubId);
           const userInfo = await storage.getUser(user.claims?.sub);
 
@@ -483,7 +483,7 @@ router.put("/super-admin/force-plan/:clubId",
       }
 
       // Log the super admin action
-      const { storage } = await import("../storage");
+      const storage = (await import("../storage")).default;
       const club = await storage.getClub(clubId);
       
       console.log(`SUPER ADMIN ACTION: Plan force-changed by ${req.user.email} for club ${club?.name} (${oldPlan} → ${planType}). Reason: ${reason || 'No reason provided'}`);

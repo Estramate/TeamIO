@@ -3184,7 +3184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/clubs/:clubId/chat-rooms', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const userId = req.user.claims?.sub || req.user.id;
+      const userId = req.user!.id;
 
       console.log('🔍 CHAT-ROOMS DEBUG - Club ID:', clubId);
       console.log('🔍 CHAT-ROOMS DEBUG - User ID:', userId);
@@ -3242,7 +3242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/clubs/:clubId/chat-unread-count', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const userId = req.user.claims?.sub || req.user.id;
+      const userId = req.user!.id;
 
       console.log('🔍 CHAT-UNREAD DEBUG - Club ID:', clubId);
       console.log('🔍 CHAT-UNREAD DEBUG - User ID:', userId);
@@ -3266,7 +3266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req: any, res) => {
     try {
       const roomId = req.params.roomId;
-      const userId = req.user.claims?.sub || req.user.id;
+      const userId = req.user!.id;
 
       console.log('🔍 CHAT-MESSAGES DEBUG - Room ID:', roomId);
       console.log('🔍 CHAT-MESSAGES DEBUG - User ID:', userId);
@@ -3328,7 +3328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req: any, res) => {
     try {
       const roomId = req.params.roomId;
-      const userId = req.user.claims?.sub || req.user.id;
+      const userId = req.user!.id;
       const { content, messageType = 'text' } = req.body;
 
       console.log('🔍 SEND-MESSAGE DEBUG - Room ID:', roomId);
@@ -3369,7 +3369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/chat-rooms', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const userId = req.user.claims?.sub || req.user.id;
+      const userId = req.user!.id;
       const { name, type, participantIds = [] } = req.body;
 
       console.log('🔍 CREATE-ROOM DEBUG - Club ID:', clubId);

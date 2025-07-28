@@ -289,12 +289,12 @@ function LiveChat({ className }: LiveChatProps) {
                     <div className="p-4 text-center text-muted-foreground">
                       Lade Chats...
                     </div>
-                  ) : chatRooms.length === 0 ? (
+                  ) : (chatRooms || []).length === 0 ? (
                     <div className="p-4 text-center text-muted-foreground text-sm">
                       Keine Chats vorhanden
                     </div>
                   ) : (
-                    chatRooms.map((room) => (
+                    (chatRooms || []).map((room) => (
                       <div
                         key={room.id}
                         onClick={() => setSelectedRoom(room.id)}
@@ -310,7 +310,7 @@ function LiveChat({ className }: LiveChatProps) {
                                 {room.name.substring(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            {room.participants.some(p => p.isOnline) && (
+                            {(room.participants || []).some(p => p.isOnline) && (
                               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                             )}
                           </div>
@@ -349,12 +349,12 @@ function LiveChat({ className }: LiveChatProps) {
                         <div className="text-center text-muted-foreground">
                           Lade Nachrichten...
                         </div>
-                      ) : messages.length === 0 ? (
+                      ) : (messages || []).length === 0 ? (
                         <div className="text-center text-muted-foreground">
                           Noch keine Nachrichten in diesem Chat
                         </div>
                       ) : (
-                        messages.map((message) => (
+                        (messages || []).map((message) => (
                           <div
                             key={message.id}
                             className={cn(

@@ -1230,7 +1230,6 @@ export default function Teams() {
           )}
         </DialogContent>
       </Dialog>
-      </div>
     </FeatureGate>
   );
 }

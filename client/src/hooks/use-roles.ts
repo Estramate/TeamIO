@@ -65,8 +65,7 @@ export function formatRoleBadge(roleName: string, roles: Role[] = []): string {
   switch (role.name) {
     case 'club-administrator':
       return 'Admin';
-    case 'super-administrator':
-      return 'Super-Admin';
+
     case 'kassier':
       return 'Kassier';
     case 'schriftfuehrer':
@@ -92,7 +91,7 @@ export function formatRoleBadge(roleName: string, roles: Role[] = []): string {
 export function getRoleColor(role: string): string {
   const roleColors: Record<string, string> = {
     'club-administrator': '#8b5cf6', // Purple
-    'super-administrator': '#dc2626', // Red for Super Admin
+
     'kassier': '#10b981', // Green  
     'schriftfuehrer': '#3b82f6', // Blue
     'trainer': '#f59e0b', // Orange
@@ -110,7 +109,7 @@ export function getRoleColor(role: string): string {
 export function getRolePermissions(role: string): string[] {
   const permissions: Record<string, string[]> = {
     'club-administrator': ['Alle Bereiche verwalten', 'Benutzer und Rollen verwalten', 'Systemkonfiguration'],
-    'super-administrator': ['Platform-weite Verwaltung', 'Alle Vereine verwalten', 'System-Administration'],
+
     'kassier': ['Finanzen verwalten', 'Berichte erstellen', 'Mitgliedsbeiträge'],
     'schriftfuehrer': ['Mitglieder verwalten', 'Kommunikation', 'Dokumente', 'Meetings'],
     'trainer': ['Teams verwalten', 'Training planen', 'Spieler betreuen'],

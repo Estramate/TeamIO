@@ -401,7 +401,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
   const [allClubs, setAllClubs] = useState<any[]>([]);
   const [newMembership, setNewMembership] = useState({
     clubId: '',
-    roleId: 1, // Default to member role
+    roleId: 3, // Default to club-administrator role
     status: 'active'
   });
 
@@ -562,7 +562,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
                     <div>
                       <Label className="text-xs">Rolle</Label>
                       <Select
-                        value={membership.roleId?.toString() || '8'}
+                        value={membership.roleId?.toString() || '3'}
                         onValueChange={(value) => handleUpdateMembership(index, 'roleId', parseInt(value))}
                         disabled={membership.toDelete}
                       >

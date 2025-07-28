@@ -142,16 +142,10 @@ router.get("/users",
               const club = await storage.getClub(membership.clubId);
               const role = await storage.getRoleById(membership.roleId);
               
-              // For Super Admins, show their true role in the interface
-              let displayRole = role?.name || 'member';
-              if (user.isSuperAdmin) {
-                displayRole = 'super-administrator';
-              }
-              
               return {
                 clubId: membership.clubId,
                 clubName: club?.name || `Club ${membership.clubId}`,
-                role: displayRole,
+                role: role?.name || 'member',
                 status: membership.status,
                 joinedAt: membership.joinedAt,
               };

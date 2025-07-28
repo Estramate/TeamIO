@@ -281,7 +281,7 @@ export default function SuperAdminPage() {
                 <p className="text-sm font-medium text-muted-foreground">Administratoren</p>
                 <p className="text-2xl font-bold">
                   {(allUsers as any[])?.filter((user: any) => 
-                    user.memberships?.some((m: any) => m.role === 'club-administrator')
+                    user.memberships?.some((m: any) => m.roleName === 'club-administrator' || m.role === 'club-administrator')
                   ).length || 0}
                 </p>
               </div>
@@ -926,7 +926,7 @@ function ClubsTable({ clubs, onViewDetails, onEdit, onDeactivate }: {
   }
 
   const getClubSubscription = (clubId: number) => {
-    if (!clubSubscriptions) return { planType: 'professional', displayName: 'Professional', endDate: null };
+    if (!clubSubscriptions || !Array.isArray(clubSubscriptions)) return { planType: 'professional', displayName: 'Professional', endDate: null };
     const subscription = clubSubscriptions.find((sub: any) => sub.clubId === clubId);
     if (!subscription) return { planType: 'professional', displayName: 'Professional', endDate: null };
     
@@ -1030,6 +1030,7 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
   onEdit: (user: any) => void;
   onDeactivate: (user: any) => void;
 }) {
+  const { data: roles } = useRoles();
   if (!users?.length) {
     return (
       <div className="text-center py-8">
@@ -1070,7 +1071,7 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
                           {m.clubName}
                         </Badge>
                         <Badge 
-                          variant={m.roleName === 'club-administrator' ? 'default' : 'secondary'}
+                          variant={(m.roleName === 'club-administrator' || m.role === 'club-administrator') ? 'default' : 'secondary'}
                           className="text-xs"
                         >
                           {roles ? formatRoleBadge(m.roleName || m.role, roles) : (m.roleDisplayName || m.roleName || m.role)}

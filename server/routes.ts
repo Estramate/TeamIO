@@ -369,9 +369,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const membership = await storage.getUserClubMembership(userId, clubId);
     
     logger.info('User membership retrieved', { userId, clubId, requestId: req.id });
+    // Get role information if membership exists
+    let roleName = null;
+    if (membership && membership.roleId) {
+      const role = await storage.getRoleById(membership.roleId);
+      roleName = role?.name || null;
+    }
+    
     res.json({
       isMember: !!membership,
-      role: membership?.role || null,
+      role: roleName,
       joinedAt: membership?.joinedAt || null
     });
   }));
@@ -437,7 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Get role information
-    const role = await storage.getRole(membership.roleId);
+    const role = await storage.getRoleById(membership.roleId);
     if (!role || role.name !== 'club-administrator') {
       throw new AuthorizationError('You must be a club administrator to update club settings');
     }
@@ -517,7 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return null;
         }
         // Get role information
-        const role = await storage.getRole(membership.roleId);
+        const role = await storage.getRoleById(membership.roleId);
         return { ...club, role: role?.name || 'member', status: membership.status };
       })
     );
@@ -630,7 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Get role information
-    const role = await storage.getRole(membership.roleId);
+    const role = await storage.getRoleById(membership.roleId);
     if (!role || role.name !== 'club-administrator') {
       throw new AuthorizationError('You must be a club administrator to view pending memberships');
     }
@@ -662,7 +669,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
-    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+    if (!adminMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    const adminRole = await storage.getRoleById(adminMembership.roleId);
+    if (!adminRole || adminRole.name !== 'club-administrator') {
       throw new AuthorizationError('You must be a club administrator to approve memberships');
     }
 
@@ -918,7 +930,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
-    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+    if (!adminMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    const adminRole = await storage.getRoleById(adminMembership.roleId);
+    if (!adminRole || adminRole.name !== 'club-administrator') {
       throw new AuthorizationError('You must be a club administrator to manage users');
     }
     
@@ -947,7 +964,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
-    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+    if (!adminMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    const adminRole = await storage.getRoleById(adminMembership.roleId);
+    if (!adminRole || adminRole.name !== 'club-administrator') {
       throw new AuthorizationError('You must be a club administrator to manage member roles');
     }
     
@@ -984,7 +1006,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
-    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+    if (!adminMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    const adminRole = await storage.getRoleById(adminMembership.roleId);
+    if (!adminRole || adminRole.name !== 'club-administrator') {
       throw new AuthorizationError('You must be a club administrator to manage member status');
     }
     
@@ -1021,7 +1048,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
-    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+    if (!adminMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Get role information
+    const role = await storage.getRoleById(adminMembership.roleId);
+    if (!role || role.name !== 'club-administrator') {
       throw new AuthorizationError('You must be a club administrator to remove members');
     }
     
@@ -2413,8 +2446,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('📧 Checking admin permissions for user:', userId, 'club:', clubId);
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
     console.log('📧 User membership:', adminMembership);
-    if (!adminMembership || adminMembership.role !== 'club-administrator') {
-      console.log('📧 ERROR: User is not club administrator');
+    if (!adminMembership) {
+      console.log('📧 ERROR: User is not a member of this club');
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Get role information
+    const adminRole = await storage.getRoleById(adminMembership.roleId);
+    if (!adminRole || adminRole.name !== 'club-administrator') {
+      console.log('📧 ERROR: User is not club administrator, role:', adminRole?.name);
       throw new AuthorizationError('You must be a club administrator to send invitations');
     }
     

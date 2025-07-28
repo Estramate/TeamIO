@@ -202,8 +202,8 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
     const teamCountResult = await db.select({ count: sql<number>`count(*)` }).from(teams).where(eq(teams.clubId, clubId));
     const facilityCountResult = await db.select({ count: sql<number>`count(*)` }).from(facilities).where(eq(facilities.clubId, clubId));
     
-    const memberCount = memberCountResult[0]?.count || 0;
-    const playerCount = playerCountResult[0]?.count || 0;
+    const memberCount = Number(memberCountResult[0]?.count) || 0;
+    const playerCount = Number(playerCountResult[0]?.count) || 0;
     const totalManagedUsers = memberCount + playerCount; // This is what counts for subscription limits!
     
     return {
@@ -213,8 +213,8 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
       memberCount,
       playerCount,
       totalManagedUsers, // 31 + 124 = 155 for SV Oberglan 1975
-      teamCount: teamCountResult[0]?.count || 0,
-      facilityCount: facilityCountResult[0]?.count || 0,
+      teamCount: Number(teamCountResult[0]?.count) || 0,
+      facilityCount: Number(facilityCountResult[0]?.count) || 0,
       messagesSent: 0,
       emailsSent: 0,
       smsSent: 0,

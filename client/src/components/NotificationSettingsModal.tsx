@@ -80,13 +80,21 @@ export default function NotificationSettingsModal({ open, onClose }: Notificatio
   // Update notification preferences mutation
   const updatePreferencesMutation = useMutation({
     mutationFn: async (updates: Partial<NotificationPreferences>) => {
-      return await apiRequest(`/api/clubs/${selectedClub?.id}/notification-preferences`, {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/notification-preferences`, {
         method: 'PUT',
+        credentials: 'include',
         body: JSON.stringify(updates),
         headers: {
           'Content-Type': 'application/json',
         },
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
     },
     onSuccess: (data) => {
       setPreferences(data);
@@ -100,8 +108,8 @@ export default function NotificationSettingsModal({ open, onClose }: Notificatio
     },
     onError: (error: any) => {
       toast({
-        title: "Fehler",
-        description: error.message || "Fehler beim Speichern der Einstellungen",
+        title: "Fehler beim Speichern",
+        description: error.message || "Die Einstellungen konnten nicht gespeichert werden",
         variant: "destructive",
       });
     }
@@ -124,36 +132,13 @@ export default function NotificationSettingsModal({ open, onClose }: Notificatio
   const updatePreference = (key: keyof NotificationPreferences, value: any) => {
     if (!preferences) return;
     
-    const updates = { [key]: value };
-    updatePreferencesMutation.mutate(updates);
-  };
-
-  const updateTestNotificationType = (type: keyof NotificationPreferences['testNotificationTypes'], enabled: boolean) => {
-    if (!preferences) return;
-    
-    const newTestTypes = {
-      ...preferences.testNotificationTypes,
-      [type]: enabled
+    const updatedPreferences = {
+      ...preferences,
+      [key]: value
     };
     
-    updatePreferencesMutation.mutate({
-      testNotificationTypes: newTestTypes
-    });
-  };
-
-  const sendTestNotification = (type: 'info' | 'success' | 'warning' | 'error') => {
-    const messages = {
-      info: { title: 'Info', description: 'Dies ist eine Test-Info-Benachrichtigung' },
-      success: { title: 'Erfolg', description: 'Dies ist eine Test-Erfolgs-Benachrichtigung' },
-      warning: { title: 'Warnung', description: 'Dies ist eine Test-Warn-Benachrichtigung' },
-      error: { title: 'Fehler', description: 'Dies ist eine Test-Fehler-Benachrichtigung' }
-    };
-
-    toast({
-      title: messages[type].title,
-      description: messages[type].description,
-      variant: type === 'error' ? 'destructive' : 'default',
-    });
+    setPreferences(updatedPreferences);
+    updatePreferencesMutation.mutate({ [key]: value });
   };
 
   if (!open) return null;
@@ -257,45 +242,6 @@ export default function NotificationSettingsModal({ open, onClose }: Notificatio
             </CardContent>
           </Card>
 
-          {/* Test Notifications */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
-                <div>
-                  <CardTitle className="text-base">Test-Benachrichtigungen</CardTitle>
-                  <CardDescription className="text-sm">
-                    Testen Sie verschiedene Benachrichtigungstypen
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                {Object.entries(preferences.testNotificationTypes).map(([type, enabled]) => (
-                  <div key={type} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm capitalize">{type === 'info' ? 'Info' : type === 'success' ? 'Erfolg' : type === 'warning' ? 'Warnung' : 'Fehler'}</span>
-                      <Switch 
-                        checked={enabled}
-                        onCheckedChange={(checked) => updateTestNotificationType(type as any, checked)}
-                      />
-                    </div>
-                    {enabled && (
-                      <Button 
-                        onClick={() => sendTestNotification(type as any)}
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs"
-                      >
-                        Test
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
 
           <Separator />
 

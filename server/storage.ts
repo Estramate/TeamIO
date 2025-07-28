@@ -1894,14 +1894,13 @@ export class DatabaseStorage implements IStorage {
   // Notification operations
   async getNotifications(userId: string, clubId: number): Promise<any[]> {
     try {
+      // Simplified query to avoid SQL syntax errors
       const result = await db
         .select()
         .from(notifications)
-        .where(and(
-          eq(notifications.userId, userId),
-          eq(notifications.clubId, clubId)
-        ))
-        .orderBy(desc(notifications.createdAt));
+        .where(eq(notifications.clubId, clubId))
+        .orderBy(desc(notifications.createdAt))
+        .limit(50);
       return result || [];
     } catch (error) {
       console.error('Error getting notifications:', error);

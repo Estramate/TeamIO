@@ -21,10 +21,9 @@ import {
   insertPlayerTeamAssignmentSchema,
   insertTeamMembershipSchema,
   messageFormSchema,
-  announcementFormSchema,
   insertMessageSchema,
-  insertAnnouncementSchema,
   insertNotificationSchema,
+
 } from "@shared/schema";
 import {
   emailInvitationFormSchema,
@@ -3000,5 +2999,205 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // === LIVE CHAT API ROUTES ===
+  
+  // Get all chat rooms for a club
+  app.get('/api/clubs/:clubId/chat-rooms', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const userId = req.user!.id;
+
+      // For demo purposes, return mock chat rooms
+      const mockRooms = [
+        {
+          id: '1',
+          name: 'Vorstand-Chat',
+          type: 'group',
+          participants: [
+            { id: userId, name: 'Sie', role: 'club-administrator', isOnline: true },
+            { id: '2', name: 'Maria Schmidt', role: 'obmann', isOnline: false, lastSeen: '2025-01-28T17:30:00Z' },
+          ],
+          lastMessage: {
+            id: '1',
+            content: 'Wann ist das nächste Vorstandsmeeting?',
+            senderId: '2',
+            timestamp: '2025-01-28T17:30:00Z'
+          },
+          unreadCount: 1,
+          createdAt: '2025-01-28T10:00:00Z'
+        },
+        {
+          id: '2',
+          name: 'Support-Chat',
+          type: 'support',
+          participants: [
+            { id: userId, name: 'Sie', role: 'club-administrator', isOnline: true },
+            { id: 'support', name: 'ClubFlow Support', role: 'support', isOnline: true },
+          ],
+          lastMessage: {
+            id: '2',
+            content: 'Wie kann ich Ihnen helfen?',
+            senderId: 'support',
+            timestamp: '2025-01-28T16:00:00Z'
+          },
+          unreadCount: 0,
+          createdAt: '2025-01-28T16:00:00Z'
+        }
+      ];
+
+      res.json(mockRooms);
+    } catch (error) {
+      console.error('Error fetching chat rooms:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get messages for a chat room
+  app.get('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const roomId = req.params.roomId;
+      const userId = req.user!.id;
+
+      // Mock messages based on room
+      const mockMessages = roomId === '1' ? [
+        {
+          id: '1',
+          chatRoomId: roomId,
+          senderId: '2',
+          senderName: 'Maria Schmidt',
+          senderRole: 'Obmann',
+          content: 'Hallo! Können wir das nächste Vorstandsmeeting für nächste Woche planen?',
+          messageType: 'text',
+          timestamp: '2025-01-28T17:25:00Z',
+          isRead: false,
+          readBy: ['2']
+        },
+        {
+          id: '2',
+          chatRoomId: roomId,
+          senderId: '2',
+          senderName: 'Maria Schmidt',
+          senderRole: 'Obmann',
+          content: 'Wann ist das nächste Vorstandsmeeting?',
+          messageType: 'text',
+          timestamp: '2025-01-28T17:30:00Z',
+          isRead: false,
+          readBy: ['2']
+        }
+      ] : [
+        {
+          id: '3',
+          chatRoomId: roomId,
+          senderId: 'support',
+          senderName: 'ClubFlow Support',
+          senderRole: 'Support',
+          content: 'Hallo! Wie kann ich Ihnen bei ClubFlow helfen?',
+          messageType: 'text',
+          timestamp: '2025-01-28T16:00:00Z',
+          isRead: true,
+          readBy: ['support', userId]
+        }
+      ];
+
+      res.json(mockMessages);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Send a message
+  app.post('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const roomId = req.params.roomId;
+      const userId = req.user!.id;
+      const { content, messageType = 'text' } = req.body;
+
+      if (!content || !content.trim()) {
+        return res.status(400).json({ error: 'Message content is required' });
+      }
+
+      // Create mock new message
+      const newMessage = {
+        id: `msg_${Date.now()}`,
+        chatRoomId: roomId,
+        senderId: userId,
+        senderName: 'Sie',
+        senderRole: 'Club Administrator',
+        content: content.trim(),
+        messageType,
+        timestamp: new Date().toISOString(),
+        isRead: true,
+        readBy: [userId]
+      };
+
+      // Broadcast to other participants via WebSocket
+      const broadcast = (req as any).app.locals.broadcast;
+      if (broadcast) {
+        broadcast.toClub(parseInt(req.params.clubId), {
+          type: 'new_chat_message',
+          data: {
+            roomId,
+            message: newMessage
+          }
+        });
+      }
+
+      res.status(201).json(newMessage);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get unread message count
+  app.get('/api/clubs/:clubId/chat-unread-count', isAuthenticated, async (req: any, res) => {
+    try {
+      // Mock unread count - in real implementation, this would query database
+      const unreadCount = Math.floor(Math.random() * 5); // 0-4 unread messages
+      res.json(unreadCount);
+    } catch (error) {
+      console.error('Error getting unread count:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Create new chat room
+  app.post('/api/clubs/:clubId/chat-rooms', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const userId = req.user!.id;
+      const { name, type = 'group', participantIds = [] } = req.body;
+
+      if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Chat room name is required' });
+      }
+
+      // Create mock new room
+      const newRoom = {
+        id: `room_${Date.now()}`,
+        name: name.trim(),
+        type,
+        participants: [
+          { id: userId, name: 'Sie', role: 'club-administrator', isOnline: true },
+          ...participantIds.map((id: string, index: number) => ({
+            id,
+            name: `Benutzer ${index + 1}`,
+            role: 'member',
+            isOnline: false
+          }))
+        ],
+        lastMessage: null,
+        unreadCount: 0,
+        createdAt: new Date().toISOString()
+      };
+
+      res.status(201).json(newRoom);
+    } catch (error) {
+      console.error('Error creating chat room:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   return httpServer;
 }

@@ -19,7 +19,13 @@ import { members, teamMemberships } from "./members";
 import { teams } from "./teams";
 import { facilities, bookings } from "./facilities";
 import { finances, memberFees, trainingFees } from "./finances";
-import { messages, announcements, notifications } from "./communication";
+import { 
+  messages, 
+  notifications, 
+  messageFormSchema, 
+  announcementFormSchema,
+  insertAnnouncementSchema 
+} from "./communication";
 
 // Enhanced club relations to include all entities
 export const clubsRelationsEnhanced = relations(clubs, ({ many }) => ({
@@ -32,7 +38,7 @@ export const clubsRelationsEnhanced = relations(clubs, ({ many }) => ({
   memberFees: many(memberFees),
   trainingFees: many(trainingFees),
   messages: many(messages),
-  announcements: many(announcements),
+
   notifications: many(notifications),
 }));
 
@@ -70,3 +76,13 @@ export const teamMembershipsRelationsEnhanced = relations(teamMemberships, ({ on
     references: [members.id],
   }),
 }));
+
+// Export all schemas and types for easier access
+export {
+  messages,
+  notifications,
+  messageFormSchema,
+  announcementFormSchema,
+  insertAnnouncementSchema,
+  insertNotificationSchema
+} from "./communication";

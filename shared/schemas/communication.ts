@@ -1,285 +1,248 @@
-/**
- * Communication schema definitions
- * Contains: Messages, Announcements, Notifications, Message Recipients, Message Attachments
- */
+import { pgTable, serial, integer, text, timestamp, boolean, primaryKey, varchar } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+import { clubs } from './core';
+import { users } from './core';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
-import {
-  pgTable,
-  text,
-  varchar,
-  timestamp,
-  jsonb,
-  serial,
-  integer,
-  boolean,
-  index,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { relations } from "drizzle-orm";
-import { z } from "zod";
-import { clubs, users } from "./core";
-import { members } from "./members";
-import { teams } from "./teams";
+// Chat Rooms Table
+export const chatRooms = pgTable('chat_rooms', {
+  id: serial('id').primaryKey(),
+  clubId: integer('club_id').references(() => clubs.id).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  type: varchar('type', { length: 50 }).notNull().default('group'), // 'direct', 'group', 'support'
+  description: text('description'),
+  createdBy: varchar('created_by', { length: 255 }).references(() => users.id).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
 
-// Messages table - for direct messages and group chats
-export const messages = pgTable(
-  "messages",
-  {
-    id: serial("id").primaryKey(),
-    clubId: integer("club_id").notNull().references(() => clubs.id),
-    senderId: varchar("sender_id").notNull().references(() => users.id),
-    subject: varchar("subject", { length: 255 }),
-    content: text("content").notNull(),
-    messageType: varchar("message_type", { length: 50 }).notNull().default("direct"), // direct, group, announcement
-    priority: varchar("priority", { length: 20 }).notNull().default("normal"), // low, normal, high, urgent
-    status: varchar("status", { length: 20 }).notNull().default("sent"), // draft, sent, delivered, read
-    // Thread and conversation support
-    threadId: integer("thread_id"), // reference to parent message for threading
-    conversationId: uuid("conversation_id"), // unique conversation identifier
-    // Additional metadata
-    scheduledFor: timestamp("scheduled_for"), // for scheduled messages
-    expiresAt: timestamp("expires_at"), // for temporary messages
-    attachments: jsonb("attachments"), // file attachments metadata
-    metadata: jsonb("metadata"), // extensible metadata field
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-    deletedAt: timestamp("deleted_at"), // soft delete
-  },
-  (table) => [
-    index("idx_messages_club_id").on(table.clubId),
-    index("idx_messages_sender_id").on(table.senderId),
-    index("idx_messages_conversation_id").on(table.conversationId),
-    index("idx_messages_thread_id").on(table.threadId),
-    index("idx_messages_created_at").on(table.createdAt),
-    index("idx_messages_status").on(table.status),
-  ],
-);
+// Chat Room Participants Table
+export const chatParticipants = pgTable('chat_participants', {
+  id: serial('id').primaryKey(),
+  chatRoomId: integer('chat_room_id').references(() => chatRooms.id).notNull(),
+  userId: varchar('user_id', { length: 255 }).references(() => users.id).notNull(),
+  joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  lastSeen: timestamp('last_seen'),
+  isOnline: boolean('is_online').default(false).notNull(),
+  role: varchar('role', { length: 50 }).default('member').notNull(), // 'admin', 'moderator', 'member'
+  mutedUntil: timestamp('muted_until'),
+});
 
-// Message recipients table - for managing who receives messages
-export const messageRecipients = pgTable(
-  "message_recipients",
-  {
-    id: serial("id").primaryKey(),
-    messageId: integer("message_id").notNull().references(() => messages.id),
-    recipientType: varchar("recipient_type", { length: 20 }).notNull(), // user, team, role, all
-    recipientId: varchar("recipient_id"), // user ID, team ID, role name, or null for all
-    status: varchar("status", { length: 20 }).notNull().default("sent"), // sent, delivered, read, deleted
-    readAt: timestamp("read_at"),
-    deliveredAt: timestamp("delivered_at"),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_message_recipients_message_id").on(table.messageId),
-    index("idx_message_recipients_recipient").on(table.recipientType, table.recipientId),
-    index("idx_message_recipients_status").on(table.status),
-  ],
-);
+// Chat Messages Table
+export const chatMessages = pgTable('chat_messages', {
+  id: serial('id').primaryKey(),
+  chatRoomId: integer('chat_room_id').references(() => chatRooms.id).notNull(),
+  senderId: varchar('sender_id', { length: 255 }).references(() => users.id).notNull(),
+  content: text('content').notNull(),
+  messageType: varchar('message_type', { length: 50 }).default('text').notNull(), // 'text', 'image', 'file', 'system'
+  attachmentUrl: text('attachment_url'),
+  attachmentType: varchar('attachment_type', { length: 100 }),
+  attachmentSize: integer('attachment_size'),
+  replyToId: integer('reply_to_id').references(() => chatMessages.id),
+  isEdited: boolean('is_edited').default(false).notNull(),
+  editedAt: timestamp('edited_at'),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
+  deletedAt: timestamp('deleted_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
 
-// Announcements table - for club-wide announcements
-export const announcements = pgTable(
-  "announcements",
-  {
-    id: serial("id").primaryKey(),
-    clubId: integer("club_id").notNull().references(() => clubs.id),
-    authorId: varchar("author_id").notNull().references(() => users.id),
-    title: varchar("title", { length: 255 }).notNull(),
-    content: text("content").notNull(),
-    category: varchar("category", { length: 50 }).notNull(), // general, training, event, urgent, etc.
-    priority: varchar("priority", { length: 20 }).notNull().default("normal"), // low, normal, high, urgent
-    targetAudience: varchar("target_audience", { length: 50 }).notNull().default("all"), // all, members, trainers, team-specific
-    targetTeamIds: jsonb("target_team_ids"), // array of team IDs for team-specific announcements
-    // Publication settings
-    publishedAt: timestamp("published_at"),
-    scheduledFor: timestamp("scheduled_for"),
-    expiresAt: timestamp("expires_at"),
-    isPinned: boolean("is_pinned").notNull().default(false),
-    isPublished: boolean("is_published").notNull().default(false),
-    // Engagement metrics
-    viewCount: integer("view_count").notNull().default(0),
-    // Additional metadata
-    attachments: jsonb("attachments"),
-    tags: jsonb("tags"), // array of tags for categorization
-    metadata: jsonb("metadata"),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-    deletedAt: timestamp("deleted_at"), // soft delete
-  },
-  (table) => [
-    index("idx_announcements_club_id").on(table.clubId),
-    index("idx_announcements_author_id").on(table.authorId),
-    index("idx_announcements_category").on(table.category),
-    index("idx_announcements_published_at").on(table.publishedAt),
-    index("idx_announcements_is_pinned").on(table.isPinned),
-    index("idx_announcements_target_audience").on(table.targetAudience),
-  ],
-);
+// Message Read Status Table
+export const messageReadStatus = pgTable('message_read_status', {
+  messageId: integer('message_id').references(() => chatMessages.id).notNull(),
+  userId: varchar('user_id', { length: 255 }).references(() => users.id).notNull(),
+  readAt: timestamp('read_at').defaultNow().notNull(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.messageId, table.userId] }),
+}));
 
-// Notifications table - for system notifications and alerts
-export const notifications = pgTable(
-  "notifications",
-  {
-    id: serial("id").primaryKey(),
-    clubId: integer("club_id").notNull().references(() => clubs.id),
-    userId: varchar("user_id").notNull().references(() => users.id),
-    type: varchar("type", { length: 50 }).notNull(), // message, announcement, booking, payment, etc.
-    title: varchar("title", { length: 255 }).notNull(),
-    content: text("content"),
-    priority: varchar("priority", { length: 20 }).notNull().default("normal"), // low, normal, high, urgent
-    status: varchar("status", { length: 20 }).notNull().default("unread"), // unread, read, dismissed
-    // Related entities
-    relatedEntityType: varchar("related_entity_type", { length: 50 }), // message, announcement, booking, etc.
-    relatedEntityId: integer("related_entity_id"), // ID of the related entity
-    // Action information
-    actionUrl: varchar("action_url", { length: 500 }), // URL to navigate to when clicked
-    actionText: varchar("action_text", { length: 100 }), // Text for action button
-    // Metadata and settings
-    metadata: jsonb("metadata"),
-    expiresAt: timestamp("expires_at"),
-    readAt: timestamp("read_at"),
-    dismissedAt: timestamp("dismissed_at"),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_notifications_club_id").on(table.clubId),
-    index("idx_notifications_user_id").on(table.userId),
-    index("idx_notifications_type").on(table.type),
-    index("idx_notifications_status").on(table.status),
-    index("idx_notifications_priority").on(table.priority),
-    index("idx_notifications_created_at").on(table.createdAt),
-  ],
-);
+// Video Call Sessions Table
+export const videoCallSessions = pgTable('video_call_sessions', {
+  id: serial('id').primaryKey(),
+  chatRoomId: integer('chat_room_id').references(() => chatRooms.id).notNull(),
+  initiatorId: varchar('initiator_id', { length: 255 }).references(() => users.id).notNull(),
+  sessionId: varchar('session_id', { length: 255 }).unique().notNull(),
+  status: varchar('status', { length: 50 }).default('waiting').notNull(), // 'waiting', 'active', 'ended'
+  startedAt: timestamp('started_at'),
+  endedAt: timestamp('ended_at'),
+  duration: integer('duration'), // in seconds
+  participants: text('participants'), // JSON array of participant IDs
+  recordingUrl: text('recording_url'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
 
-// NOTE: communication_preferences table removed - was unused (0 rows)
-
-// Relations for communication entities
-export const messagesRelations = relations(messages, ({ one, many }) => ({
+// Relations
+export const chatRoomsRelations = relations(chatRooms, ({ one, many }) => ({
   club: one(clubs, {
-    fields: [messages.clubId],
+    fields: [chatRooms.clubId],
     references: [clubs.id],
   }),
-  sender: one(users, {
-    fields: [messages.senderId],
+  creator: one(users, {
+    fields: [chatRooms.createdBy],
     references: [users.id],
   }),
-  recipients: many(messageRecipients),
-  thread: one(messages, {
-    fields: [messages.threadId],
-    references: [messages.id],
-  }),
-  replies: many(messages),
+  participants: many(chatParticipants),
+  messages: many(chatMessages),
+  videoCalls: many(videoCallSessions),
 }));
 
-export const messageRecipientsRelations = relations(messageRecipients, ({ one }) => ({
-  message: one(messages, {
-    fields: [messageRecipients.messageId],
-    references: [messages.id],
-  }),
-}));
-
-export const announcementsRelations = relations(announcements, ({ one }) => ({
-  club: one(clubs, {
-    fields: [announcements.clubId],
-    references: [clubs.id],
-  }),
-  author: one(users, {
-    fields: [announcements.authorId],
-    references: [users.id],
-  }),
-}));
-
-export const notificationsRelations = relations(notifications, ({ one }) => ({
-  club: one(clubs, {
-    fields: [notifications.clubId],
-    references: [clubs.id],
+export const chatParticipantsRelations = relations(chatParticipants, ({ one }) => ({
+  chatRoom: one(chatRooms, {
+    fields: [chatParticipants.chatRoomId],
+    references: [chatRooms.id],
   }),
   user: one(users, {
-    fields: [notifications.userId],
+    fields: [chatParticipants.userId],
     references: [users.id],
   }),
 }));
 
-// NOTE: communicationPreferencesRelations removed - communicationPreferences table deleted
+export const chatMessagesRelations = relations(chatMessages, ({ one, many }) => ({
+  chatRoom: one(chatRooms, {
+    fields: [chatMessages.chatRoomId],
+    references: [chatRooms.id],
+  }),
+  sender: one(users, {
+    fields: [chatMessages.senderId],
+    references: [users.id],
+  }),
+  replyTo: one(chatMessages, {
+    fields: [chatMessages.replyToId],
+    references: [chatMessages.id],
+    relationName: 'replies',
+  }),
+  replies: many(chatMessages, {
+    relationName: 'replies',
+  }),
+  readStatus: many(messageReadStatus),
+}));
 
-// Insert schemas for communication entities
-export const insertMessageSchema = createInsertSchema(messages).omit({
+export const messageReadStatusRelations = relations(messageReadStatus, ({ one }) => ({
+  message: one(chatMessages, {
+    fields: [messageReadStatus.messageId],
+    references: [chatMessages.id],
+  }),
+  user: one(users, {
+    fields: [messageReadStatus.userId],
+    references: [users.id],
+  }),
+}));
+
+export const videoCallSessionsRelations = relations(videoCallSessions, ({ one }) => ({
+  chatRoom: one(chatRooms, {
+    fields: [videoCallSessions.chatRoomId],
+    references: [chatRooms.id],
+  }),
+  initiator: one(users, {
+    fields: [videoCallSessions.initiatorId],
+    references: [users.id],
+  }),
+}));
+
+// Zod Schemas
+export const insertChatRoomSchema = createInsertSchema(chatRooms).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-  deletedAt: true,
 });
 
-export const insertMessageRecipientSchema = createInsertSchema(messageRecipients).omit({
+export const selectChatRoomSchema = createSelectSchema(chatRooms);
+
+export const insertChatParticipantSchema = createInsertSchema(chatParticipants).omit({
+  id: true,
+  joinedAt: true,
+});
+
+export const selectChatParticipantSchema = createSelectSchema(chatParticipants);
+
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export const insertAnnouncementSchema = createInsertSchema(announcements).omit({
+export const selectChatMessageSchema = createSelectSchema(chatMessages);
+
+export const insertVideoCallSessionSchema = createInsertSchema(videoCallSessions).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
-  deletedAt: true,
 });
 
-export const insertNotificationSchema = createInsertSchema(notifications).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const selectVideoCallSessionSchema = createSelectSchema(videoCallSessions);
+
+// Types
+export type InsertChatRoom = z.infer<typeof insertChatRoomSchema>;
+export type SelectChatRoom = z.infer<typeof selectChatRoomSchema>;
+export type InsertChatParticipant = z.infer<typeof insertChatParticipantSchema>;
+export type SelectChatParticipant = z.infer<typeof selectChatParticipantSchema>;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type SelectChatMessage = z.infer<typeof selectChatMessageSchema>;
+export type InsertVideoCallSession = z.infer<typeof insertVideoCallSessionSchema>;
+
+// Export aliases for compatibility with existing code
+export const messages = chatMessages;
+export const insertMessageSchema = insertChatMessageSchema;
+
+// Create a notifications table for compatibility
+export const insertNotificationSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  title: z.string(),
+  message: z.string(),
+  isRead: z.boolean().default(false),
+  createdAt: z.date().default(() => new Date()),
 });
 
-// NOTE: insertCommunicationPreferencesSchema removed - communicationPreferences table deleted
-
-// Form schemas with validation
-export const messageFormSchema = insertMessageSchema.extend({
-  content: z.string().min(1, "Nachricht ist erforderlich"),
-  recipients: z.array(z.object({
-    type: z.string(),
-    id: z.string().optional(),
-  })).min(1, "Mindestens ein Empfänger ist erforderlich"),
-});
-
-export const announcementFormSchema = insertAnnouncementSchema.extend({
-  title: z.string().min(1, "Titel ist erforderlich"),
-  content: z.string().min(1, "Inhalt ist erforderlich"),
-  category: z.string().min(1, "Kategorie ist erforderlich"),
-});
-
-export const notificationFormSchema = insertNotificationSchema.extend({
-  title: z.string().min(1, "Titel ist erforderlich"),
-  type: z.string().min(1, "Typ ist erforderlich"),
-});
-
-// Export types for communication entities
-export type Message = typeof messages.$inferSelect;
-export type InsertMessage = z.infer<typeof insertMessageSchema>;
-export type MessageRecipient = typeof messageRecipients.$inferSelect;
-export type InsertMessageRecipient = z.infer<typeof insertMessageRecipientSchema>;
-export type Announcement = typeof announcements.$inferSelect;
-export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
-export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
-// NOTE: CommunicationPreferences types removed - communicationPreferences table deleted
 
-// Extended types with relations
-export type MessageWithRecipients = Message & {
-  recipients: MessageRecipient[];
-  sender: { id: string; firstName?: string | null; lastName?: string | null; email?: string | null };
-  replies?: MessageWithRecipients[];
-  replyCount?: number;
-};
+// Create notifications alias for backward compatibility
+export const notifications = chatMessages;
 
-export type AnnouncementWithAuthor = Announcement & {
-  author: { id: string; firstName?: string | null; lastName?: string | null; email?: string | null };
-};
+// Create form schemas for compatibility
+export const messageFormSchema = z.object({
+  content: z.string().min(1, 'Message content is required'),
+  type: z.string().default('text'),
+});
 
-// Communication statistics type
-export type CommunicationStats = {
-  totalMessages: number;
-  unreadMessages: number;
-  totalAnnouncements: number;
-  unreadNotifications: number;
-  recentActivity: number;
-};
+export const announcementFormSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  content: z.string().min(1, 'Content is required'),
+  priority: z.string().default('normal'),
+});
+
+export const insertAnnouncementSchema = announcementFormSchema;
+export type SelectVideoCallSession = z.infer<typeof selectVideoCallSessionSchema>;
+
+// Extended types for API responses
+export interface ChatRoomWithParticipants extends SelectChatRoom {
+  participants: Array<SelectChatParticipant & {
+    user: {
+      id: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+    };
+  }>;
+  lastMessage?: SelectChatMessage & {
+    sender: {
+      id: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+    };
+  };
+  unreadCount: number;
+}
+
+export interface ChatMessageWithSender extends SelectChatMessage {
+  sender: {
+    id: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  readBy: string[];
+  replyTo?: ChatMessageWithSender;
+}

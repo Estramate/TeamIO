@@ -79,7 +79,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           
           <div className="flex items-center space-x-4">
             {/* Real-time Data Sync Indicator */}
-            <DataSyncIndicatorCompact className="hidden sm:flex" />
+            <DataSyncIndicatorCompact className="flex" />
             
             <div className="relative">
               <DropdownMenu>

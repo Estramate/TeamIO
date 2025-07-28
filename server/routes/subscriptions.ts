@@ -47,8 +47,12 @@ const requiresClubAdmin = async (req: any, res: any, next: any) => {
 
 // Apply authentication to all routes except specific ones
 router.use((req, res, next) => {
-  // Skip authentication for GET /plans and /plans/comparison (public data)
-  if (req.method === 'GET' && (req.path === '/plans' || req.path === '/plans/comparison')) {
+  // Skip authentication for public routes
+  if (req.method === 'GET' && (
+    req.path === '/plans' || 
+    req.path === '/plans/comparison' ||
+    req.path === '/super-admin/status'
+  )) {
     return next();
   }
   return isAuthenticated(req, res, next);
@@ -409,49 +413,7 @@ function getFeatureDescription(featureName: string): string {
   return descriptions[featureName] || featureName;
 }
 
-// GET /api/subscriptions/super-admin/status - Check super admin status
-router.get("/super-admin/status", 
-  asyncHandler(async (req: any, res: any) => {
-    try {
-      // Get user from session without requiring auth middleware
-      const userId = req.session?.user?.id || req.session?.passport?.user?.id;
-      const userEmail = req.session?.user?.email || req.session?.passport?.user?.email;
-      
-      if (!userId && !userEmail) {
-        return res.json({
-          isSuperAdmin: false,
-          userEmail: null,
-          userId: null,
-          permissions: []
-        });
-      }
-
-      // Check super admin status
-      const { isSuperAdministrator, isSuperAdministratorById } = await import("../lib/super-admin");
-      const isSuperAdmin = (userEmail && isSuperAdministrator(userEmail)) || 
-                          (userId && isSuperAdministratorById(userId));
-      
-      res.json({
-        isSuperAdmin,
-        userEmail: userEmail,
-        userId: userId,
-        permissions: isSuperAdmin ? [
-          'platform-management',
-          'all-club-access', 
-          'plan-management',
-          'user-management'
-        ] : []
-      });
-    } catch (error) {
-      console.error("Error checking super admin status:", error);
-      res.json({
-        isSuperAdmin: false,
-        userEmail: null,
-        userId: null,
-        permissions: []
-      });
-    }
-  }));
+// Super Admin Status route moved to main routes.ts to avoid auth middleware
 
 // PUT /api/subscriptions/super-admin/force-plan/:clubId - Force plan change (super admin only)
 router.put("/super-admin/force-plan/:clubId",

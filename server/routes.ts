@@ -96,6 +96,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/errors', handleErrorReports);
   app.post('/api/performance', handlePerformanceMetrics);
 
+  // Super Admin Status Route (must be before auth middleware)
+  app.get('/api/subscriptions/super-admin/status', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    try {
+      // Get user from various session sources (Replit Auth + other providers)
+      let userId = null;
+      let userEmail = null;
+      
+      // Try to get authenticated user information from various sources
+      // Check if user is authenticated through the auth middleware
+      const authenticatedUser = req.user;
+      
+      if (authenticatedUser) {
+        // Replit auth structure
+        if (authenticatedUser.claims?.sub) {
+          userId = authenticatedUser.claims.sub;
+          userEmail = authenticatedUser.email;
+        }
+        // Alternative user structures
+        else if (authenticatedUser.id) {
+          userId = authenticatedUser.id;
+          userEmail = authenticatedUser.email;
+        }
+      }
+      
+      // Also try session data as fallback
+      if (!userId && req.session?.passport?.user?.claims?.sub) {
+        userId = req.session.passport.user.claims.sub;
+        userEmail = req.session.passport.user.email;
+      }
+      // Direct session data
+      else if (!userId && req.session?.user) {
+        userId = req.session.user.id;
+        userEmail = req.session.user.email;
+      }
+      
+      // If we have userId but no email, try to get email from database
+      if (userId && !userEmail) {
+        try {
+          const user = await storage.getUser(userId);
+          if (user?.email) {
+            userEmail = user.email;
+          }
+        } catch (error) {
+          console.log('Could not fetch user email from database:', error.message);
+        }
+      }
+      
+      console.log('🔍 Super Admin Check:', {
+        sessionExists: !!req.session,
+        hasPassport: !!req.session?.passport,
+        hasUser: !!req.session?.passport?.user,
+        userId,
+        userEmail,
+        sessionKeys: req.session ? Object.keys(req.session) : [],
+        passportKeys: req.session?.passport ? Object.keys(req.session.passport) : []
+      });
+      
+      if (!userId && !userEmail) {
+        return res.json({
+          isSuperAdmin: false,
+          userEmail: null,
+          userId: null,
+          permissions: [],
+          debug: {
+            sessionExists: !!req.session,
+            sessionKeys: req.session ? Object.keys(req.session) : [],
+            passportData: req.session?.passport ? 'exists' : 'missing'
+          }
+        });
+      }
+
+      // Check super admin status
+      const { isSuperAdministrator, isSuperAdministratorById } = await import("./lib/super-admin");
+      const isSuperAdmin = (userEmail && isSuperAdministrator(userEmail)) || 
+                          (userId && isSuperAdministratorById(userId));
+      
+      console.log('🔍 Super Admin Result:', {
+        userId,
+        userEmail,
+        isSuperAdmin,
+        checkedByEmail: userEmail && isSuperAdministrator(userEmail),
+        checkedById: userId && isSuperAdministratorById(userId)
+      });
+      
+      res.json({
+        isSuperAdmin,
+        userEmail: userEmail,
+        userId: userId,
+        permissions: isSuperAdmin ? [
+          'platform-management',
+          'all-club-access', 
+          'plan-management',
+          'user-management'
+        ] : []
+      });
+    } catch (error) {
+      console.error("Error checking super admin status:", error);
+      res.json({
+        isSuperAdmin: false,
+        userEmail: null,
+        userId: null,
+        permissions: [],
+        error: error.message
+      });
+    }
+  }));
+
   // Enhanced isAuthenticated middleware for Replit auth only
   const isAuthenticatedEnhanced = async (req: any, res: any, next: any) => {
     const user = req.user as any;

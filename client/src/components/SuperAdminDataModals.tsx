@@ -134,6 +134,15 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
     enabled: open,
   });
 
+  // Debug revenue calculation
+  if (analytics && analytics.revenue) {
+    console.log('🔍 SUBSCRIPTION MODAL DEBUG - Revenue Calculation:');
+    console.log('Analytics data:', analytics);
+    console.log('Current revenue:', analytics.revenue.current);
+    console.log('Previous revenue:', analytics.revenue.previous);
+    console.log('Full analytics object:', JSON.stringify(analytics, null, 2));
+  }
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">

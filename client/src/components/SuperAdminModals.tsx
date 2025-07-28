@@ -391,7 +391,17 @@ interface EditUserModalProps {
 }
 
 export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUserModalProps) {
-  const { roles, isLoading: rolesLoading } = useRoles();
+  const { roles, isLoading: rolesLoading, error: rolesError } = useRoles();
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 EDIT USER MODAL DEBUG:', {
+      rolesLoading,
+      rolesCount: roles?.length || 0,
+      rolesError: rolesError?.message,
+      firstRole: roles?.[0]
+    });
+  }, [roles, rolesLoading, rolesError]);
   const [formData, setFormData] = useState({
     email: user?.email || '',
     isActive: user?.isActive ?? true,

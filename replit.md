@@ -8,6 +8,15 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
+- **2025-07-28**: VERALTETES ROLE-FELD VOLLSTÄNDIG ENTFERNT - Komplette Migration zu roleId-System
+  - **Database-Bereinigung**: Veraltetes 'role' VARCHAR-Feld aus email_invitations Tabelle entfernt
+  - **Frontend-Migration**: Users.tsx komplett auf roleId-basierte Einladungen umgestellt
+  - **Backend-API aktualisiert**: Alle Einladungsrouten verwenden roleId statt role-String
+  - **E-Mail-Service repariert**: InvitationEmailData Interface auf roleName umgestellt
+  - **TypeScript-Compliance**: Alle LSP-Diagnostics für role-Migration behoben
+  - **Datenbank-Konsistenz**: Nur noch role_id INTEGER-Feld in email_invitations vorhanden
+  - **System-Status**: Vollständig normalisiertes Rollen-System ohne Legacy-Abhängigkeiten
+
 - **2025-07-28**: BENACHRICHTIGUNGSEINSTELLUNGEN VOLLSTÄNDIG IMPLEMENTIERT - Database-basiertes Notification Preferences System
   - **NotificationSettingsModal komplett integriert**: Modal-Komponente basierend auf Benutzer-Screenshot mit allen gewünschten Einstellungen
   - **Database-Struktur erstellt**: userNotificationPreferences Tabelle mit vollständigen CRUD-Operationen

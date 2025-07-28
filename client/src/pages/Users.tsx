@@ -862,7 +862,7 @@ function ActivityLogTab({ clubId, viewMode }: { clubId: number, viewMode: 'grid'
 // Invitation Form Schema
 const invitationSchema = z.object({
   email: z.string().email('Bitte geben Sie eine gültige E-Mail-Adresse ein'),
-  role: z.enum(['member', 'trainer', 'club-administrator']).default('member'),
+  roleId: z.number().min(1, 'Bitte wählen Sie eine Rolle aus'),
 });
 
 type InvitationForm = z.infer<typeof invitationSchema>;
@@ -873,21 +873,44 @@ function InviteUserForm({ clubId }: { clubId: number }) {
     resolver: zodResolver(invitationSchema),
     defaultValues: {
       email: '',
-      role: 'member',
+      roleId: 1, // Default to member role ID
     },
   });
 
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { data: roles } = useRoles();
+
   const inviteMutation = useMutation({
     mutationFn: async (data: InvitationForm) => {
-      return await apiRequest('POST', `/api/clubs/${clubId}/invite`, data);
+      const response = await fetch(`/api/clubs/${clubId}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Fehler beim Senden der Einladung');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
-      toastService.success('Einladung erfolgreich versendet!');
+      toast({
+        title: "Einladung gesendet",
+        description: "Die E-Mail-Einladung wurde erfolgreich versendet.",
+      });
       form.reset();
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'users'] });
     },
-    onError: (error) => {
-      console.error('Invitation error:', error);
-      toastService.error('Fehler beim Senden der Einladung: ' + error.message);
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -934,20 +957,22 @@ function InviteUserForm({ clubId }: { clubId: number }) {
             />
             <FormField
               control={form.control}
-              name="role"
+              name="roleId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700 dark:text-gray-300">Rolle zuweisen</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
                     <FormControl>
                       <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                         <SelectValue placeholder="Rolle auswählen" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="member">Mitglied</SelectItem>
-                      <SelectItem value="trainer">Trainer</SelectItem>
-                      <SelectItem value="club-administrator">Administrator</SelectItem>
+                      {roles && roles.map((role: any) => (
+                        <SelectItem key={role.id} value={role.id.toString()}>
+                          {role.displayName || role.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

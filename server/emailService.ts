@@ -29,7 +29,7 @@ export interface InvitationEmailData {
   to: string;
   clubName: string;
   inviterName: string;
-  role: string;
+  roleName: string;
   personalMessage?: string;
   invitationUrl: string;
   expiresAt: Date;
@@ -76,7 +76,7 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
  * Send invitation email to new user
  */
 export async function sendInvitationEmail(data: InvitationEmailData): Promise<boolean> {
-  const { to, clubName, inviterName, role, personalMessage, invitationUrl, expiresAt } = data;
+  const { to, clubName, inviterName, roleName, personalMessage, invitationUrl, expiresAt } = data;
   
   const roleTranslations: Record<string, string> = {
     'member': 'Mitglied',
@@ -84,7 +84,7 @@ export async function sendInvitationEmail(data: InvitationEmailData): Promise<bo
     'club-administrator': 'Vereinsadministrator'
   };
 
-  const translatedRole = roleTranslations[role] || role;
+  const translatedRole = roleTranslations[roleName] || roleName;
   
   const subject = `Einladung zu ${clubName} - ClubFlow`;
   
@@ -187,10 +187,10 @@ export function generateInvitationEmail(
   clubName: string, 
   inviterName: string, 
   inviteToken: string,
-  role: string = 'member'
+  roleName: string = 'member'
 ): { subject: string; html: string; text: string } {
-  const roleText = role === 'club-administrator' ? 'Administrator' : 
-                   role === 'trainer' ? 'Trainer' : 'Mitglied';
+  const roleText = roleName === 'club-administrator' ? 'Administrator' : 
+                   roleName === 'trainer' ? 'Trainer' : 'Mitglied';
                    
   // Use production domain for invitation URLs
   const baseUrl = process.env.NODE_ENV === 'production' 

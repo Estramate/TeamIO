@@ -354,7 +354,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4">
+          <nav className="flex-1 overflow-y-auto sidebar-scrollable py-4">
             <div className={cn("space-y-2", collapsed ? "px-2" : "px-3")}>
               {navigation.map((item) => {
                 const isActive = location === item.href;

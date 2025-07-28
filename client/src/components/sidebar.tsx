@@ -45,11 +45,11 @@ const navigation = [
   { name: "Finanzen", href: "/finance", icon: Euro },
   { name: "Berichte", href: "/reports", icon: FileText },
   { name: "Kommunikation", href: "/communication", icon: MessageCircle },
-  { name: "Subscription", href: "/subscription", icon: Crown },
 ];
 
 const adminNavigation = [
   { name: "Benutzer", href: "/users", icon: UserCog },
+  { name: "Subscription", href: "/subscription", icon: Crown },
   { name: "Einstellungen", href: "/settings", icon: Settings },
 ];
 
@@ -287,16 +287,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               })}
             </div>
 
-            {/* Admin Section */}
-            <div className={cn("mt-6", collapsed ? "px-2" : "px-3")}>
-              <div className="border-t border-border pt-4">
-                {!collapsed && (
-                  <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                    Administration
-                  </p>
-                )}
-                <div className="space-y-2">
-                  {adminNavigation.map((item) => {
+            {/* Admin Section - Only for club administrators */}
+            {(userMembership as any)?.role === 'club-administrator' && (
+              <div className={cn("mt-6", collapsed ? "px-2" : "px-3")}>
+                <div className="border-t border-border pt-4">
+                  {!collapsed && (
+                    <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                      Administration
+                    </p>
+                  )}
+                  <div className="space-y-2">
+                    {adminNavigation.map((item) => {
                     const isActive = location === item.href;
                     const Icon = item.icon;
                     
@@ -344,10 +345,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         </TooltipContent>
                       </Tooltip>
                     ) : adminButton;
-                  })}
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </nav>
 
           {/* Theme Toggle */}

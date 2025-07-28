@@ -18,6 +18,31 @@ import { asyncHandler } from "../middleware/errorHandler";
 
 const router = Router();
 
+// Admin-only middleware for subscription routes
+const requiresClubAdmin = async (req: any, res: any, next: any) => {
+  const clubId = parseInt(req.params.clubId);
+  const userId = req.user.claims.sub;
+  
+  if (!clubId || !userId) {
+    return res.status(400).json({ error: "Missing club ID or user ID" });
+  }
+  
+  try {
+    const { getStorage } = await import("../storage");
+    const storage = getStorage();
+    
+    const adminMembership = await storage.getUserClubMembership(userId, clubId);
+    if (!adminMembership || adminMembership.role !== 'club-administrator') {
+      return res.status(403).json({ error: 'You must be a club administrator to access subscription management' });
+    }
+    
+    next();
+  } catch (error) {
+    console.error("Error checking admin permissions:", error);
+    return res.status(500).json({ error: "Failed to verify permissions" });
+  }
+};
+
 // Apply authentication to all routes except specific ones
 router.use((req, res, next) => {
   // Skip authentication for GET /plans and /plans/comparison (public data)
@@ -61,8 +86,8 @@ router.get("/plans/comparison", asyncHandler(async (req: any, res: any) => {
   }
 }));
 
-// GET /api/subscriptions/club/:clubId - Get club subscription details
-router.get("/club/:clubId", asyncHandler(async (req: any, res: any) => {
+// GET /api/subscriptions/club/:clubId - Get club subscription details (admin only)
+router.get("/club/:clubId", requiresClubAdmin, asyncHandler(async (req: any, res: any) => {
   try {
     const clubId = parseInt(req.params.clubId);
     

@@ -313,7 +313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Try Replit authentication first
       if (req.isAuthenticated && req.isAuthenticated() && req.user && req.user.claims) {
-        const userId = req.user.claims.sub;
+        const userId = req.user.id;
         console.log('Using Replit auth, user ID:', userId);
         const user = await storage.getUser(userId);
         if (user) {
@@ -343,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Check if user has ANY club membership (active or inactive) - for onboarding logic
   app.get('/api/user/memberships/status', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     if (!userId) {
       throw new AuthorizationError('User ID not found in token');
     }
@@ -361,7 +361,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User permission routes
   app.get('/api/clubs/:clubId/user-membership', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -387,7 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/clubs/:clubId/user-teams', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -409,7 +409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Individual club route
   app.get('/api/clubs/:id', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.id);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -433,7 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update club (admin only)
   app.patch('/api/clubs/:id', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.id);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -523,7 +523,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Club routes (authenticated - returns user's ACTIVE clubs only for selection)
   app.get('/api/clubs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     if (!userId) {
       throw new AuthorizationError('User ID not found in token');
     }
@@ -551,7 +551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   app.post('/api/clubs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     if (!userId) {
       throw new AuthorizationError('User ID not found in token');
     }
@@ -574,7 +574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Club join request route - Creates inactive membership for admin approval
   app.post('/api/clubs/:id/join', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.id);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -640,7 +640,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get pending membership requests for club administrators
   app.get('/api/clubs/:clubId/pending-memberships', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -669,7 +669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/clubs/:clubId/memberships/:membershipId/approve', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const membershipId = parseInt(req.params.membershipId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const { action, role } = req.body; // action: 'approve' | 'reject', role: optional new role
     
     if (!clubId || isNaN(clubId)) {
@@ -802,7 +802,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Activity log routes
   app.get('/api/clubs/:clubId/activity-logs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -822,7 +822,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Email invitation routes
   app.post('/api/clubs/:clubId/invite', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -944,7 +944,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Users management route (admin only)
   app.get('/api/clubs/:clubId/users', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
@@ -978,7 +978,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/clubs/:clubId/members/:memberId/role', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const memberId = parseInt(req.params.memberId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const { role, roleId } = req.body;
     
     // Check if user is club admin
@@ -1042,7 +1042,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/clubs/:clubId/members/:memberId/status', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const memberId = parseInt(req.params.memberId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const { status } = req.body;
     
     // Check if user is club admin
@@ -1086,7 +1086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/clubs/:clubId/members/:memberId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const memberId = parseInt(req.params.memberId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
@@ -1878,7 +1878,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Message routes
   app.get('/api/clubs/:clubId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -1907,7 +1907,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/clubs/:clubId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     console.log('🔍 MESSAGE DEBUG - Request body:', JSON.stringify(req.body, null, 2));
     console.log('🔍 MESSAGE DEBUG - Club ID:', clubId);
@@ -1981,7 +1981,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/clubs/:clubId/messages/:messageId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!messageId || isNaN(messageId)) {
       throw new ValidationError('Invalid message ID', 'messageId');
@@ -2004,7 +2004,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/clubs/:clubId/messages/:messageId/read', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!messageId || isNaN(messageId)) {
       throw new ValidationError('Invalid message ID', 'messageId');
@@ -2019,7 +2019,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/messages/:messageId/reply', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     logger.info('Reply request received', { messageId, clubId, userId, body: req.body, requestId: req.id });
     
@@ -2073,7 +2073,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/clubs/:clubId/messages/:messageId/replies/:replyId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const replyId = parseInt(req.params.replyId);
     const messageId = parseInt(req.params.messageId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!replyId || isNaN(replyId)) {
       throw new ValidationError('Invalid reply ID', 'replyId');
@@ -2165,7 +2165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/clubs/:clubId/announcements', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     console.log('🔍 ANNOUNCEMENT DEBUG - Request body:', JSON.stringify(req.body, null, 2));
     console.log('🔍 ANNOUNCEMENT DEBUG - Club ID:', clubId);
@@ -2303,7 +2303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Notification routes
   app.get('/api/clubs/:clubId/notifications', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -2316,7 +2316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/clubs/:clubId/notifications/count', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -2358,7 +2358,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/clubs/:clubId/notifications/read-all', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -2384,7 +2384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Communication preferences routes
   app.get('/api/clubs/:clubId/communication-preferences', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -2414,7 +2414,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/clubs/:clubId/communication-preferences', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -2438,7 +2438,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Communication statistics routes
   app.get('/api/clubs/:clubId/communication-stats', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     if (!clubId || isNaN(clubId)) {
       throw new ValidationError('Invalid club ID', 'clubId');
@@ -2451,7 +2451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Search routes
   app.get('/api/clubs/:clubId/search/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const { q: query } = req.query;
     
     if (!clubId || isNaN(clubId)) {
@@ -2489,7 +2489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Send email invitation
   app.post('/api/clubs/:clubId/invitations/send', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     
     console.log('📧 Invitation request received:', { body: req.body, userId, clubId });
     

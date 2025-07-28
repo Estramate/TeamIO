@@ -15,8 +15,8 @@ declare global {
 /**
  * Basic authentication check - requires user to be logged in
  */
-export const requiresAuth = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.user?.id) {
+export const requiresAuth = (req: any, res: Response, next: NextFunction) => {
+  if (!req.user?.id && !req.user?.claims?.sub) {
     logger.warn('Unauthorized access attempt', { 
       path: req.path, 
       method: req.method,
@@ -30,10 +30,10 @@ export const requiresAuth = (req: Request, res: Response, next: NextFunction) =>
 /**
  * Requires user to be a member of the specified club
  */
-export const requiresClubMembership = async (req: Request, res: Response, next: NextFunction) => {
+export const requiresClubMembership = async (req: any, res: Response, next: NextFunction) => {
   try {
     const clubId = parseInt(req.params.clubId || req.body.clubId || req.query.clubId as string);
-    const userId = req.user?.id;
+    const userId = req.user?.id || req.user?.claims?.sub;
 
     if (!userId) {
       return res.status(401).json({ message: 'Authentication required' });
@@ -67,10 +67,10 @@ export const requiresClubMembership = async (req: Request, res: Response, next: 
 /**
  * Requires user to be a club administrator (club-administrator or obmann role)
  */
-export const requiresClubAdmin = async (req: Request, res: Response, next: NextFunction) => {
+export const requiresClubAdmin = async (req: any, res: Response, next: NextFunction) => {
   try {
     const clubId = parseInt(req.params.clubId || req.body.clubId || req.query.clubId as string);
-    const userId = req.user?.id;
+    const userId = req.user?.id || req.user?.claims?.sub;
 
     if (!userId) {
       return res.status(401).json({ message: 'Authentication required' });

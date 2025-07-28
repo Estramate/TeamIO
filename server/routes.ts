@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { requiresClubMembership } from "./middleware/auth";
 // ClubFlow authentication system - Replit integration only
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
 import { handleErrorReports, handlePerformanceMetrics } from "./error-reporting";
@@ -3181,7 +3182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // === LIVE CHAT API ROUTES - DIRECT INTEGRATION ===
   // Get all chat rooms for a club
-  app.get('/api/clubs/:clubId/chat-rooms', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/chat-rooms', isAuthenticated, requiresClubMembership, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const userId = req.user!.id;
@@ -3239,7 +3240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   // Get chat unread count
-  app.get('/api/clubs/:clubId/chat-unread-count', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/chat-unread-count', isAuthenticated, requiresClubMembership, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const userId = req.user!.id;
@@ -3263,7 +3264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get messages for a chat room  
-  app.get('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, requiresClubMembership, async (req: any, res) => {
     try {
       const roomId = req.params.roomId;
       const userId = req.user!.id;
@@ -3325,7 +3326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send a message
-  app.post('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, requiresClubMembership, async (req: any, res) => {
     try {
       const roomId = req.params.roomId;
       const userId = req.user!.id;
@@ -3366,7 +3367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new chat room
-  app.post('/api/clubs/:clubId/chat-rooms', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/chat-rooms', isAuthenticated, requiresClubMembership, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const userId = req.user!.id;
@@ -3400,6 +3401,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(newRoom);
     } catch (error) {
       console.error('❌ Error creating chat room:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get online users for a club
+  app.get('/api/clubs/:clubId/online-users', isAuthenticated, requiresClubMembership, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const userId = req.user!.id;
+
+      console.log('🔍 ONLINE-USERS DEBUG - Club ID:', clubId);
+      console.log('🔍 ONLINE-USERS DEBUG - User ID:', userId);
+
+      // Mock online users - in production this would check actual WebSocket connections
+      const mockOnlineUsers = [userId, '2', '3']; // Include current user and some others
+      
+      console.log('✅ ONLINE-USERS - Returning mock online users:', mockOnlineUsers.length);
+      res.json(mockOnlineUsers);
+    } catch (error) {
+      console.error('❌ Error fetching online users:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });

@@ -1148,7 +1148,10 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
                 <div className="space-y-1">
                   {user.memberships?.map((m: any) => (
                     <Badge key={m.clubId} variant="outline" className="text-xs">
-                      {m.role === 'club-administrator' ? 'Admin' : m.role}
+                      {m.role === 'club-administrator' ? 'Vereinsadministrator' : 
+                       m.role === 'administrator' ? 'Administrator' :
+                       m.role === 'member' ? 'Mitglied' : 
+                       m.role === 'trainer' ? 'Trainer' : m.role}
                     </Badge>
                   )) || <Badge variant="secondary">Gast</Badge>}
                 </div>

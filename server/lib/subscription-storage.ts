@@ -2,7 +2,7 @@
  * Subscription storage interface and implementations
  */
 
-import { eq, and, desc, count, max, gte, sql } from "drizzle-orm";
+import { eq, and, or, desc, count, max, gte, sql, isNull } from "drizzle-orm";
 import { db } from "../db";
 import { members } from "@shared/schemas/members";
 import { players, teams } from "@shared/schemas/teams";
@@ -21,6 +21,7 @@ import {
   type InsertSubscriptionUsage,
   type InsertFeatureAccessLog,
 } from "@shared/schemas/subscriptions";
+import { users, clubMemberships } from "@shared/schemas/core";
 
 export interface ISubscriptionStorage {
   // Subscription Plans
@@ -194,19 +195,33 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
     return result[0] || null;
   }
 
-  // Usage Tracking - CLUB-SPECIFIC: Only counts data for the specific club
+  // Usage Tracking - CLUB-SPECIFIC: Only counts data for the specific club (EXCLUDING Super Admins)
   async getCurrentUsage(clubId: number): Promise<SubscriptionUsage | null> {
-    // Get real counts from database FOR THIS CLUB ONLY
+    // Get real counts from database FOR THIS CLUB ONLY - EXCLUDING Super Admins
     const memberCountResult = await db.select({ count: sql<number>`count(*)` }).from(members).where(eq(members.clubId, clubId));
     const playerCountResult = await db.select({ count: sql<number>`count(*)` }).from(players).where(eq(players.clubId, clubId));
     const teamCountResult = await db.select({ count: sql<number>`count(*)` }).from(teams).where(eq(teams.clubId, clubId));
     const facilityCountResult = await db.select({ count: sql<number>`count(*)` }).from(facilities).where(eq(facilities.clubId, clubId));
     
+    // Get club users and exclude Super Admins from count
+    const clubUsersResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(clubMemberships)
+      .innerJoin(users, eq(clubMemberships.userId, users.id))
+      .where(
+        and(
+          eq(clubMemberships.clubId, clubId),
+          eq(clubMemberships.status, 'active'),
+          or(eq(users.isSuperAdmin, false), isNull(users.isSuperAdmin))
+        )
+      );
+    
     const memberCount = Number(memberCountResult[0]?.count) || 0;
     const playerCount = Number(playerCountResult[0]?.count) || 0;
-    const totalManagedUsers = memberCount + playerCount; // Club-specific subscription limits!
+    const registeredUsersExcludingSuperAdmins = Number(clubUsersResult[0]?.count) || 0;
+    const totalManagedUsers = memberCount + playerCount; // Only count managed entities, not admin users
     
-    console.log(`📊 Usage stats for club ${clubId}: Members=${memberCount}, Players=${playerCount}, Total=${totalManagedUsers}`);
+    console.log(`📊 Usage stats for club ${clubId}: Members=${memberCount}, Players=${playerCount}, RegisteredUsers=${registeredUsersExcludingSuperAdmins}, Total=${totalManagedUsers} (Super Admins excluded)`);
     
     return {
       id: clubId, // Use clubId as unique identifier
@@ -214,7 +229,8 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
       subscriptionId: clubId, // Link to club subscription
       memberCount,
       playerCount,
-      totalManagedUsers, // Only users managed by THIS CLUB
+      totalManagedUsers, // Only users managed by THIS CLUB (excludes Super Admins)
+      registeredActiveUsers: registeredUsersExcludingSuperAdmins, // Active club users excluding Super Admins
       teamCount: Number(teamCountResult[0]?.count) || 0,
       facilityCount: Number(facilityCountResult[0]?.count) || 0,
       messagesSent: 0, // Club-specific message count

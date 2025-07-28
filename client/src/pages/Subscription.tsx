@@ -256,7 +256,7 @@ export default function SubscriptionPage() {
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>→ Registrierte aktive Benutzer:</span>
-                      <span>{clubUsers?.filter((u: any) => u.status === 'active').length || 0}</span>
+                      <span>{usage?.registeredActiveUsers || 0}</span>
                     </div>
                     {getRemainingUsers() !== null && (
                       <>

@@ -145,7 +145,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       const isRecurring = (data as any).createdCount && (data as any).createdCount > 1;
       
       // Trigger intelligent notification
-      notifyBookingChange(bookingTitle, facilityName, isRecurring ? 'serie-erstellt' : 'erstellt');
+      notifyNewBooking(facilityName, new Date().toLocaleDateString(), bookingTitle);
       
       // Invalidate alle booking-relevanten Queries
       invalidateEntityData(queryClient, selectedClubId, 'bookings');

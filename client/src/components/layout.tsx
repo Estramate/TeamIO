@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Sidebar from "./sidebar";
 import Header from "./header";
+import { LiveChatWidget } from './LiveChatWidget';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,9 @@ export default function Layout({ children }: LayoutProps) {
           {children}
         </div>
       </div>
+      
+      {/* Live Chat Widget - Fixed position */}
+      <LiveChatWidget />
     </div>
   );
 }

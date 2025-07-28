@@ -2752,6 +2752,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const superAdminAnalyticsRoutes = (await import("./routes/super-admin-analytics")).default;
   app.use('/api/super-admin', superAdminRoutes);
   app.use('/api/super-admin', superAdminAnalyticsRoutes);
+  
+  // Live Chat routes
+  const chatRoutes = (await import("./routes/chat")).default;
+  app.use('/api', chatRoutes);
 
   const httpServer = createServer(app);
   

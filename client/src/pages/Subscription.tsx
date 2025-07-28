@@ -160,7 +160,7 @@ export default function SubscriptionPage() {
   const getRemainingUsers = () => {
     const plan = plans.find(p => p.planType === currentPlan);
     if (!plan?.memberLimit) return null;
-    const totalManagedUsers = (usage?.memberCount || 31) + (usage?.playerCount || 124);
+    const totalManagedUsers = (usage?.memberCount || 0) + (usage?.playerCount || 0);
     return Math.max(0, plan.memberLimit - totalManagedUsers);
   };
   
@@ -494,7 +494,7 @@ export default function SubscriptionPage() {
                 <CardTitle className="text-lg">Mitglieder</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{usage?.memberCount || 25}</div>
+                <div className="text-2xl font-bold">{usage?.memberCount || 0}</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Aktive Mitglieder</p>
               </CardContent>
             </Card>
@@ -504,7 +504,7 @@ export default function SubscriptionPage() {
                 <CardTitle className="text-lg">Teams</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{usage?.teamCount || 15}</div>
+                <div className="text-2xl font-bold">{usage?.teamCount || 0}</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Erstellte Teams</p>
               </CardContent>
             </Card>
@@ -514,7 +514,7 @@ export default function SubscriptionPage() {
                 <CardTitle className="text-lg">Spieler</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{usage?.playerCount || 124}</div>
+                <div className="text-2xl font-bold">{usage?.playerCount || 0}</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Registrierte Spieler</p>
               </CardContent>
             </Card>

@@ -91,7 +91,6 @@ export const clubSubscriptions = pgTable("club_subscriptions", {
   // Billing information
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
-  stripePriceId: varchar("stripe_price_id", { length: 255 }),
   
   // Usage tracking
   currentMemberCount: integer("current_member_count").default(0).notNull(),

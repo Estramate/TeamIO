@@ -3,9 +3,10 @@
  * Handles subscription plans, billing, and feature management
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useClub } from "@/hooks/use-club";
+import { usePage } from "@/contexts/PageContext";
 import { useSubscription, useBilling, usePlanComparison } from "@/hooks/use-subscription";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,13 @@ import { formatPrice, calculateYearlySavings, formatPlanName, PLAN_COMPARISONS }
 
 export default function SubscriptionPage() {
   const { selectedClub } = useClub();
+  const { setPage } = usePage();
+
+  useEffect(() => {
+    if (selectedClub) {
+      setPage("Subscription-Verwaltung", `Verwalten Sie Ihren Plan und Features für ${selectedClub.name}`);
+    }
+  }, [selectedClub, setPage]);
   
   // Fetch real subscription data
   const { data: subscriptionData, isLoading } = useQuery({
@@ -136,14 +144,9 @@ export default function SubscriptionPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
-      {/* Header */}
+      {/* Header is now handled by PageContext */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Subscription-Verwaltung</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Verwalten Sie Ihren Plan und Features für {selectedClub.name}
-          </p>
-        </div>
+        <div className="flex-1"></div>
         {isExpired && (
           <div className="flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg">
             <AlertTriangle className="h-4 w-4" />

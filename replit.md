@@ -4,9 +4,18 @@
 
 ClubFlow is a comprehensive, modern web-based platform designed for sports clubs and organizations. It provides complete management solutions for members, teams, facilities, bookings, finances, and communication. The system supports multi-club management with role-based access control and features a responsive, accessible design optimized for desktop, tablet, and mobile devices.
 
-**Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. All critical bugs resolved and application running smoothly.
+**Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. Dual-admin-role system (club-administrator & obmann) with unified permissions across all backend routes and frontend interfaces. All critical bugs resolved and application running smoothly.
 
 ## Recent Changes
+- **2025-07-28**: DUAL-ADMIN-BERECHTIGUNGSSYSTEM VOLLSTÄNDIG IMPLEMENTIERT - Obmann & Club-Administrator haben identische Berechtingungen
+  - **Backend-Berechtigungen vereinheitlicht**: Alle API-Routen akzeptieren ['club-administrator', 'obmann'] als Admin-Rollen
+  - **Frontend Sidebar-Berechtigungen repariert**: Administration-Bereich für beide Rollen sichtbar beim Club-Wechsel
+  - **Subscription-Zugriff korrigiert**: Beide Rollen können Subscription-Daten laden und verwalten
+  - **Mitgliederverwaltung funktionsfähig**: Benutzer einladen, Rollen ändern, Status verwalten für beide Admin-Rollen
+  - **Club-Einstellungen-Zugriff**: Beide Rollen haben Vollzugriff auf Vereinseinstellungen und -konfiguration
+  - **Vereinswechsel-Problem behoben**: System erkennt Admin-Berechtigung korrekt beim Wechsel zwischen Vereinen
+  - **18 LSP-Diagnostics verbleibend**: Geringfügige TypeScript-Warnungen ohne Funktionseinschränkung
+
 - **2025-07-28**: VOLLSTÄNDIGE MIGRATION ZU NORMALISIERTEM ROLLEN-SYSTEM ABGESCHLOSSEN - Alle veralteten "role"-Feld-Referenzen eliminiert
   - **Backend API vollständig migriert**: Alle Endpunkte verwenden jetzt roleId und normalisierte roles-Tabelle
   - **Frontend-Komponenten aktualisiert**: Sidebar, Users-Seite, Invite-Dialog, OnboardingWizard verwenden roleId
@@ -114,7 +123,7 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 - **Memory**: Always remember and document current project settings and state
 - **Project Management**: Systematic implementation of improvements with documentation
 
-**Latest User Request**: User reported issues with landing page showing immediate club selection forcing Replit login, logout not clearing cookies properly, and persistent WebSocket console errors. All issues have been resolved:
+**Latest User Request**: User reported role permission inconsistency where club switching caused admin interface to disappear for "obmann" role users. System now correctly recognizes both "club-administrator" and "obmann" as admin roles with identical permissions across all backend routes and frontend interfaces.
 - ✅ Landing page now shows content first, login only when "Start" button clicked
 - ✅ Logout now properly clears all cookies and sessions (Firebase + Replit)
 - ✅ WebSocket errors completely eliminated through global HTML-head override

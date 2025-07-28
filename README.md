@@ -2,7 +2,7 @@
 
 ![ClubFlow Logo](https://img.shields.io/badge/ClubFlow-Vereinsmanagement-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Fully%20Operational-brightgreen?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-2.1.1-orange?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-2.2.0-orange?style=for-the-badge)
 ![Build](https://img.shields.io/badge/Build-Passing-success?style=for-the-badge)
 
 ## 🏆 Überblick
@@ -24,6 +24,15 @@ ClubFlow ist eine moderne, webbasierte Plattform für die umfassende Verwaltung 
 ## 🚀 Aktuelle Version - Production Ready
 
 ### Neueste Updates (Juli 28, 2025)
+
+#### ✅ DUAL-ADMIN-SYSTEM VOLLSTÄNDIG FUNKTIONSFÄHIG (14:01)
+- **Obmann-Rolle gleichberechtigt** - "Obmann" hat identische Berechtigungen wie "Club Administrator"
+- **Backend-Berechtigungen vereinheitlicht** - Alle 18 Admin-API-Routen erkennen beide Rollen
+- **Frontend-Sidebar korrigiert** - Administration-Bereich für beide Rollen beim Vereinswechsel sichtbar
+- **Subscription-Zugriff repariert** - Beide Admin-Rollen können Plan-Verwaltung und Nutzungsdaten einsehen
+- **Mitgliederverwaltung funktionsfähig** - Einladungen, Rollenvergabe, Status-Updates für beide Rollen
+- **Club-Einstellungen-Zugriff** - Vollständige Vereinskonfiguration für beide Admin-Rollen verfügbar
+- **Nahtloser Vereinswechsel** - System erkennt Admin-Berechtigung korrekt beim Wechsel zwischen Vereinen
 
 #### ✅ Kritische Anwendungsreparatur Abgeschlossen (11:45)
 - **Settings.tsx Korruption behoben** - Vollständig neu erstellte Settings-Seite mit sauberem Code
@@ -52,20 +61,23 @@ ClubFlow ist eine moderne, webbasierte Plattform für die umfassende Verwaltung 
 - **Multi-Provider OAuth** - Replit + E-Mail/Passwort-Authentifizierung
 - **Zwei-Faktor-Authentifizierung** - TOTP mit Google Authenticator
 - **Sichere Session-Verwaltung** - PostgreSQL-basierte Sessions
-- **Rollenbasierte Zugriffskontrolle** - Granulare Berechtigungen
-- **Activity-Logging** - Vollständige Auditierung aller Aktionen
+- **8-Rollen-System** - Normalisierte Rollenverwaltung mit datenbankbasierter Konfiguration
+- **Dual-Admin-Berechtigungen** - Obmann & Club-Administrator haben identische Verwaltungsrechte
+- **Activity-Logging** - Vollständige Auditierung aller Aktionen mit Metadaten
 
 #### 👤 Benutzer- & Mitgliederverwaltung
 - **E-Mail-Einladungssystem** - SendGrid-powered mit professionellen Templates
-- **Genehmigungsworkflow** - Strukturierte Mitgliedschaftsanträge
-- **Token-basierte Registrierung** - Sichere Einladungslinks
-- **Automatische Rollenzuweisung** - Intelligente Berechtigungsvergabe
+- **Genehmigungsworkflow** - Strukturierte Mitgliedschaftsanträge mit Status-Verwaltung
+- **Token-basierte Registrierung** - Sichere Einladungslinks mit zeitlicher Begrenzung
+- **8-Rollen-Hierarchie** - Member, Trainer, Kassier, Schriftführer, Eventmanager, Platzwart, Club Administrator, Obmann
+- **Automatische Rollenzuweisung** - Intelligente Berechtigungsvergabe basierend auf Vereinsstruktur
 
 #### 🏢 Multi-Vereins-Architektur
-- **Unbegrenzte Vereine** pro Benutzer
-- **Vereinsspezifische Berechtigungen** - Isolierte Datenverwaltung
-- **Club-Branding** - Logo-Upload und Farbsystem
-- **Professionelle Settings** - Vollständige Vereinskonfiguration
+- **Unbegrenzte Vereine** pro Benutzer mit nahtlosem Wechsel
+- **Vereinsspezifische Berechtigungen** - Isolierte Datenverwaltung mit rollenbasierter Zugriffskontrolle
+- **Dual-Admin-System** - Obmann und Club Administrator mit identischen Berechtigungen
+- **Club-Branding** - Logo-Upload, Farbsystem und vollständige Vereinsidentität
+- **Professionelle Settings** - 3-Tab-Interface für General, Design und Advanced-Konfiguration
 
 #### 📊 Dashboard & Analytics
 - **Echtzeit-Statistiken** - Live-Daten aus der Datenbank

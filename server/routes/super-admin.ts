@@ -393,21 +393,57 @@ router.post("/clubs/:id/deactivate",
     }
   }));
 
-// PUT /api/super-admin/users/:id - Update user
+// PUT /api/super-admin/users/:id - Update user with club memberships
 router.put("/users/:id",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
       const userId = req.params.id;
-      const { firstName, lastName, email, isActive } = req.body;
+      const { firstName, lastName, email, isActive, clubMemberships } = req.body;
       const { storage } = await import("../storage");
       
+      // Update user basic information
       const user = await storage.updateUser(userId, {
         firstName,
         lastName,
         email,
         isActive,
       });
+      
+      // Handle club memberships if provided
+      if (clubMemberships && Array.isArray(clubMemberships)) {
+        console.log(`Processing ${clubMemberships.length} club memberships for user ${userId}`);
+        
+        for (const membership of clubMemberships) {
+          try {
+            if (membership.toDelete && !membership.isNew) {
+              // Delete existing membership
+              console.log(`Removing user ${userId} from club ${membership.clubId}`);
+              await storage.removeUserFromClub(userId, membership.clubId);
+            } else if (membership.isNew) {
+              // Add new membership
+              console.log(`Adding user ${userId} to club ${membership.clubId} as ${membership.role}`);
+              await storage.addUserToClub({
+                userId,
+                clubId: membership.clubId,
+                role: membership.role,
+                status: membership.status,
+                joinedAt: new Date(),
+              });
+            } else if (membership.isModified) {
+              // Update existing membership
+              console.log(`Updating membership for user ${userId} in club ${membership.clubId}`);
+              await storage.updateClubMembership(userId, membership.clubId, {
+                role: membership.role,
+                status: membership.status,
+              });
+            }
+          } catch (membershipError) {
+            console.error(`Error processing membership for club ${membership.clubId}:`, membershipError);
+            // Continue processing other memberships even if one fails
+          }
+        }
+      }
       
       res.json(user);
     } catch (error) {

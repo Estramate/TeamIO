@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Dialog, 
@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 // Club Details Modal
 interface ClubDetailsModalProps {
@@ -390,18 +391,101 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
   const [formData, setFormData] = useState({
     email: user?.email || '',
     isActive: user?.isActive ?? true,
+    clubMemberships: user?.clubs || [],
   });
+
+  const [allClubs, setAllClubs] = useState<any[]>([]);
+  const [newMembership, setNewMembership] = useState({
+    clubId: '',
+    role: 'member',
+    status: 'active'
+  });
+
+  // Fetch all clubs for the dropdown
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        const response = await fetch('/api/super-admin/clubs');
+        if (response.ok) {
+          const clubs = await response.json();
+          setAllClubs(clubs);
+        }
+      } catch (error) {
+        console.error('Failed to fetch clubs:', error);
+      }
+    };
+    if (open) {
+      fetchClubs();
+    }
+  }, [open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    onSave({
+      ...formData,
+      clubMemberships: formData.clubMemberships
+    });
+  };
+
+  const handleAddMembership = () => {
+    if (!newMembership.clubId) return;
+    
+    const club = allClubs.find(c => c.id.toString() === newMembership.clubId);
+    if (!club) return;
+
+    // Check if membership already exists
+    const exists = formData.clubMemberships.some((m: any) => m.clubId === parseInt(newMembership.clubId));
+    if (exists) return;
+
+    const membership = {
+      clubId: parseInt(newMembership.clubId),
+      clubName: club.name,
+      role: newMembership.role,
+      status: newMembership.status,
+      isNew: true // Mark as new for API handling
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      clubMemberships: [...prev.clubMemberships, membership]
+    }));
+
+    setNewMembership({ clubId: '', role: 'member', status: 'active' });
+  };
+
+  const handleRemoveMembership = (index: number) => {
+    const membership = formData.clubMemberships[index];
+    if (membership.isNew) {
+      // Remove from list if it was just added
+      setFormData(prev => ({
+        ...prev,
+        clubMemberships: prev.clubMemberships.filter((_: any, i: number) => i !== index)
+      }));
+    } else {
+      // Mark for deletion if it exists in database
+      setFormData(prev => ({
+        ...prev,
+        clubMemberships: prev.clubMemberships.map((m: any, i: number) => 
+          i === index ? { ...m, toDelete: true } : m
+        )
+      }));
+    }
+  };
+
+  const handleUpdateMembership = (index: number, field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      clubMemberships: prev.clubMemberships.map((m: any, i: number) => 
+        i === index ? { ...m, [field]: value, isModified: !m.isNew } : m
+      )
+    }));
   };
 
   if (!user) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Benutzer bearbeiten</DialogTitle>
           <DialogDescription>
@@ -409,32 +493,171 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="email">E-Mail-Adresse *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic User Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Grundlegende Informationen</h3>
+            
+            <div>
+              <Label htmlFor="email">E-Mail-Adresse *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select 
+                value={formData.isActive ? 'active' : 'inactive'}
+                onValueChange={(value) => setFormData({ ...formData, isActive: value === 'active' })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Aktiv</SelectItem>
+                  <SelectItem value="inactive">Inaktiv</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <Select 
-              value={formData.isActive ? 'active' : 'inactive'}
-              onValueChange={(value) => setFormData({ ...formData, isActive: value === 'active' })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Aktiv</SelectItem>
-                <SelectItem value="inactive">Inaktiv</SelectItem>
-              </SelectContent>
-            </Select>
+          <Separator />
+
+          {/* Club Memberships */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Vereinszugehörigkeiten</h3>
+            
+            {/* Existing Memberships */}
+            <div className="space-y-2">
+              {formData.clubMemberships.map((membership: any, index: number) => (
+                <div key={index} className={cn(
+                  "flex items-center gap-3 p-3 border rounded-lg",
+                  membership.toDelete ? "opacity-50 bg-red-50" : ""
+                )}>
+                  <div className="flex-1 grid grid-cols-3 gap-3">
+                    <div>
+                      <Label className="text-xs">Verein</Label>
+                      <p className="text-sm font-medium">{membership.clubName}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Rolle</Label>
+                      <Select
+                        value={membership.role}
+                        onValueChange={(value) => handleUpdateMembership(index, 'role', value)}
+                        disabled={membership.toDelete}
+                      >
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="member">Mitglied</SelectItem>
+                          <SelectItem value="trainer">Trainer</SelectItem>
+                          <SelectItem value="administrator">Administrator</SelectItem>
+                          <SelectItem value="club-administrator">Vereinsadministrator</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Status</Label>
+                      <Select
+                        value={membership.status}
+                        onValueChange={(value) => handleUpdateMembership(index, 'status', value)}
+                        disabled={membership.toDelete}
+                      >
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Aktiv</SelectItem>
+                          <SelectItem value="inactive">Inaktiv</SelectItem>
+                          <SelectItem value="suspended">Gesperrt</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveMembership(index)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    {membership.toDelete ? "Wiederherstellen" : "Entfernen"}
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {/* Add New Membership */}
+            <div className="border-2 border-dashed border-gray-200 rounded-lg p-4">
+              <Label className="text-sm font-medium mb-3 block">Neue Vereinszugehörigkeit hinzufügen</Label>
+              <div className="grid grid-cols-4 gap-3">
+                <div>
+                  <Select
+                    value={newMembership.clubId}
+                    onValueChange={(value) => setNewMembership({ ...newMembership, clubId: value })}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="Verein wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allClubs
+                        .filter(club => !formData.clubMemberships.some((m: any) => m.clubId === club.id && !m.toDelete))
+                        .map((club) => (
+                          <SelectItem key={club.id} value={club.id.toString()}>
+                            {club.name}
+                          </SelectItem>
+                        ))
+                      }
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Select
+                    value={newMembership.role}
+                    onValueChange={(value) => setNewMembership({ ...newMembership, role: value })}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="member">Mitglied</SelectItem>
+                      <SelectItem value="trainer">Trainer</SelectItem>
+                      <SelectItem value="administrator">Administrator</SelectItem>
+                      <SelectItem value="club-administrator">Vereinsadministrator</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Select
+                    value={newMembership.status}
+                    onValueChange={(value) => setNewMembership({ ...newMembership, status: value })}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Aktiv</SelectItem>
+                      <SelectItem value="inactive">Inaktiv</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAddMembership}
+                  disabled={!newMembership.clubId}
+                  className="h-8"
+                >
+                  Hinzufügen
+                </Button>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">

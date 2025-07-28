@@ -144,6 +144,8 @@ export interface IStorage {
 
   // Super admin operations
   getAllClubSubscriptions(): Promise<any[]>;
+  updateUser(id: string, updates: Partial<User>): Promise<User>;
+  getClubUsersWithMembership(clubId: number): Promise<any[]>;
 
   // Facility operations
   getFacilities(clubId: number): Promise<Facility[]>;
@@ -324,6 +326,15 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ lastLoginAt: new Date() })
       .where(eq(users.id, id));
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
   }
 
   async updateUser(id: string, data: Partial<User>): Promise<User> {

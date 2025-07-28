@@ -347,4 +347,90 @@ async function sendWelcomeAdminEmail(data: {
   }
 }
 
+// PUT /api/super-admin/clubs/:id - Update club
+router.put("/clubs/:id",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const clubId = parseInt(req.params.id);
+      const { name, description, address, phone, email, website } = req.body;
+      const { storage } = await import("../storage");
+      
+      const club = await storage.updateClub(clubId, {
+        name,
+        description,
+        address,
+        phone,
+        email,
+        website,
+      });
+      
+      res.json(club);
+    } catch (error) {
+      console.error("Error updating club:", error);
+      res.status(500).json({ error: "Failed to update club" });
+    }
+  }));
+
+// POST /api/super-admin/clubs/:id/deactivate - Deactivate club
+router.post("/clubs/:id/deactivate",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const clubId = parseInt(req.params.id);
+      const { storage } = await import("../storage");
+      
+      const club = await storage.updateClub(clubId, {
+        isActive: false,
+      });
+      
+      res.json({ message: "Club deactivated successfully", club });
+    } catch (error) {
+      console.error("Error deactivating club:", error);
+      res.status(500).json({ error: "Failed to deactivate club" });
+    }
+  }));
+
+// PUT /api/super-admin/users/:id - Update user
+router.put("/users/:id",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const userId = req.params.id;
+      const { firstName, lastName, email, isActive } = req.body;
+      const { storage } = await import("../storage");
+      
+      const user = await storage.updateUser(userId, {
+        firstName,
+        lastName,
+        email,
+        isActive,
+      });
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  }));
+
+// POST /api/super-admin/users/:id/deactivate - Deactivate user
+router.post("/users/:id/deactivate",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const userId = req.params.id;
+      const { storage } = await import("../storage");
+      
+      const user = await storage.updateUser(userId, {
+        isActive: false,
+      });
+      
+      res.json({ message: "User deactivated successfully", user });
+    } catch (error) {
+      console.error("Error deactivating user:", error);
+      res.status(500).json({ error: "Failed to deactivate user" });
+    }
+  }));
+
 export default router;

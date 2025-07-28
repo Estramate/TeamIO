@@ -36,12 +36,26 @@ import {
   Trash2,
   Eye
 } from 'lucide-react';
+import {
+  ClubDetailsModal,
+  EditClubModal,
+  DeactivateClubDialog,
+  UserDetailsModal,
+  EditUserModal,
+  DeactivateUserDialog
+} from '@/components/SuperAdminModals';
 
 export default function SuperAdminPage() {
   const { data: superAdminStatus, isLoading } = useSuperAdminStatus();
   const [showCreateClub, setShowCreateClub] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const [showClubDetails, setShowClubDetails] = useState<any>(null);
+  const [showEditClub, setShowEditClub] = useState<any>(null);
+  const [showDeactivateClub, setShowDeactivateClub] = useState<any>(null);
+  const [showUserDetails, setShowUserDetails] = useState<any>(null);
+  const [showEditUser, setShowEditUser] = useState<any>(null);
+  const [showDeactivateUser, setShowDeactivateUser] = useState<any>(null);
   const { setPage } = usePage();
   
   // Set page title
@@ -122,6 +136,100 @@ export default function SuperAdminPage() {
       toastService.error({
         title: "Fehler beim Erstellen",
         description: error.message || "Der Administrator konnte nicht erstellt werden."
+      });
+    },
+  });
+
+  // Update club mutation
+  const updateClubMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      return apiRequest(`/api/super-admin/clubs/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/clubs'] });
+      setShowEditClub(null);
+      toastService.success({
+        title: "Verein erfolgreich aktualisiert",
+        description: "Die Vereinsdaten wurden erfolgreich gespeichert."
+      });
+    },
+    onError: (error: any) => {
+      toastService.error({
+        title: "Fehler beim Speichern",
+        description: error.message || "Die Vereinsdaten konnten nicht gespeichert werden."
+      });
+    },
+  });
+
+  // Deactivate club mutation
+  const deactivateClubMutation = useMutation({
+    mutationFn: async (clubId: number) => {
+      return apiRequest(`/api/super-admin/clubs/${clubId}/deactivate`, {
+        method: 'POST',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/clubs'] });
+      setShowDeactivateClub(null);
+      toastService.success({
+        title: "Verein deaktiviert",
+        description: "Der Verein wurde erfolgreich deaktiviert."
+      });
+    },
+    onError: (error: any) => {
+      toastService.error({
+        title: "Fehler beim Deaktivieren",
+        description: error.message || "Der Verein konnte nicht deaktiviert werden."
+      });
+    },
+  });
+
+  // Update user mutation
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest(`/api/super-admin/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/users'] });
+      setShowEditUser(null);
+      toastService.success({
+        title: "Benutzer erfolgreich aktualisiert",
+        description: "Die Benutzerdaten wurden erfolgreich gespeichert."
+      });
+    },
+    onError: (error: any) => {
+      toastService.error({
+        title: "Fehler beim Speichern",
+        description: error.message || "Die Benutzerdaten konnten nicht gespeichert werden."
+      });
+    },
+  });
+
+  // Deactivate user mutation
+  const deactivateUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return apiRequest(`/api/super-admin/users/${userId}/deactivate`, {
+        method: 'POST',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/users'] });
+      setShowDeactivateUser(null);
+      toastService.success({
+        title: "Benutzer deaktiviert",
+        description: "Der Benutzer wurde erfolgreich deaktiviert."
+      });
+    },
+    onError: (error: any) => {
+      toastService.error({
+        title: "Fehler beim Deaktivieren",
+        description: error.message || "Der Benutzer konnte nicht deaktiviert werden."
       });
     },
   });
@@ -241,7 +349,12 @@ export default function SuperAdminPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <ClubsTable clubs={allClubs as any[]} />
+              <ClubsTable 
+                clubs={allClubs as any[]} 
+                onViewDetails={setShowClubDetails}
+                onEdit={setShowEditClub}
+                onDeactivate={setShowDeactivateClub}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -281,7 +394,12 @@ export default function SuperAdminPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <UsersTable users={allUsers as any[]} />
+              <UsersTable 
+                users={allUsers as any[]} 
+                onViewDetails={setShowUserDetails}
+                onEdit={setShowEditUser}
+                onDeactivate={setShowDeactivateUser}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -327,6 +445,68 @@ export default function SuperAdminPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Club Details Modal */}
+      {showClubDetails && (
+        <ClubDetailsModal 
+          club={showClubDetails} 
+          open={!!showClubDetails} 
+          onClose={() => setShowClubDetails(null)} 
+        />
+      )}
+
+      {/* Edit Club Modal */}
+      {showEditClub && (
+        <EditClubModal 
+          club={showEditClub} 
+          open={!!showEditClub} 
+          onClose={() => setShowEditClub(null)}
+          onSave={(data) => updateClubMutation.mutate({ id: showEditClub.id, data })}
+          isLoading={updateClubMutation.isPending}
+        />
+      )}
+
+      {/* Deactivate Club Dialog */}
+      {showDeactivateClub && (
+        <DeactivateClubDialog 
+          club={showDeactivateClub} 
+          open={!!showDeactivateClub} 
+          onClose={() => setShowDeactivateClub(null)}
+          onConfirm={() => deactivateClubMutation.mutate(showDeactivateClub.id)}
+          isLoading={deactivateClubMutation.isPending}
+        />
+      )}
+
+      {/* User Details Modal */}
+      {showUserDetails && (
+        <UserDetailsModal 
+          user={showUserDetails} 
+          open={!!showUserDetails} 
+          onClose={() => setShowUserDetails(null)} 
+        />
+      )}
+
+      {/* Edit User Modal */}
+      {showEditUser && (
+        <EditUserModal 
+          user={showEditUser} 
+          open={!!showEditUser} 
+          onClose={() => setShowEditUser(null)}
+          onSave={(data) => updateUserMutation.mutate({ id: showEditUser.id, data })}
+          isLoading={updateUserMutation.isPending}
+        />
+      )}
+
+      {/* Deactivate User Dialog */}
+      {showDeactivateUser && (
+        <DeactivateUserDialog 
+          user={showDeactivateUser} 
+          open={!!showDeactivateUser} 
+          onClose={() => setShowDeactivateUser(null)}
+          onConfirm={() => deactivateUserMutation.mutate(showDeactivateUser.id)}
+          isLoading={deactivateUserMutation.isPending}
+        />
+      )}
     </div>
   );
 }
@@ -591,7 +771,12 @@ function CreateAdminForm({ clubs, onSubmit, isLoading }: {
 }
 
 // Clubs Table Component
-function ClubsTable({ clubs }: { clubs: any[] }) {
+function ClubsTable({ clubs, onViewDetails, onEdit, onDeactivate }: { 
+  clubs: any[]; 
+  onViewDetails: (club: any) => void;
+  onEdit: (club: any) => void;
+  onDeactivate: (club: any) => void;
+}) {
   const { data: clubSubscriptions } = useQuery({
     queryKey: ['/api/super-admin/club-subscriptions'],
     enabled: !!clubs?.length,
@@ -659,15 +844,15 @@ function ClubsTable({ clubs }: { clubs: any[] }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowClubDetails(club)}>
                       <Eye className="h-4 w-4 mr-2" />
                       Details anzeigen
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowEditClub(club)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Bearbeiten
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
+                    <DropdownMenuItem className="text-red-600" onClick={() => setShowDeactivateClub(club)}>
                       <Trash2 className="h-4 w-4 mr-2" />
                       Deaktivieren
                     </DropdownMenuItem>
@@ -683,7 +868,12 @@ function ClubsTable({ clubs }: { clubs: any[] }) {
 }
 
 // Users Table Component
-function UsersTable({ users }: { users: any[] }) {
+function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: { 
+  users: any[]; 
+  onViewDetails: (user: any) => void;
+  onEdit: (user: any) => void;
+  onDeactivate: (user: any) => void;
+}) {
   if (!users?.length) {
     return (
       <div className="text-center py-8">

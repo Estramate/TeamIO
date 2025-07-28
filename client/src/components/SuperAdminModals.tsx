@@ -391,7 +391,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
   const [formData, setFormData] = useState({
     email: user?.email || '',
     isActive: user?.isActive ?? true,
-    clubMemberships: user?.clubs || [],
+    clubMemberships: user?.memberships || user?.clubs || [],
   });
 
   const [allClubs, setAllClubs] = useState<any[]>([]);
@@ -400,6 +400,17 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
     role: 'member',
     status: 'active'
   });
+
+  // Reset form when user changes
+  useEffect(() => {
+    if (user && open) {
+      setFormData({
+        email: user.email || '',
+        isActive: user.isActive ?? true,
+        clubMemberships: user.memberships || user.clubs || [],
+      });
+    }
+  }, [user, open]);
 
   // Fetch all clubs for the dropdown
   useEffect(() => {

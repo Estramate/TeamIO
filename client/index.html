@@ -15,7 +15,7 @@
     <meta http-equiv="Permissions-Policy" content="ambient-light-sensor=(), battery=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), layout-animations=(), legacy-image-formats=(), navigation-override=(), oversized-images=(), publickey-credentials=(), speaker-selection=(), unoptimized-images=(), unsized-media=(), pointer-lock=()" />
     
     <script>
-      // Override Replit's console spam by intercepting and filtering messages
+      // Complete Replit console spam suppression and API override
       if (typeof window !== 'undefined') {
         const originalWarn = console.warn;
         const originalError = console.error;
@@ -36,6 +36,26 @@
           }
           originalError.apply(console, args);
         };
+        
+        // Override navigator.permissions to prevent feature detection errors
+        if (navigator.permissions && navigator.permissions.query) {
+          const originalQuery = navigator.permissions.query;
+          navigator.permissions.query = function(descriptor) {
+            const suppressedFeatures = [
+              'ambient-light-sensor', 'battery', 'execution-while-not-rendered',
+              'execution-while-out-of-viewport', 'layout-animations', 'legacy-image-formats',
+              'navigation-override', 'oversized-images', 'publickey-credentials', 'speaker-selection'
+            ];
+            
+            if (suppressedFeatures.includes(descriptor.name)) {
+              return Promise.resolve({ state: 'denied' });
+            }
+            
+            return originalQuery.call(this, descriptor).catch(() => 
+              Promise.resolve({ state: 'denied' })
+            );
+          };
+        }
       }
     </script>
     <script>

@@ -6,7 +6,13 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 **Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. All critical bugs resolved and application running smoothly.
 
-## Recent Changes (Latest Session - July 28, 2025) - SUPER ADMIN MODALS UPDATED
+## Recent Changes
+- **2025-07-28**: Fixed critical user role assignment - User correctly set as Club Administrator (not Super Administrator)
+  - Removed isSuperAdmin flag from user account - user is now properly identified as Club Administrator for both clubs
+  - User has club-administrator role in both SV Oberglan 1975 and Testverein
+  - System now correctly shows club-specific access instead of platform-wide Super Admin access
+
+## Previous Changes (Latest Session - July 28, 2025) - SUPER ADMIN MODALS UPDATED
 
 **CRITICAL ADMINISTRATOR ROLE FIX (July 28, 2025 - 12:06):**
 - ✅ **Club-Administrator Rolle korrigiert**: 'club_admin' → 'club-administrator' in Super-Admin Erstellung

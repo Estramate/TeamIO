@@ -2164,20 +2164,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllClubSubscriptions(): Promise<any[]> {
-    // Return mock subscription data since subscription tables are not implemented
-    const clubs = await this.getAllClubs();
-    return clubs.map((club, index) => ({
-      clubId: club.id,
-      planType: index === 0 ? 'enterprise' : 'free', // Mock: First club has enterprise, others free
-      status: 'active',
-      billingInterval: 'monthly',
-      monthlyPrice: index === 0 ? 99 : 0,
-      yearlyPrice: index === 0 ? 990 : 0,
-      displayName: index === 0 ? 'Enterprise' : 'Free',
-      maxMembers: index === 0 ? null : 50,
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    }));
+    // Get real subscription data from database
+    return await db
+      .select({
+        clubId: clubSubscriptions.clubId,
+        planType: clubSubscriptions.planType,
+        status: clubSubscriptions.status,
+        billingInterval: clubSubscriptions.billingInterval,
+        currentPeriodStart: clubSubscriptions.currentPeriodStart,
+        currentPeriodEnd: clubSubscriptions.currentPeriodEnd
+      })
+      .from(clubSubscriptions)
+      .where(eq(clubSubscriptions.status, 'active'));
   }
 }
 

@@ -39,6 +39,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }>({
     queryKey: ['/api/subscriptions/club', selectedClub?.id],
     enabled: !!selectedClub?.id,
+    retry: false, // Don't retry on 403 errors
+    throwOnError: false, // Don't throw errors for non-admin users
   });
 
   // Update subscription manager when data changes
@@ -55,12 +57,16 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         } : undefined
       );
       setSubscriptionManager(manager);
+    } else if (error && (error as any)?.status === 403) {
+      // User doesn't have admin rights - use default free plan
+      const manager = createSubscriptionManager(null, null);
+      setSubscriptionManager(manager);
     } else {
       // Default to free plan if no subscription
       const manager = createSubscriptionManager(null, null);
       setSubscriptionManager(manager);
     }
-  }, [subscriptionData]);
+  }, [subscriptionData, error]);
 
   const hasFeature = (feature: FeatureName): boolean => {
     return subscriptionManager?.hasFeature(feature) || false;

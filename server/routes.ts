@@ -313,7 +313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Try Replit authentication first
       if (req.isAuthenticated && req.isAuthenticated() && req.user && req.user.claims) {
-        const userId = req.user.id;
+        const userId = req.user.claims.sub;
         console.log('Using Replit auth, user ID:', userId);
         const user = await storage.getUser(userId);
         if (user) {

@@ -189,11 +189,12 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const session = req.session as any;
   if (session?.user?.id) {
     try {
-      const { storage } = await import('./storage');
+      const storage = (await import('./storage')).default;
       const sessionUser = await storage.getUser(session.user.id);
       if (sessionUser && sessionUser.authProvider === 'email') {
         // Add user to request for compatibility with existing code
         (req as any).user = {
+          id: sessionUser.id,
           claims: {
             sub: sessionUser.id,
             email: sessionUser.email,

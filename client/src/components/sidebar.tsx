@@ -459,8 +459,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               })}
             </div>
 
-            {/* Admin Section - Only for club administrators */}
-            {(userMembership as any)?.roleName === 'club-administrator' && (
+            {/* Admin Section - For club administrators AND obmann */}
+            {((userMembership as any)?.roleName === 'club-administrator' || (userMembership as any)?.roleName === 'obmann') && (
               <div className={cn("mt-6", collapsed ? "px-2" : "px-3")}>
                 <div className="border-t border-border pt-4">
                   {!collapsed && (

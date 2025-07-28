@@ -2484,6 +2484,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(announcements);
   }));
 
+  // ====== LIVE CHAT SYSTEM ======
+  
+  // Get chat rooms for user
+  app.get('/api/clubs/:clubId/chat/rooms', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const rooms = await storage.getChatRooms(userId, clubId);
+    res.json(rooms);
+  }));
+
+  // Create new chat room
+  app.post('/api/clubs/:clubId/chat/rooms', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+
+    const roomData = {
+      ...req.body,
+      clubId,
+      createdBy: userId
+    };
+
+    const room = await storage.createChatRoom(roomData);
+    res.status(201).json(room);
+  }));
+
+  // Get messages for chat room
+  app.get('/api/clubs/:clubId/chat/rooms/:roomId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const roomId = parseInt(req.params.roomId);
+    const limit = parseInt(req.query.limit) || 50;
+    
+    if (!clubId || isNaN(clubId) || !roomId || isNaN(roomId)) {
+      throw new ValidationError('Invalid club ID or room ID', 'clubId');
+    }
+    
+    const messages = await storage.getChatMessages(roomId, limit);
+    res.json(messages);
+  }));
+
+  // Send message to chat room
+  app.post('/api/clubs/:clubId/chat/rooms/:roomId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const roomId = parseInt(req.params.roomId);
+    const userId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!clubId || isNaN(clubId) || !roomId || isNaN(roomId)) {
+      throw new ValidationError('Invalid club ID or room ID', 'clubId');
+    }
+
+    const messageData = {
+      ...req.body,
+      roomId,
+      senderId: userId
+    };
+
+    const message = await storage.sendChatMessage(messageData);
+    res.status(201).json(message);
+  }));
+
+  // Mark message as read
+  app.post('/api/clubs/:clubId/chat/messages/:messageId/read', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const messageId = parseInt(req.params.messageId);
+    const userId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!messageId || isNaN(messageId)) {
+      throw new ValidationError('Invalid message ID', 'messageId');
+    }
+
+    await storage.markChatMessageAsRead(messageId, userId);
+    res.json({ success: true });
+  }));
+
+  // Update user activity (heartbeat)
+  app.post('/api/clubs/:clubId/chat/activity', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+
+    await storage.updateUserActivity(userId, clubId, true);
+    res.json({ success: true });
+  }));
+
   // ====== EMAIL INVITATION SYSTEM ======
 
   // Send email invitation

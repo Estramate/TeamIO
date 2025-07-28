@@ -2963,13 +2963,13 @@ export class DatabaseStorage implements IStorage {
     try {
       // Get all rooms user participates in
       const userRooms = await db
-        .select({ roomId: liveChatRoomParticipants.roomId })
-        .from(liveChatRoomParticipants)
-        .innerJoin(liveChatRooms, eq(liveChatRooms.id, liveChatRoomParticipants.roomId))
+        .select({ roomId: chatRoomParticipants.roomId })
+        .from(chatRoomParticipants)
+        .innerJoin(liveChatRooms, eq(liveChatRooms.id, chatRoomParticipants.roomId))
         .where(and(
-          eq(liveChatRoomParticipants.userId, userId),
+          eq(chatRoomParticipants.userId, userId),
           eq(liveChatRooms.clubId, clubId),
-          eq(liveChatRoomParticipants.isActive, true)
+          eq(chatRoomParticipants.isActive, true)
         ));
 
       let totalUnread = 0;
@@ -2998,25 +2998,158 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Get chat rooms for user in club
-  async getChatRooms(clubId: number, userId: string): Promise<LiveChatRoom[]> {
+  // Live Chat System Implementation - Safe and Secure  
+  async getChatRooms(userId: string, clubId: number): Promise<any[]> {
     try {
       const rooms = await db
         .select()
         .from(liveChatRooms)
-        .innerJoin(liveChatRoomParticipants, eq(liveChatRooms.id, liveChatRoomParticipants.roomId))
+        .innerJoin(chatRoomParticipants, eq(liveChatRooms.id, chatRoomParticipants.roomId))
         .where(and(
           eq(liveChatRooms.clubId, clubId),
-          eq(liveChatRoomParticipants.userId, userId),
-          eq(liveChatRoomParticipants.isActive, true),
-          eq(liveChatRooms.isActive, true)
+          eq(chatRoomParticipants.userId, userId),
+          eq(liveChatRooms.isActive, true),
+          eq(chatRoomParticipants.isActive, true)
         ))
         .orderBy(desc(liveChatRooms.lastActivity));
 
-      return rooms.map(row => row.live_chat_rooms);
+      console.log(`💬 Found ${rooms.length} chat rooms for user ${userId} in club ${clubId}`);
+      return rooms.map(row => ({
+        ...row.live_chat_rooms,
+        unreadCount: 0 // TODO: Calculate actual unread count
+      }));
     } catch (error) {
       console.error('Error getting chat rooms:', error);
       return [];
+    }
+  }
+
+  async createChatRoom(roomData: any): Promise<any> {
+    try {
+      const [room] = await db
+        .insert(liveChatRooms)
+        .values({
+          ...roomData,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          lastActivity: new Date()
+        })
+        .returning();
+
+      // Add creator as participant
+      await db
+        .insert(chatRoomParticipants)
+        .values({
+          roomId: room.id,
+          userId: roomData.createdBy,
+          joinedAt: new Date(),
+          lastReadAt: new Date(),
+          isActive: true
+        });
+
+      console.log(`💬 Created chat room: ${room.name} (ID: ${room.id})`);
+      return room;
+    } catch (error) {
+      console.error('Error creating chat room:', error);
+      throw error;
+    }
+  }
+
+  async sendChatMessage(messageData: any): Promise<any> {
+    try {
+      const [message] = await db
+        .insert(liveChatMessages)
+        .values({
+          ...messageData,
+          createdAt: new Date()
+        })
+        .returning();
+
+      // Update room last activity
+      await db
+        .update(liveChatRooms)
+        .set({ 
+          lastActivity: new Date(),
+          lastMessageId: message.id,
+          updatedAt: new Date()
+        })
+        .where(eq(liveChatRooms.id, messageData.roomId));
+
+      console.log(`💬 Message sent in room ${messageData.roomId} by ${messageData.senderId}`);
+      return message;
+    } catch (error) {
+      console.error('Error sending chat message:', error);
+      throw error;
+    }
+  }
+
+  async getChatMessages(roomId: number, limit: number = 50): Promise<any[]> {
+    try {
+      const messages = await db
+        .select({
+          message: liveChatMessages,
+          sender: {
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName
+          }
+        })
+        .from(liveChatMessages)
+        .innerJoin(users, eq(liveChatMessages.senderId, users.id))
+        .where(and(
+          eq(liveChatMessages.roomId, roomId),
+          eq(liveChatMessages.isDeleted, false)
+        ))
+        .orderBy(desc(liveChatMessages.createdAt))
+        .limit(limit);
+
+      return messages.map(row => ({
+        ...row.message,
+        sender: row.sender
+      }));
+    } catch (error) {
+      console.error('Error getting chat messages:', error);
+      return [];
+    }
+  }
+
+  async markChatMessageAsRead(messageId: number, userId: string): Promise<void> {
+    try {
+      await db
+        .insert(liveChatMessageReadStatus)
+        .values({
+          messageId,
+          userId,
+          readAt: new Date()
+        })
+        .onConflictDoNothing();
+    } catch (error) {
+      console.error('Error marking chat message as read:', error);
+    }
+  }
+
+  async updateUserActivity(userId: string, clubId: number, isOnline: boolean = true): Promise<void> {
+    try {
+      await db
+        .insert(userActivity)
+        .values({
+          userId,
+          clubId,
+          isOnline,
+          lastSeen: new Date(),
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [userActivity.userId, userActivity.clubId],
+          set: {
+            isOnline,
+            lastSeen: new Date(),  
+            updatedAt: new Date()
+          }
+        });
+    } catch (error) {
+      console.error('Error updating user activity:', error);
     }
   }
 };

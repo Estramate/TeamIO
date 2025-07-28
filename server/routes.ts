@@ -1875,35 +1875,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Communication routes
   
-  // Message routes
-  app.get('/api/clubs/:clubId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.user?.claims?.sub || req.user?.id;
-    
-    if (!clubId || isNaN(clubId)) {
-      throw new ValidationError('Invalid club ID', 'clubId');
-    }
-    
-    const messages = await storage.getMessages(clubId, userId);
-    logger.info('Messages retrieved', { clubId, userId, count: messages.length, requestId: req.id });
-    res.json(messages);
-  }));
+  // Message routes - DISABLED: Use live chat system instead
+  app.get('/api/clubs/:clubId/messages', isAuthenticated, (req: any, res: any) => {
+    // Return empty array - messages system disabled, use live chat
+    res.json([]);
+  });
 
-  app.get('/api/clubs/:clubId/messages/:messageId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const messageId = parseInt(req.params.messageId);
-    
-    if (!messageId || isNaN(messageId)) {
-      throw new ValidationError('Invalid message ID', 'messageId');
-    }
-    
-    const message = await storage.getMessage(messageId);
-    if (!message) {
-      throw new NotFoundError('Message not found');
-    }
-    
-    logger.info('Message retrieved', { messageId, requestId: req.id });
-    res.json(message);
-  }));
+  app.get('/api/clubs/:clubId/messages/:messageId', isAuthenticated, (req: any, res: any) => {
+    res.status(404).json({ error: { type: 'NotFound', message: 'Messages system disabled. Use live chat.' } });
+  });
 
   app.post('/api/clubs/:clubId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);

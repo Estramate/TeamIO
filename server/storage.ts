@@ -1505,104 +1505,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Communication operations
-  // Message operations
-  async getMessages(clubId: number, userId?: string): Promise<MessageWithRecipients[]> {
-    // Get main messages (not replies) first
-    const messagesData = await db
-      .select({
-        message: messages,
-        sender: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email,
-        },
-      })
-      .from(messages)
-      .innerJoin(users, eq(messages.senderId, users.id))
-      .where(and(
-        eq(messages.clubId, clubId),
-        isNull(messages.deletedAt), // Only non-deleted messages
-        isNull(messages.threadId) // Only main messages, not replies
-      ))
-      .orderBy(desc(messages.createdAt));
-
-    // Get recipients and replies for each message
-    const messagesWithRecipients = await Promise.all(
-      messagesData.map(async (messageData) => {
-        const recipients = await this.getMessageRecipients(messageData.message.id);
-        const replies = await this.getMessageReplies(messageData.message.id);
-        const replyCount = replies.length;
-        
-        return {
-          ...messageData.message,
-          recipients,
-          sender: messageData.sender,
-          replies,
-          replyCount,
-        };
-      })
-    );
-
-    // Filter messages based on user access if userId is provided
-    if (userId) {
-      return messagesWithRecipients.filter(message => 
-        message.senderId === userId || 
-        message.recipients.some(r => 
-          (r.recipientType === 'user' && r.recipientId === userId) ||
-          r.recipientType === 'all'
-        )
-      );
+  // Message operations - use live chat messages instead
+  async getMessages(clubId: number, userId?: string): Promise<any[]> {
+    try {
+      // Return empty array for now - using live chat system instead
+      return [];
+    } catch (error) {
+      console.error('Error getting messages:', error);
+      return [];
     }
-
-    return messagesWithRecipients;
   }
 
-  async getMessage(id: number): Promise<MessageWithRecipients | undefined> {
-    const [messageData] = await db
-      .select({
-        message: messages,
-        sender: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email,
-        },
-      })
-      .from(messages)
-      .innerJoin(users, eq(messages.senderId, users.id))
-      .where(and(
-        eq(messages.id, id),
-        isNull(messages.deletedAt)
-      ));
+  
 
-    if (!messageData) return undefined;
-
-    const recipients = await this.getMessageRecipients(id);
-    
-    return {
-      ...messageData.message,
-      recipients,
-      sender: messageData.sender,
-    };
+  async getMessage(id: number): Promise<any | undefined> {
+    return undefined;
   }
 
   async deleteMessage(messageId: number): Promise<void> {
-    // Soft delete by setting deletedAt timestamp
-    await db
-      .update(messages)
-      .set({ deletedAt: new Date() })
-      .where(eq(messages.id, messageId));
-      
-    // Also delete related replies
-    await db
-      .update(messages)
-      .set({ deletedAt: new Date() })
-      .where(eq(messages.threadId, messageId));
+    throw new Error('Messages system disabled');
   }
 
-  async createMessage(messageData: InsertMessage): Promise<Message> {
-    const [message] = await db.insert(messages).values(messageData).returning();
+  async createMessage(messageData: any): Promise<any> {
+    throw new Error('Messages system disabled');
     
     // Create recipient record for sender (so they can mark it as read)
     if (messageData.senderId) {

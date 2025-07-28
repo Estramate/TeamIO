@@ -28,8 +28,15 @@ import {
   Shield,
   Star,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  TrendingUp,
+  FileText,
+  Download,
+  Eye
 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { formatPrice, calculateYearlySavings, formatPlanName, PLAN_COMPARISONS } from "@/lib/pricing";
 
 export default function SubscriptionPage() {
@@ -86,7 +93,12 @@ export default function SubscriptionPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // State management
   const [selectedInterval, setSelectedInterval] = useState<'monthly' | 'yearly'>('monthly');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showUsageStats, setShowUsageStats] = useState(false);
+  const [showBilling, setShowBilling] = useState(false);
+  const [showPlanUpgrade, setShowPlanUpgrade] = useState(false);
 
   // Mutation for upgrading/changing subscription
   const upgradeMutation = useMutation({
@@ -275,11 +287,19 @@ export default function SubscriptionPage() {
                       Plan upgraden
                     </Button>
                   )}
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setShowUsageStats(true)}
+                  >
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Nutzungsstatistik
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setShowBilling(true)}
+                  >
                     <CreditCard className="h-4 w-4 mr-2" />
                     Rechnungen anzeigen
                   </Button>
@@ -579,6 +599,212 @@ export default function SubscriptionPage() {
           </Card>
         </TabsContent>
         </Tabs>
+
+        {/* Usage Statistics Dialog */}
+        <Dialog open={showUsageStats} onOpenChange={setShowUsageStats}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-500" />
+                Nutzungsstatistik - {selectedClub?.name}
+              </DialogTitle>
+              <DialogDescription>
+                Detaillierte Übersicht über Ihre Nutzung und verbleibende Kapazitäten
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              {/* Current Usage Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <Users className="h-8 w-8 mx-auto text-blue-500 mb-2" />
+                      <div className="text-2xl font-bold">{usage?.memberCount || 31}</div>
+                      <div className="text-sm text-muted-foreground">Mitglieder</div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <Shield className="h-8 w-8 mx-auto text-green-500 mb-2" />
+                      <div className="text-2xl font-bold">{usage?.playerCount || 124}</div>
+                      <div className="text-sm text-muted-foreground">Spieler</div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <BarChart3 className="h-8 w-8 mx-auto text-purple-500 mb-2" />
+                      <div className="text-2xl font-bold">{(usage?.memberCount || 31) + (usage?.playerCount || 124)}</div>
+                      <div className="text-sm text-muted-foreground">Verwaltete Benutzer</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Usage Limits */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Plankapazität</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {currentPlanData?.memberLimit ? (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span>Verwaltete Benutzer</span>
+                          <span className="font-mono">
+                            {(usage?.memberCount || 31) + (usage?.playerCount || 124)} / {currentPlanData.memberLimit}
+                          </span>
+                        </div>
+                        <Progress 
+                          value={((usage?.memberCount || 31) + (usage?.playerCount || 124)) / currentPlanData.memberLimit * 100} 
+                          className="h-2"
+                        />
+                        <div className="text-sm text-muted-foreground">
+                          {getRemainingUsers()} freie Plätze verbleibend
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-4">
+                        <Check className="h-8 w-8 mx-auto text-green-500 mb-2" />
+                        <div className="font-medium">Unbegrenzter Zugang</div>
+                        <div className="text-sm text-muted-foreground">Enterprise Plan - keine Benutzerlimits</div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Feature Usage */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Feature-Nutzung</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {features.map((feature) => (
+                      <div key={feature.name} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-2">
+                          {feature.enabled ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <X className="h-4 w-4 text-gray-400" />
+                          )}
+                          <span className="text-sm">{feature.description}</span>
+                        </div>
+                        <Badge variant={feature.enabled ? "default" : "secondary"}>
+                          {feature.enabled ? "Aktiv" : "Nicht verfügbar"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Billing Dialog */}
+        <Dialog open={showBilling} onOpenChange={setShowBilling}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-green-500" />
+                Rechnungen & Abrechnungen
+              </DialogTitle>
+              <DialogDescription>
+                Übersicht über Ihre Subscription-Rechnungen und Zahlungen
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {/* Current Subscription Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Aktuelle Subscription</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Plan:</span>
+                      <span className="font-medium">{formatPlanName(currentPlan)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Status:</span>
+                      <Badge variant={status === 'active' ? 'default' : 'secondary'}>
+                        {status === 'active' ? 'Aktiv' : 'Inaktiv'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Nächste Abrechnung:</span>
+                      <span className="font-medium">
+                        {isEnterprise ? "Dauerhaft kostenlos bis 2099" : nextBillingDate.toLocaleDateString('de-DE')}
+                      </span>
+                    </div>
+                    {!isEnterprise && currentPlanData?.pricing && (
+                      <div className="flex justify-between">
+                        <span>Preis:</span>
+                        <span className="font-medium">
+                          {formatPrice(currentPlanData.pricing.monthly)}/Monat
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Invoice History (Mock data for demo) */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Rechnungshistorie</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isEnterprise ? (
+                    <div className="text-center py-8">
+                      <Crown className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
+                      <h3 className="font-medium text-lg mb-2">Enterprise-Kunde</h3>
+                      <p className="text-muted-foreground">
+                        Als SV Oberglan 1975 haben Sie permanenten kostenlosen Enterprise-Zugang.
+                        Es fallen keine Rechnungen an.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <div className="font-medium">Januar 2025</div>
+                          <div className="text-sm text-muted-foreground">Professional Plan</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-medium">€49,00</div>
+                          <Button variant="ghost" size="sm">
+                            <Download className="h-4 w-4 mr-1" />
+                            PDF
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <div className="font-medium">Dezember 2024</div>
+                          <div className="text-sm text-muted-foreground">Professional Plan</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-medium">€49,00</div>
+                          <Button variant="ghost" size="sm">
+                            <Download className="h-4 w-4 mr-1" />
+                            PDF
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

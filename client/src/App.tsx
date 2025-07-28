@@ -64,6 +64,7 @@ function AuthenticatedApp() {
           <Route path="/users" component={() => <LazyPage component={Users} />} />
           <Route path="/settings" component={() => <LazyPage component={Settings} />} />
           <Route path="/subscription" component={() => <LazyPage component={Subscription} />} />
+          <Route path="/super-admin" component={lazy(() => import("@/pages/SuperAdmin"))} />
 
           <Route component={NotFound} />
         </Switch>

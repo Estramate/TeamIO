@@ -2102,6 +2102,52 @@ export class DatabaseStorage implements IStorage {
     const [newMembership] = await db.insert(clubMemberships).values(membership).returning();
     return newMembership;
   }
+
+  // Super Admin methods for platform management
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(usersTable);
+  }
+
+  async getAllClubs(): Promise<Club[]> {
+    return await db.select().from(clubsTable);
+  }
+
+  async getUserClubMemberships(userId: string): Promise<ClubMembership[]> {
+    return await db.select().from(clubMembershipsTable).where(eq(clubMembershipsTable.userId, userId));
+  }
+
+  async createClub(clubData: any): Promise<Club> {
+    const [newClub] = await db.insert(clubsTable).values({
+      name: clubData.name,
+      description: clubData.description,
+      address: clubData.address,
+      phone: clubData.phone,
+      email: clubData.email,
+      website: clubData.website,
+      primaryColor: clubData.primaryColor,
+      secondaryColor: clubData.secondaryColor,
+      accentColor: clubData.accentColor,
+      settings: clubData.settings,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).returning();
+    return newClub;
+  }
+
+  async createUser(userData: any): Promise<User> {
+    const [newUser] = await db.insert(usersTable).values({
+      id: userData.id,
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      authProvider: userData.authProvider,
+      hasCompletedOnboarding: userData.hasCompletedOnboarding,
+      isActive: userData.isActive,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).returning();
+    return newUser;
+  }
 }
 
 export const storage = new DatabaseStorage();

@@ -2312,6 +2312,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ====== SUBSCRIPTION ROUTES ======
   app.use('/api/subscriptions', subscriptionRoutes);
+  
+  // Super admin routes
+  const superAdminRoutes = (await import("./routes/super-admin")).default;
+  app.use('/api/super-admin', superAdminRoutes);
 
   const httpServer = createServer(app);
   

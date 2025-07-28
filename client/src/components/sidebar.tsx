@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SuperAdminBadge } from "@/components/SuperAdminBadge";
+import { SuperAdminNavigation } from "@/components/SuperAdminNavigation";
 
 interface SidebarProps {
   open: boolean;
@@ -52,6 +53,10 @@ const adminNavigation = [
   { name: "Benutzer", href: "/users", icon: UserCog },
   { name: "Subscription", href: "/subscription", icon: Crown },
   { name: "Einstellungen", href: "/settings", icon: Settings },
+];
+
+const superAdminNavigation = [
+  { name: "Super Admin", href: "/super-admin", icon: Crown },
 ];
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
@@ -351,6 +356,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Super Admin Navigation */}
+            {currentUser && (
+              <SuperAdminNavigation 
+                navigation={superAdminNavigation}
+                location={location}
+                navigate={navigate}
+                onClose={onClose}
+                collapsed={collapsed}
+              />
             )}
           </nav>
 

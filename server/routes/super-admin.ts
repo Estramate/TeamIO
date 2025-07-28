@@ -72,7 +72,9 @@ router.post("/clubs",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
+      console.log("Received club creation request:", JSON.stringify(req.body, null, 2));
       const validatedData = createClubSchema.parse(req.body);
+      console.log("Validation successful:", JSON.stringify(validatedData, null, 2));
       const { storage } = await import("../storage");
       
       // Create the club

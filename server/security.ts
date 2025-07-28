@@ -35,10 +35,10 @@ export const setupSecurity = (app: Express) => {
     crossOriginEmbedderPolicy: false, // Disable for Vite compatibility
   }));
 
-  // Rate limiting - more lenient in development
+  // Rate limiting - production-friendly limits for club switching
   const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: isDevelopment ? 1000 : 100, // Much higher limit in dev for testing
+    max: isDevelopment ? 1000 : 500, // Higher limit for production to handle club switching
     message: {
       error: {
         type: 'RateLimitError',
@@ -49,6 +49,14 @@ export const setupSecurity = (app: Express) => {
     },
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => {
+      // Skip rate limiting for health checks and authenticated club data endpoints
+      return req.path === '/health' || 
+             req.path === '/api/health' ||
+             req.path.includes('/api/clubs') && req.method === 'GET' ||
+             req.path.includes('/api/subscriptions') && req.method === 'GET' ||
+             req.path.includes('/api/user/memberships') && req.method === 'GET';
+    },
     handler: (req, res) => {
       logger.warn('Rate limit exceeded', {
         ip: req.ip,
@@ -66,10 +74,10 @@ export const setupSecurity = (app: Express) => {
     },
   });
 
-  // Stricter rate limiting for auth endpoints - more lenient in development
+  // Auth rate limiting - production-friendly for frequent auth checks
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: isDevelopment ? 100 : 10, // Higher limit in dev for testing
+    max: isDevelopment ? 100 : 50, // Higher limit for production auth checks
     message: {
       error: {
         type: 'AuthRateLimitError',

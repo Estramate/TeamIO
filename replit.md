@@ -7,6 +7,12 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 **Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. Dual-admin-role system (club-administrator & obmann) with unified permissions across all backend routes and frontend interfaces. All critical bugs resolved and application running smoothly.
 
 ## Recent Changes
+- **2025-07-28**: RATE-LIMIT-PROBLEM IN PRODUKTION BEHOBEN - Produktionsfreundliche Limits für Vereinswechsel
+  - **Rate-Limits erhöht**: General API von 100→500 Requests/15min, Auth API von 10→50 Requests/15min
+  - **Skip-Funktion implementiert**: Club-Daten-Endpunkte (GET) von Rate-Limiting ausgenommen
+  - **JSX-Syntax-Fehler behoben**: Teams.tsx mismatched closing tags repariert, Build erfolgreich
+  - **Deployment-bereit**: Alle Syntax-Fehler behoben, Rate-Limits produktionstauglich konfiguriert
+
 - **2025-07-28**: DUAL-ADMIN-BERECHTIGUNGSSYSTEM VOLLSTÄNDIG IMPLEMENTIERT - Obmann & Club-Administrator haben identische Berechtingungen
   - **Backend-Berechtigungen vereinheitlicht**: Alle API-Routen akzeptieren ['club-administrator', 'obmann'] als Admin-Rollen
   - **Frontend Sidebar-Berechtigungen repariert**: Administration-Bereich für beide Rollen sichtbar beim Club-Wechsel

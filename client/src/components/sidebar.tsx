@@ -37,6 +37,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Badge } from "@/components/ui/badge";
 import { SuperAdminBadge } from "@/components/SuperAdminBadge";
 import { SuperAdminNavigation } from "@/components/SuperAdminNavigation";
+import { useRoles, getRoleDisplayName } from "@/hooks/use-roles";
 import type { FeatureName } from "@shared/lib/subscription-manager";
 
 interface SidebarProps {
@@ -74,6 +75,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useTheme();
   const { hasFeature, subscriptionManager } = useSubscription();
   const [collapsed, setCollapsed] = useState(false);
+  
+  // Load roles for German display names
+  const { data: roles } = useRoles();
   
   // Debug: Log collapsed state
   console.log('Sidebar collapsed state:', collapsed);
@@ -610,9 +614,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         (currentUser as any)?.email || 'Benutzer'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {(userMembership as any)?.role === 'club-administrator' ? 'Vereinsadministrator' : 
-                       (userMembership as any)?.role === 'member' ? 'Mitglied' :
-                       (userMembership as any)?.role === 'coach' ? 'Trainer' : 'Benutzer'}
+                      {roles && (userMembership as any)?.role 
+                        ? getRoleDisplayName((userMembership as any).role, roles)
+                        : 'Benutzer'}
                     </p>
                   </div>
                 </TooltipContent>
@@ -629,9 +633,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       (currentUser as any)?.email || 'Benutzer'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {(userMembership as any)?.role === 'club-administrator' ? 'Vereinsadministrator' : 
-                     (userMembership as any)?.role === 'member' ? 'Mitglied' :
-                     (userMembership as any)?.role === 'coach' ? 'Trainer' : 'Benutzer'}
+                    {roles && (userMembership as any)?.role 
+                      ? getRoleDisplayName((userMembership as any).role, roles)
+                      : 'Benutzer'}
                   </p>
                 </div>
                 <Button

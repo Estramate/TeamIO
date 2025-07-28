@@ -204,16 +204,22 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
 
           {/* Monthly Revenue with real data */}
           <div>
-            <h3 className="text-lg font-medium mb-3">Monatlicher Umsatz</h3>
+            <h3 className="text-lg font-medium mb-3">Umsatz-Übersicht</h3>
             {analytics && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-green-50 rounded-lg">
                   <div className="text-2xl font-bold text-green-600">€{analytics.revenue?.current || 0}</div>
-                  <div className="text-sm text-green-600">Aktueller Monat</div>
+                  <div className="text-sm text-green-600">Monatliches Einkommen</div>
+                  <div className="text-xs text-green-500 mt-1">
+                    Monatlich + Jährlich (anteilig)
+                  </div>
                 </div>
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <div className="text-2xl font-bold text-blue-600">€{analytics.revenue?.previous || 0}</div>
                   <div className="text-sm text-blue-600">Vorheriger Monat</div>
+                  <div className="text-xs text-blue-500 mt-1">
+                    Ohne unbegrenzte Pläne
+                  </div>
                 </div>
               </div>
             )}

@@ -307,17 +307,33 @@ router.get("/subscription-analytics",
           enterprise: 99
         };
         
-        // Skip revenue calculation for unlimited Enterprise subscriptions (year 2099+)
-        if (sub.status === 'active' && monthlyPrices[planType as keyof typeof monthlyPrices]) {
-          // Check if subscription has unlimited end date (Enterprise freebies)
+        if (sub.status === 'active') {
+          // Check if subscription has unlimited end date (unbegrenzt = year 2099+)
           const endDate = new Date(sub.currentPeriodEnd || '2025-01-01');
           if (endDate.getFullYear() > 2030) {
-            console.log(`🚫 Skipping revenue for club ${sub.clubId} - Unlimited Enterprise (ends ${endDate.getFullYear()})`);
-            return; // Skip this subscription in revenue calculation
+            console.log(`🚫 Skipping revenue for club ${sub.clubId} - Unlimited subscription (ends ${endDate.getFullYear()})`);
+            return; // Skip unlimited subscriptions (no payment required)
           }
           
-          console.log(`💰 Adding revenue for club ${sub.clubId}: €${monthlyPrices[planType as keyof typeof monthlyPrices]}`);
-          totalRevenue += monthlyPrices[planType as keyof typeof monthlyPrices];
+          // Calculate revenue based on billing interval (monthly vs yearly)
+          let revenue = 0;
+          if (sub.billingInterval === 'monthly' && monthlyPrices[planType as keyof typeof monthlyPrices]) {
+            revenue = monthlyPrices[planType as keyof typeof monthlyPrices];
+          } else if (sub.billingInterval === 'yearly') {
+            // Convert yearly price to monthly equivalent for consistent comparison
+            const yearlyPrices = {
+              free: 0,
+              starter: 190, // €19 * 10 months (2 months free)
+              professional: 490, // €49 * 10 months
+              enterprise: 990 // €99 * 10 months
+            };
+            revenue = Math.round((yearlyPrices[planType as keyof typeof yearlyPrices] || 0) / 12);
+          }
+          
+          if (revenue > 0) {
+            console.log(`💰 Adding revenue for club ${sub.clubId}: €${revenue} (${sub.billingInterval} ${planType})`);
+            totalRevenue += revenue;
+          }
         }
       });
       

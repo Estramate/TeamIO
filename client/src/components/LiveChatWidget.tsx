@@ -186,14 +186,14 @@ export function LiveChatWidget() {
     });
   };
 
-  const filteredRooms = chatRooms.filter(room =>
+  const filteredRooms = (chatRooms || []).filter(room =>
     room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    room.participants.some(p => 
+    (room.participants || []).some(p => 
       getDisplayName(p).toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
-  const totalUnreadCount = chatRooms.reduce((sum, room) => sum + room.unreadCount, 0);
+  const totalUnreadCount = (chatRooms || []).reduce((sum, room) => sum + room.unreadCount, 0);
 
   if (!isOpen) {
     return (
@@ -228,7 +228,7 @@ export function LiveChatWidget() {
               </CardTitle>
               {selectedRoom && selectedRoom.type === 'direct' && (
                 <div className="flex items-center space-x-1">
-                  {selectedRoom.participants
+                  {(selectedRoom.participants || [])
                     .filter(p => p.id !== user?.id)
                     .map(participant => (
                       <div key={participant.id} className="flex items-center">
@@ -310,7 +310,7 @@ export function LiveChatWidget() {
                                    room.name.charAt(0).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
-                              {room.type === 'direct' && room.participants
+                              {room.type === 'direct' && (room.participants || [])
                                 .filter(p => p.id !== user?.id)
                                 .some(p => onlineUsers.includes(p.id)) && (
                                 <Circle className="absolute -bottom-1 -right-1 w-3 h-3 text-green-500 fill-current bg-white rounded-full" />

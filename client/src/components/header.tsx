@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DataSyncIndicatorCompact } from "@/components/DataSyncIndicator";
 import { NotificationCenter } from "@/components/NotificationCenter";
-import { LiveChatIndicator } from "@/components/LiveChat";
+
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -86,8 +86,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
             {/* Real-time Data Sync Indicator */}
             <DataSyncIndicatorCompact className="flex" />
             
-            {/* Live Chat Indicator */}
-            <LiveChatIndicator />
+
             
             <div className="relative">
               <DropdownMenu>

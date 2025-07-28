@@ -18,7 +18,7 @@ import { clubs } from "./core";
 import { members, teamMemberships } from "./members";
 import { teams } from "./teams";
 import { facilities, bookings } from "./facilities";
-import { finances } from "./finances";
+import { finances, memberFees, trainingFees } from "./finances";
 import { messages, announcements, notifications } from "./communication";
 
 // Enhanced club relations to include all entities
@@ -29,7 +29,8 @@ export const clubsRelationsEnhanced = relations(clubs, ({ many }) => ({
   facilities: many(facilities),
   bookings: many(bookings),
   finances: many(finances),
-  // memberFees and trainingFees removed - tables deleted
+  memberFees: many(memberFees),
+  trainingFees: many(trainingFees),
   messages: many(messages),
   announcements: many(announcements),
   notifications: many(notifications),
@@ -44,7 +45,7 @@ export const membersRelationsEnhanced = relations(members, ({ one, many }) => ({
   teamMemberships: many(teamMemberships),
   bookings: many(bookings),
   finances: many(finances),
-  // memberFees removed - table deleted
+  memberFees: many(memberFees),
 }));
 
 // Enhanced team relations

@@ -11,6 +11,8 @@ import {
   facilities,
   bookings,
   finances,
+  memberFees,
+  trainingFees,
   messages,
   messageRecipients,
   announcements,
@@ -39,7 +41,10 @@ import {
   type InsertBooking,
   type Finance,
   type InsertFinance,
-  // NOTE: PlayerStats, MemberFee, TrainingFee types removed - tables deleted
+  type MemberFee,
+  type InsertMemberFee,
+  type TrainingFee,
+  type InsertTrainingFee,
   type Message,
   type InsertMessage,
   type MessageRecipient,
@@ -964,21 +969,73 @@ export class DatabaseStorage implements IStorage {
     return updatedFinance;
   }
 
-  // Member fees operations (corrected)
-
-
-
-
-  // Training fees operations (corrected)
-
-
-
-
   async deleteFinance(id: number): Promise<void> {
     await db.delete(finances).where(eq(finances.id, id));
   }
 
+  // Member fees operations
+  async getMemberFees(clubId: number): Promise<MemberFee[]> {
+    return await db
+      .select()
+      .from(memberFees)
+      .where(eq(memberFees.clubId, clubId))
+      .orderBy(desc(memberFees.createdAt));
+  }
 
+  async getMemberFee(id: number): Promise<MemberFee | undefined> {
+    const [memberFee] = await db.select().from(memberFees).where(eq(memberFees.id, id));
+    return memberFee;
+  }
+
+  async createMemberFee(data: InsertMemberFee): Promise<MemberFee> {
+    const [memberFee] = await db.insert(memberFees).values(data).returning();
+    return memberFee;
+  }
+
+  async updateMemberFee(id: number, data: Partial<InsertMemberFee>): Promise<MemberFee> {
+    const [memberFee] = await db
+      .update(memberFees)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(memberFees.id, id))
+      .returning();
+    return memberFee;
+  }
+
+  async deleteMemberFee(id: number): Promise<void> {
+    await db.delete(memberFees).where(eq(memberFees.id, id));
+  }
+
+  // Training fees operations
+  async getTrainingFees(clubId: number): Promise<TrainingFee[]> {
+    return await db
+      .select()
+      .from(trainingFees)
+      .where(eq(trainingFees.clubId, clubId))
+      .orderBy(desc(trainingFees.createdAt));
+  }
+
+  async getTrainingFee(id: number): Promise<TrainingFee | undefined> {
+    const [trainingFee] = await db.select().from(trainingFees).where(eq(trainingFees.id, id));
+    return trainingFee;
+  }
+
+  async createTrainingFee(data: InsertTrainingFee): Promise<TrainingFee> {
+    const [trainingFee] = await db.insert(trainingFees).values(data).returning();
+    return trainingFee;
+  }
+
+  async updateTrainingFee(id: number, data: Partial<InsertTrainingFee>): Promise<TrainingFee> {
+    const [trainingFee] = await db
+      .update(trainingFees)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(trainingFees.id, id))
+      .returning();
+    return trainingFee;
+  }
+
+  async deleteTrainingFee(id: number): Promise<void> {
+    await db.delete(trainingFees).where(eq(trainingFees.id, id));
+  }
 
   async getClubActivityLogs(clubId: number): Promise<any[]> {
     return await db

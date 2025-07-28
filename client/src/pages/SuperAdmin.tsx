@@ -334,9 +334,9 @@ export default function SuperAdminPage() {
             <CardContent>
               <ClubsTable 
                 clubs={allClubs as any[]}
-                onViewDetails={setShowClubDetails}
-                onEdit={setShowEditClub}
-                onDeactivate={setShowDeactivateClub}
+                onViewDetails={() => {}}
+                onEdit={() => {}}
+                onDeactivate={() => {}}
               />
             </CardContent>
           </Card>
@@ -379,9 +379,9 @@ export default function SuperAdminPage() {
             <CardContent>
               <UsersTable 
                 users={allUsers as any[]} 
-                onViewDetails={setShowUserDetails}
-                onEdit={setShowEditUser}
-                onDeactivate={setShowDeactivateUser}
+                onViewDetails={() => {}}
+                onEdit={() => {}}
+                onDeactivate={() => {}}
               />
             </CardContent>
           </Card>
@@ -429,67 +429,9 @@ export default function SuperAdminPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Club Details Modal */}
-      {showClubDetails && (
-        <ClubDetailsModal 
-          club={showClubDetails} 
-          open={!!showClubDetails} 
-          onClose={() => setShowClubDetails(null)} 
-        />
-      )}
 
-      {/* Edit Club Modal */}
-      {showEditClub && (
-        <EditClubModal 
-          club={showEditClub} 
-          open={!!showEditClub} 
-          onClose={() => setShowEditClub(null)}
-          onSave={(data) => updateClubMutation.mutate({ id: showEditClub.id, data })}
-          isLoading={updateClubMutation.isPending}
-        />
-      )}
 
-      {/* Deactivate Club Dialog */}
-      {showDeactivateClub && (
-        <DeactivateClubDialog 
-          club={showDeactivateClub} 
-          open={!!showDeactivateClub} 
-          onClose={() => setShowDeactivateClub(null)}
-          onConfirm={() => deactivateClubMutation.mutate(showDeactivateClub.id)}
-          isLoading={deactivateClubMutation.isPending}
-        />
-      )}
 
-      {/* User Details Modal */}
-      {showUserDetails && (
-        <UserDetailsModal 
-          user={showUserDetails} 
-          open={!!showUserDetails} 
-          onClose={() => setShowUserDetails(null)} 
-        />
-      )}
-
-      {/* Edit User Modal */}
-      {showEditUser && (
-        <EditUserModal 
-          user={showEditUser} 
-          open={!!showEditUser} 
-          onClose={() => setShowEditUser(null)}
-          onSave={(data) => updateUserMutation.mutate({ id: showEditUser.id, data })}
-          isLoading={updateUserMutation.isPending}
-        />
-      )}
-
-      {/* Deactivate User Dialog */}
-      {showDeactivateUser && (
-        <DeactivateUserDialog 
-          user={showDeactivateUser} 
-          open={!!showDeactivateUser} 
-          onClose={() => setShowDeactivateUser(null)}
-          onConfirm={() => deactivateUserMutation.mutate(showDeactivateUser.id)}
-          isLoading={deactivateUserMutation.isPending}
-        />
-      )}
     </div>
   );
 }
@@ -644,7 +586,7 @@ function CreateClubForm({ onSubmit, isLoading }: { onSubmit: (data: any) => void
       </div>
 
       <div className="flex justify-end gap-3 pt-4">
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" onClick={() => setShowCreateClub(false)}>
           Abbrechen
         </Button>
         <Button type="submit" disabled={isLoading}>
@@ -742,7 +684,7 @@ function CreateAdminForm({ clubs, onSubmit, isLoading }: {
       </div>
 
       <div className="flex justify-end gap-3 pt-4">
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" onClick={() => setShowCreateAdmin(false)}>
           Abbrechen
         </Button>
         <Button type="submit" disabled={isLoading || !formData.clubId}>

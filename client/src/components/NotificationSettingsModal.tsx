@@ -9,7 +9,7 @@ import { useClub } from '@/hooks/use-club';
 import { useAuth } from '@/hooks/useAuth';
 import { apiRequest } from '@/lib/queryClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Monitor, Volume2, TestTube2, X } from 'lucide-react';
+import { Monitor, Volume2, Zap, X } from 'lucide-react';
 
 interface NotificationSettingsModalProps {
   open: boolean;
@@ -261,7 +261,7 @@ export default function NotificationSettingsModal({ open, onClose }: Notificatio
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <TestTube2 className="h-5 w-5" />
+                <Zap className="h-5 w-5" />
                 <div>
                   <CardTitle className="text-base">Test-Benachrichtigungen</CardTitle>
                   <CardDescription className="text-sm">
@@ -279,7 +279,6 @@ export default function NotificationSettingsModal({ open, onClose }: Notificatio
                       <Switch 
                         checked={enabled}
                         onCheckedChange={(checked) => updateTestNotificationType(type as any, checked)}
-                        size="sm"
                       />
                     </div>
                     {enabled && (

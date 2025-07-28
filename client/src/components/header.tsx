@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, Bell, MessageCircle, Megaphone } from "lucide-react";
+import { Menu, Inbox, MessageCircle, Megaphone } from "lucide-react";
 import { usePage } from "@/contexts/PageContext";
 import { useClub } from "@/hooks/use-club";
 import { useQuery } from "@tanstack/react-query";
@@ -93,7 +93,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="relative text-foreground hover:bg-muted">
-                    <Bell className="h-5 w-5" />
+                    <Inbox className="h-5 w-5" />
                     {unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                         {unreadCount > 99 ? '99+' : unreadCount}
@@ -140,7 +140,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                           ) : notification.type === 'message' ? (
                             <MessageCircle className="h-4 w-4 text-blue-500" />
                           ) : (
-                            <Bell className="h-4 w-4 text-gray-500" />
+                            <Inbox className="h-4 w-4 text-gray-500" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">

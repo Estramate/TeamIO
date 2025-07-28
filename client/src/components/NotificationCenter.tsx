@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Settings, Volume2, VolumeX, Monitor, X } from 'lucide-react';
+import { Bell, Sliders, Volume2, VolumeX, Monitor, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -83,7 +83,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
               size="sm"
               onClick={() => setIsAdvancedSettingsOpen(true)}
             >
-              <Settings className="h-4 w-4" />
+              <Sliders className="h-4 w-4" />
             </Button>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />

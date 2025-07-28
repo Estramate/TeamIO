@@ -1885,67 +1885,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(404).json({ error: { type: 'NotFound', message: 'Messages system disabled. Use live chat.' } });
   });
 
-  app.post('/api/clubs/:clubId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.user?.claims?.sub || req.user?.id;
-    
-    console.log('🔍 MESSAGE DEBUG - Request body:', JSON.stringify(req.body, null, 2));
-    console.log('🔍 MESSAGE DEBUG - Club ID:', clubId);
-    console.log('🔍 MESSAGE DEBUG - User ID:', userId);
-    
-    if (!clubId || isNaN(clubId)) {
-      throw new ValidationError('Invalid club ID', 'clubId');
-    }
-    
-    // Add server-side fields before validation
-    const requestDataWithServerFields = {
-      ...req.body,
-      clubId,
-      senderId: userId
-    };
-    
-    try {
-      const validatedData = messageFormSchema.parse(requestDataWithServerFields);
-      console.log('🔍 MESSAGE DEBUG - Validation successful:', JSON.stringify(validatedData, null, 2));
-    } catch (validationError) {
-      console.error('🚨 MESSAGE VALIDATION ERROR:', validationError);
-      throw validationError;
-    }
-    
-    const validatedData = messageFormSchema.parse(requestDataWithServerFields);
-    
-    // Create the message
-    const messageData = {
-      clubId,
-      senderId: userId,
-      subject: validatedData.subject,
-      content: validatedData.content,
-      messageType: validatedData.messageType || 'direct',
-      priority: validatedData.priority || 'normal',
-      conversationId: validatedData.conversationId,
-      threadId: validatedData.threadId,
-      scheduledFor: validatedData.scheduledFor,
-      expiresAt: validatedData.expiresAt,
-      attachments: validatedData.attachments,
-      metadata: validatedData.metadata,
-    };
-    
-    const message = await storage.createMessage(messageData);
-    
-    // Add recipients
-    if (validatedData.recipients && validatedData.recipients.length > 0) {
-      const recipientData = validatedData.recipients.map(recipient => ({
-        messageId: message.id,
-        recipientType: recipient.type,
-        recipientId: recipient.id,
-      }));
-      
-      await storage.addMessageRecipients(recipientData);
-    }
-    
-    logger.info('Message created', { messageId: message.id, clubId, userId, requestId: req.id });
-    res.status(201).json(message);
-  }));
+  app.post('/api/clubs/:clubId/messages', isAuthenticated, (req: any, res: any) => {
+    console.log('📧 Message creation attempted - redirecting to live chat');
+    res.status(501).json({ 
+      error: { 
+        type: 'FeatureDisabled', 
+        message: 'Das klassische Nachrichten-System ist deaktiviert. Bitte verwenden Sie das Live-Chat-System (Chat-Widget unten rechts) für die Kommunikation.' 
+      } 
+    });
+  });
 
   app.patch('/api/clubs/:clubId/messages/:messageId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const messageId = parseInt(req.params.messageId);

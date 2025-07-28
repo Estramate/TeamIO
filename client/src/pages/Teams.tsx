@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useNotificationTriggers } from "@/utils/notificationTriggers";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
@@ -60,6 +61,7 @@ export default function Teams() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { notifyTeamChange, invalidateRelevantCache } = useNotificationTriggers();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
   const permissions = usePermissions();
@@ -152,11 +154,19 @@ export default function Teams() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const teamName = variables.name;
+      
+      // Trigger intelligent notification
+      notifyTeamChange(teamName, 'erstellt');
+      
       invalidateEntityData(queryClient, selectedClub?.id!, 'teams');
+      invalidateRelevantCache('team', selectedClub?.id);
+      
       setTeamModalOpen(false);
       setSelectedTeam(null);
       form.reset();
+      
       toast({
         title: "Erfolg",
         description: "Team wurde erfolgreich erstellt",

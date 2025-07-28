@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNotificationTriggers } from "@/utils/notificationTriggers";
 import { apiRequest } from "@/lib/queryClient";
 import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { z } from "zod";
@@ -46,6 +47,7 @@ interface BookingFormProps {
 export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubId }: BookingFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { notifyBookingChange, invalidateRelevantCache } = useNotificationTriggers();
 
   // Helper function to safely format date for datetime-local input
   const formatDateForInput = (dateValue: any, baseDate?: any): string => {
@@ -137,11 +139,19 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
   // Mutations
   const createBookingMutation = useMutation({
     mutationFn: (bookingData: any) => apiRequest('POST', `/api/clubs/${selectedClubId}/bookings`, bookingData),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      const bookingTitle = variables.title;
+      const facilityName = variables.facilityId; // This would need facility name lookup
+      const isRecurring = (data as any).createdCount && (data as any).createdCount > 1;
+      
+      // Trigger intelligent notification
+      notifyBookingChange(bookingTitle, facilityName, isRecurring ? 'serie-erstellt' : 'erstellt');
+      
       // Invalidate alle booking-relevanten Queries
       invalidateEntityData(queryClient, selectedClubId, 'bookings');
+      invalidateRelevantCache('booking', selectedClubId);
       
-      if ((data as any).createdCount && (data as any).createdCount > 1) {
+      if (isRecurring) {
         toast({
           title: "Wiederkehrende Buchungen erstellt",
           description: `${(data as any).createdCount} Buchungen wurden erfolgreich erstellt.`,

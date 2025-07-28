@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useNotificationTriggers } from "@/utils/notificationTriggers";
 import { apiRequest } from "@/lib/queryClient";
 
 // Types for communication
@@ -135,6 +136,7 @@ export function useWebSocket(clubId: number, userId: string) {
 export function useCommunication(clubId: number, isAuthenticated: boolean = true) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { notifyNewMessage, notifyNewAnnouncement, invalidateRelevantCache } = useNotificationTriggers();
 
   // Messages
   const {
@@ -188,9 +190,16 @@ export function useCommunication(clubId: number, isAuthenticated: boolean = true
   const sendMessageMutation = useMutation({
     mutationFn: (messageData: any) => 
       apiRequest('POST', `/api/clubs/${clubId}/messages`, messageData),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const recipientCount = variables.recipients?.length || 1;
+      
+      // Trigger intelligent notification
+      notifyNewMessage(recipientCount, 'Nachricht');
+      
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'messages'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
+      invalidateRelevantCache('message', clubId);
+      
       toast({
         title: "Erfolgreich",
         description: "Nachricht wurde versendet",
@@ -209,9 +218,17 @@ export function useCommunication(clubId: number, isAuthenticated: boolean = true
   const createAnnouncementMutation = useMutation({
     mutationFn: (announcementData: any) => 
       apiRequest('POST', `/api/clubs/${clubId}/announcements`, announcementData),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const title = variables.title;
+      const priority = variables.priority || 'normal';
+      
+      // Trigger intelligent notification
+      notifyNewAnnouncement(title, priority);
+      
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'announcements'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
+      invalidateRelevantCache('announcement', clubId);
+      
       toast({
         title: "Erfolgreich",
         description: "Ankündigung wurde erstellt",

@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNotificationTriggers } from "@/utils/notificationTriggers";
 import { apiRequest } from "@/lib/queryClient";
 import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -64,6 +65,7 @@ export default function Members() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { notifyNewMember, invalidateRelevantCache } = useNotificationTriggers();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
   
@@ -140,12 +142,21 @@ export default function Members() {
     mutationFn: async (memberData: MemberFormData) => {
       await apiRequest("POST", `/api/clubs/${selectedClub?.id}/members`, memberData);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const memberName = `${variables.firstName} ${variables.lastName}`;
+      
+      // Trigger intelligent notification
+      notifyNewMember(memberName);
+      
       toast({
         title: "Erfolg",
         description: "Mitglied wurde erfolgreich erstellt",
       });
+      
+      // Smart cache invalidation
+      invalidateRelevantCache('member', selectedClub?.id);
       invalidateEntityData(queryClient, selectedClub?.id!, 'members');
+      
       setMemberModalOpen(false);
       form.reset();
       setSelectedMember(null);
@@ -205,13 +216,22 @@ export default function Members() {
         }
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const memberName = `${variables.firstName} ${variables.lastName}`;
+      
+      // Trigger notification for membership update
+      notifyNewMember(memberName, 'aktualisiert');
+      
       toast({
         title: "Erfolg",
         description: "Mitglied wurde erfolgreich aktualisiert",
       });
+      
+      // Smart cache invalidation
+      invalidateRelevantCache('member', selectedClub?.id);
       invalidateEntityData(queryClient, selectedClub?.id!, 'members');
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'] });
+      
       setMemberModalOpen(false);
       form.reset();
       setSelectedMember(null);

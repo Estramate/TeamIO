@@ -6,6 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 
 import { useToast } from "@/hooks/use-toast";
+import { useNotificationTriggers } from "@/utils/notificationTriggers";
 import { toastService } from "@/lib/toast-service";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
@@ -83,6 +84,7 @@ export default function Communication() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { notifyNewMessage, notifyNewAnnouncement, invalidateRelevantCache } = useNotificationTriggers();
   const queryClient = useQueryClient();
   
   // Store user info globally for optimistic updates

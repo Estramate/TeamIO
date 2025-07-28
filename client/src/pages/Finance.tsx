@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useNotificationTriggers } from "@/utils/notificationTriggers";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
@@ -169,6 +170,7 @@ export default function Finance() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
+  const { notifyFinanceChange, invalidateRelevantCache } = useNotificationTriggers();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
 
@@ -340,8 +342,16 @@ export default function Finance() {
   // Mutations
   const createFinanceMutation = useMutation({
     mutationFn: (data: any) => apiRequest('POST', `/api/clubs/${selectedClub?.id}/finances`, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const transactionType = variables.type === 'income' ? 'Einnahme' : 'Ausgabe';
+      const amount = parseFloat(variables.amount);
+      
+      // Trigger intelligent notification
+      notifyFinanceChange(transactionType, amount, 'erstellt');
+      
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'finances'] });
+      invalidateRelevantCache('finance', selectedClub?.id);
+      
       setIsCreateDialogOpen(false);
       financeForm.reset({
         type: 'income' as const,
@@ -361,6 +371,7 @@ export default function Finance() {
         playerId: '',
         teamId: '',
       });
+      
       toast({ title: "Finanztransaktion erstellt", description: "Die Transaktion wurde erfolgreich hinzugefügt." });
     },
     onError: (error: any) => {

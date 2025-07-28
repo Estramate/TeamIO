@@ -35,6 +35,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useNotificationTriggers } from '@/utils/notificationTriggers';
 import { apiRequest } from '@/lib/queryClient';
 
 type InviteFormData = z.infer<typeof emailInvitationFormSchema>;
@@ -49,6 +50,7 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { roles, isLoading: rolesLoading } = useRoles();
+  const { notifyUserInvitation, invalidateRelevantCache } = useNotificationTriggers();
 
   const form = useForm<InviteFormData>({
     resolver: zodResolver(emailInvitationFormSchema),
@@ -63,16 +65,22 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
     mutationFn: async (data: InviteFormData) => {
       return await apiRequest('POST', `/api/clubs/${clubId}/invitations/send`, data);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const roleDisplayName = roles?.find(r => r.id === variables.roleId)?.displayName || 'Mitglied';
+      
+      // Trigger intelligent notification
+      notifyUserInvitation(variables.email, roleDisplayName);
+      
       toast({
         title: '✅ Einladung gesendet',
         description: 'Die E-Mail-Einladung wurde erfolgreich verschickt.',
       });
       form.reset();
       setOpen(false);
-      // Invalidate queries to refresh data
+      
+      // Smart cache invalidation
+      invalidateRelevantCache('member', clubId);
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${clubId}/invitations`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${clubId}/members`] });
     },
     onError: (error: any) => {
       const errorMessage = error.message || 'Fehler beim Senden der Einladung';

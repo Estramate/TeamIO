@@ -483,6 +483,9 @@ export class DatabaseStorage implements IStorage {
     clubId: number,
     updates: Partial<InsertClubMembership>
   ): Promise<ClubMembership> {
+    console.log(`🔍 STORAGE DEBUG: updateClubMembership called for user ${userId}, club ${clubId}`);
+    console.log(`🔍 STORAGE DEBUG: Updates:`, updates);
+    
     const [updatedMembership] = await db
       .update(clubMemberships)
       .set({ ...updates, updatedAt: new Date() })
@@ -493,6 +496,8 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .returning();
+      
+    console.log(`✅ STORAGE DEBUG: Updated membership:`, updatedMembership);
     return updatedMembership;
   }
 

@@ -146,6 +146,8 @@ router.get("/users",
                 clubId: membership.clubId,
                 clubName: club?.name || `Club ${membership.clubId}`,
                 role: role?.name || 'member',
+                roleName: role?.name || 'member',
+                roleDisplayName: role?.displayName || 'Mitglied',
                 status: membership.status,
                 joinedAt: membership.joinedAt,
               };
@@ -817,11 +819,15 @@ router.patch("/users/:userId",
           console.log(`SUPER ADMIN: Added user ${userId} to club ${membership.clubId} as ${memberRole?.name || 'member'}`);
         } else if (membership.isModified) {
           // Update existing membership
-          await storage.updateClubMembership(userId, membership.clubId, {
+          console.log(`🔧 SUPER ADMIN DEBUG: Updating membership for user ${userId} in club ${membership.clubId}`);
+          console.log(`🔧 SUPER ADMIN DEBUG: Setting roleId from ${membership.role} to ${membership.roleId}`);
+          
+          const updateResult = await storage.updateClubMembership(userId, membership.clubId, {
             roleId: membership.roleId,
             status: membership.status,
           });
-          console.log(`SUPER ADMIN: Updated user ${userId} membership in club ${membership.clubId}`);
+          console.log(`✅ SUPER ADMIN: Updated user ${userId} membership in club ${membership.clubId} to role ${membership.roleId}`);
+          console.log(`🔍 SUPER ADMIN DEBUG: Update result:`, updateResult);
         }
       }
       
@@ -833,10 +839,13 @@ router.patch("/users/:userId",
       const membershipDetails = await Promise.all(
         updatedMemberships.map(async (membership: any) => {
           const club = await storage.getClub(membership.clubId);
+          const role = await storage.getRoleById(membership.roleId);
           return {
             clubId: membership.clubId,
             clubName: club?.name || `Club ${membership.clubId}`,
-            role: membership.role,
+            role: role?.name || 'member',
+            roleName: role?.name || 'member',
+            roleDisplayName: role?.displayName || 'Mitglied',
             status: membership.status,
             joinedAt: membership.joinedAt,
           };

@@ -247,17 +247,8 @@ export default function SuperAdminPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Crown className="h-8 w-8 text-yellow-500" />
-            Super Administrator
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Plattform-weite Verwaltung und Übersicht
-          </p>
-        </div>
+      {/* Status Badge */}
+      <div className="flex justify-end">
         <Badge variant="outline" className="bg-yellow-50 border-yellow-200 text-yellow-800">
           <Crown className="h-3 w-3 mr-1" />
           Vollzugriff
@@ -350,8 +341,10 @@ export default function SuperAdminPage() {
             </CardHeader>
             <CardContent>
               <ClubsTable 
-                clubs={allClubs as any[]} 
+                clubs={allClubs as any[]}
                 onViewDetails={setShowClubDetails}
+                onEdit={setShowEditClub}
+                onDeactivate={setShowDeactivateClub}
                 onEdit={setShowEditClub}
                 onDeactivate={setShowDeactivateClub}
               />

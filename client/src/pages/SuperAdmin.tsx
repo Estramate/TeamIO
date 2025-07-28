@@ -42,6 +42,10 @@ import {
   DeactivateClubDialog,
   UserDetailsModal,
   EditUserModal,
+  DeactivateUserDialog,
+} from '@/components/SuperAdminModalsComplete';
+  UserDetailsModal,
+  EditUserModal,
   DeactivateUserDialog
 } from '@/components/SuperAdminModals';
 
@@ -343,8 +347,6 @@ export default function SuperAdminPage() {
               <ClubsTable 
                 clubs={allClubs as any[]}
                 onViewDetails={setShowClubDetails}
-                onEdit={setShowEditClub}
-                onDeactivate={setShowDeactivateClub}
                 onEdit={setShowEditClub}
                 onDeactivate={setShowDeactivateClub}
               />
@@ -785,9 +787,9 @@ function ClubsTable({ clubs, onViewDetails, onEdit, onDeactivate }: {
   }
 
   const getClubSubscription = (clubId: number) => {
-    if (!clubSubscriptions) return { planType: 'enterprise', displayName: 'Enterprise' };
+    if (!clubSubscriptions) return { planType: 'enterprise', displayName: 'Enterprise', endDate: null };
     const subscription = clubSubscriptions.find((sub: any) => sub.clubId === clubId);
-    return subscription || { planType: 'enterprise', displayName: 'Enterprise' };
+    return subscription || { planType: 'enterprise', displayName: 'Enterprise', endDate: null };
   };
 
   return (
@@ -799,6 +801,7 @@ function ClubsTable({ clubs, onViewDetails, onEdit, onDeactivate }: {
             <th className="text-left p-3">Mitglieder</th>
             <th className="text-left p-3">Plan</th>
             <th className="text-left p-3">Status</th>
+            <th className="text-left p-3">Läuft bis</th>
             <th className="text-left p-3">Erstellt</th>
             <th className="text-left p-3">Aktionen</th>
           </tr>
@@ -826,6 +829,14 @@ function ClubsTable({ clubs, onViewDetails, onEdit, onDeactivate }: {
               </td>
               <td className="p-3">
                 <time className="text-sm text-muted-foreground">
+                  {getClubSubscription(club.id).endDate ? 
+                    new Date(getClubSubscription(club.id).endDate).toLocaleDateString('de-DE') : 
+                    'Unbegrenzt'
+                  }
+                </time>
+              </td>
+              <td className="p-3">
+                <time className="text-sm text-muted-foreground">
                   {new Date(club.createdAt).toLocaleDateString('de-DE')}
                 </time>
               </td>
@@ -837,15 +848,15 @@ function ClubsTable({ clubs, onViewDetails, onEdit, onDeactivate }: {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setShowClubDetails(club)}>
+                    <DropdownMenuItem onClick={() => onViewDetails(club)}>
                       <Eye className="h-4 w-4 mr-2" />
                       Details anzeigen
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setShowEditClub(club)}>
+                    <DropdownMenuItem onClick={() => onEdit(club)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Bearbeiten
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600" onClick={() => setShowDeactivateClub(club)}>
+                    <DropdownMenuItem className="text-red-600" onClick={() => onDeactivate(club)}>
                       <Trash2 className="h-4 w-4 mr-2" />
                       Deaktivieren
                     </DropdownMenuItem>
@@ -933,15 +944,15 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onViewDetails(user)}>
                       <Eye className="h-4 w-4 mr-2" />
                       Details anzeigen
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEdit(user)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Bearbeiten
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
+                    <DropdownMenuItem className="text-red-600" onClick={() => onDeactivate(user)}>
                       <Trash2 className="h-4 w-4 mr-2" />
                       Deaktivieren
                     </DropdownMenuItem>

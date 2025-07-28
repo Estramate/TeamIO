@@ -179,7 +179,7 @@ router.get("/club-subscriptions",
     }
   }));
 
-// POST /api/super-admin/create-admin - Create new club administrator
+// POST /api/super-admin/create-admin - Create new club administrator with invitation process
 router.post("/create-admin",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
@@ -190,17 +190,25 @@ router.post("/create-admin",
       // Check if user already exists
       let user = await storage.getUserByEmail(validatedData.email);
       
-      if (!user) {
-        // Create new user
+      if (user) {
+        // Check if user already has membership in this club
+        const existingMembership = await storage.getUserClubMembership(user.id, parseInt(validatedData.clubId));
+        if (existingMembership) {
+          return res.status(400).json({ 
+            error: "Benutzer ist bereits Mitglied in diesem Verein" 
+          });
+        }
+      } else {
+        // Create new user with temporary/incomplete data (NOT ACTIVE YET)
         const userId = `admin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         user = await storage.createUser({
           id: userId,
           email: validatedData.email,
-          firstName: validatedData.firstName,
-          lastName: validatedData.lastName,
+          firstName: validatedData.firstName || '', // Can be empty initially
+          lastName: validatedData.lastName || '',   // Can be empty initially
           authProvider: 'email',
           hasCompletedOnboarding: false,
-          isActive: true,
+          isActive: false, // INACTIVE until invitation is completed!
         });
       }
       
@@ -210,47 +218,69 @@ router.post("/create-admin",
         return res.status(404).json({ error: "Club not found" });
       }
       
-      // Create club membership with administrator role
-      await storage.createClubMembership({
+      // Create INACTIVE club membership with administrator role (PENDING STATUS)
+      const membership = await storage.addUserToClub({
         userId: user.id,
         clubId: club.id,
-        role: 'club-administrator',
-        status: 'active',
+        role: 'club_admin',
+        status: 'pending', // PENDING until invitation is accepted!
+        joinedAt: new Date(),
+        invitedBy: req.user?.claims?.sub || req.user?.id
       });
       
-      // Send welcome email if requested (implementation needed)
-      if (validatedData.sendWelcomeEmail) {
-        // TODO: Implement email functionality
-        console.log(`Welcome email would be sent to ${validatedData.email} for club ${club.name}`);
-      }
+      // Create email invitation record (REQUIRED FOR COMPLETION)
+      const invitationToken = `invite_${Date.now()}_${Math.random().toString(36).substr(2, 12)}`;
+      const invitation = await storage.createEmailInvitation({
+        email: validatedData.email,
+        clubId: club.id,
+        invitedBy: req.user?.claims?.sub || req.user?.id,
+        role: 'club_admin',
+        token: invitationToken,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        status: 'pending',
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days expiry
+        createdAt: new Date()
+      });
+
+      // DO NOT send welcome email - send invitation email instead!
+      console.log(`📧 ADMIN INVITATION: Invitation created for ${validatedData.email} to join club "${club.name}" as administrator`);
+      console.log(`🔗 Invitation token: ${invitationToken} (expires in 7 days)`);
+      console.log(`📋 Next steps: User must complete registration with invitation token to activate account`);
 
       // Log the super admin action
-      console.log(`SUPER ADMIN ACTION: Administrator "${validatedData.firstName} ${validatedData.lastName}" created for club "${club.name}" by ${req.user.email}`);
+      console.log(`SUPER ADMIN ACTION: Administrator invitation sent to "${validatedData.email}" for club "${club.name}" by ${req.user.email}`);
       
       res.json({
         success: true,
+        invitation: {
+          token: invitationToken,
+          email: validatedData.email,
+          clubName: club.name,
+          role: 'club_admin',
+          expiresAt: invitation.expiresAt,
+          status: 'pending'
+        },
         user: {
           id: user.id,
           email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
+          isActive: user.isActive, // Will be false
         },
-        club: {
-          id: club.id,
-          name: club.name,
+        membership: {
+          status: membership.status, // Will be 'pending'
+          role: membership.role
         },
-        welcomeEmailSent: validatedData.sendWelcomeEmail,
-        message: "Administrator successfully created"
+        message: "Administrator-Einladung erfolgreich erstellt. Benutzer muss die Einladung annehmen, um aktiviert zu werden."
       });
     } catch (error) {
-      console.error("Error creating administrator:", error);
+      console.error("Error creating administrator invitation:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
           error: "Validation failed", 
           details: error.errors 
         });
       }
-      res.status(500).json({ error: "Failed to create administrator" });
+      res.status(500).json({ error: "Failed to create administrator invitation" });
     }
   }));
 

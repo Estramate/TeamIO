@@ -80,6 +80,7 @@ export interface IStorage {
   
   // Email invitation operations
   getAllEmailInvitations(): Promise<EmailInvitation[]>;
+  createEmailInvitation(invitation: InsertEmailInvitation): Promise<EmailInvitation>;
   // User operations (supports multiple auth providers)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -2440,6 +2441,26 @@ export class DatabaseStorage implements IStorage {
       });
     } catch (error) {
       console.error('Error getting clubs eligible for upgrade:', error);
+      throw error;
+    }
+  }
+
+  // Email invitation methods for admin creation workflow
+  async createEmailInvitation(invitation: InsertEmailInvitation): Promise<EmailInvitation> {
+    try {
+      const [newInvitation] = await db
+        .insert(emailInvitations)
+        .values({
+          ...invitation,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      console.log(`📧 EMAIL INVITATION CREATED: ${invitation.email} invited to club ${invitation.clubId} as ${invitation.role}`);
+      return newInvitation;
+    } catch (error) {
+      console.error('Error creating email invitation:', error);
       throw error;
     }
   }

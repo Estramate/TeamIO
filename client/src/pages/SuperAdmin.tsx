@@ -125,12 +125,12 @@ export default function SuperAdminPage() {
     mutationFn: async (adminData: any) => {
       return apiRequest('POST', '/api/super-admin/create-admin', adminData);
     },
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/users'] });
       setShowCreateAdmin(false);
       toastService.success(
-        "Administrator erfolgreich erstellt",
-        "Der neue Vereinsadministrator wurde angelegt und per E-Mail benachrichtigt."
+        "Administrator-Einladung gesendet",
+        "Der neue Administrator wurde als inaktiv angelegt und erhält eine Einladungs-E-Mail zur Aktivierung."
       );
     },
     onError: (error: any) => {
@@ -815,7 +815,6 @@ function CreateAdminForm({ clubs, onSubmit, isLoading, onCancel }: {
     firstName: '',
     lastName: '',
     clubId: '',
-    sendWelcomeEmail: true,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -868,7 +867,7 @@ function CreateAdminForm({ clubs, onSubmit, isLoading, onCancel }: {
             <SelectValue placeholder="Verein auswählen" />
           </SelectTrigger>
           <SelectContent>
-            {clubs?.map((club) => (
+            {clubs?.map((club: any) => (
               <SelectItem key={club.id} value={club.id.toString()}>
                 {club.name}
               </SelectItem>
@@ -877,17 +876,18 @@ function CreateAdminForm({ clubs, onSubmit, isLoading, onCancel }: {
         </Select>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="sendWelcomeEmail"
-          checked={formData.sendWelcomeEmail}
-          onChange={(e) => setFormData({ ...formData, sendWelcomeEmail: e.target.checked })}
-          className="h-4 w-4"
-        />
-        <Label htmlFor="sendWelcomeEmail" className="text-sm">
-          Willkommens-E-Mail mit Anmeldedaten senden
-        </Label>
+      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 mt-0.5">
+            <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="text-sm text-blue-800">
+            <p className="font-medium mb-1">Einladungsprozess</p>
+            <p>Der neue Administrator wird als inaktiver Benutzer angelegt und erhält eine Einladungs-E-Mail. Nach der Registrierung wird sein Konto aktiviert.</p>
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-end gap-3 pt-4">

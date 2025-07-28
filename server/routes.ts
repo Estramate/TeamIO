@@ -432,7 +432,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Check if user is club admin
     const membership = await storage.getUserClubMembership(userId, clubId);
-    if (!membership || membership.role !== 'club-administrator') {
+    if (!membership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Get role information
+    const role = await storage.getRole(membership.roleId);
+    if (!role || role.name !== 'club-administrator') {
       throw new AuthorizationError('You must be a club administrator to update club settings');
     }
     
@@ -510,7 +516,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           logger.warn('Club not found for membership', { clubId: membership.clubId, userId });
           return null;
         }
-        return { ...club, role: membership.role, status: membership.status };
+        // Get role information
+        const role = await storage.getRole(membership.roleId);
+        return { ...club, role: role?.name || 'member', status: membership.status };
       })
     );
     
@@ -528,11 +536,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const clubData = insertClubSchema.parse(req.body);
     const club = await storage.createClub(clubData);
     
-    // Add the creator as a club administrator
+    // Add the creator as a club administrator (role ID 3)
     await storage.addUserToClub({
       userId,
       clubId: club.id,
-      role: 'club-administrator',
+      roleId: 3, // club-administrator role
       status: 'active',
     });
 
@@ -617,7 +625,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // Check if user is club admin
     const membership = await storage.getUserClubMembership(userId, clubId);
-    if (!membership || membership.role !== 'club-administrator') {
+    if (!membership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Get role information
+    const role = await storage.getRole(membership.roleId);
+    if (!role || role.name !== 'club-administrator') {
       throw new AuthorizationError('You must be a club administrator to view pending memberships');
     }
 
@@ -664,10 +678,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     let updatedMembership;
     if (action === 'approve') {
-      // Approve membership and optionally update role
+      // Approve membership and optionally update roleId
       const updateData = {
         status: 'active' as const,
-        ...(role && { role })
+        ...(role && { roleId: role })
       };
       updatedMembership = await storage.updateClubMembershipById(membershipId, updateData);
       
@@ -683,7 +697,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           targetResource: 'membership',
           targetResourceId: membershipId,
           description: `${admin.firstName} ${admin.lastName} hat die Mitgliedschaft von ${approvedUser.firstName} ${approvedUser.lastName} genehmigt`,
-          metadata: { previousStatus: 'inactive', newStatus: 'active', role: role || membership.role },
+          metadata: { previousStatus: 'inactive', newStatus: 'active', roleId: role || membership.roleId },
           ipAddress: req.ip,
           userAgent: req.get('User-Agent'),
         });
@@ -694,7 +708,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         clubId, 
         userId: membership.userId,
         approvedBy: userId,
-        newRole: role || membership.role,
+        newRoleId: role || membership.roleId,
         requestId: req.id 
       });
     } else {

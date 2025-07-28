@@ -360,7 +360,7 @@ export function UserDetailsModal({ user, open, onClose }: UserDetailsModalProps)
                     <div>
                       <p className="font-medium">{club.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {roles ? getRoleDisplayName(club.role, roles) : club.role}
+                        {roles ? getRoleDisplayName(club.roleName || club.role, roles) : (club.roleName || club.role)}
                       </p>
                     </div>
                     <Badge variant="outline">{club.status}</Badge>
@@ -401,7 +401,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
   const [allClubs, setAllClubs] = useState<any[]>([]);
   const [newMembership, setNewMembership] = useState({
     clubId: '',
-    role: 'member',
+    roleId: 1, // Default to member role
     status: 'active'
   });
 
@@ -455,7 +455,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
     const membership = {
       clubId: parseInt(newMembership.clubId),
       clubName: club.name,
-      role: newMembership.role,
+      roleId: newMembership.roleId,
       status: newMembership.status,
       isNew: true // Mark as new for API handling
     };
@@ -465,7 +465,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
       clubMemberships: [...prev.clubMemberships, membership]
     }));
 
-    setNewMembership({ clubId: '', role: 'member', status: 'active' });
+    setNewMembership({ clubId: '', roleId: 1, status: 'active' });
   };
 
   const handleRemoveMembership = (index: number) => {
@@ -562,8 +562,8 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
                     <div>
                       <Label className="text-xs">Rolle</Label>
                       <Select
-                        value={membership.role}
-                        onValueChange={(value) => handleUpdateMembership(index, 'role', value)}
+                        value={membership.roleId?.toString() || membership.role}
+                        onValueChange={(value) => handleUpdateMembership(index, 'roleId', parseInt(value))}
                         disabled={membership.toDelete}
                       >
                         <SelectTrigger className="h-8">
@@ -571,9 +571,9 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
                         </SelectTrigger>
                         <SelectContent>
                           {roles && !rolesLoading ? (
-                            getRoleOptions(roles).map((roleOption) => (
-                              <SelectItem key={roleOption.value} value={roleOption.value}>
-                                {roleOption.label}
+                            roles.map((role) => (
+                              <SelectItem key={role.id} value={role.id.toString()}>
+                                {role.displayName}
                               </SelectItem>
                             ))
                           ) : (
@@ -646,17 +646,17 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
                 </div>
                 <div>
                   <Select
-                    value={newMembership.role}
-                    onValueChange={(value) => setNewMembership({ ...newMembership, role: value })}
+                    value={newMembership.roleId?.toString()}
+                    onValueChange={(value) => setNewMembership({ ...newMembership, roleId: parseInt(value) })}
                   >
                     <SelectTrigger className="h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {roles && !rolesLoading ? (
-                        getRoleOptions(roles).map((roleOption) => (
-                          <SelectItem key={roleOption.value} value={roleOption.value}>
-                            {roleOption.label}
+                        roles.map((role) => (
+                          <SelectItem key={role.id} value={role.id.toString()}>
+                            {role.displayName}
                           </SelectItem>
                         ))
                       ) : (

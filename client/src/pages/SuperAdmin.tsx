@@ -1070,10 +1070,10 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
                           {m.clubName}
                         </Badge>
                         <Badge 
-                          variant={m.role === 'club-administrator' ? 'default' : 'secondary'}
+                          variant={m.roleName === 'club-administrator' ? 'default' : 'secondary'}
                           className="text-xs"
                         >
-                          {roles ? formatRoleBadge(m.role, roles) : m.role}
+                          {roles ? formatRoleBadge(m.roleName || m.role, roles) : (m.roleDisplayName || m.roleName || m.role)}
                         </Badge>
                         <Badge 
                           variant={m.status === 'active' ? 'default' : 'secondary'}

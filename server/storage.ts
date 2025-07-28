@@ -559,12 +559,15 @@ export class DatabaseStorage implements IStorage {
           createdAt: users.createdAt,
           // Membership fields with correct column names
           membershipId: clubMemberships.id,
-          role: clubMemberships.role,
+          roleId: clubMemberships.roleId,
+          roleName: roles.name,
+          roleDisplayName: roles.displayName,
           status: clubMemberships.status,
           joinedAt: clubMemberships.joinedAt, // Use the actual DB column name
         })
         .from(users)
         .innerJoin(clubMemberships, eq(users.id, clubMemberships.userId))
+        .innerJoin(roles, eq(clubMemberships.roleId, roles.id))
         .where(eq(clubMemberships.clubId, clubId))
         .orderBy(asc(users.firstName), asc(users.lastName));
 
@@ -676,7 +679,6 @@ export class DatabaseStorage implements IStorage {
         reviewedBy, 
         reviewedAt: new Date(),
         reviewNotes,
-        approvedRole,
         updatedAt: new Date()
       })
       .where(eq(clubJoinRequests.id, requestId))
@@ -684,10 +686,15 @@ export class DatabaseStorage implements IStorage {
 
     // If approved, create club membership
     if (status === 'approved' && updatedRequest) {
+      // Get role ID for the approved role
+      const roleId = approvedRole 
+        ? (await db.select({ id: roles.id }).from(roles).where(eq(roles.name, approvedRole)))[0]?.id
+        : updatedRequest.approvedRoleId || 1; // Default to member role (id: 1)
+      
       await this.addUserToClub({
         userId: updatedRequest.userId,
         clubId: updatedRequest.clubId,
-        role: approvedRole || updatedRequest.requestedRole || 'member',
+        roleId: roleId,
         status: 'active'
       });
     }

@@ -361,6 +361,36 @@ export function useCommunication(clubId: number, isAuthenticated: boolean = true
     }
   }, [clubId, toast]);
 
+  // Send reply mutation
+  const sendReplyMutation = useMutation({
+    mutationFn: ({ messageId, replyData }: { messageId: number, replyData: any }) => 
+      apiRequest('POST', `/api/clubs/${clubId}/messages/${messageId}/reply`, replyData),
+    onSuccess: (data, variables) => {
+      console.log("Reply sent successfully:", data);
+      
+      // Immediate cache invalidation for real-time updates
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'messages'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
+      invalidateRelevantCache('message', clubId);
+      
+      // Trigger notification
+      notifyNewMessage(1, 'Antwort');
+      
+      toast({
+        title: "Erfolgreich",
+        description: "Antwort wurde versendet",
+      });
+    },
+    onError: (error) => {
+      console.error("Reply failed:", error);
+      toast({
+        title: "Fehler", 
+        description: "Antwort konnte nicht versendet werden",
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     // Data
     messages,
@@ -383,6 +413,7 @@ export function useCommunication(clubId: number, isAuthenticated: boolean = true
     
     // Mutations
     sendMessage: sendMessageMutation.mutate,
+    sendReply: sendReplyMutation.mutate,
     createAnnouncement: createAnnouncementMutation.mutate,
     markMessageAsRead: markMessageAsReadMutation.mutate,
     markNotificationAsRead: markNotificationAsReadMutation.mutate,
@@ -390,6 +421,7 @@ export function useCommunication(clubId: number, isAuthenticated: boolean = true
     
     // Loading states for mutations
     sendingMessage: sendMessageMutation.isPending,
+    sendingReply: sendReplyMutation.isPending,
     creatingAnnouncement: createAnnouncementMutation.isPending,
     
     // Search functions

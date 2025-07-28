@@ -135,11 +135,13 @@ export default function Communication() {
     notificationsLoading,
     statsLoading,
     sendMessage,
+    sendReply,
     createAnnouncement,
     markMessageAsRead,
     markNotificationAsRead,
     updatePreferences,
     sendingMessage,
+    sendingReply,
     creatingAnnouncement,
     searchMessages,
     searchAnnouncements,
@@ -1256,63 +1258,27 @@ export default function Communication() {
                         return;
                       }
                       
-                      try {
-                        console.log('Sending reply:', {
+                      console.log('Sending reply:', {
+                        content: replyText,
+                        originalSubject: selectedMessage?.subject,
+                        messageId: selectedMessage?.id,
+                        clubId: selectedClub?.id
+                      });
+                      
+                      // Use the new sendReply hook function for proper cache invalidation
+                      sendReply({
+                        messageId: selectedMessage?.id,
+                        replyData: {
                           content: replyText,
-                          originalSubject: selectedMessage?.subject,
-                          messageId: selectedMessage?.id,
-                          clubId: selectedClub?.id
-                        });
-                        
-                        // Use the new reply endpoint
-                        const response = await fetch(`/api/clubs/${selectedClub?.id}/messages/${selectedMessage?.id}/reply`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          credentials: 'include',
-                          body: JSON.stringify({
-                            content: replyText,
-                            originalSubject: selectedMessage?.subject
-                          }),
-                        });
-                        
-                        if (!response.ok) {
-                          const errorData = await response.text();
-                          console.error('Reply failed:', response.status, errorData);
-                          throw new Error(`Reply failed: ${response.status} ${errorData}`);
+                          originalSubject: selectedMessage?.subject
                         }
-                        
-                        const newReply = await response.json();
-                        console.log('Reply created successfully:', newReply);
-                        
-                        setReplyText('');
-                        toast({
-                          title: "Antwort gesendet",
-                          description: "Ihre Antwort wurde hinzugefügt",
-                        });
-                        
-                        // Refresh messages to show the new reply without page reload
-                        await queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/messages`] });
-                        
-                        // Refetch messages and update selected message with new replies
-                        setTimeout(async () => {
-                          const updatedMessages = await queryClient.fetchQuery({
-                            queryKey: [`/api/clubs/${selectedClub?.id}/messages`]
-                          });
-                          if (updatedMessages && selectedMessage) {
-                            const updatedMessage = (updatedMessages as any[]).find(m => m.id === selectedMessage.id);
-                            if (updatedMessage) {
-                              setSelectedMessage(updatedMessage);
-                              toastService.log('Nachricht mit Antworten aktualisiert', { replies: updatedMessage.replies?.length || 0 });
-                            }
-                          }
-                        }, 100);
-                      } catch (error) {
-                        toastService.error("Antwort senden fehlgeschlagen", (error as any).message);
-                      }
+                      });
+                      
+                      // Clear reply text and close dialog
+                      setReplyText('');
+                      setSelectedMessage(null);
                     }}
-                    disabled={!replyText.trim() || sendingMessage}
+                    disabled={!replyText.trim() || sendingReply}
                   >
                     <Send className="w-4 h-4 mr-2" />
                     Antworten

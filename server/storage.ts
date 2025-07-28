@@ -63,6 +63,7 @@ import {
   type InsertActivityLog,
   type EmailInvitation,
   type InsertEmailInvitation,
+  clubSubscriptions,
 
 } from "@shared/schema";
 import { db } from "./db";

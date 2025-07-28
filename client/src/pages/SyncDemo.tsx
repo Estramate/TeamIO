@@ -20,8 +20,7 @@ export default function SyncDemo() {
 
   // Set page metadata using effect
   useEffect(() => {
-    page.setTitle("Sync-Demonstration");
-    page.setSubtitle("Real-time Datensynchronisation testen");
+    page.setPage("Sync-Demonstration", "Real-time Datensynchronisation testen");
   }, [page]);
 
   // Get sync status

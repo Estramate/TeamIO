@@ -12,7 +12,7 @@
     <meta name="description" content="ClubFlow - Die moderne, umfassende Lösung für die Verwaltung von Sportvereinen. Mitgliederverwaltung, Teams, Finanzen und mehr." />
     
     <!-- Disable Replit's permissions policy warnings -->
-    <meta http-equiv="Permissions-Policy" content="ambient-light-sensor=(), battery=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), layout-animations=(), legacy-image-formats=(), navigation-override=(), oversized-images=(), publickey-credentials=(), speaker-selection=(), unoptimized-images=(), unsized-media=(), pointer-lock=()" />
+    <meta http-equiv="Permissions-Policy" content="ambient-light-sensor=(), battery=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), layout-animations=(), legacy-image-formats=(), navigation-override=(), oversized-images=(), publickey-credentials=(), speaker-selection=(), unoptimized-images=(), unsized-media=(), pointer-lock=(), geolocation=(), camera=(), microphone=(), fullscreen=(), payment=(), usb=(), serial=(), bluetooth=()" />
     
     <script>
       // Enhanced Replit console spam suppression and API override
@@ -21,46 +21,47 @@
         const originalError = console.error;
         const originalLog = console.log;
         
-        // Suppress all Replit-related console warnings and errors
+        // Complete global console override with aggressive filtering
         console.warn = function(...args) {
-          const message = args.join(' ');
-          if (message.includes('Unrecognized feature:') || 
-              message.includes('Allow attribute will take precedence') ||
-              message.includes('ambient-light-sensor') ||
+          const message = String(args.join(' ')).toLowerCase();
+          // Block ALL Replit internal warnings completely
+          if (message.includes('unrecognized feature') || 
+              message.includes('stallwart') ||
+              message.includes('ambient') ||
               message.includes('battery') ||
               message.includes('execution-while') ||
               message.includes('layout-animations') ||
-              message.includes('legacy-image-formats') ||
+              message.includes('legacy-image') ||
               message.includes('navigation-override') ||
               message.includes('oversized-images') ||
-              message.includes('publickey-credentials') ||
+              message.includes('publickey') ||
               message.includes('speaker-selection') ||
-              message.includes('unoptimized-images') ||
-              message.includes('unsized-media') ||
-              message.includes('pointer-lock') ||
-              message.includes('stallwart')) {
-            return; // Suppress all Replit warnings
+              message.includes('6242-bebb560c46eaa218') ||
+              message.includes('main-bd5a7cc97f1d58f0') ||
+              message.includes('framework-3696f0681438c975')) {
+            return; // Complete suppression
           }
           originalWarn.apply(console, args);
         };
         
         console.error = function(...args) {
-          const message = args.join(' ');
-          if (message.includes('Unrecognized feature:') ||
-              message.includes('ambient-light-sensor') ||
+          const message = String(args.join(' ')).toLowerCase();
+          // Block ALL Replit internal errors completely
+          if (message.includes('unrecognized feature') ||
+              message.includes('stallwart') ||
+              message.includes('ambient') ||
               message.includes('battery') ||
               message.includes('execution-while') ||
               message.includes('layout-animations') ||
-              message.includes('legacy-image-formats') ||
+              message.includes('legacy-image') ||
               message.includes('navigation-override') ||
               message.includes('oversized-images') ||
-              message.includes('publickey-credentials') ||
+              message.includes('publickey') ||
               message.includes('speaker-selection') ||
-              message.includes('unoptimized-images') ||
-              message.includes('unsized-media') ||
-              message.includes('pointer-lock') ||
-              message.includes('stallwart')) {
-            return; // Suppress all Replit errors
+              message.includes('6242-bebb560c46eaa218') ||
+              message.includes('main-bd5a7cc97f1d58f0') ||
+              message.includes('framework-3696f0681438c975')) {
+            return; // Complete suppression
           }
           originalError.apply(console, args);
         };

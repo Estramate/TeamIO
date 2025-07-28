@@ -960,7 +960,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const clubId = parseInt(req.params.clubId);
     const memberId = parseInt(req.params.memberId);
     const userId = req.user.claims.sub;
-    const { role } = req.body;
+    const { role, roleId } = req.body;
     
     // Check if user is club admin
     const adminMembership = await storage.getUserClubMembership(userId, clubId);
@@ -973,13 +973,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('You must be a club administrator to manage member roles');
     }
     
-    // Convert role name to roleId
-    const targetRole = await storage.getRoleByName(role);
-    if (!targetRole) {
-      throw new ValidationError(`Role '${role}' not found`, 'role');
-    }
+    let targetRole;
     
-    console.log(`🔧 USERS PAGE DEBUG: Updating member ${memberId} role from API to roleId ${targetRole.id} (${targetRole.name})`);
+    // Support both old role (string) and new roleId (number) formats
+    if (roleId && typeof roleId === 'number') {
+      // New format: roleId is provided directly
+      targetRole = await storage.getRoleById(roleId);
+      if (!targetRole) {
+        throw new ValidationError(`Role with ID '${roleId}' not found`, 'roleId');
+      }
+      console.log(`🔧 USERS PAGE DEBUG: Updating member ${memberId} with roleId ${roleId} (${targetRole.name})`);
+    } else if (role && typeof role === 'string') {
+      // Legacy format: role name is provided, convert to roleId
+      targetRole = await storage.getRoleByName(role);
+      if (!targetRole) {
+        throw new ValidationError(`Role '${role}' not found`, 'role');
+      }
+      console.log(`🔧 USERS PAGE DEBUG: Updating member ${memberId} with role name '${role}' -> roleId ${targetRole.id}`);
+    } else {
+      throw new ValidationError('Either role (string) or roleId (number) must be provided', 'role');
+    }
     
     const updatedMembership = await storage.updateClubMembershipById(memberId, { roleId: targetRole.id });
     

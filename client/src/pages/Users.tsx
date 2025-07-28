@@ -114,12 +114,12 @@ export default function Users() {
 
   // Update member role mutation
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ memberId, role }: { memberId: number; role: string }) => {
+    mutationFn: async ({ memberId, roleId }: { memberId: number; roleId: number }) => {
       const response = await fetch(`/api/clubs/${selectedClub?.id}/members/${memberId}/role`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ role }),
+        body: JSON.stringify({ roleId }),
       });
       
       if (!response.ok) {
@@ -633,8 +633,8 @@ export default function Users() {
               <div className="space-y-2">
                 <Label htmlFor="role">Rolle</Label>
                 <Select
-                  value={selectedUser.role}
-                  onValueChange={(value) => setSelectedUser({ ...selectedUser, role: value })}
+                  value={selectedUser.roleId?.toString() || '1'}
+                  onValueChange={(value) => setSelectedUser({ ...selectedUser, roleId: parseInt(value) })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -642,17 +642,14 @@ export default function Users() {
                   <SelectContent>
                     {roles && !rolesLoading ? (
                       roles.map((role) => (
-                        <SelectItem key={role.id} value={role.name}>
+                        <SelectItem key={role.id} value={role.id.toString()}>
                           {role.displayName}
                         </SelectItem>
                       ))
                     ) : (
-                      <>
-                        <SelectItem value="member">Mitglied</SelectItem>
-                        <SelectItem value="coach">Trainer</SelectItem>
-                        <SelectItem value="admin">Administrator</SelectItem>
-                        <SelectItem value="club-administrator">Vereins-Administrator</SelectItem>
-                      </>
+                      <SelectItem value="loading" disabled>
+                        Lade Rollen...
+                      </SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -667,10 +664,10 @@ export default function Users() {
                 </Button>
                 <Button
                   onClick={() => {
-                    if (selectedUser) {
+                    if (selectedUser && selectedUser.roleId) {
                       updateRoleMutation.mutate({
                         memberId: selectedUser.membershipId,
-                        role: selectedUser.role
+                        roleId: selectedUser.roleId
                       });
                     }
                   }}

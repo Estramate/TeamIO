@@ -1504,30 +1504,106 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Communication operations
-  // Message operations - use live chat messages instead
-  async getMessages(clubId: number, userId?: string): Promise<any[]> {
+  // Communication operations - Classic Messages System (restored)
+  async getMessages(clubId: number, userId?: string): Promise<Message[]> {
     try {
-      // Return empty array for now - using live chat system instead
-      return [];
+      const messageList = await db
+        .select({
+          message: messages,
+          sender: {
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+          },
+        })
+        .from(messages)
+        .leftJoin(users, eq(messages.senderId, users.id))
+        .where(and(
+          eq(messages.clubId, clubId),
+          isNull(messages.deletedAt)
+        ))
+        .orderBy(desc(messages.createdAt));
+
+      // Get recipients for each message
+      const messagesWithRecipients = await Promise.all(
+        messageList.map(async (item) => {
+          const recipients = await this.getMessageRecipients(item.message.id);
+          return {
+            ...item.message,
+            recipients,
+            sender: item.sender,
+          };
+        })
+      );
+
+      return messagesWithRecipients;
     } catch (error) {
       console.error('Error getting messages:', error);
       return [];
     }
   }
 
-  
+  async getMessage(id: number): Promise<Message | undefined> {
+    try {
+      const messageData = await db
+        .select({
+          message: messages,
+          sender: {
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+          },
+        })
+        .from(messages)
+        .leftJoin(users, eq(messages.senderId, users.id))
+        .where(and(
+          eq(messages.id, id),
+          isNull(messages.deletedAt)
+        ))
+        .limit(1);
 
-  async getMessage(id: number): Promise<any | undefined> {
-    return undefined;
+      if (!messageData[0]) return undefined;
+
+      const recipients = await this.getMessageRecipients(id);
+      
+      return {
+        ...messageData[0].message,
+        recipients,
+        sender: messageData[0].sender,
+      };
+    } catch (error) {
+      console.error('Error getting message:', error);
+      return undefined;
+    }
   }
 
   async deleteMessage(messageId: number): Promise<void> {
-    throw new Error('Messages system disabled');
+    // Soft delete by setting deletedAt timestamp
+    await db
+      .update(messages)
+      .set({ deletedAt: new Date() })
+      .where(eq(messages.id, messageId));
   }
 
-  async createMessage(messageData: any): Promise<any> {
-    throw new Error('Messages system disabled');
+  async createMessage(messageData: InsertMessage): Promise<Message> {
+    const [message] = await db.insert(messages).values(messageData).returning();
+    
+    // Create recipient record for sender (so they can mark it as read)
+    if (messageData.senderId) {
+      await db.insert(messageRecipients).values({
+        messageId: message.id,
+        recipientType: 'user',
+        recipientId: messageData.senderId,
+        status: 'sent',
+        deliveredAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    }
+    
+    return message;
     
     // Create recipient record for sender (so they can mark it as read)
     if (messageData.senderId) {

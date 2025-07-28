@@ -1875,24 +1875,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Communication routes
   
-  // Message routes - DISABLED: Use live chat system instead
-  app.get('/api/clubs/:clubId/messages', isAuthenticated, (req: any, res: any) => {
-    // Return empty array - messages system disabled, use live chat
-    res.json([]);
+  // Classic Messages Routes - RESTORED per user request
+  app.get('/api/clubs/:clubId/messages', isAuthenticated, async (req: any, res: any) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      if (!clubId || isNaN(clubId)) {
+        return res.status(400).json({ message: 'Invalid club ID' });
+      }
+      
+      const messages = await storage.getMessages(clubId, req.user.id);
+      res.json(messages);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      res.status(500).json({ message: 'Failed to fetch messages' });
+    }
   });
 
-  app.get('/api/clubs/:clubId/messages/:messageId', isAuthenticated, (req: any, res: any) => {
-    res.status(404).json({ error: { type: 'NotFound', message: 'Messages system disabled. Use live chat.' } });
+  app.get('/api/clubs/:clubId/messages/:messageId', isAuthenticated, async (req: any, res: any) => {
+    try {
+      const messageId = parseInt(req.params.messageId);
+      if (!messageId || isNaN(messageId)) {
+        return res.status(400).json({ message: 'Invalid message ID' });
+      }
+      
+      const message = await storage.getMessage(messageId);
+      if (!message) {
+        return res.status(404).json({ message: 'Message not found' });
+      }
+      
+      res.json(message);
+    } catch (error) {
+      console.error('Error fetching message:', error);
+      res.status(500).json({ message: 'Failed to fetch message' });
+    }
   });
 
-  app.post('/api/clubs/:clubId/messages', isAuthenticated, (req: any, res: any) => {
-    console.log('📧 Message creation attempted - redirecting to live chat');
-    res.status(501).json({ 
-      error: { 
-        type: 'FeatureDisabled', 
-        message: 'Das klassische Nachrichten-System ist deaktiviert. Bitte verwenden Sie das Live-Chat-System (Chat-Widget unten rechts) für die Kommunikation.' 
-      } 
-    });
+  app.post('/api/clubs/:clubId/messages', isAuthenticated, async (req: any, res: any) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const { subject, content, recipientType = 'user', recipientId } = req.body;
+      
+      console.log('📧 Creating classic message:', { clubId, subject, senderId: req.user.id, recipientType, recipientId });
+      
+      if (!subject || !content) {
+        return res.status(400).json({ message: 'Subject and content are required' });
+      }
+
+      const messageData = {
+        clubId,
+        senderId: req.user.id,
+        subject,
+        content,
+        messageType: 'direct',
+        priority: 'normal',
+        status: 'sent',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const message = await storage.createMessage(messageData);
+      
+      // Add recipients if specified
+      if (recipientId && recipientType) {
+        await storage.addMessageRecipients([{
+          messageId: message.id,
+          recipientType,
+          recipientId,
+          status: 'sent',
+          deliveredAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }]);
+      }
+
+      console.log('✅ Classic message created successfully:', message.id);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error('❌ Error creating classic message:', error);
+      res.status(500).json({ message: 'Failed to create message' });
+    }
   });
 
   app.patch('/api/clubs/:clubId/messages/:messageId', isAuthenticated, asyncHandler(async (req: any, res: any) => {

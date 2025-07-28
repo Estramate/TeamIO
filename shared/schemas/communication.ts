@@ -5,6 +5,8 @@ import { users } from './core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
+// Types will be exported after table definitions
+
 // Chat Rooms Table
 export const chatRooms = pgTable('chat_rooms', {
   id: serial('id').primaryKey(),
@@ -72,6 +74,46 @@ export const videoCallSessions = pgTable('video_call_sessions', {
   recordingUrl: text('recording_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// Classic Messages Table (restored for user request)
+export const messages = pgTable('messages', {
+  id: serial('id').primaryKey(),
+  clubId: integer('club_id').references(() => clubs.id).notNull(),
+  senderId: varchar('sender_id', { length: 255 }).references(() => users.id).notNull(),
+  subject: varchar('subject', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  messageType: varchar('message_type', { length: 50 }).default('direct').notNull(),
+  priority: varchar('priority', { length: 50 }).default('normal').notNull(),
+  status: varchar('status', { length: 50 }).default('sent').notNull(),
+  conversationId: varchar('conversation_id', { length: 255 }),
+  threadId: integer('thread_id').references(() => messages.id),
+  scheduledFor: timestamp('scheduled_for'),
+  expiresAt: timestamp('expires_at'),
+  attachments: text('attachments'), // JSON array
+  metadata: text('metadata'), // JSON object
+  deletedAt: timestamp('deleted_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Classic Message Recipients Table (restored)
+export const messageRecipients = pgTable('message_recipients', {
+  id: serial('id').primaryKey(),
+  messageId: integer('message_id').references(() => messages.id).notNull(),
+  recipientType: varchar('recipient_type', { length: 50 }).notNull(), // 'user', 'team', 'role'
+  recipientId: varchar('recipient_id', { length: 255 }).notNull(),
+  status: varchar('status', { length: 50 }).default('sent').notNull(),
+  readAt: timestamp('read_at'),
+  deliveredAt: timestamp('delivered_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Export types for classic messages system (after table definitions)
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = typeof messages.$inferInsert;
+export type MessageRecipient = typeof messageRecipients.$inferSelect;
+export type InsertMessageRecipient = typeof messageRecipients.$inferInsert;
 
 // Announcements Table
 export const announcements = pgTable('announcements', {
@@ -210,9 +252,7 @@ export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type SelectChatMessage = z.infer<typeof selectChatMessageSchema>;
 export type InsertVideoCallSession = z.infer<typeof insertVideoCallSessionSchema>;
 
-// Export aliases for compatibility with existing code
-export const messages = chatMessages;
-export const insertMessageSchema = insertChatMessageSchema;
+// Classic messaging system compatibility - using separate naming to avoid conflicts
 
 // Create a notifications table for compatibility
 export const insertNotificationSchema = z.object({

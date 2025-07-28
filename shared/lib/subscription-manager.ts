@@ -57,6 +57,7 @@ export class ClubSubscriptionManager implements SubscriptionService {
     plan: SubscriptionPlan | null,
     usage?: {
       members: number;
+      players?: number;
       teams: number;
       facilities: number;
       storage: number;
@@ -66,6 +67,7 @@ export class ClubSubscriptionManager implements SubscriptionService {
     this.plan = plan;
     this.currentUsage = usage || {
       members: 0,
+      players: 0,
       teams: 0,
       facilities: 0,
       storage: 0,
@@ -102,6 +104,23 @@ export class ClubSubscriptionManager implements SubscriptionService {
     if (limit === null) return null;
     
     return Math.max(0, limit - this.currentUsage.members);
+  }
+
+  getRemainingUsers(): number | null {
+    if (!this.plan) {
+      const totalManagedUsers = this.currentUsage.members + (this.currentUsage as any).players || 0;
+      return MEMBER_LIMITS.free - totalManagedUsers;
+    }
+    
+    const planType = this.plan.planType as PlanType;
+    const limit = MEMBER_LIMITS[planType];
+    
+    // Unlimited users
+    if (limit === null) return null;
+    
+    // Count total managed users (members + players)
+    const totalManagedUsers = this.currentUsage.members + ((this.currentUsage as any).players || 0);
+    return Math.max(0, limit - totalManagedUsers);
   }
 
   // Plan information

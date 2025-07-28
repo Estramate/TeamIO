@@ -195,15 +195,15 @@ interface MemberLimitWarningProps {
 export function MemberLimitWarning({ currentCount, className }: MemberLimitWarningProps) {
   const { subscriptionManager } = useSubscription();
   
-  const remainingMembers = subscriptionManager.getRemainingMembers();
+  const remainingUsers = subscriptionManager.getRemainingUsers(); // Updated to use total managed users
   const planType = subscriptionManager.getCurrentPlan();
   
   // Don't show warning for unlimited plans
-  if (remainingMembers === null) return null;
+  if (remainingUsers === null) return null;
   
   // Show warning when approaching limit
-  const showWarning = remainingMembers <= 10;
-  const showError = remainingMembers <= 0;
+  const showWarning = remainingUsers <= 10;
+  const showError = remainingUsers <= 0;
   
   if (!showWarning) return null;
 
@@ -216,12 +216,12 @@ export function MemberLimitWarning({ currentCount, className }: MemberLimitWarni
           </div>
           <div className="flex-1">
             <h4 className={`font-medium ${showError ? 'text-red-800 dark:text-red-200' : 'text-yellow-800 dark:text-yellow-200'}`}>
-              {showError ? 'Mitgliederlimit erreicht' : 'Mitgliederlimit fast erreicht'}
+              {showError ? 'Benutzerlimit erreicht' : 'Benutzerlimit fast erreicht'}
             </h4>
             <p className={`text-sm mt-1 ${showError ? 'text-red-600 dark:text-red-300' : 'text-yellow-600 dark:text-yellow-300'}`}>
               {showError 
-                ? `Sie haben das Limit von ${currentCount} Mitgliedern für den ${planType}-Plan erreicht.`
-                : `Noch ${remainingMembers} Mitglieder bis zum Limit für den ${planType}-Plan.`
+                ? `Sie haben das Limit von ${currentCount} verwalteten Benutzern für den ${planType}-Plan erreicht.`
+                : `Noch ${remainingUsers} verwaltete Benutzer bis zum Limit für den ${planType}-Plan.`
               }
             </p>
             <Button 

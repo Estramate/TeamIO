@@ -49,6 +49,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         subscriptionData.plan,
         subscriptionData.usage ? {
           members: subscriptionData.usage.memberCount,
+          players: subscriptionData.usage.playerCount,
           teams: subscriptionData.usage.teamCount,
           facilities: subscriptionData.usage.facilityCount,
           storage: subscriptionData.usage.storageUsed,

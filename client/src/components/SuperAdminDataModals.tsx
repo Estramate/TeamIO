@@ -13,6 +13,7 @@ import {
   Mail, 
   Crown
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 // Email Settings Modal with real data
 interface EmailSettingsModalProps {
@@ -127,6 +128,7 @@ interface SubscriptionManagementModalProps {
 }
 
 export function SubscriptionManagementModal({ open, onClose }: SubscriptionManagementModalProps) {
+  const { toast } = useToast();
   const { data: analytics, isLoading } = useQuery({
     queryKey: ['/api/super-admin/subscription-analytics'],
     enabled: open,
@@ -223,13 +225,37 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
           <div>
             <h3 className="text-lg font-medium mb-3">Aktionen</h3>
             <div className="flex gap-3">
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  toast({
+                    title: "Preise anpassen",
+                    description: "Funktion in Entwicklung - Preisanpassungen werden über die Datenbank verwaltet.",
+                  });
+                }}
+              >
                 Preise anpassen
               </Button>
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  toast({
+                    title: "Plan-Limits bearbeiten", 
+                    description: "Benutzer-Limits können in der Plan-Konfiguration angepasst werden.",
+                  });
+                }}
+              >
                 Plan-Limits bearbeiten
               </Button>
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  toast({
+                    title: "Upgrade-Benachrichtigungen",
+                    description: "E-Mail-System für Upgrade-Erinnerungen wird implementiert.",
+                  });
+                }}
+              >
                 Upgrade-Benachrichtigungen
               </Button>
             </div>

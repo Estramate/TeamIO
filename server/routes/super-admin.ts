@@ -299,7 +299,7 @@ router.get("/subscription-analytics",
           planCounts[planType as keyof typeof planCounts]++;
         }
         
-        // Calculate revenue based on plan type
+        // Calculate revenue - EXCLUDE unlimited Enterprise subscriptions
         const monthlyPrices = {
           free: 0,
           starter: 19,
@@ -307,7 +307,16 @@ router.get("/subscription-analytics",
           enterprise: 99
         };
         
+        // Skip revenue calculation for unlimited Enterprise subscriptions (year 2099+)
         if (sub.status === 'active' && monthlyPrices[planType as keyof typeof monthlyPrices]) {
+          // Check if subscription has unlimited end date (Enterprise freebies)
+          const endDate = new Date(sub.currentPeriodEnd || '2025-01-01');
+          if (endDate.getFullYear() > 2030) {
+            console.log(`🚫 Skipping revenue for club ${sub.clubId} - Unlimited Enterprise (ends ${endDate.getFullYear()})`);
+            return; // Skip this subscription in revenue calculation
+          }
+          
+          console.log(`💰 Adding revenue for club ${sub.clubId}: €${monthlyPrices[planType as keyof typeof monthlyPrices]}`);
           totalRevenue += monthlyPrices[planType as keyof typeof monthlyPrices];
         }
       });

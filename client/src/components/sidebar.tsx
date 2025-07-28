@@ -183,6 +183,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   </TooltipTrigger>
                   <TooltipContent side="right">
                     <p>{selectedClub?.name ? `${selectedClub.name} Beta` : "ClubFlow Beta"}</p>
+                    {selectedClub?.shortName && (
+                      <p className="text-xs text-muted-foreground">Kürzel: {selectedClub.shortName}</p>
+                    )}
                   </TooltipContent>
                 </Tooltip>
                 <Button
@@ -224,7 +227,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <div className="overflow-hidden flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h1 className="text-xl font-bold text-club-primary truncate">
-                        {selectedClub?.name || "ClubFlow"}
+                        {selectedClub?.shortName || selectedClub?.name || "ClubFlow"}
                       </h1>
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 flex-shrink-0">
                         Beta

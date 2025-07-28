@@ -97,6 +97,7 @@ export const users = pgTable("users", {
 export const clubs = pgTable("clubs", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
+  shortName: varchar("short_name", { length: 10 }), // Club abbreviation like "SVO", "FCB", etc.
   description: text("description"),
   address: text("address"),
   phone: varchar("phone", { length: 50 }),

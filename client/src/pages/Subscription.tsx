@@ -143,19 +143,19 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
-      {/* Header is now handled by PageContext */}
-      <div className="flex items-center justify-between">
-        <div className="flex-1"></div>
-        {isExpired && (
-          <div className="flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg">
+    <div className="w-full h-full flex flex-col">
+      {/* Alert for expired plan */}
+      {isExpired && (
+        <div className="p-4 bg-red-100 dark:bg-red-900/20">
+          <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
             <AlertTriangle className="h-4 w-4" />
             <span className="font-medium">Plan abgelaufen</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <Tabs defaultValue="overview" className="w-full space-y-6">
+      <div className="flex-1 p-6">
+        <Tabs defaultValue="overview" className="w-full h-full flex flex-col space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Übersicht</TabsTrigger>
           <TabsTrigger value="plans">Pläne</TabsTrigger>
@@ -569,7 +569,8 @@ export default function SubscriptionPage() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
   );
 }

@@ -92,8 +92,8 @@ export const clubSubscriptions = pgTable("club_subscriptions", {
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
   
-  // Usage tracking
-  currentMemberCount: integer("current_member_count").default(0).notNull(),
+  // Usage tracking (commented out as it doesn't exist in database)
+  // currentMemberCount: integer("current_member_count").default(0).notNull(),
   
   // Metadata
   metadata: jsonb("metadata").$type<{

@@ -822,9 +822,22 @@ function ClubsTable({ clubs, onViewDetails, onEdit, onDeactivate }: {
   }
 
   const getClubSubscription = (clubId: number) => {
-    if (!clubSubscriptions) return { planType: 'enterprise', displayName: 'Enterprise', endDate: null };
+    if (!clubSubscriptions) return { planType: 'professional', displayName: 'Professional', endDate: null };
     const subscription = clubSubscriptions.find((sub: any) => sub.clubId === clubId);
-    return subscription || { planType: 'enterprise', displayName: 'Enterprise', endDate: null };
+    if (!subscription) return { planType: 'professional', displayName: 'Professional', endDate: null };
+    
+    // Map planType to displayName if displayName is missing
+    const displayNameMap: any = {
+      'free': 'Gratis',
+      'starter': 'Starter',
+      'professional': 'Professional', 
+      'enterprise': 'Enterprise'
+    };
+    
+    return {
+      ...subscription,
+      displayName: subscription.displayName || displayNameMap[subscription.planType] || subscription.planType
+    };
   };
 
   return (

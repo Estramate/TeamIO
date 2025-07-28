@@ -70,6 +70,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useTheme();
   const { hasFeature, subscriptionManager } = useSubscription();
   const [collapsed, setCollapsed] = useState(false);
+  
+  // Debug: Log collapsed state
+  console.log('Sidebar collapsed state:', collapsed);
 
   const { data: clubs } = useQuery({
     queryKey: ['/api/clubs'],
@@ -140,18 +143,18 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             open ? "translate-x-0" : "-translate-x-full xl:translate-x-0"
           )}
         >
-          {/* Header */}
-          <div className={cn("border-b border-border transition-all duration-300 relative", collapsed ? "p-2" : "p-6")}>
+          {/* Header - Collapsed Layout */}
+          <div className={cn("border-b border-border transition-all duration-300 relative", collapsed ? "p-3" : "p-6")}>
             {collapsed ? (
-              <div className="flex flex-col items-center space-y-3">
+              <div className="flex flex-col items-center space-y-4">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center relative overflow-hidden">
                       {selectedClub?.logoUrl ? (
                         <img 
                           src={selectedClub.logoUrl} 
                           alt={`${selectedClub.name} Logo`}
-                          className="w-8 h-8 object-cover rounded-lg"
+                          className="w-10 h-10 object-cover rounded-lg"
                           onError={(e) => {
                             // Fallback to ClubFlow icon if club logo fails to load
                             const target = e.target as HTMLImageElement;
@@ -165,12 +168,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         src="/favicon-96x96.png" 
                         alt="ClubFlow" 
                         className={cn(
-                          "w-8 h-8 object-contain",
+                          "w-10 h-10 object-contain",
                           selectedClub?.logoUrl ? "hidden" : "block"
                         )}
                       />
-                      <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 rounded-full flex items-center justify-center">
-                        <span className="text-[6px] font-bold text-white">β</span>
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+                        <span className="text-[8px] font-bold text-white">β</span>
                       </div>
                     </div>
                   </TooltipTrigger>
@@ -181,10 +184,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-6 h-6 p-0 hover:bg-muted"
+                  className="w-8 h-8 p-0 hover:bg-muted border border-border rounded-md"
                   onClick={() => setCollapsed(!collapsed)}
                 >
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </div>
             ) : (

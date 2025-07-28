@@ -484,10 +484,38 @@ export default function SuperAdminPage() {
           user={showEditUser} 
           open={!!showEditUser} 
           onClose={() => setShowEditUser(null)}
-          onSave={(data) => {
-            console.log('Update user:', data);
-            setShowEditUser(null);
+          onSave={async (data) => {
+            try {
+              console.log('Update user:', data);
+              
+              // Use the new PATCH endpoint
+              const response = await fetch(`/api/super-admin/users/${showEditUser.id}`, {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+              });
+              
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update user');
+              }
+              
+              const result = await response.json();
+              console.log('User update success:', result);
+              
+              // Invalidate queries to refresh data
+              queryClient.invalidateQueries({ queryKey: ['/api/super-admin/users'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/super-admin/clubs'] });
+              
+              setShowEditUser(null);
+            } catch (error) {
+              console.error('Error updating user:', error);
+              // Add toast notification here in production
+            }
           }}
+          isLoading={false}
         />
       )}
 

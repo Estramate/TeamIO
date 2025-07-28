@@ -695,4 +695,106 @@ router.get("/email-stats",
     }
   }));
 
+// Schema for updating user
+const updateUserSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  isActive: z.boolean().default(true),
+  clubMemberships: z.array(z.object({
+    clubId: z.number(),
+    clubName: z.string().optional(),
+    role: z.enum(['member', 'trainer', 'administrator', 'club-administrator']),
+    status: z.enum(['active', 'inactive', 'suspended']),
+    isNew: z.boolean().optional(),
+    isModified: z.boolean().optional(),
+    toDelete: z.boolean().optional(),
+  })).default([]),
+});
+
+// PATCH /api/super-admin/users/:userId - Update user
+router.patch("/users/:userId",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const userId = req.params.userId;
+      const validatedData = updateUserSchema.parse(req.body);
+      const { storage } = await import("../storage");
+      
+      // Check if user exists
+      const existingUser = await storage.getUser(userId);
+      if (!existingUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Update user basic information
+      await storage.updateUser(userId, {
+        email: validatedData.email,
+        isActive: validatedData.isActive,
+      });
+      
+      // Handle club memberships
+      const currentMemberships = await storage.getUserClubMemberships(userId);
+      
+      // Process club membership changes
+      for (const membership of validatedData.clubMemberships) {
+        if (membership.toDelete) {
+          // Remove membership
+          await storage.removeClubMembership(userId, membership.clubId);
+          console.log(`SUPER ADMIN: Removed user ${userId} from club ${membership.clubId}`);
+        } else if (membership.isNew) {
+          // Add new membership
+          await storage.createClubMembership({
+            userId: userId,
+            clubId: membership.clubId,
+            role: membership.role,
+            status: membership.status,
+          });
+          console.log(`SUPER ADMIN: Added user ${userId} to club ${membership.clubId} as ${membership.role}`);
+        } else if (membership.isModified) {
+          // Update existing membership
+          await storage.updateClubMembership(userId, membership.clubId, {
+            role: membership.role,
+            status: membership.status,
+          });
+          console.log(`SUPER ADMIN: Updated user ${userId} membership in club ${membership.clubId}`);
+        }
+      }
+      
+      // Get updated user data
+      const updatedUser = await storage.getUser(userId);
+      const updatedMemberships = await storage.getUserClubMemberships(userId);
+      
+      // Get club names for memberships
+      const membershipDetails = await Promise.all(
+        updatedMemberships.map(async (membership: any) => {
+          const club = await storage.getClub(membership.clubId);
+          return {
+            clubId: membership.clubId,
+            clubName: club?.name || `Club ${membership.clubId}`,
+            role: membership.role,
+            status: membership.status,
+            joinedAt: membership.joinedAt,
+          };
+        })
+      );
+      
+      res.json({
+        success: true,
+        user: {
+          ...updatedUser,
+          memberships: membershipDetails,
+        },
+        message: "User updated successfully"
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  }));
+
 export default router;

@@ -606,7 +606,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
 
             {/* Add New Membership */}
             <div className="border-2 border-dashed border-gray-200 rounded-lg p-4">
-              <Label className="text-sm font-medium mb-3 block">Neue Vereinszugehörigkeit hinzufügen</Label>
+              <Label className="text-sm font-medium mb-3 block">Neue Vereinszugehörigkeit hinzufügen (Debug: {allClubs.length} Vereine)</Label>
               <div className="grid grid-cols-4 gap-3">
                 <div>
                   <Select
@@ -617,14 +617,19 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
                       <SelectValue placeholder="Verein wählen" />
                     </SelectTrigger>
                     <SelectContent>
-                      {allClubs
-                        .filter(club => !formData.clubMemberships.some((m: any) => m.clubId === club.id && !m.toDelete))
-                        .map((club) => (
-                          <SelectItem key={club.id} value={club.id.toString()}>
-                            {club.name}
-                          </SelectItem>
-                        ))
-                      }
+                      {allClubs.length === 0 ? (
+                        <SelectItem value="no-clubs" disabled>
+                          Lade Vereine...
+                        </SelectItem>
+                      ) : (
+                        allClubs
+                          .filter(club => !formData.clubMemberships.some((m: any) => m.clubId === club.id && !m.toDelete))
+                          .map((club) => (
+                            <SelectItem key={club.id} value={club.id.toString()}>
+                              {club.name} (ID: {club.id})
+                            </SelectItem>
+                          ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

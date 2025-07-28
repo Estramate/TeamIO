@@ -1043,8 +1043,8 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
         <thead>
           <tr className="border-b">
             <th className="text-left p-3">Benutzer</th>
-            <th className="text-left p-3">Verein</th>
-            <th className="text-left p-3">Rolle</th>
+            <th className="text-left p-3">Vereinszugehörigkeiten</th>
+            <th className="text-left p-3">Anzahl</th>
             <th className="text-left p-3">Status</th>
             <th className="text-left p-3">Letzte Anmeldung</th>
             <th className="text-left p-3">Aktionen</th>
@@ -1060,20 +1060,42 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
                 </div>
               </td>
               <td className="p-3">
-                <div className="text-sm">
-                  {user.memberships?.map((m: any) => m.clubName).join(', ') || 'Kein Verein'}
+                <div className="space-y-1">
+                  {user.memberships && user.memberships.length > 0 ? (
+                    user.memberships.map((m: any, index: number) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {m.clubName}
+                        </Badge>
+                        <Badge 
+                          variant={m.role === 'club-administrator' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {m.role === 'club-administrator' ? 'Admin' : 
+                           m.role === 'administrator' ? 'Admin' :
+                           m.role === 'member' ? 'Mitglied' : 
+                           m.role === 'trainer' ? 'Trainer' : m.role}
+                        </Badge>
+                        <Badge 
+                          variant={m.status === 'active' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {m.status === 'active' ? '✓' : 
+                           m.status === 'inactive' ? '⏸' : '⚠'}
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-muted-foreground">Keine Vereinszugehörigkeiten</div>
+                  )}
                 </div>
               </td>
               <td className="p-3">
-                <div className="space-y-1">
-                  {user.memberships?.map((m: any) => (
-                    <Badge key={m.clubId} variant="outline" className="text-xs">
-                      {m.role === 'club-administrator' ? 'Vereinsadministrator' : 
-                       m.role === 'administrator' ? 'Administrator' :
-                       m.role === 'member' ? 'Mitglied' : 
-                       m.role === 'trainer' ? 'Trainer' : m.role}
-                    </Badge>
-                  )) || <Badge variant="secondary">Gast</Badge>}
+                <div className="text-sm text-muted-foreground">
+                  {user.memberships && user.memberships.length > 0 
+                    ? `${user.memberships.length} Verein${user.memberships.length > 1 ? 'e' : ''}`
+                    : 'Kein Verein'
+                  }
                 </div>
               </td>
               <td className="p-3">

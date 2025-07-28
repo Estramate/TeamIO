@@ -738,7 +738,7 @@ router.patch("/users/:userId",
       for (const membership of validatedData.clubMemberships) {
         if (membership.toDelete) {
           // Remove membership
-          await storage.removeClubMembership(userId, membership.clubId);
+          await storage.removeUserFromClub(userId, membership.clubId);
           console.log(`SUPER ADMIN: Removed user ${userId} from club ${membership.clubId}`);
         } else if (membership.isNew) {
           // Add new membership

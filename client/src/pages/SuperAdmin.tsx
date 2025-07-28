@@ -556,8 +556,17 @@ function CreateClubForm({ onSubmit, isLoading, onCancel }: {
   });
 
   // Fetch available subscription plans
-  const { data: subscriptionPlans = [] } = useQuery({
+  const { data: subscriptionPlans = [], isLoading: plansLoading } = useQuery({
     queryKey: ['/api/subscription-plans'],
+    queryFn: async () => {
+      const response = await fetch('/api/subscription-plans', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscription plans');
+      }
+      return response.json();
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -700,19 +709,25 @@ function CreateClubForm({ onSubmit, isLoading, onCancel }: {
         <Label htmlFor="planId" className="text-sm font-medium mb-3 block">Subscription-Plan *</Label>
         <Select value={formData.planId.toString()} onValueChange={(value) => setFormData({ ...formData, planId: parseInt(value) })}>
           <SelectTrigger>
-            <SelectValue placeholder="Subscription-Plan auswählen" />
+            <SelectValue placeholder={plansLoading ? "Lade Pläne..." : "Subscription-Plan auswählen"} />
           </SelectTrigger>
           <SelectContent>
-            {subscriptionPlans?.map((plan: any) => (
-              <SelectItem key={plan.id} value={plan.id.toString()}>
-                <div className="flex items-center justify-between w-full">
-                  <span className="font-medium">{plan.displayName}</span>
-                  <span className="text-sm text-muted-foreground ml-2">
-                    €{plan.monthlyPrice}/Monat
-                  </span>
-                </div>
+            {plansLoading ? (
+              <SelectItem value="loading" disabled>
+                Lade verfügbare Pläne...
               </SelectItem>
-            ))}
+            ) : (
+              subscriptionPlans?.map((plan: any) => (
+                <SelectItem key={plan.id} value={plan.id.toString()}>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-medium">{plan.displayName}</span>
+                    <span className="text-sm text-muted-foreground ml-2">
+                      €{plan.monthlyPrice}/Monat
+                    </span>
+                  </div>
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground mt-1">

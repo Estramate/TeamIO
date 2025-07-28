@@ -64,6 +64,10 @@ import {
   type EmailInvitation,
   type InsertEmailInvitation,
   clubSubscriptions,
+  subscriptionPlans,
+  type ClubSubscription,
+  type InsertClubSubscription,
+  type SubscriptionPlan,
 
 } from "@shared/schema";
 import { db } from "./db";
@@ -254,6 +258,9 @@ export interface IStorage {
   
   // Subscription plans operations
   getSubscriptionPlans(): Promise<SubscriptionPlan[]>;
+  
+  // Club subscription operations  
+  createClubSubscription(subscription: InsertClubSubscription): Promise<ClubSubscription>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2187,29 +2194,9 @@ export class DatabaseStorage implements IStorage {
   async createClubSubscription(subscriptionData: any): Promise<any> {
     try {
       const [subscription] = await db
-        .insert(subscriptions)
+        .insert(clubSubscriptions)
         .values(subscriptionData)
         .returning();
-      
-      // Also create initial usage tracking
-      await db
-        .insert(usageTracking)
-        .values({
-          clubId: subscription.clubId,
-          subscriptionId: subscription.id,
-          memberCount: 0,
-          playerCount: 0,
-          totalManagedUsers: 0,
-          teamCount: 0,
-          facilityCount: 0,
-          messagesSent: 0,
-          emailsSent: 0,
-          smsSent: 0,
-          apiCalls: 0,
-          storageUsed: 0,
-          periodStart: new Date(),
-          periodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        });
         
       return subscription;
     } catch (error) {

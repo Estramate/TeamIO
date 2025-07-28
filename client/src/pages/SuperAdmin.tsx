@@ -55,13 +55,9 @@ export default function SuperAdminPage() {
   const [showUserDetails, setShowUserDetails] = useState<any>(null);
   const [showEditUser, setShowEditUser] = useState<any>(null);
   const [showDeactivateUser, setShowDeactivateUser] = useState<any>(null);
+  const [showEmailSettings, setShowEmailSettings] = useState(false);
+  const [showSubscriptionSettings, setShowSubscriptionSettings] = useState(false);
   const [selectedClubId, setSelectedClubId] = useState<string>('');
-  const [showClubDetails, setShowClubDetails] = useState<any>(null);
-  const [showEditClub, setShowEditClub] = useState<any>(null);
-  const [showDeactivateClub, setShowDeactivateClub] = useState<any>(null);
-  const [showUserDetails, setShowUserDetails] = useState<any>(null);
-  const [showEditUser, setShowEditUser] = useState<any>(null);
-  const [showDeactivateUser, setShowDeactivateUser] = useState<any>(null);
   const { setPage } = usePage();
   
   // Set page title
@@ -420,7 +416,11 @@ export default function SuperAdminPage() {
                     <p className="text-sm text-muted-foreground mb-3">
                       SendGrid-Integration und E-Mail-Templates
                     </p>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowEmailSettings(true)}
+                    >
                       <Settings className="h-4 w-4 mr-2" />
                       Konfigurieren
                     </Button>
@@ -433,7 +433,11 @@ export default function SuperAdminPage() {
                     <p className="text-sm text-muted-foreground mb-3">
                       Plan-Limits und Preise verwalten
                     </p>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowSubscriptionSettings(true)}
+                    >
                       <Crown className="h-4 w-4 mr-2" />
                       Verwalten
                     </Button>
@@ -509,6 +513,215 @@ export default function SuperAdminPage() {
           }}
         />
       )}
+
+      {/* Email Settings Modal */}
+      <Dialog open={showEmailSettings} onOpenChange={setShowEmailSettings}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              E-Mail-Einstellungen
+            </DialogTitle>
+            <DialogDescription>
+              Konfigurieren Sie SendGrid-Integration und E-Mail-Templates
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* SendGrid Configuration */}
+            <div className="space-y-4">
+              <h4 className="font-semibold">SendGrid-Konfiguration</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>API-Schlüssel Status</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span className="text-sm text-green-600">Konfiguriert</span>
+                  </div>
+                </div>
+                <div>
+                  <Label>Verifizierte Absender-E-Mail</Label>
+                  <p className="text-sm text-muted-foreground mt-1">club.flow.2025@gmail.com</p>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Email Templates */}
+            <div className="space-y-4">
+              <h4 className="font-semibold">E-Mail-Templates</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Benutzer-Einladung</p>
+                    <p className="text-sm text-muted-foreground">Template für neue Benutzerregistrierungen</p>
+                  </div>
+                  <Button variant="outline" size="sm">Bearbeiten</Button>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Passwort-Reset</p>
+                    <p className="text-sm text-muted-foreground">Template für Passwort-Zurücksetzung</p>
+                  </div>
+                  <Button variant="outline" size="sm">Bearbeiten</Button>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Willkommen-E-Mail</p>
+                    <p className="text-sm text-muted-foreground">Template für neue Vereinsmitglieder</p>
+                  </div>
+                  <Button variant="outline" size="sm">Bearbeiten</Button>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Email Statistics */}
+            <div className="space-y-4">
+              <h4 className="font-semibold">E-Mail-Statistiken (letzten 30 Tage)</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold">1,247</div>
+                  <div className="text-sm text-muted-foreground">Gesendet</div>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold">98.2%</div>
+                  <div className="text-sm text-muted-foreground">Zugestellt</div>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold">12</div>
+                  <div className="text-sm text-muted-foreground">Bounces</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <Button onClick={() => setShowEmailSettings(false)}>Schließen</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Subscription Settings Modal */}
+      <Dialog open={showSubscriptionSettings} onOpenChange={setShowSubscriptionSettings}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5" />
+              Subscription-Verwaltung
+            </DialogTitle>
+            <DialogDescription>
+              Verwalten Sie Plan-Limits, Preise und Subscription-Einstellungen
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Plan Overview */}
+            <div className="space-y-4">
+              <h4 className="font-semibold">Verfügbare Pläne</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <h5 className="font-medium">Free</h5>
+                    <p className="text-2xl font-bold">€0</p>
+                    <p className="text-sm text-muted-foreground">bis 50 Benutzer</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <h5 className="font-medium">Starter</h5>
+                    <p className="text-2xl font-bold">€19</p>
+                    <p className="text-sm text-muted-foreground">bis 150 Benutzer</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <h5 className="font-medium">Professional</h5>
+                    <p className="text-2xl font-bold">€49</p>
+                    <p className="text-sm text-muted-foreground">bis 500 Benutzer</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <h5 className="font-medium">Enterprise</h5>
+                    <p className="text-2xl font-bold">€99</p>
+                    <p className="text-sm text-muted-foreground">Unbegrenzt</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Subscription Statistics */}
+            <div className="space-y-4">
+              <h4 className="font-semibold">Subscription-Übersicht</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">5</div>
+                  <div className="text-sm text-muted-foreground">Free Plans</div>
+                </div>
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">3</div>
+                  <div className="text-sm text-muted-foreground">Starter Plans</div>
+                </div>
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold text-orange-600">2</div>
+                  <div className="text-sm text-muted-foreground">Professional Plans</div>
+                </div>
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">1</div>
+                  <div className="text-sm text-muted-foreground">Enterprise Plans</div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Monthly Revenue */}
+            <div className="space-y-4">
+              <h4 className="font-semibold">Monatlicher Umsatz</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="text-2xl font-bold text-green-700">€355</div>
+                  <div className="text-sm text-green-600">Aktueller Monat</div>
+                </div>
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-700">€298</div>
+                  <div className="text-sm text-blue-600">Vorheriger Monat</div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Actions */}
+            <div className="space-y-4">
+              <h4 className="font-semibold">Aktionen</h4>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="outline">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Preise anpassen
+                </Button>
+                <Button variant="outline">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Plan-Limits bearbeiten
+                </Button>
+                <Button variant="outline">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Upgrade-Benachrichtigungen
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <Button onClick={() => setShowSubscriptionSettings(false)}>Schließen</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

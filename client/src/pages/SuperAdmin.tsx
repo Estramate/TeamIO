@@ -36,11 +36,25 @@ import {
   Trash2,
   Eye
 } from 'lucide-react';
+import {
+  ClubDetailsModal,
+  EditClubModal,
+  DeactivateClubDialog,
+  UserDetailsModal,
+  EditUserModal,
+  DeactivateUserDialog,
+} from '@/components/SuperAdminModals';
 
 export default function SuperAdminPage() {
   const { data: superAdminStatus, isLoading } = useSuperAdminStatus();
   const [showCreateClub, setShowCreateClub] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+  const [showClubDetails, setShowClubDetails] = useState<any>(null);
+  const [showEditClub, setShowEditClub] = useState<any>(null);
+  const [showDeactivateClub, setShowDeactivateClub] = useState<any>(null);
+  const [showUserDetails, setShowUserDetails] = useState<any>(null);
+  const [showEditUser, setShowEditUser] = useState<any>(null);
+  const [showDeactivateUser, setShowDeactivateUser] = useState<any>(null);
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [showClubDetails, setShowClubDetails] = useState<any>(null);
   const [showEditClub, setShowEditClub] = useState<any>(null);
@@ -334,9 +348,9 @@ export default function SuperAdminPage() {
             <CardContent>
               <ClubsTable 
                 clubs={allClubs as any[]}
-                onViewDetails={() => {}}
-                onEdit={() => {}}
-                onDeactivate={() => {}}
+                onViewDetails={setShowClubDetails}
+                onEdit={setShowEditClub}
+                onDeactivate={setShowDeactivateClub}
               />
             </CardContent>
           </Card>
@@ -379,9 +393,9 @@ export default function SuperAdminPage() {
             <CardContent>
               <UsersTable 
                 users={allUsers as any[]} 
-                onViewDetails={() => {}}
-                onEdit={() => {}}
-                onDeactivate={() => {}}
+                onViewDetails={setShowUserDetails}
+                onEdit={setShowEditUser}
+                onDeactivate={setShowDeactivateUser}
               />
             </CardContent>
           </Card>
@@ -429,9 +443,70 @@ export default function SuperAdminPage() {
         </TabsContent>
       </Tabs>
 
+      {/* Modal Dialogs */}
+      {showClubDetails && (
+        <ClubDetailsModal 
+          club={showClubDetails} 
+          open={!!showClubDetails} 
+          onClose={() => setShowClubDetails(null)} 
+        />
+      )}
 
+      {showEditClub && (
+        <EditClubModal 
+          club={showEditClub} 
+          open={!!showEditClub} 
+          onClose={() => setShowEditClub(null)}
+          onSave={(data) => {
+            console.log('Update club:', data);
+            setShowEditClub(null);
+          }}
+        />
+      )}
 
+      {showDeactivateClub && (
+        <DeactivateClubDialog 
+          club={showDeactivateClub} 
+          open={!!showDeactivateClub} 
+          onClose={() => setShowDeactivateClub(null)}
+          onConfirm={() => {
+            console.log('Deactivate club:', showDeactivateClub.id);
+            setShowDeactivateClub(null);
+          }}
+        />
+      )}
 
+      {showUserDetails && (
+        <UserDetailsModal 
+          user={showUserDetails} 
+          open={!!showUserDetails} 
+          onClose={() => setShowUserDetails(null)} 
+        />
+      )}
+
+      {showEditUser && (
+        <EditUserModal 
+          user={showEditUser} 
+          open={!!showEditUser} 
+          onClose={() => setShowEditUser(null)}
+          onSave={(data) => {
+            console.log('Update user:', data);
+            setShowEditUser(null);
+          }}
+        />
+      )}
+
+      {showDeactivateUser && (
+        <DeactivateUserDialog 
+          user={showDeactivateUser} 
+          open={!!showDeactivateUser} 
+          onClose={() => setShowDeactivateUser(null)}
+          onConfirm={() => {
+            console.log('Deactivate user:', showDeactivateUser.id);
+            setShowDeactivateUser(null);
+          }}
+        />
+      )}
     </div>
   );
 }

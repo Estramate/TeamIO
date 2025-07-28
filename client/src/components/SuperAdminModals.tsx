@@ -1,109 +1,154 @@
-import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
   DialogTitle,
+  DialogDescription 
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import {
-  Building2,
-  Users,
-  AlertCircle,
-  CheckCircle,
+import { Separator } from '@/components/ui/separator';
+import { 
+  Building2, 
+  User, 
+  Mail, 
+  Phone, 
+  Crown, 
+  AlertTriangle,
+  Calendar,
+  Globe
 } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+import { toast } from '@/hooks/use-toast';
 
-// Club Details Modal Component
-export function ClubDetailsModal({ club, open, onClose }: { club: any; open: boolean; onClose: () => void }) {
+// Club Details Modal
+interface ClubDetailsModalProps {
+  club: any;
+  open: boolean;
+  onClose: () => void;
+}
+
+export function ClubDetailsModal({ club, open, onClose }: ClubDetailsModalProps) {
+  if (!club) return null;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            {club.name}
+            Verein Details
           </DialogTitle>
           <DialogDescription>
-            Detaillierte Informationen über den Verein
+            Detaillierte Informationen über {club.name}
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
+
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">E-Mail</Label>
-              <p className="text-sm">{club.email || 'Nicht angegeben'}</p>
+              <Label className="text-sm font-medium">Vereinsname</Label>
+              <p className="text-sm text-muted-foreground">{club.name}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">Telefon</Label>
-              <p className="text-sm">{club.phone || 'Nicht angegeben'}</p>
+              <Label className="text-sm font-medium">E-Mail</Label>
+              <p className="text-sm text-muted-foreground">{club.email}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">Website</Label>
-              <p className="text-sm">{club.website || 'Nicht angegeben'}</p>
+              <Label className="text-sm font-medium">Telefon</Label>
+              <p className="text-sm text-muted-foreground">{club.phone || 'Nicht angegeben'}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">Adresse</Label>
-              <p className="text-sm">{club.address || 'Nicht angegeben'}</p>
+              <Label className="text-sm font-medium">Website</Label>
+              <p className="text-sm text-muted-foreground">{club.website || 'Nicht angegeben'}</p>
             </div>
           </div>
-          
-          <div className="space-y-4">
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">Mitglieder</Label>
-              <p className="text-sm">{club.memberCount || 0}</p>
+
+          <Separator />
+
+          {/* Statistics */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold">{club.userCount || 0}</div>
+              <div className="text-sm text-muted-foreground">Benutzer</div>
             </div>
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">Erstellt am</Label>
-              <p className="text-sm">{new Date(club.createdAt).toLocaleDateString('de-DE')}</p>
+            <div className="text-center">
+              <div className="text-2xl font-bold">{club.memberCount || 0}</div>
+              <div className="text-sm text-muted-foreground">Mitglieder</div>
             </div>
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">Status</Label>
-              <Badge variant="outline" className="text-green-600 border-green-200">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Aktiv
+            <div className="text-center">
+              <Badge variant="outline" className="text-xs">
+                {club.subscriptionPlan || 'Free'}
               </Badge>
+              <div className="text-sm text-muted-foreground mt-1">Plan</div>
             </div>
+          </div>
+
+          <Separator />
+
+          {/* Description */}
+          <div>
+            <Label className="text-sm font-medium">Beschreibung</Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              {club.description || 'Keine Beschreibung verfügbar'}
+            </p>
+          </div>
+
+          {/* Address */}
+          <div>
+            <Label className="text-sm font-medium">Adresse</Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              {club.address || 'Keine Adresse angegeben'}
+            </p>
           </div>
         </div>
-        
-        {club.description && (
-          <div className="mt-4">
-            <Label className="text-sm font-medium text-muted-foreground">Beschreibung</Label>
-            <p className="text-sm mt-1">{club.description}</p>
-          </div>
-        )}
+
+        <div className="flex justify-end pt-4">
+          <Button onClick={onClose}>Schließen</Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-// Edit Club Modal Component
-export function EditClubModal({ club, open, onClose, onSave, isLoading }: { 
-  club: any; 
-  open: boolean; 
-  onClose: () => void; 
+// Edit Club Modal
+interface EditClubModalProps {
+  club: any;
+  open: boolean;
+  onClose: () => void;
   onSave: (data: any) => void;
-  isLoading: boolean;
-}) {
+  isLoading?: boolean;
+}
+
+export function EditClubModal({ club, open, onClose, onSave, isLoading }: EditClubModalProps) {
   const [formData, setFormData] = useState({
-    name: club.name || '',
-    description: club.description || '',
-    address: club.address || '',
-    phone: club.phone || '',
-    email: club.email || '',
-    website: club.website || '',
+    name: club?.name || '',
+    email: club?.email || '',
+    phone: club?.phone || '',
+    website: club?.website || '',
+    description: club?.description || '',
+    address: club?.address || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
   };
+
+  if (!club) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -114,23 +159,22 @@ export function EditClubModal({ club, open, onClose, onSave, isLoading }: {
             Bearbeiten Sie die Informationen für {club.name}
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="edit-name">Vereinsname *</Label>
+              <Label htmlFor="name">Vereinsname *</Label>
               <Input
-                id="edit-name"
+                id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </div>
-            
             <div>
-              <Label htmlFor="edit-email">E-Mail-Adresse *</Label>
+              <Label htmlFor="email">E-Mail-Adresse *</Label>
               <Input
-                id="edit-email"
+                id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -139,43 +183,42 @@ export function EditClubModal({ club, open, onClose, onSave, isLoading }: {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="edit-phone">Telefon</Label>
+              <Label htmlFor="phone">Telefon</Label>
               <Input
-                id="edit-phone"
+                id="phone"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
             </div>
-            
             <div>
-              <Label htmlFor="edit-website">Website</Label>
+              <Label htmlFor="website">Website</Label>
               <Input
-                id="edit-website"
+                id="website"
                 value={formData.website}
                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                placeholder="https://www.verein.de"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="edit-address">Adresse</Label>
-            <Input
-              id="edit-address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            <Label htmlFor="description">Beschreibung</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={3}
             />
           </div>
 
           <div>
-            <Label htmlFor="edit-description">Beschreibung</Label>
+            <Label htmlFor="address">Adresse</Label>
             <Textarea
-              id="edit-description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
+              id="address"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              rows={2}
             />
           </div>
 
@@ -193,43 +236,47 @@ export function EditClubModal({ club, open, onClose, onSave, isLoading }: {
   );
 }
 
-// Deactivate Club Dialog Component
-export function DeactivateClubDialog({ club, open, onClose, onConfirm, isLoading }: { 
-  club: any; 
-  open: boolean; 
-  onClose: () => void; 
+// Deactivate Club Dialog
+interface DeactivateClubDialogProps {
+  club: any;
+  open: boolean;
+  onClose: () => void;
   onConfirm: () => void;
-  isLoading: boolean;
-}) {
+  isLoading?: boolean;
+}
+
+export function DeactivateClubDialog({ club, open, onClose, onConfirm, isLoading }: DeactivateClubDialogProps) {
+  if (!club) return null;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-600">
-            <AlertCircle className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
             Verein deaktivieren
           </DialogTitle>
           <DialogDescription>
-            Sind Sie sicher, dass Sie den Verein "{club.name}" deaktivieren möchten?
+            Sind Sie sicher, dass Sie "{club.name}" deaktivieren möchten?
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="bg-red-50 border border-red-200 rounded-md p-4 mt-4">
-          <div className="flex">
-            <AlertCircle className="h-5 w-5 text-red-400" />
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Warnung: Diese Aktion hat schwerwiegende Folgen
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <ul className="list-disc space-y-1 ml-5">
-                  <li>Alle Mitglieder verlieren den Zugang</li>
-                  <li>Buchungen und Events werden deaktiviert</li>
-                  <li>Finanzielle Daten bleiben erhalten</li>
-                  <li>Diese Aktion kann rückgängig gemacht werden</li>
-                </ul>
-              </div>
-            </div>
+
+        <div className="space-y-4">
+          <div className="bg-destructive/10 p-4 rounded-lg">
+            <p className="text-sm text-destructive">
+              <strong>Warnung:</strong> Diese Aktion wird den Verein und alle zugehörigen Daten deaktivieren. 
+              Der Verein kann später wieder aktiviert werden.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm"><strong>Betroffene Daten:</strong></p>
+            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+              <li>{club.userCount || 0} Benutzer</li>
+              <li>{club.memberCount || 0} Mitglieder</li>
+              <li>Alle Teams und Spieler</li>
+              <li>Alle Buchungen und Events</li>
+            </ul>
           </div>
         </div>
 
@@ -238,11 +285,12 @@ export function DeactivateClubDialog({ club, open, onClose, onConfirm, isLoading
             Abbrechen
           </Button>
           <Button 
+            type="button" 
             variant="destructive" 
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? 'Wird deaktiviert...' : 'Verein deaktivieren'}
+            {isLoading ? 'Wird deaktiviert...' : 'Deaktivieren'}
           </Button>
         </div>
       </DialogContent>
@@ -250,90 +298,98 @@ export function DeactivateClubDialog({ club, open, onClose, onConfirm, isLoading
   );
 }
 
-// User Details Modal Component
-export function UserDetailsModal({ user, open, onClose }: { user: any; open: boolean; onClose: () => void }) {
+// User Details Modal
+interface UserDetailsModalProps {
+  user: any;
+  open: boolean;
+  onClose: () => void;
+}
+
+export function UserDetailsModal({ user, open, onClose }: UserDetailsModalProps) {
+  if (!user) return null;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            {user.firstName} {user.lastName}
+            <User className="h-5 w-5" />
+            Benutzer Details
           </DialogTitle>
           <DialogDescription>
-            Detaillierte Benutzerinformationen
+            Detaillierte Informationen über {user.email}
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
+
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">E-Mail</Label>
-              <p className="text-sm">{user.email}</p>
+              <Label className="text-sm font-medium">Benutzer-ID</Label>
+              <p className="text-sm text-muted-foreground">{user.id}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">Benutzer-ID</Label>
-              <p className="text-sm font-mono">{user.id}</p>
+              <Label className="text-sm font-medium">E-Mail</Label>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">Registriert am</Label>
-              <p className="text-sm">{new Date(user.createdAt).toLocaleDateString('de-DE')}</p>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">Letzte Anmeldung</Label>
-              <p className="text-sm">
-                {user.lastLoginAt ? 
-                  new Date(user.lastLoginAt).toLocaleDateString('de-DE') : 
-                  'Nie'
-                }
+              <Label className="text-sm font-medium">Erstellt am</Label>
+              <p className="text-sm text-muted-foreground">
+                {user.createdAt ? new Date(user.createdAt).toLocaleDateString('de-DE') : 'Unbekannt'}
               </p>
             </div>
-          </div>
-          
-          <div className="space-y-4">
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">Status</Label>
-              <Badge variant={user.isActive ? "default" : "secondary"}>
+              <Label className="text-sm font-medium">Status</Label>
+              <Badge variant={user.isActive ? 'default' : 'secondary'}>
                 {user.isActive ? 'Aktiv' : 'Inaktiv'}
               </Badge>
             </div>
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">Vereinsmitgliedschaften</Label>
-              <div className="space-y-1">
-                {user.memberships?.length ? (
-                  user.memberships.map((membership: any, index: number) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Badge variant="outline">{membership.clubName}</Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {membership.role === 'club-administrator' ? 'Admin' : membership.role}
-                      </Badge>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">Keine Vereinsmitgliedschaften</p>
-                )}
-              </div>
-            </div>
           </div>
+
+          <Separator />
+
+          {/* Club Memberships */}
+          <div>
+            <Label className="text-sm font-medium mb-3 block">Vereinszugehörigkeiten</Label>
+            {user.clubs && user.clubs.length > 0 ? (
+              <div className="space-y-2">
+                {user.clubs.map((club: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{club.name}</p>
+                      <p className="text-sm text-muted-foreground">{club.role}</p>
+                    </div>
+                    <Badge variant="outline">{club.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Keine Vereinszugehörigkeiten</p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-4">
+          <Button onClick={onClose}>Schließen</Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-// Edit User Modal Component
-export function EditUserModal({ user, open, onClose, onSave, isLoading }: { 
-  user: any; 
-  open: boolean; 
-  onClose: () => void; 
+// Edit User Modal
+interface EditUserModalProps {
+  user: any;
+  open: boolean;
+  onClose: () => void;
   onSave: (data: any) => void;
-  isLoading: boolean;
-}) {
+  isLoading?: boolean;
+}
+
+export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUserModalProps) {
   const [formData, setFormData] = useState({
-    firstName: user.firstName || '',
-    lastName: user.lastName || '',
-    email: user.email || '',
-    isActive: user.isActive ?? true,
+    email: user?.email || '',
+    isActive: user?.isActive ?? true,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -341,43 +397,23 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: {
     onSave(formData);
   };
 
+  if (!user) return null;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Benutzer bearbeiten</DialogTitle>
           <DialogDescription>
-            Bearbeiten Sie die Informationen für {user.firstName} {user.lastName}
+            Bearbeiten Sie die Informationen für {user.email}
           </DialogDescription>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="edit-firstName">Vorname *</Label>
-              <Input
-                id="edit-firstName"
-                value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="edit-lastName">Nachname *</Label>
-              <Input
-                id="edit-lastName"
-                value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                required
-              />
-            </div>
-          </div>
 
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="edit-user-email">E-Mail-Adresse *</Label>
+            <Label htmlFor="email">E-Mail-Adresse *</Label>
             <Input
-              id="edit-user-email"
+              id="email"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -385,17 +421,20 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: {
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="edit-isActive"
-              checked={formData.isActive}
-              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              className="h-4 w-4"
-            />
-            <Label htmlFor="edit-isActive" className="text-sm">
-              Benutzer ist aktiv
-            </Label>
+          <div>
+            <Label htmlFor="status">Status</Label>
+            <Select 
+              value={formData.isActive ? 'active' : 'inactive'}
+              onValueChange={(value) => setFormData({ ...formData, isActive: value === 'active' })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Aktiv</SelectItem>
+                <SelectItem value="inactive">Inaktiv</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
@@ -412,43 +451,46 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: {
   );
 }
 
-// Deactivate User Dialog Component
-export function DeactivateUserDialog({ user, open, onClose, onConfirm, isLoading }: { 
-  user: any; 
-  open: boolean; 
-  onClose: () => void; 
+// Deactivate User Dialog
+interface DeactivateUserDialogProps {
+  user: any;
+  open: boolean;
+  onClose: () => void;
   onConfirm: () => void;
-  isLoading: boolean;
-}) {
+  isLoading?: boolean;
+}
+
+export function DeactivateUserDialog({ user, open, onClose, onConfirm, isLoading }: DeactivateUserDialogProps) {
+  if (!user) return null;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-600">
-            <AlertCircle className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
             Benutzer deaktivieren
           </DialogTitle>
           <DialogDescription>
-            Sind Sie sicher, dass Sie den Benutzer "{user.firstName} {user.lastName}" deaktivieren möchten?
+            Sind Sie sicher, dass Sie "{user.email}" deaktivieren möchten?
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="bg-red-50 border border-red-200 rounded-md p-4 mt-4">
-          <div className="flex">
-            <AlertCircle className="h-5 w-5 text-red-400" />
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Folgen der Deaktivierung
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <ul className="list-disc space-y-1 ml-5">
-                  <li>Benutzer kann sich nicht mehr anmelden</li>
-                  <li>Alle aktiven Sessions werden beendet</li>
-                  <li>Vereinsmitgliedschaften bleiben bestehen</li>
-                  <li>Diese Aktion kann rückgängig gemacht werden</li>
-                </ul>
-              </div>
-            </div>
+
+        <div className="space-y-4">
+          <div className="bg-destructive/10 p-4 rounded-lg">
+            <p className="text-sm text-destructive">
+              <strong>Warnung:</strong> Dieser Benutzer wird deaktiviert und kann sich nicht mehr anmelden. 
+              Der Benutzer kann später wieder aktiviert werden.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm"><strong>Benutzer-Details:</strong></p>
+            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+              <li>E-Mail: {user.email}</li>
+              <li>Benutzer-ID: {user.id}</li>
+              <li>Vereinszugehörigkeiten werden beibehalten</li>
+            </ul>
           </div>
         </div>
 
@@ -457,11 +499,12 @@ export function DeactivateUserDialog({ user, open, onClose, onConfirm, isLoading
             Abbrechen
           </Button>
           <Button 
+            type="button" 
             variant="destructive" 
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? 'Wird deaktiviert...' : 'Benutzer deaktivieren'}
+            {isLoading ? 'Wird deaktiviert...' : 'Deaktivieren'}
           </Button>
         </div>
       </DialogContent>

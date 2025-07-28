@@ -47,6 +47,19 @@ export default function SubscriptionPage() {
     enabled: !!selectedClub?.id,
   });
   
+  // Usage data query
+  const { data: usageData } = useQuery({
+    queryKey: ['/api/subscriptions/usage', selectedClub?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/subscriptions/usage/${selectedClub?.id}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch usage data');
+      return response.json();
+    },
+    enabled: !!selectedClub?.id,
+  });
+
   const subscription = subscriptionData?.subscription;
   const plan = subscriptionData?.plan;
   const usage = subscriptionData?.usage || usageData?.usage;
@@ -95,19 +108,6 @@ export default function SubscriptionPage() {
         variant: "destructive",
       });
     }
-  });
-
-  // Usage data query
-  const { data: usageData } = useQuery({
-    queryKey: ['/api/subscriptions/usage', selectedClub?.id],
-    queryFn: async () => {
-      const response = await fetch(`/api/subscriptions/usage/${selectedClub?.id}`, {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch usage data');
-      return response.json();
-    },
-    enabled: !!selectedClub?.id,
   });
 
   if (isLoading || !selectedClub) {

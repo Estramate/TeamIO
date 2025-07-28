@@ -151,7 +151,7 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
       const planResult = await db
         .select()
         .from(subscriptionPlans)
-        .where(eq(subscriptionPlans.planType, (subscription as any).planType))
+        .where(eq(subscriptionPlans.planType, subscription.planType))
         .limit(1);
       
       plan = planResult[0] || null;

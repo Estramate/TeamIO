@@ -131,7 +131,7 @@ router.get("/users",
       const users = await storage.getAllUsers();
       console.log(`📊 Getting ALL USERS for Super Admin - Total: ${users.length}`);
       
-      // Enhance users with club memberships
+      // Enhance users with club memberships and handle Super Admin display
       const enhancedUsers = await Promise.all(
         users.map(async (user: any) => {
           const memberships = await storage.getUserClubMemberships(user.id);
@@ -141,10 +141,17 @@ router.get("/users",
             memberships.map(async (membership: any) => {
               const club = await storage.getClub(membership.clubId);
               const role = await storage.getRoleById(membership.roleId);
+              
+              // For Super Admins, show their true role in the interface
+              let displayRole = role?.name || 'member';
+              if (user.isSuperAdmin) {
+                displayRole = 'super-administrator';
+              }
+              
               return {
                 clubId: membership.clubId,
                 clubName: club?.name || `Club ${membership.clubId}`,
-                role: role?.name || 'member',
+                role: displayRole,
                 status: membership.status,
                 joinedAt: membership.joinedAt,
               };

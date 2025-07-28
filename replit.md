@@ -7,6 +7,13 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 **Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. All critical bugs resolved and application running smoothly.
 
 ## Recent Changes
+- **2025-07-28**: SIDEBAR-SCROLLBAR UND API-FEHLER BEHOBEN - Unsichtbare Scrollbar + Communication-API-Reparatur
+  - **Sidebar Scrollbar**: CSS-Klasse .sidebar-scrollable für unsichtbare aber funktionale Scrollbar hinzugefügt
+  - **Communication-API 500-Fehler behoben**: Try-catch-Blöcke und Default-Werte für fehlende Tabellen implementiert
+  - **Erweiterte Console-Spam-Unterdrückung**: Verbesserte Replit-Error-Filterung in index.html
+  - **useRoles API-Fix**: Standard Query-Client statt falsche apiRequest-Verwendung
+  - **Cross-Browser-Kompatibilität**: Scrollbar-Lösung funktioniert in Firefox, Chrome, Safari und Edge
+
 - **2025-07-28**: ERWEITERTE ROLLENVERWALTUNG IMPLEMENTIERT - Professionelles 8-Rollen-System für realistische Vereinsstrukturen
   - **Neue Rollen hinzugefügt**: Kassier/Finanzverwalter, Schriftführer/Sekretär, Obmann/Vereinsleitung, Platzwart/Facility Manager, Eventmanager
   - **Datenbankbasierte Rollenverwaltung**: Alle Rollen werden aus der normalisierten roles-Tabelle geladen

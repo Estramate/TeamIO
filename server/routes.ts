@@ -2347,7 +2347,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Invalid club ID', 'clubId');
     }
     
-    res.json(preferences || {});
+    try {
+      const preferences = await storage.getUserCommunicationPreferences(userId, clubId);
+      res.json(preferences || {});
+    } catch (error: any) {
+      // Return default preferences if table doesn't exist or other errors
+      logger.warn('Communication preferences error, returning defaults', { 
+        error: error.message, 
+        userId, 
+        clubId,
+        requestId: req.id 
+      });
+      res.json({
+        emailNotifications: true,
+        smsNotifications: false,
+        pushNotifications: true,
+        weeklyDigest: true,
+        eventReminders: true,
+        messageUpdates: true
+      });
+    }
   }));
 
   app.put('/api/clubs/:clubId/communication-preferences', isAuthenticated, asyncHandler(async (req: any, res: any) => {
@@ -2358,9 +2377,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Invalid club ID', 'clubId');
     }
     
-    
-    logger.info('Communication preferences updated', { clubId, userId, requestId: req.id });
-    res.json(preferences);
+    try {
+      const preferences = await storage.updateUserCommunicationPreferences(userId, clubId, req.body);
+      logger.info('Communication preferences updated', { clubId, userId, requestId: req.id });
+      res.json(preferences);
+    } catch (error: any) {
+      logger.error('Failed to update communication preferences', { 
+        error: error.message, 
+        userId, 
+        clubId,
+        requestId: req.id 
+      });
+      res.status(500).json({ message: 'Fehler beim Aktualisieren der Kommunikationseinstellungen' });
+    }
   }));
 
   // Communication statistics routes

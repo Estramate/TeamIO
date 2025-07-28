@@ -1,23 +1,20 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { requiresClubAdmin, requiresAuth } from './middleware/auth';
+import { isAuthenticated } from './replitAuth';
 import { db } from './db';
 import { 
   chatRooms, 
-  chatParticipants, 
-  chatMessages, 
-  messageReadStatus,
-  videoCallSessions,
-  insertChatRoomSchema,
-  insertChatMessageSchema,
-  insertVideoCallSessionSchema
-} from '@shared/schemas';
+  chatRoomParticipants, 
+  liveChatMessages, 
+  liveChatMessageReadStatus,
+  userActivity
+} from '@shared/schemas/chat';
 import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 
 const router = Router();
 
 // Get all chat rooms for a club
-router.get('/clubs/:clubId/chat-rooms', requiresAuth, async (req, res) => {
+router.get('/clubs/:clubId/chat-rooms', isAuthenticated, async (req, res) => {
   try {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user!.id;
@@ -33,12 +30,13 @@ router.get('/clubs/:clubId/chat-rooms', requiresAuth, async (req, res) => {
         updatedAt: chatRooms.updatedAt,
       })
       .from(chatRooms)
-      .innerJoin(chatParticipants, eq(chatRooms.id, chatParticipants.chatRoomId))
+      .innerJoin(chatRoomParticipants, eq(chatRooms.id, chatRoomParticipants.roomId))
       .where(
         and(
           eq(chatRooms.clubId, clubId),
-          eq(chatParticipants.userId, userId),
-          eq(chatRooms.isActive, true)
+          eq(chatRoomParticipants.userId, userId),
+          eq(chatRooms.isActive, true),
+          eq(chatRoomParticipants.isActive, true)
         )
       )
       .orderBy(desc(chatRooms.updatedAt));
@@ -49,51 +47,50 @@ router.get('/clubs/:clubId/chat-rooms', requiresAuth, async (req, res) => {
         // Get participants
         const participants = await db
           .select({
-            id: chatParticipants.id,
-            userId: chatParticipants.userId,
-            role: chatParticipants.role,
-            isOnline: chatParticipants.isOnline,
-            lastSeen: chatParticipants.lastSeen,
-            joinedAt: chatParticipants.joinedAt,
+            id: chatRoomParticipants.id,
+            userId: chatRoomParticipants.userId,
+            joinedAt: chatRoomParticipants.joinedAt,
+            lastReadAt: chatRoomParticipants.lastReadAt,
+            isActive: chatRoomParticipants.isActive,
           })
-          .from(chatParticipants)
-          .where(eq(chatParticipants.chatRoomId, room.id));
+          .from(chatRoomParticipants)
+          .where(eq(chatRoomParticipants.roomId, room.id));
 
         // Get last message
         const lastMessage = await db
           .select({
-            id: chatMessages.id,
-            content: chatMessages.content,
-            messageType: chatMessages.messageType,
-            senderId: chatMessages.senderId,
-            createdAt: chatMessages.createdAt,
+            id: liveChatMessages.id,
+            content: liveChatMessages.content,
+            messageType: liveChatMessages.messageType,
+            senderId: liveChatMessages.senderId,
+            createdAt: liveChatMessages.createdAt,
           })
-          .from(chatMessages)
+          .from(liveChatMessages)
           .where(
             and(
-              eq(chatMessages.chatRoomId, room.id),
-              eq(chatMessages.isDeleted, false)
+              eq(liveChatMessages.roomId, room.id),
+              eq(liveChatMessages.isDeleted, false)
             )
           )
-          .orderBy(desc(chatMessages.createdAt))
+          .orderBy(desc(liveChatMessages.createdAt))
           .limit(1);
 
         // Get unread count for current user
         const unreadCount = await db
           .select({ count: sql<number>`count(*)` })
-          .from(chatMessages)
+          .from(liveChatMessages)
           .leftJoin(
-            messageReadStatus,
+            liveChatMessageReadStatus,
             and(
-              eq(messageReadStatus.messageId, chatMessages.id),
-              eq(messageReadStatus.userId, userId)
+              eq(liveChatMessageReadStatus.messageId, liveChatMessages.id),
+              eq(liveChatMessageReadStatus.userId, userId)
             )
           )
           .where(
             and(
-              eq(chatMessages.chatRoomId, room.id),
-              eq(chatMessages.isDeleted, false),
-              sql`${messageReadStatus.userId} IS NULL`
+              eq(liveChatMessages.roomId, room.id),
+              eq(liveChatMessages.isDeleted, false),
+              sql`${liveChatMessageReadStatus.userId} IS NULL`
             )
           );
 
@@ -114,28 +111,28 @@ router.get('/clubs/:clubId/chat-rooms', requiresAuth, async (req, res) => {
 });
 
 // Create a new chat room
-router.post('/clubs/:clubId/chat-rooms', requiresAuth, async (req, res) => {
+router.post('/clubs/:clubId/chat-rooms', isAuthenticated, async (req, res) => {
   try {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user!.id;
     
-    const validatedData = insertChatRoomSchema.parse({
-      ...req.body,
+    const roomData = {
       clubId,
+      name: req.body.name,
+      type: req.body.type || 'group',
+      description: req.body.description,
       createdBy: userId,
-    });
+    };
 
     const [newRoom] = await db
       .insert(chatRooms)
-      .values(validatedData)
+      .values(roomData)
       .returning();
 
-    // Add creator as admin participant
-    await db.insert(chatParticipants).values({
-      chatRoomId: newRoom.id,
+    // Add creator as participant
+    await db.insert(chatRoomParticipants).values({
+      roomId: newRoom.id,
       userId,
-      role: 'admin',
-      isOnline: true,
     });
 
     // Add other participants if provided
@@ -143,14 +140,12 @@ router.post('/clubs/:clubId/chat-rooms', requiresAuth, async (req, res) => {
       const participants = req.body.participantIds
         .filter((id: string) => id !== userId)
         .map((participantId: string) => ({
-          chatRoomId: newRoom.id,
+          roomId: newRoom.id,
           userId: participantId,
-          role: 'member',
-          isOnline: false,
         }));
 
       if (participants.length > 0) {
-        await db.insert(chatParticipants).values(participants);
+        await db.insert(chatRoomParticipants).values(participants);
       }
     }
 
@@ -165,7 +160,7 @@ router.post('/clubs/:clubId/chat-rooms', requiresAuth, async (req, res) => {
 });
 
 // Get messages for a chat room
-router.get('/clubs/:clubId/chat-rooms/:roomId/messages', requiresAuth, async (req, res) => {
+router.get('/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req, res) => {
   try {
     const clubId = parseInt(req.params.clubId);
     const roomId = parseInt(req.params.roomId);
@@ -176,43 +171,40 @@ router.get('/clubs/:clubId/chat-rooms/:roomId/messages', requiresAuth, async (re
     // Verify user is participant in this room
     const participation = await db
       .select()
-      .from(chatParticipants)
+      .from(chatRoomParticipants)
       .where(
         and(
-          eq(chatParticipants.chatRoomId, roomId),
-          eq(chatParticipants.userId, userId)
+          eq(chatRoomParticipants.roomId, roomId),
+          eq(chatRoomParticipants.userId, userId),
+          eq(chatRoomParticipants.isActive, true)
         )
       )
       .limit(1);
 
     if (participation.length === 0) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(403).json({ error: 'Not authorized to access this chat room' });
     }
 
-    // Get messages with sender info
+    // Get messages
     const messages = await db
       .select({
-        id: chatMessages.id,
-        chatRoomId: chatMessages.chatRoomId,
-        senderId: chatMessages.senderId,
-        content: chatMessages.content,
-        messageType: chatMessages.messageType,
-        attachmentUrl: chatMessages.attachmentUrl,
-        attachmentType: chatMessages.attachmentType,
-        replyToId: chatMessages.replyToId,
-        isEdited: chatMessages.isEdited,
-        editedAt: chatMessages.editedAt,
-        createdAt: chatMessages.createdAt,
-        updatedAt: chatMessages.updatedAt,
+        id: liveChatMessages.id,
+        content: liveChatMessages.content,
+        messageType: liveChatMessages.messageType,
+        senderId: liveChatMessages.senderId,
+        replyToId: liveChatMessages.replyToId,
+        editedAt: liveChatMessages.editedAt,
+        isDeleted: liveChatMessages.isDeleted,
+        createdAt: liveChatMessages.createdAt,
       })
-      .from(chatMessages)
+      .from(liveChatMessages)
       .where(
         and(
-          eq(chatMessages.chatRoomId, roomId),
-          eq(chatMessages.isDeleted, false)
+          eq(liveChatMessages.roomId, roomId),
+          eq(liveChatMessages.isDeleted, false)
         )
       )
-      .orderBy(desc(chatMessages.createdAt))
+      .orderBy(desc(liveChatMessages.createdAt))
       .limit(limit)
       .offset(offset);
 
@@ -220,20 +212,24 @@ router.get('/clubs/:clubId/chat-rooms/:roomId/messages', requiresAuth, async (re
     const messagesWithReadStatus = await Promise.all(
       messages.map(async (message) => {
         const readBy = await db
-          .select({ userId: messageReadStatus.userId })
-          .from(messageReadStatus)
-          .where(eq(messageReadStatus.messageId, message.id));
+          .select({ userId: liveChatMessageReadStatus.userId })
+          .from(liveChatMessageReadStatus)
+          .where(eq(liveChatMessageReadStatus.messageId, message.id));
 
         return {
           ...message,
           readBy: readBy.map(r => r.userId),
-          senderName: `User ${message.senderId}`, // In real app, join with users table
-          senderRole: 'Member', // In real app, get from user role
+          sender: {
+            firstName: `User`,
+            lastName: `${message.senderId}`,
+            email: `user${message.senderId}@example.com`,
+          },
+          isRead: readBy.some(r => r.userId === userId),
         };
       })
     );
 
-    res.json(messagesWithReadStatus.reverse()); // Reverse to show oldest first
+    res.json(messagesWithReadStatus.reverse())
   } catch (error) {
     console.error('Error fetching messages:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -241,7 +237,7 @@ router.get('/clubs/:clubId/chat-rooms/:roomId/messages', requiresAuth, async (re
 });
 
 // Send a message
-router.post('/clubs/:clubId/chat-rooms/:roomId/messages', requiresAuth, async (req, res) => {
+router.post('/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req, res) => {
   try {
     const clubId = parseInt(req.params.clubId);
     const roomId = parseInt(req.params.roomId);
@@ -250,46 +246,52 @@ router.post('/clubs/:clubId/chat-rooms/:roomId/messages', requiresAuth, async (r
     // Verify user is participant in this room
     const participation = await db
       .select()
-      .from(chatParticipants)
+      .from(chatRoomParticipants)
       .where(
         and(
-          eq(chatParticipants.chatRoomId, roomId),
-          eq(chatParticipants.userId, userId)
+          eq(chatRoomParticipants.roomId, roomId),
+          eq(chatRoomParticipants.userId, userId),
+          eq(chatRoomParticipants.isActive, true)
         )
       )
       .limit(1);
 
     if (participation.length === 0) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(403).json({ error: 'Not authorized to send messages' });
     }
 
-    const validatedData = insertChatMessageSchema.parse({
-      ...req.body,
-      chatRoomId: roomId,
+    const messageData = {
+      roomId,
       senderId: userId,
-    });
+      content: req.body.content,
+      messageType: req.body.messageType || 'text',
+    };
 
     const [newMessage] = await db
-      .insert(chatMessages)
-      .values(validatedData)
+      .insert(liveChatMessages)
+      .values(messageData)
       .returning();
 
-    // Update room's updatedAt timestamp
+    // Update room's lastActivity timestamp
     await db
       .update(chatRooms)
-      .set({ updatedAt: new Date() })
+      .set({ lastActivity: new Date(), updatedAt: new Date() })
       .where(eq(chatRooms.id, roomId));
 
     // Mark message as read by sender
-    await db.insert(messageReadStatus).values({
+    await db.insert(liveChatMessageReadStatus).values({
       messageId: newMessage.id,
       userId,
     });
 
     res.status(201).json({
       ...newMessage,
-      senderName: `User ${userId}`,
-      senderRole: 'Member',
+      sender: {
+        firstName: `User`,
+        lastName: `${userId}`,
+        email: `user${userId}@example.com`,
+      },
+      isRead: true,
       readBy: [userId],
     });
   } catch (error) {
@@ -302,7 +304,7 @@ router.post('/clubs/:clubId/chat-rooms/:roomId/messages', requiresAuth, async (r
 });
 
 // Mark messages as read
-router.post('/clubs/:clubId/chat-rooms/:roomId/messages/mark-read', requiresAuth, async (req, res) => {
+router.post('/clubs/:clubId/chat-rooms/:roomId/messages/mark-read', isAuthenticated, async (req, res) => {
   try {
     const roomId = parseInt(req.params.roomId);
     const userId = req.user!.id;
@@ -315,17 +317,18 @@ router.post('/clubs/:clubId/chat-rooms/:roomId/messages/mark-read', requiresAuth
     // Verify user is participant
     const participation = await db
       .select()
-      .from(chatParticipants)
+      .from(chatRoomParticipants)
       .where(
         and(
-          eq(chatParticipants.chatRoomId, roomId),
-          eq(chatParticipants.userId, userId)
+          eq(chatRoomParticipants.roomId, roomId),
+          eq(chatRoomParticipants.userId, userId),
+          eq(chatRoomParticipants.isActive, true)
         )
       )
       .limit(1);
 
     if (participation.length === 0) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(403).json({ error: 'Not authorized for this chat room' });
     }
 
     // Insert read status for unread messages
@@ -335,7 +338,7 @@ router.post('/clubs/:clubId/chat-rooms/:roomId/messages/mark-read', requiresAuth
     }));
 
     await db
-      .insert(messageReadStatus)
+      .insert(liveChatMessageReadStatus)
       .values(readStatusValues)
       .onConflictDoNothing();
 
@@ -347,29 +350,30 @@ router.post('/clubs/:clubId/chat-rooms/:roomId/messages/mark-read', requiresAuth
 });
 
 // Get unread message count for user across all rooms
-router.get('/clubs/:clubId/chat-unread-count', requiresAuth, async (req, res) => {
+router.get('/clubs/:clubId/chat-unread-count', isAuthenticated, async (req, res) => {
   try {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user!.id;
 
     const unreadCount = await db
       .select({ count: sql<number>`count(*)` })
-      .from(chatMessages)
-      .innerJoin(chatRooms, eq(chatMessages.chatRoomId, chatRooms.id))
-      .innerJoin(chatParticipants, eq(chatRooms.id, chatParticipants.chatRoomId))
+      .from(liveChatMessages)
+      .innerJoin(chatRooms, eq(liveChatMessages.roomId, chatRooms.id))
+      .innerJoin(chatRoomParticipants, eq(chatRooms.id, chatRoomParticipants.roomId))
       .leftJoin(
-        messageReadStatus,
+        liveChatMessageReadStatus,
         and(
-          eq(messageReadStatus.messageId, chatMessages.id),
-          eq(messageReadStatus.userId, userId)
+          eq(liveChatMessageReadStatus.messageId, liveChatMessages.id),
+          eq(liveChatMessageReadStatus.userId, userId)
         )
       )
       .where(
         and(
           eq(chatRooms.clubId, clubId),
-          eq(chatParticipants.userId, userId),
-          eq(chatMessages.isDeleted, false),
-          sql`${messageReadStatus.userId} IS NULL`
+          eq(chatRoomParticipants.userId, userId),
+          eq(chatRoomParticipants.isActive, true),
+          eq(liveChatMessages.isDeleted, false),
+          sql`${liveChatMessageReadStatus.userId} IS NULL`
         )
       );
 
@@ -381,7 +385,7 @@ router.get('/clubs/:clubId/chat-unread-count', requiresAuth, async (req, res) =>
 });
 
 // Start video call session
-router.post('/clubs/:clubId/chat-rooms/:roomId/video-call', requiresAuth, async (req, res) => {
+router.post('/clubs/:clubId/chat-rooms/:roomId/video-call', isAuthenticated, async (req, res) => {
   try {
     const roomId = parseInt(req.params.roomId);
     const userId = req.user!.id;
@@ -389,24 +393,23 @@ router.post('/clubs/:clubId/chat-rooms/:roomId/video-call', requiresAuth, async 
     // Generate unique session ID
     const sessionId = `call_${roomId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    const [videoCall] = await db
-      .insert(videoCallSessions)
-      .values({
-        chatRoomId: roomId,
-        initiatorId: userId,
-        sessionId,
-        status: 'waiting',
-        participants: JSON.stringify([userId]),
-      })
-      .returning();
+    // Video call feature placeholder - not fully implemented yet
+    const videoCall = {
+      id: Date.now(),
+      roomId,
+      initiatorId: userId,
+      sessionId,
+      status: 'waiting',
+      participants: [userId],
+    };
 
-    // Send system message about video call
-    await db.insert(chatMessages).values({
-      chatRoomId: roomId,
+    // Send system message about video call (commented out - video calls not fully implemented)
+    /* await db.insert(liveChatMessages).values({
+      roomId: roomId,
       senderId: userId,
       content: `Video-Anruf gestartet: ${sessionId}`,
       messageType: 'system',
-    });
+    }); */
 
     res.status(201).json(videoCall);
   } catch (error) {

@@ -7,6 +7,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
 import { handleErrorReports, handlePerformanceMetrics } from "./error-reporting";
 import subscriptionRoutes from "./routes/subscriptions";
+import chatRoutes from "./chatRoutes";
 
 import { z } from 'zod';
 import {
@@ -3008,7 +3009,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // === LIVE CHAT API ROUTES ===
+  // === LIVE CHAT API ROUTES - PRODUCTION DATABASE INTEGRATION ===
+  app.use("/api", chatRoutes);
+  
+  // Remove mock endpoints - replaced by production chatRoutes above
+  /*
   
   // Get all chat rooms for a club
   app.get('/api/clubs/:clubId/chat-rooms', isAuthenticated, async (req: any, res) => {
@@ -3207,6 +3212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
+  */
 
   return httpServer;
 }

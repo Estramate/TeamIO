@@ -66,7 +66,7 @@ interface LiveChatProps {
   className?: string;
 }
 
-export function LiveChat({ className }: LiveChatProps) {
+function LiveChat({ className }: LiveChatProps) {
   const { selectedClub } = useClub();
   const { user } = useAuth();
   const { showInfo } = useNotifications();
@@ -487,4 +487,6 @@ export function LiveChatIndicator() {
     </Dialog>
   );
 }
+
+export default LiveChat;
 

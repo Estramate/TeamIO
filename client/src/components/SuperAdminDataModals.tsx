@@ -65,18 +65,8 @@ const planLimitsSchema = z.object({
   }),
 });
 
-const upgradeNotificationSchema = z.object({
-  title: z.string().min(1, "Titel ist erforderlich"),
-  message: z.string().min(1, "Nachricht ist erforderlich"),
-  targetPlan: z.enum(['starter', 'professional', 'enterprise']),
-  triggerCondition: z.enum(['memberLimit', 'featureUsage', 'timeLimit']),
-  triggerValue: z.string().optional(),
-  isActive: z.boolean(),
-});
-
 type PriceAdjustmentForm = z.infer<typeof priceAdjustmentSchema>;
 type PlanLimitsForm = z.infer<typeof planLimitsSchema>;
-type UpgradeNotificationForm = z.infer<typeof upgradeNotificationSchema>;
 
 // Email Settings Modal with real data
 interface EmailSettingsModalProps {
@@ -200,7 +190,6 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
   // State for individual modals
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [isPlanLimitsModalOpen, setIsPlanLimitsModalOpen] = useState(false);
-  const [isUpgradeNotificationModalOpen, setIsUpgradeNotificationModalOpen] = useState(false);
 
   // Action handlers that open modals
   const handlePriceAdjustment = () => {
@@ -209,10 +198,6 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
 
   const handlePlanLimitsEdit = () => {
     setIsPlanLimitsModalOpen(true);
-  };
-
-  const handleUpgradeNotifications = () => {
-    setIsUpgradeNotificationModalOpen(true);
   };
 
   // Debug revenue calculation
@@ -337,12 +322,6 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
               >
                 Plan-Limits bearbeiten
               </Button>
-              <Button 
-                variant="outline"
-                onClick={handleUpgradeNotifications}
-              >
-                Upgrade-Benachrichtigungen
-              </Button>
             </div>
           </div>
         </div>
@@ -360,10 +339,6 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
       <PlanLimitsModal 
         open={isPlanLimitsModalOpen} 
         onClose={() => setIsPlanLimitsModalOpen(false)} 
-      />
-      <UpgradeNotificationModal 
-        open={isUpgradeNotificationModalOpen} 
-        onClose={() => setIsUpgradeNotificationModalOpen(false)} 
       />
     </Dialog>
   );
@@ -717,145 +692,3 @@ function PlanLimitsModal({ open, onClose }: PlanLimitsModalProps) {
   );
 }
 
-interface UpgradeNotificationModalProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-function UpgradeNotificationModal({ open, onClose }: UpgradeNotificationModalProps) {
-  const [targetPlan, setTargetPlan] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
-  const [discountPercent, setDiscountPercent] = useState<string>('');
-  const [validUntil, setValidUntil] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // Fetch eligible clubs for upgrade
-  const { data: eligibleClubs, isLoading: clubsLoading } = useQuery({
-    queryKey: ['/api/super-admin/clubs-eligible', targetPlan],
-    enabled: open && !!targetPlan,
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      const response = await apiRequest('POST', '/api/super-admin/subscription-plans/send-upgrade-notifications', {
-        targetPlan,
-        message,
-        discountPercent: discountPercent ? parseInt(discountPercent) : null,
-        validUntil: validUntil ? new Date(validUntil).toISOString() : null
-      });
-      
-      toast({
-        title: "Upgrade-Benachrichtigung gesendet",
-        description: `Die Benachrichtigung wurde an ${response.sentTo || 'alle berechtigten'} Vereine gesendet.`
-      });
-      
-      setTargetPlan('');
-      setMessage('');
-      setDiscountPercent('');
-      setValidUntil('');
-      onClose();
-    } catch (error: any) {
-      toast({
-        title: "Fehler beim Senden",
-        description: error.message || "Die Benachrichtigung konnte nicht gesendet werden.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Upgrade-Benachrichtigung</DialogTitle>
-          <DialogDescription>
-            Senden Sie personalisierte Upgrade-Benachrichtigungen an Benutzer.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="target-plan">Ziel-Plan</Label>
-            <Select value={targetPlan} onValueChange={setTargetPlan}>
-              <SelectTrigger>
-                <SelectValue placeholder="Wählen Sie den Ziel-Plan..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="starter">Starter</SelectItem>
-                <SelectItem value="professional">Professional</SelectItem>
-                <SelectItem value="enterprise">Enterprise</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Show eligible clubs count */}
-          {targetPlan && (
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <Label className="text-sm font-medium">Berechtigte Vereine:</Label>
-              {clubsLoading ? (
-                <p className="text-sm text-muted-foreground">Lade...</p>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  {eligibleClubs?.length || 0} Vereine können auf {targetPlan} upgraden
-                </p>
-              )}
-            </div>
-          )}
-          
-          <div>
-            <Label htmlFor="notification-message">Benachrichtigungs-Text</Label>
-            <Textarea
-              id="notification-message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Entdecken Sie neue Funktionen mit unserem Premium-Plan..."
-              rows={4}
-              required
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="discount">Rabatt (%)</Label>
-              <Input
-                id="discount"
-                type="number"
-                min="1"
-                max="100"
-                value={discountPercent}
-                onChange={(e) => setDiscountPercent(e.target.value)}
-                placeholder="20"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="valid-until">Gültig bis</Label>
-              <Input
-                id="valid-until"
-                type="date"
-                value={validUntil}
-                onChange={(e) => setValidUntil(e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Abbrechen
-            </Button>
-            <Button type="submit" disabled={isLoading || !targetPlan || !message}>
-              {isLoading ? "Wird gesendet..." : "Benachrichtigung senden"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}

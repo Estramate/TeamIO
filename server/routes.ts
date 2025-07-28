@@ -444,10 +444,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('You are not a member of this club');
     }
     
-    // Get role information
+    // Get role information (BOTH club-administrator AND obmann have admin rights)
     const role = await storage.getRoleById(membership.roleId);
-    if (!role || role.name !== 'club-administrator') {
-      throw new AuthorizationError('You must be a club administrator to update club settings');
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!role || !adminRoles.includes(role.name)) {
+      throw new AuthorizationError('You must be a club administrator or club leader to update club settings');
     }
     
     // Validate update data
@@ -650,10 +651,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('You are not a member of this club');
     }
     
-    // Get role information
+    // Get role information (BOTH club-administrator AND obmann have admin rights)
     const role = await storage.getRoleById(membership.roleId);
-    if (!role || role.name !== 'club-administrator') {
-      throw new AuthorizationError('You must be a club administrator to view pending memberships');
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!role || !adminRoles.includes(role.name)) {
+      throw new AuthorizationError('You must be a club administrator or club leader to view pending memberships');
     }
 
     const pendingMemberships = await storage.getPendingClubMemberships(clubId);
@@ -688,8 +690,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     const adminRole = await storage.getRoleById(adminMembership.roleId);
-    if (!adminRole || adminRole.name !== 'club-administrator') {
-      throw new AuthorizationError('You must be a club administrator to approve memberships');
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!adminRole || !adminRoles.includes(adminRole.name)) {
+      throw new AuthorizationError('You must be a club administrator or club leader to approve memberships');
     }
 
     // Get the membership to approve/reject
@@ -949,8 +952,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     const adminRole = await storage.getRoleById(adminMembership.roleId);
-    if (!adminRole || adminRole.name !== 'club-administrator') {
-      throw new AuthorizationError('You must be a club administrator to manage users');
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!adminRole || !adminRoles.includes(adminRole.name)) {
+      throw new AuthorizationError('You must be a club administrator or club leader to manage users');
     }
     
     const users = await storage.getClubUsersWithMembership(clubId);
@@ -983,8 +987,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     const adminRole = await storage.getRoleById(adminMembership.roleId);
-    if (!adminRole || adminRole.name !== 'club-administrator') {
-      throw new AuthorizationError('You must be a club administrator to manage member roles');
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!adminRole || !adminRoles.includes(adminRole.name)) {
+      throw new AuthorizationError('You must be a club administrator or club leader to manage member roles');
     }
     
     let targetRole;
@@ -1046,8 +1051,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     const adminRole = await storage.getRoleById(adminMembership.roleId);
-    if (!adminRole || adminRole.name !== 'club-administrator') {
-      throw new AuthorizationError('You must be a club administrator to manage member status');
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!adminRole || !adminRoles.includes(adminRole.name)) {
+      throw new AuthorizationError('You must be a club administrator or club leader to manage member status');
     }
     
     const updatedMembership = await storage.updateClubMembershipById(memberId, { status });
@@ -1087,10 +1093,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('You are not a member of this club');
     }
     
-    // Get role information
+    // Get role information (BOTH club-administrator AND obmann have admin rights)
     const role = await storage.getRoleById(adminMembership.roleId);
-    if (!role || role.name !== 'club-administrator') {
-      throw new AuthorizationError('You must be a club administrator to remove members');
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!role || !adminRoles.includes(role.name)) {
+      throw new AuthorizationError('You must be a club administrator or club leader to remove members');
     }
     
     await storage.deleteClubMembershipById(memberId);
@@ -2517,9 +2524,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Get role information
     const adminRole = await storage.getRoleById(adminMembership.roleId);
-    if (!adminRole || adminRole.name !== 'club-administrator') {
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!adminRole || !adminRoles.includes(adminRole.name)) {
       console.log('📧 ERROR: User is not club administrator, role:', adminRole?.name);
-      throw new AuthorizationError('You must be a club administrator to send invitations');
+      throw new AuthorizationError('You must be a club administrator or club leader to send invitations');
     }
     
     // Check if user already exists and has membership

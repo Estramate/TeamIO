@@ -38,11 +38,12 @@ const requiresClubAdmin = async (req: any, res: any, next: any) => {
       return res.status(403).json({ error: 'You must be a club administrator to access subscription management' });
     }
     
-    // Get the role details to check permissions
+    // Get the role details to check permissions (BOTH club-administrator AND obmann have admin rights)
     const role = await storage.getRoleById(adminMembership.roleId);
-    if (!role || role.name !== 'club-administrator') {
-      console.log(`❌ User ${userId} has role ${role?.name || 'unknown'} but needs club-administrator for club ${clubId}`);
-      return res.status(403).json({ error: 'You must be a club administrator to access subscription management' });
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!role || !adminRoles.includes(role.name)) {
+      console.log(`❌ User ${userId} has role ${role?.name || 'unknown'} but needs admin role (club-administrator or obmann) for club ${clubId}`);
+      return res.status(403).json({ error: 'You must be a club administrator or club leader to access subscription management' });
     }
     
     console.log(`✅ Club admin access granted for user ${userId} to club ${clubId}`);

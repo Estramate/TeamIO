@@ -41,6 +41,9 @@ const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
 const SyncDemo = lazy(() => import("@/pages/SyncDemo"));
 const ChatDemo = lazy(() => import("@/pages/ChatDemo"));
 
+// Import FloatingChatWidget
+import FloatingChatWidget from "@/components/FloatingChatWidget";
+
 
 
 function AuthenticatedApp() {
@@ -94,6 +97,8 @@ function AuthenticatedApp() {
 
           <Route component={NotFound} />
         </Switch>
+        {/* Floating Chat Widget - Available throughout the app */}
+        <FloatingChatWidget />
       </Layout>
     </PageProvider>
     </SubscriptionProvider>

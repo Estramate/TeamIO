@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, Send, Users, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiRequest } from '@/lib/queryClient';
-import { useClubStore } from '@/stores/clubStore';
+import { useClub } from '@/hooks/use-club';
 
 interface ChatRoom {
   id: number;
@@ -32,7 +32,7 @@ interface ChatMessage {
 }
 
 export default function LiveChat() {
-  const { selectedClub } = useClubStore();
+  const { selectedClub } = useClub();
   const queryClient = useQueryClient();
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
   const [newMessage, setNewMessage] = useState('');

@@ -536,7 +536,7 @@ function CreateClubForm({ onSubmit, isLoading, onCancel }: {
     primaryColor: '#3b82f6',
     secondaryColor: '#64748b',
     accentColor: '#10b981',
-    planId: 2, // Default to Starter plan (ID 2)
+    planId: 1, // Default to Free plan (ID 1)
   });
 
   // Fetch available subscription plans

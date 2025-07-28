@@ -216,6 +216,13 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 - ✅ Projekt von 156MB auf optimierte Größe reduziert durch systematische Aufräumarbeiten
 - 📄 **BESTÄTIGT**: Anwendung läuft stabil nach kompletter Codebase-Bereinigung
 
+**LATEST FIX (July 28, 2025 - 10:53):**
+✅ **STANDARD-PLAN BEI VEREINSERSTELLUNG AUF "KOSTENLOS" GEÄNDERT**:
+- ✅ Super Admin Modal: Standard-Plan von Starter (ID 2) auf Kostenlos (ID 1) umgestellt
+- ✅ Benutzerfreundlicher: Neue Vereine starten automatisch mit kostenlosem Plan
+- ✅ Upgrade-Option: Vereine können jederzeit auf höhere Pläne upgraden
+- ✅ Konsistente Erfahrung: Sowohl Super Admin als auch normaler Onboarding verwenden kostenlosen Standard
+
 **Recent Fixes**: 
 - ✅ **AUSSTEHENDE MITGLIEDSCHAFTSANFRAGEN REPARIERT** - getClubUsersWithMembership SQL-Fehler behoben, Admin-Berechtigungen korrekt gesetzt, inactive Status wird als "Ausstehend" angezeigt
 - ✅ **TOAST-NOTIFICATION-SYSTEM VOLLSTÄNDIG IMPLEMENTIERT** - Alle window.confirm(), console.log/error, und alert() durch einheitliche Toast-Benachrichtigungen ersetzt

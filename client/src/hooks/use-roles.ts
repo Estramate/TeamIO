@@ -4,7 +4,6 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
 
 export interface Role {
   id: number;
@@ -24,9 +23,6 @@ export interface Role {
 export function useRoles() {
   return useQuery({
     queryKey: ['/api/super-admin/roles'],
-    queryFn: async (): Promise<Role[]> => {
-      return await apiRequest('/api/super-admin/roles');
-    },
     staleTime: 5 * 60 * 1000, // 5 minutes - roles don't change often
     gcTime: 10 * 60 * 1000, // 10 minutes (updated from cacheTime)
     select: (data) => {

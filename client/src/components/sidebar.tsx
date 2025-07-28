@@ -195,8 +195,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
                     {selectedClub?.logoUrl ? (
                       <img 
@@ -221,12 +221,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       )}
                     />
                   </div>
-                  <div className="overflow-hidden">
+                  <div className="overflow-hidden flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-bold text-club-primary whitespace-nowrap">
+                      <h1 className="text-xl font-bold text-club-primary truncate">
                         {selectedClub?.name || "ClubFlow"}
                       </h1>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 flex-shrink-0">
                         Beta
                       </span>
                     </div>
@@ -235,12 +235,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   {/* Collapse Toggle */}
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="hidden xl:flex"
+                    className="hidden xl:flex flex-shrink-0"
                     onClick={() => setCollapsed(!collapsed)}
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -249,7 +249,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="xl:hidden"
+                    className="xl:hidden flex-shrink-0"
                     onClick={onClose}
                   >
                     <X className="h-4 w-4" />

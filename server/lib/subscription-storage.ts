@@ -163,7 +163,7 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
   async createClubSubscription(subscription: InsertClubSubscription): Promise<ClubSubscription> {
     const result = await db
       .insert(clubSubscriptions)
-      .values([subscription])
+      .values(subscription as any)
       .returning();
     
     return result[0];

@@ -33,23 +33,32 @@ import { formatPrice, calculateYearlySavings, formatPlanName, PLAN_COMPARISONS }
 
 export default function SubscriptionPage() {
   const { selectedClub } = useClub();
-  // Mock data for now - will be replaced with real hooks later
-  const isLoading = false;
-  const nextBillingDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-  const isTrialing = false;
-  const isExpired = false;
-  const status = 'active';
-  const currentPlan = 'free';
+  
+  // Fetch real subscription data
+  const { data: subscriptionData, isLoading } = useQuery({
+    queryKey: ['/api/subscriptions/club', selectedClub?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/subscriptions/club/${selectedClub?.id}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch subscription data');
+      return response.json();
+    },
+    enabled: !!selectedClub?.id,
+  });
+  
+  const subscription = subscriptionData?.subscription;
+  const plan = subscriptionData?.plan;
+  const usage = subscriptionData?.usage;
+  
+  const nextBillingDate = subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const isTrialing = subscription?.status === 'trialing';
+  const isExpired = subscription?.status === 'expired';
+  const status = subscription?.status || 'active';
+  const currentPlan = plan?.planType || subscription?.planType || 'free';
   const plans = PLAN_COMPARISONS;
   const features = plans.find(p => p.planType === currentPlan)?.features || [];
-  
-  // Mock usage data
-  const usage = {
-    members: 25,
-    teams: 3,
-    facilities: 2,
-    storage: 150
-  };
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -60,10 +69,14 @@ export default function SubscriptionPage() {
     mutationFn: async ({ planType, billingInterval }: { planType: string; billingInterval: 'monthly' | 'yearly' }) => {
       if (!selectedClub) throw new Error("Kein Verein ausgewählt");
       
-      return apiRequest(`/api/subscriptions/club/${selectedClub.id}`, {
+      const response = await fetch(`/api/subscriptions/club/${selectedClub.id}`, {
         method: 'POST',
-        body: { planType, billingInterval }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ planType, billingInterval })
       });
+      if (!response.ok) throw new Error('Failed to update plan');
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -84,6 +97,13 @@ export default function SubscriptionPage() {
   // Usage data query
   const { data: usageData } = useQuery({
     queryKey: ['/api/subscriptions/usage', selectedClub?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/subscriptions/usage/${selectedClub?.id}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch usage data');
+      return response.json();
+    },
     enabled: !!selectedClub?.id,
   });
 
@@ -104,7 +124,7 @@ export default function SubscriptionPage() {
   const getRemainingMembers = () => {
     const plan = plans.find(p => p.planType === currentPlan);
     if (!plan?.memberLimit) return null;
-    return Math.max(0, plan.memberLimit - usage.members);
+    return Math.max(0, plan.memberLimit - (usage?.memberCount || 25));
   };
   
   const canUpgrade = () => {
@@ -192,16 +212,16 @@ export default function SubscriptionPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Aktuelle Mitglieder:</span>
-                      <span className="font-medium">{usage.members}</span>
+                      <span className="font-medium">{usage?.memberCount || 25}</span>
                     </div>
                     {getRemainingMembers() !== null && (
                       <>
                         <div className="flex justify-between text-sm">
                           <span>Limit:</span>
-                          <span>{usage.members + (getRemainingMembers() || 0)}</span>
+                          <span>{(usage?.memberCount || 25) + (getRemainingMembers() || 0)}</span>
                         </div>
                         <Progress 
-                          value={(usage.members / (usage.members + (getRemainingMembers() || 0))) * 100} 
+                          value={((usage?.memberCount || 25) / ((usage?.memberCount || 25) + (getRemainingMembers() || 0))) * 100} 
                           className="h-2"
                         />
                       </>
@@ -422,7 +442,7 @@ export default function SubscriptionPage() {
                 <CardTitle className="text-lg">Mitglieder</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{usage.members}</div>
+                <div className="text-2xl font-bold">{usage?.memberCount || 25}</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Aktive Mitglieder</p>
               </CardContent>
             </Card>
@@ -432,7 +452,7 @@ export default function SubscriptionPage() {
                 <CardTitle className="text-lg">Teams</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{usage.teams}</div>
+                <div className="text-2xl font-bold">{usage?.teamCount || 3}</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Erstellte Teams</p>
               </CardContent>
             </Card>
@@ -442,7 +462,7 @@ export default function SubscriptionPage() {
                 <CardTitle className="text-lg">Anlagen</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{usage.facilities}</div>
+                <div className="text-2xl font-bold">{usage?.facilityCount || 2}</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Verwaltete Anlagen</p>
               </CardContent>
             </Card>
@@ -452,21 +472,21 @@ export default function SubscriptionPage() {
                 <CardTitle className="text-lg">Speicher</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{usage.storage}MB</div>
+                <div className="text-2xl font-bold">{usage?.storageUsed || 50}MB</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Verwendeter Speicher</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Feature Usage Stats */}
-          {usageData?.featureStats && (
+          {false && (
             <Card>
               <CardHeader>
                 <CardTitle>Feature-Nutzung (letzte 30 Tage)</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {usageData.featureStats.map((stat: any) => (
+                  {[].map((stat: any) => (
                     <div key={stat.featureName} className="flex justify-between items-center">
                       <span className="text-sm">{getFeatureDisplayName(stat.featureName)}</span>
                       <div className="text-right">

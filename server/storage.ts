@@ -2105,19 +2105,19 @@ export class DatabaseStorage implements IStorage {
 
   // Super Admin methods for platform management
   async getAllUsers(): Promise<User[]> {
-    return await db.select().from(usersTable);
+    return await db.select().from(users);
   }
 
   async getAllClubs(): Promise<Club[]> {
-    return await db.select().from(clubsTable);
+    return await db.select().from(clubs);
   }
 
   async getUserClubMemberships(userId: string): Promise<ClubMembership[]> {
-    return await db.select().from(clubMembershipsTable).where(eq(clubMembershipsTable.userId, userId));
+    return await db.select().from(clubMemberships).where(eq(clubMemberships.userId, userId));
   }
 
   async createClub(clubData: any): Promise<Club> {
-    const [newClub] = await db.insert(clubsTable).values({
+    const [newClub] = await db.insert(clubs).values({
       name: clubData.name,
       description: clubData.description,
       address: clubData.address,
@@ -2135,7 +2135,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(userData: any): Promise<User> {
-    const [newUser] = await db.insert(usersTable).values({
+    const [newUser] = await db.insert(users).values({
       id: userData.id,
       email: userData.email,
       firstName: userData.firstName,

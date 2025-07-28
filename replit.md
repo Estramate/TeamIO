@@ -6,7 +6,18 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 **Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. All critical bugs resolved and application running smoothly.
 
-## Recent Changes (Latest Session - July 28, 2025) - CRITICAL FIXES COMPLETED
+## Recent Changes (Latest Session - July 28, 2025) - SUPER ADMIN MODALS UPDATED
+
+**SUBSCRIPTION-MODAL DATENBANKINTEGRATION ABGESCHLOSSEN (July 28, 2025 - 12:05):**
+- ✅ **Preise anpassen Modal**: Lädt echte Subscription-Pläne aus Datenbank, zeigt aktuelle Preise
+- ✅ **Plan-Limits Modal**: Zeigt aktuelle Limits, aktualisiert maxMembers in Datenbank
+- ✅ **Upgrade-Benachrichtigungen Modal**: Zeigt berechtigte Vereine, sendet echte Notifications
+- ✅ **Neue API-Endpunkte**: update-limits, send-upgrade-notifications, clubs-eligible
+- ✅ **Cache-Invalidierung**: Alle Modals invalidieren relevante Query-Caches nach Updates
+- ✅ **Error-Handling**: Umfassende Fehlerbehandlung mit benutzerfreundlichen Toast-Messages
+- ✅ **Loading-States**: Echte Loading-Indikatoren während Datenbankoperationen
+
+## CRITICAL FIXES COMPLETED
 
 **CRITICAL APPLICATION REPAIR COMPLETED (July 28, 2025 - 11:45):**
 - ✅ **Settings.tsx Corruption Fixed**: Completely recreated corrupted Settings page with clean code

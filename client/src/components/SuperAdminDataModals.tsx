@@ -378,32 +378,49 @@ interface PriceAdjustmentModalProps {
 
 function PriceAdjustmentModal({ open, onClose }: PriceAdjustmentModalProps) {
   const [selectedPlan, setSelectedPlan] = useState<string>('');
-  const [newPrice, setNewPrice] = useState<string>('');
+  const [newMonthlyPrice, setNewMonthlyPrice] = useState<string>('');
+  const [newYearlyPrice, setNewYearlyPrice] = useState<string>('');
+  const [billingInterval, setBillingInterval] = useState<string>('monthly');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch real subscription plans from database
+  const { data: subscriptionPlans, isLoading: plansLoading } = useQuery({
+    queryKey: ['/api/super-admin/subscription-plans'],
+    enabled: open,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      await apiRequest(`/api/admin/subscription-plans/${selectedPlan}/price`, {
-        method: 'PATCH',
-        body: { price: parseFloat(newPrice) }
+      const priceToUpdate = billingInterval === 'yearly' ? parseFloat(newYearlyPrice) : parseFloat(newMonthlyPrice);
+      
+      await apiRequest('POST', '/api/super-admin/subscription-plans/update-price', {
+        planType: selectedPlan,
+        price: priceToUpdate,
+        interval: billingInterval
       });
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/subscription-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/subscription-analytics'] });
       
       toast({
         title: "Preis erfolgreich aktualisiert",
-        description: `Der Preis für den gewählten Plan wurde auf €${newPrice} gesetzt.`
+        description: `Der ${billingInterval === 'yearly' ? 'Jahres' : 'Monats'}preis für ${selectedPlan} wurde auf €${priceToUpdate} gesetzt.`
       });
       
       setSelectedPlan('');
-      setNewPrice('');
+      setNewMonthlyPrice('');
+      setNewYearlyPrice('');
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Fehler beim Aktualisieren",
-        description: "Der Preis konnte nicht aktualisiert werden.",
+        description: error.message || "Der Preis konnte nicht aktualisiert werden.",
         variant: "destructive"
       });
     } finally {
@@ -421,44 +438,98 @@ function PriceAdjustmentModal({ open, onClose }: PriceAdjustmentModalProps) {
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="plan-select">Plan auswählen</Label>
-            <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-              <SelectTrigger>
-                <SelectValue placeholder="Wählen Sie einen Plan..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basic">Basic Plan</SelectItem>
-                <SelectItem value="premium">Premium Plan</SelectItem>
-                <SelectItem value="enterprise">Enterprise Plan</SelectItem>
-              </SelectContent>
-            </Select>
+        {plansLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-muted-foreground">Lade Subscription-Pläne...</div>
           </div>
-          
-          <div>
-            <Label htmlFor="new-price">Neuer Preis (€)</Label>
-            <Input
-              id="new-price"
-              type="number"
-              step="0.01"
-              min="0"
-              value={newPrice}
-              onChange={(e) => setNewPrice(e.target.value)}
-              placeholder="29.99"
-              required
-            />
-          </div>
-          
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Abbrechen
-            </Button>
-            <Button type="submit" disabled={isLoading || !selectedPlan || !newPrice}>
-              {isLoading ? "Wird gespeichert..." : "Preis aktualisieren"}
-            </Button>
-          </div>
-        </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="plan-select">Plan auswählen</Label>
+              <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Wählen Sie einen Plan..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {subscriptionPlans?.map((plan: any) => (
+                    <SelectItem key={plan.planType} value={plan.planType}>
+                      {plan.displayName} - {plan.planType}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="billing-interval">Abrechnungsintervall</Label>
+              <Select value={billingInterval} onValueChange={setBillingInterval}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">Monatlich</SelectItem>
+                  <SelectItem value="yearly">Jährlich</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {billingInterval === 'monthly' ? (
+              <div>
+                <Label htmlFor="monthly-price">Neuer Monatspreis (€)</Label>
+                <Input
+                  id="monthly-price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newMonthlyPrice}
+                  onChange={(e) => setNewMonthlyPrice(e.target.value)}
+                  placeholder="19.99"
+                  required
+                />
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="yearly-price">Neuer Jahrespreis (€)</Label>
+                <Input
+                  id="yearly-price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newYearlyPrice}
+                  onChange={(e) => setNewYearlyPrice(e.target.value)}
+                  placeholder="199.99"
+                  required
+                />
+              </div>
+            )}
+
+            {/* Show current price for selected plan */}
+            {selectedPlan && subscriptionPlans && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <Label className="text-sm font-medium">Aktueller Preis:</Label>
+                {(() => {
+                  const plan = subscriptionPlans.find((p: any) => p.planType === selectedPlan);
+                  if (!plan) return null;
+                  const currentPrice = billingInterval === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
+                  return (
+                    <p className="text-sm text-muted-foreground">
+                      €{currentPrice} / {billingInterval === 'yearly' ? 'Jahr' : 'Monat'}
+                    </p>
+                  );
+                })()}
+              </div>
+            )}
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Abbrechen
+              </Button>
+              <Button type="submit" disabled={isLoading || !selectedPlan || (billingInterval === 'monthly' ? !newMonthlyPrice : !newYearlyPrice)}>
+                {isLoading ? "Wird gespeichert..." : "Preis aktualisieren"}
+              </Button>
+            </div>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -476,20 +547,44 @@ function PlanLimitsModal({ open, onClose }: PlanLimitsModalProps) {
   const [storageLimit, setStorageLimit] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch real subscription plans from database
+  const { data: subscriptionPlans, isLoading: plansLoading } = useQuery({
+    queryKey: ['/api/super-admin/subscription-plans'],
+    enabled: open,
+  });
+
+  // Update form when plan is selected
+  const handlePlanSelect = (planType: string) => {
+    setSelectedPlan(planType);
+    if (subscriptionPlans) {
+      const plan = subscriptionPlans.find((p: any) => p.planType === planType);
+      if (plan) {
+        setMemberLimit(plan.maxMembers?.toString() || '');
+        setEventLimit(''); // Could be added to schema later
+        setStorageLimit(''); // Could be added to schema later
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      await apiRequest(`/api/admin/subscription-plans/${selectedPlan}/limits`, {
-        method: 'PATCH',
-        body: {
-          memberLimit: parseInt(memberLimit) || null,
-          eventLimit: parseInt(eventLimit) || null,
-          storageLimit: parseInt(storageLimit) || null
+      await apiRequest('POST', '/api/super-admin/subscription-plans/update-limits', {
+        planType: selectedPlan,
+        limits: {
+          memberLimit: memberLimit ? parseInt(memberLimit) : null,
+          eventLimit: eventLimit ? parseInt(eventLimit) : null,
+          storageLimit: storageLimit ? parseInt(storageLimit) : null
         }
       });
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/subscription-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/super-admin/subscription-analytics'] });
       
       toast({
         title: "Limits erfolgreich aktualisiert",
@@ -501,10 +596,10 @@ function PlanLimitsModal({ open, onClose }: PlanLimitsModalProps) {
       setEventLimit('');
       setStorageLimit('');
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Fehler beim Aktualisieren",
-        description: "Die Limits konnten nicht aktualisiert werden.",
+        description: error.message || "Die Limits konnten nicht aktualisiert werden.",
         variant: "destructive"
       });
     } finally {
@@ -522,69 +617,101 @@ function PlanLimitsModal({ open, onClose }: PlanLimitsModalProps) {
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="plan-select-limits">Plan auswählen</Label>
-            <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-              <SelectTrigger>
-                <SelectValue placeholder="Wählen Sie einen Plan..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basic">Basic Plan</SelectItem>
-                <SelectItem value="premium">Premium Plan</SelectItem>
-                <SelectItem value="enterprise">Enterprise Plan</SelectItem>
-              </SelectContent>
-            </Select>
+        {plansLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-muted-foreground">Lade Subscription-Pläne...</div>
           </div>
-          
-          <div className="grid grid-cols-1 gap-4">
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="member-limit">Mitglieder-Limit</Label>
-              <Input
-                id="member-limit"
-                type="number"
-                min="1"
-                value={memberLimit}
-                onChange={(e) => setMemberLimit(e.target.value)}
-                placeholder="100 (leer = unbegrenzt)"
-              />
+              <Label htmlFor="plan-select-limits">Plan auswählen</Label>
+              <Select value={selectedPlan} onValueChange={handlePlanSelect}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Wählen Sie einen Plan..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {subscriptionPlans?.map((plan: any) => (
+                    <SelectItem key={plan.planType} value={plan.planType}>
+                      {plan.displayName} - {plan.planType}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
-            <div>
-              <Label htmlFor="event-limit">Event-Limit pro Monat</Label>
-              <Input
-                id="event-limit"
-                type="number"
-                min="1"
-                value={eventLimit}
-                onChange={(e) => setEventLimit(e.target.value)}
-                placeholder="50 (leer = unbegrenzt)"
-              />
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <Label htmlFor="member-limit">Mitglieder-Limit</Label>
+                <Input
+                  id="member-limit"
+                  type="number"
+                  min="1"
+                  value={memberLimit}
+                  onChange={(e) => setMemberLimit(e.target.value)}
+                  placeholder="100 (leer = unbegrenzt)"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="event-limit">Event-Limit pro Monat</Label>
+                <Input
+                  id="event-limit"
+                  type="number"
+                  min="1"
+                  value={eventLimit}
+                  onChange={(e) => setEventLimit(e.target.value)}
+                  placeholder="50 (leer = unbegrenzt)"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Hinweis: Event-Limits sind noch nicht im Schema implementiert
+                </p>
+              </div>
+              
+              <div>
+                <Label htmlFor="storage-limit">Speicher-Limit (GB)</Label>
+                <Input
+                  id="storage-limit"
+                  type="number"
+                  min="1"
+                  step="0.1"
+                  value={storageLimit}
+                  onChange={(e) => setStorageLimit(e.target.value)}
+                  placeholder="10 (leer = unbegrenzt)"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Hinweis: Speicher-Limits sind noch nicht im Schema implementiert
+                </p>
+              </div>
             </div>
+
+            {/* Show current limits for selected plan */}
+            {selectedPlan && subscriptionPlans && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <Label className="text-sm font-medium">Aktuelle Limits:</Label>
+                {(() => {
+                  const plan = subscriptionPlans.find((p: any) => p.planType === selectedPlan);
+                  if (!plan) return null;
+                  return (
+                    <div className="text-sm text-muted-foreground space-y-1 mt-2">
+                      <p>Mitglieder: {plan.maxMembers || 'Unbegrenzt'}</p>
+                      <p>Events: Noch nicht konfiguriert</p>
+                      <p>Speicher: Noch nicht konfiguriert</p>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
             
-            <div>
-              <Label htmlFor="storage-limit">Speicher-Limit (GB)</Label>
-              <Input
-                id="storage-limit"
-                type="number"
-                min="1"
-                step="0.1"
-                value={storageLimit}
-                onChange={(e) => setStorageLimit(e.target.value)}
-                placeholder="10 (leer = unbegrenzt)"
-              />
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Abbrechen
+              </Button>
+              <Button type="submit" disabled={isLoading || !selectedPlan}>
+                {isLoading ? "Wird gespeichert..." : "Limits aktualisieren"}
+              </Button>
             </div>
-          </div>
-          
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Abbrechen
-            </Button>
-            <Button type="submit" disabled={isLoading || !selectedPlan}>
-              {isLoading ? "Wird gespeichert..." : "Limits aktualisieren"}
-            </Button>
-          </div>
-        </form>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -602,25 +729,29 @@ function UpgradeNotificationModal({ open, onClose }: UpgradeNotificationModalPro
   const [validUntil, setValidUntil] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch eligible clubs for upgrade
+  const { data: eligibleClubs, isLoading: clubsLoading } = useQuery({
+    queryKey: ['/api/super-admin/clubs-eligible', targetPlan],
+    enabled: open && !!targetPlan,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      await apiRequest('/api/admin/upgrade-notifications', {
-        method: 'POST',
-        body: {
-          targetPlan,
-          message,
-          discountPercent: discountPercent ? parseInt(discountPercent) : null,
-          validUntil: validUntil ? new Date(validUntil).toISOString() : null
-        }
+      const response = await apiRequest('POST', '/api/super-admin/subscription-plans/send-upgrade-notifications', {
+        targetPlan,
+        message,
+        discountPercent: discountPercent ? parseInt(discountPercent) : null,
+        validUntil: validUntil ? new Date(validUntil).toISOString() : null
       });
       
       toast({
         title: "Upgrade-Benachrichtigung gesendet",
-        description: "Die Benachrichtigung wurde an alle berechtigten Benutzer gesendet."
+        description: `Die Benachrichtigung wurde an ${response.sentTo || 'alle berechtigten'} Vereine gesendet.`
       });
       
       setTargetPlan('');
@@ -628,10 +759,10 @@ function UpgradeNotificationModal({ open, onClose }: UpgradeNotificationModalPro
       setDiscountPercent('');
       setValidUntil('');
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Fehler beim Senden",
-        description: "Die Benachrichtigung konnte nicht gesendet werden.",
+        description: error.message || "Die Benachrichtigung konnte nicht gesendet werden.",
         variant: "destructive"
       });
     } finally {
@@ -657,11 +788,26 @@ function UpgradeNotificationModal({ open, onClose }: UpgradeNotificationModalPro
                 <SelectValue placeholder="Wählen Sie den Ziel-Plan..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="premium">Premium Plan</SelectItem>
-                <SelectItem value="enterprise">Enterprise Plan</SelectItem>
+                <SelectItem value="starter">Starter</SelectItem>
+                <SelectItem value="professional">Professional</SelectItem>
+                <SelectItem value="enterprise">Enterprise</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {/* Show eligible clubs count */}
+          {targetPlan && (
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <Label className="text-sm font-medium">Berechtigte Vereine:</Label>
+              {clubsLoading ? (
+                <p className="text-sm text-muted-foreground">Lade...</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {eligibleClubs?.length || 0} Vereine können auf {targetPlan} upgraden
+                </p>
+              )}
+            </div>
+          )}
           
           <div>
             <Label htmlFor="notification-message">Benachrichtigungs-Text</Label>

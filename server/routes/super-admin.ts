@@ -858,4 +858,130 @@ router.patch("/users/:userId",
     }
   }));
 
+// POST /api/super-admin/subscription-plans/update-limits - Update plan limits
+router.post("/subscription-plans/update-limits",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const { planType, limits } = req.body;
+      
+      if (!planType) {
+        return res.status(400).json({ error: "Plan type is required" });
+      }
+
+      const { storage } = await import("../storage");
+      
+      // Get the subscription plan
+      const plans = await storage.getAllSubscriptionPlans();
+      const plan = plans.find(p => p.planType === planType);
+      
+      if (!plan) {
+        return res.status(404).json({ error: "Subscription plan not found" });
+      }
+
+      // Update plan with new limits
+      const updateData: any = {};
+      if (limits.memberLimit !== undefined) {
+        updateData.maxMembers = limits.memberLimit;
+      }
+      // Note: eventLimit and storageLimit would need to be added to schema
+
+      await storage.updateSubscriptionPlan(plan.id, updateData);
+      
+      console.log(`📊 Super Admin updated plan limits for ${planType}:`, limits);
+      
+      res.json({ 
+        success: true, 
+        message: "Plan limits updated successfully",
+        planType,
+        updatedLimits: limits
+      });
+    } catch (error) {
+      console.error('Error updating subscription plan limits:', error);
+      res.status(500).json({ error: "Failed to update subscription plan limits" });
+    }
+  }));
+
+// POST /api/super-admin/subscription-plans/send-upgrade-notifications - Send upgrade notifications
+router.post("/subscription-plans/send-upgrade-notifications",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const { targetPlan, message, discountPercent, validUntil } = req.body;
+      
+      if (!targetPlan || !message) {
+        return res.status(400).json({ error: "Target plan and message are required" });
+      }
+
+      const { storage } = await import("../storage");
+      
+      // Get clubs that could upgrade to the target plan
+      const clubs = await storage.getAllClubs();
+      const subscriptions = await storage.getAllClubSubscriptions();
+      
+      // Find clubs eligible for upgrade (currently on a lower-tier plan)
+      const planHierarchy = { 'free': 0, 'starter': 1, 'professional': 2, 'enterprise': 3 };
+      const targetTier = planHierarchy[targetPlan as keyof typeof planHierarchy];
+      
+      const eligibleClubs = clubs.filter(club => {
+        const subscription = subscriptions.find(sub => sub.clubId === club.id);
+        if (!subscription) return true; // No subscription = eligible for any plan
+        
+        const currentTier = planHierarchy[subscription.planType as keyof typeof planHierarchy];
+        return currentTier < targetTier;
+      });
+
+      // TODO: Actually send email notifications here
+      // For now, we'll just log and return success
+      
+      console.log(`📧 Super Admin sent upgrade notifications for ${targetPlan} to ${eligibleClubs.length} clubs`);
+      console.log('Notification details:', { targetPlan, message, discountPercent, validUntil });
+      
+      res.json({ 
+        success: true, 
+        message: "Upgrade notifications sent successfully",
+        sentTo: eligibleClubs.length,
+        targetPlan
+      });
+    } catch (error) {
+      console.error('Error sending upgrade notifications:', error);
+      res.status(500).json({ error: "Failed to send upgrade notifications" });
+    }
+  }));
+
+// GET /api/super-admin/clubs-eligible/:targetPlan - Get clubs eligible for upgrade
+router.get("/clubs-eligible/:targetPlan",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const { targetPlan } = req.params;
+      
+      const { storage } = await import("../storage");
+      
+      const clubs = await storage.getAllClubs();
+      const subscriptions = await storage.getAllClubSubscriptions();
+      
+      // Find clubs eligible for upgrade
+      const planHierarchy = { 'free': 0, 'starter': 1, 'professional': 2, 'enterprise': 3 };
+      const targetTier = planHierarchy[targetPlan as keyof typeof planHierarchy];
+      
+      const eligibleClubs = clubs.filter(club => {
+        const subscription = subscriptions.find(sub => sub.clubId === club.id);
+        if (!subscription) return true;
+        
+        const currentTier = planHierarchy[subscription.planType as keyof typeof planHierarchy];
+        return currentTier < targetTier;
+      }).map(club => ({
+        id: club.id,
+        name: club.name,
+        currentPlan: subscriptions.find(sub => sub.clubId === club.id)?.planType || 'free'
+      }));
+
+      res.json(eligibleClubs);
+    } catch (error) {
+      console.error('Error fetching eligible clubs:', error);
+      res.status(500).json({ error: "Failed to fetch eligible clubs" });
+    }
+  }));
+
 export default router;

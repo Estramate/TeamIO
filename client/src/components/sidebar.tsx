@@ -401,12 +401,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <TooltipContent side="right" className="bg-popover border border-border shadow-md">
                   <div>
                     <p className="font-medium">
-                      {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Benutzer'}
+                      {(currentUser as any)?.firstName && (currentUser as any)?.lastName ? 
+                        `${(currentUser as any).firstName} ${(currentUser as any).lastName}` : 
+                        (currentUser as any)?.email || 'Benutzer'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {userMembership?.role === 'club-administrator' ? 'Vereinsadministrator' : 
-                       userMembership?.role === 'member' ? 'Mitglied' :
-                       userMembership?.role === 'coach' ? 'Trainer' : 'Benutzer'}
+                      {(userMembership as any)?.role === 'club-administrator' ? 'Vereinsadministrator' : 
+                       (userMembership as any)?.role === 'member' ? 'Mitglied' :
+                       (userMembership as any)?.role === 'coach' ? 'Trainer' : 'Benutzer'}
                     </p>
                   </div>
                 </TooltipContent>
@@ -418,12 +420,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
-                    {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Benutzer'}
+                    {(currentUser as any)?.firstName && (currentUser as any)?.lastName ? 
+                      `${(currentUser as any).firstName} ${(currentUser as any).lastName}` : 
+                      (currentUser as any)?.email || 'Benutzer'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {userMembership?.role === 'club-administrator' ? 'Vereinsadministrator' : 
-                     userMembership?.role === 'member' ? 'Mitglied' :
-                     userMembership?.role === 'coach' ? 'Trainer' : 'Benutzer'}
+                    {(userMembership as any)?.role === 'club-administrator' ? 'Vereinsadministrator' : 
+                     (userMembership as any)?.role === 'member' ? 'Mitglied' :
+                     (userMembership as any)?.role === 'coach' ? 'Trainer' : 'Benutzer'}
                   </p>
                 </div>
                 <Button

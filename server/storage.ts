@@ -17,6 +17,7 @@ import {
   messageRecipients,
   announcements,
   notifications,
+  roles,
   type User,
   type UpsertUser,
   type Club,
@@ -53,6 +54,8 @@ import {
   type InsertAnnouncement,
   type Notification,
   type InsertNotification,
+  type Role,
+  type InsertRole,
 
   type MessageWithRecipients,
   type AnnouncementWithAuthor,
@@ -74,6 +77,13 @@ import { db } from "./db";
 import { eq, and, desc, asc, gte, ne, or, sql, isNull } from "drizzle-orm";
 
 export interface IStorage {
+  // Role operations
+  getAllRoles(): Promise<Role[]>;
+  getRoleById(id: number): Promise<Role | undefined>;
+  getRoleByName(name: string): Promise<Role | undefined>;
+  createRole(role: InsertRole): Promise<Role>;
+  updateRole(id: number, role: Partial<InsertRole>): Promise<Role>;
+  
   // Activity logging operations
   createActivityLog(activityLog: InsertActivityLog): Promise<ActivityLog>;
   getActivityLogs(clubId: number, limit?: number): Promise<ActivityLog[]>;
@@ -265,6 +275,42 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Role operations
+  async getAllRoles(): Promise<Role[]> {
+    return await db.select()
+      .from(roles)
+      .where(eq(roles.isActive, true))
+      .orderBy(roles.sortOrder);
+  }
+
+  async getRoleById(id: number): Promise<Role | undefined> {
+    const [role] = await db.select()
+      .from(roles)
+      .where(eq(roles.id, id));
+    return role;
+  }
+
+  async getRoleByName(name: string): Promise<Role | undefined> {
+    const [role] = await db.select()
+      .from(roles)
+      .where(eq(roles.name, name));
+    return role;
+  }
+
+  async createRole(role: InsertRole): Promise<Role> {
+    const [newRole] = await db.insert(roles).values(role).returning();
+    return newRole;
+  }
+
+  async updateRole(id: number, role: Partial<InsertRole>): Promise<Role> {
+    const [updatedRole] = await db
+      .update(roles)
+      .set({ ...role, updatedAt: new Date() })
+      .where(eq(roles.id, id))
+      .returning();
+    return updatedRole;
+  }
+
   // User operations (required for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -355,15 +401,6 @@ export class DatabaseStorage implements IStorage {
     return updatedUser;
   }
 
-  async updateUser(id: string, data: Partial<User>): Promise<User> {
-    const [updatedUser] = await db
-      .update(users)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(users.id, id))
-      .returning();
-    return updatedUser;
-  }
-
   // Club operations
   async getClubs(): Promise<Club[]> {
     return await db.select().from(clubs).orderBy(asc(clubs.name));
@@ -419,8 +456,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(clubMemberships)
-      .where(eq(clubMemberships.clubId, clubId))
-      .orderBy(asc(clubMemberships.role));
+      .where(eq(clubMemberships.clubId, clubId));
   }
 
   async addUserToClub(membership: InsertClubMembership): Promise<ClubMembership> {

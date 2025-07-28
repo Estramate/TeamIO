@@ -49,13 +49,29 @@ export const activityLogs = pgTable("activity_logs", {
   index("idx_activity_logs_created_at").on(table.createdAt),
 ]);
 
+// Roles table for normalized role management
+export const roles = pgTable("roles", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull().unique(), // 'member', 'trainer', 'club-administrator'
+  displayName: varchar("display_name", { length: 100 }).notNull(), // 'Mitglied', 'Trainer', 'Club Administrator'
+  description: text("description"),
+  permissions: jsonb("permissions"), // Array of permission strings
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0), // For UI ordering
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_roles_name").on(table.name),
+  index("idx_roles_active").on(table.isActive),
+]);
+
 // Email Invitations table
 export const emailInvitations = pgTable("email_invitations", {
   id: serial("id").primaryKey(),
   clubId: integer("club_id").references(() => clubs.id, { onDelete: 'cascade' }).notNull(),
   invitedBy: varchar("invited_by").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
-  role: varchar("role", { length: 50 }).default('member').notNull(),
+  roleId: integer("role_id").references(() => roles.id).notNull(), // Foreign key to roles table
   token: varchar("token", { length: 255 }).notNull().unique(),
   status: varchar("status", { length: 20 }).default('pending').notNull(), // 'pending', 'accepted', 'expired'
   expiresAt: timestamp("expires_at").notNull(),
@@ -66,6 +82,7 @@ export const emailInvitations = pgTable("email_invitations", {
   index("idx_email_invitations_club_id").on(table.clubId),
   index("idx_email_invitations_email").on(table.email),
   index("idx_email_invitations_token").on(table.token),
+  index("idx_email_invitations_role_id").on(table.roleId),
 ]);
 
 // User storage table (supports multiple auth providers + password auth)
@@ -128,43 +145,61 @@ export const clubJoinRequests = pgTable("club_join_requests", {
   clubId: integer("club_id").notNull().references(() => clubs.id),
   message: text("message"), // Optional message from user
   status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, rejected
-  requestedRole: varchar("requested_role", { length: 50 }).default("member"), // member, trainer, admin
+  requestedRoleId: integer("requested_role_id").references(() => roles.id), // Foreign key to roles table
   
   // Admin handling
   reviewedBy: varchar("reviewed_by").references(() => users.id), // admin who reviewed
   reviewedAt: timestamp("reviewed_at"),
   reviewNotes: text("review_notes"), // admin notes
-  approvedRole: varchar("approved_role", { length: 50 }), // actual role granted
+  approvedRoleId: integer("approved_role_id").references(() => roles.id), // Foreign key to roles table
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_club_join_requests_user_id").on(table.userId),
+  index("idx_club_join_requests_club_id").on(table.clubId),
+  index("idx_club_join_requests_status").on(table.status),
+]);
 
-// Club memberships - links users to clubs with roles
+// Club memberships - links users to clubs with roles (NORMALIZED)
 export const clubMemberships = pgTable("club_memberships", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
   clubId: integer("club_id").notNull().references(() => clubs.id),
-  role: varchar("role", { length: 100 }).notNull(), // club-administrator, president, etc.
+  roleId: integer("role_id").notNull().references(() => roles.id), // Foreign key to roles table
   permissions: jsonb("permissions"), // specific permissions for this user in this club
   status: varchar("status", { length: 20 }).notNull().default("active"), // active, inactive, suspended
   joinedAt: timestamp("joined_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_club_memberships_user_id").on(table.userId),
+  index("idx_club_memberships_club_id").on(table.clubId),
+  index("idx_club_memberships_role_id").on(table.roleId),
+  index("idx_club_memberships_status").on(table.status),
+]);
 
 // Relations for core entities
+export const rolesRelations = relations(roles, ({ many }) => ({
+  clubMemberships: many(clubMemberships),
+  emailInvitations: many(emailInvitations),
+  joinRequests: many(clubJoinRequests, { relationName: 'requestedRole' }),
+  approvedRequests: many(clubJoinRequests, { relationName: 'approvedRole' }),
+}));
+
 export const usersRelations = relations(users, ({ many }) => ({
   clubMemberships: many(clubMemberships),
   joinRequests: many(clubJoinRequests),
   reviewedRequests: many(clubJoinRequests, {
     relationName: "reviewer",
   }),
+  emailInvitations: many(emailInvitations),
 }));
 
 export const clubsRelations = relations(clubs, ({ many }) => ({
   memberships: many(clubMemberships),
   joinRequests: many(clubJoinRequests),
+  emailInvitations: many(emailInvitations),
 }));
 
 export const clubMembershipsRelations = relations(clubMemberships, ({ one }) => ({
@@ -175,6 +210,25 @@ export const clubMembershipsRelations = relations(clubMemberships, ({ one }) => 
   club: one(clubs, {
     fields: [clubMemberships.clubId],
     references: [clubs.id],
+  }),
+  role: one(roles, {
+    fields: [clubMemberships.roleId],
+    references: [roles.id],
+  }),
+}));
+
+export const emailInvitationsRelations = relations(emailInvitations, ({ one }) => ({
+  club: one(clubs, {
+    fields: [emailInvitations.clubId],
+    references: [clubs.id],
+  }),
+  invitedBy: one(users, {
+    fields: [emailInvitations.invitedBy],
+    references: [users.id],
+  }),
+  role: one(roles, {
+    fields: [emailInvitations.roleId],
+    references: [roles.id],
   }),
 }));
 
@@ -192,9 +246,25 @@ export const clubJoinRequestsRelations = relations(clubJoinRequests, ({ one }) =
     references: [users.id],
     relationName: "reviewer",
   }),
+  requestedRole: one(roles, {
+    fields: [clubJoinRequests.requestedRoleId],
+    references: [roles.id],
+    relationName: "requestedRole",
+  }),
+  approvedRole: one(roles, {
+    fields: [clubJoinRequests.approvedRoleId],
+    references: [roles.id],
+    relationName: "approvedRole",
+  }),
 }));
 
 // Insert schemas for core entities
+export const insertRoleSchema = createInsertSchema(roles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertUserSchema = createInsertSchema(users);
 export const insertClubSchema = createInsertSchema(clubs).omit({
   id: true,
@@ -235,7 +305,7 @@ export const clubFormSchema = createInsertSchema(clubs, {
 
 export const clubJoinRequestFormSchema = createInsertSchema(clubJoinRequests, {
   message: z.string().optional(),
-  requestedRole: z.enum(["member", "trainer", "admin"]).default("member"),
+  requestedRoleId: z.number().min(1, "Bitte wählen Sie eine Rolle aus"),
 }).omit({
   id: true,
   userId: true,
@@ -243,7 +313,7 @@ export const clubJoinRequestFormSchema = createInsertSchema(clubJoinRequests, {
   reviewedBy: true,
   reviewedAt: true,
   reviewNotes: true,
-  approvedRole: true,
+  approvedRoleId: true,
   createdAt: true,
   updatedAt: true,
 });
@@ -251,7 +321,7 @@ export const clubJoinRequestFormSchema = createInsertSchema(clubJoinRequests, {
 // Email Invitation Form Schema
 export const emailInvitationFormSchema = z.object({
   email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein"),
-  role: z.enum(["member", "trainer", "club-administrator"]).default("member"),
+  roleId: z.number().min(1, "Bitte wählen Sie eine Rolle aus"),
   personalMessage: z.string().optional(),
 });
 
@@ -282,6 +352,8 @@ export const twoFactorSetupSchema = z.object({
 });
 
 // Export types for core entities
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = z.infer<typeof insertRoleSchema>;
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Club = typeof clubs.$inferSelect;

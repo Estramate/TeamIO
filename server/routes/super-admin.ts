@@ -1051,4 +1051,19 @@ router.post("/subscription-plans/update-limits",
     }
   }));
 
+// GET /api/super-admin/roles - Get all roles for role-based operations
+router.get("/roles",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const { storage } = await import("../storage");
+      const roles = await storage.getAllRoles();
+      console.log('🔍 SUPER ADMIN ROLES DEBUG - Fetched roles:', roles);
+      res.json(roles);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      res.status(500).json({ error: 'Failed to fetch roles' });
+    }
+  }));
+
 export default router;

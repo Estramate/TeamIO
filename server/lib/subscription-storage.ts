@@ -135,27 +135,21 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
     plan: SubscriptionPlan | null;
     usage: SubscriptionUsage | null;
   }> {
-    // Get active subscription
-    const subscriptionResult = await db
-      .select()
+    // Get active subscription with plan details using JOIN
+    const result = await db
+      .select({
+        subscription: clubSubscriptions,
+        plan: subscriptionPlans,
+      })
       .from(clubSubscriptions)
+      .leftJoin(subscriptionPlans, eq(clubSubscriptions.planId, subscriptionPlans.id))
       .where(eq(clubSubscriptions.clubId, clubId))
       .orderBy(desc(clubSubscriptions.createdAt))
       .limit(1);
 
-    const subscription = subscriptionResult[0] || null;
-    
-    // Get plan details
-    let plan: SubscriptionPlan | null = null;
-    if (subscription) {
-      const planResult = await db
-        .select()
-        .from(subscriptionPlans)
-        .where(eq(subscriptionPlans.planType, subscription.planType))
-        .limit(1);
-      
-      plan = planResult[0] || null;
-    }
+    const subscriptionData = result[0];
+    const subscription = subscriptionData?.subscription || null;
+    const plan = subscriptionData?.plan || null;
 
     // Get current usage
     const usage = await this.getCurrentUsage(clubId);

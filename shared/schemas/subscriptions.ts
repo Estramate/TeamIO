@@ -85,7 +85,7 @@ export const clubSubscriptions = pgTable("club_subscriptions", {
   currentPeriodStart: timestamp("current_period_start").notNull(),
   currentPeriodEnd: timestamp("current_period_end").notNull(),
   trialEnd: timestamp("trial_end"),
-  cancelAt: timestamp("cancel_at"),
+  planType: varchar("plan_type", { length: 50 }).notNull(), // Keep for backward compatibility
   canceledAt: timestamp("canceled_at"),
   
   // Billing information

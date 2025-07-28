@@ -792,7 +792,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Check if user has admin permissions for this club
     const membership = await storage.getUserClubMembership(userId, clubId);
-    if (!membership || !['club-administrator', 'admin'].includes(membership.role)) {
+    if (!membership || !['club-administrator', 'admin'].includes(role?.name || '')) {
       throw new AuthorizationError('Only administrators can view activity logs');
     }
     
@@ -812,7 +812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Check if user has admin permissions for this club
     const membership = await storage.getUserClubMembership(userId, clubId);
-    if (!membership || !['club-administrator', 'admin'].includes(membership.role)) {
+    if (!membership || !['club-administrator', 'admin'].includes(role?.name || '')) {
       throw new AuthorizationError('Only administrators can invite users');
     }
     
@@ -914,7 +914,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Check if user has admin permissions for this club
     const membership = await storage.getUserClubMembership(userId, clubId);
-    if (!membership || !['club-administrator', 'admin'].includes(membership.role)) {
+    if (!membership || !['club-administrator', 'admin'].includes(role?.name || '')) {
       throw new AuthorizationError('Only administrators can view activity logs');
     }
     

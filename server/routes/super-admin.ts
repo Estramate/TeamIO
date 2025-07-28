@@ -140,10 +140,11 @@ router.get("/users",
           const membershipDetails = await Promise.all(
             memberships.map(async (membership: any) => {
               const club = await storage.getClub(membership.clubId);
+              const role = await storage.getRoleById(membership.roleId);
               return {
                 clubId: membership.clubId,
                 clubName: club?.name || `Club ${membership.clubId}`,
-                role: membership.role,
+                role: role?.name || 'member',
                 status: membership.status,
                 joinedAt: membership.joinedAt,
               };
@@ -268,7 +269,7 @@ router.post("/create-admin",
         },
         membership: {
           status: membership.status, // Will be 'pending'
-          role: membership.role
+          roleId: membership.roleId
         },
         message: "Administrator-Einladung erfolgreich erstellt. Benutzer muss die Einladung annehmen, um aktiviert zu werden."
       });
@@ -626,11 +627,12 @@ router.put("/users/:id",
               await storage.removeUserFromClub(userId, membership.clubId);
             } else if (membership.isNew) {
               // Add new membership
-              console.log(`Adding user ${userId} to club ${membership.clubId} as ${membership.role}`);
+              const memberRole = await storage.getRoleById(membership.roleId);
+              console.log(`Adding user ${userId} to club ${membership.clubId} as ${memberRole?.name || 'member'}`);
               await storage.addUserToClub({
                 userId,
                 clubId: membership.clubId,
-                role: membership.role,
+                roleId: membership.roleId,
                 status: membership.status,
                 joinedAt: new Date(),
               });
@@ -638,7 +640,7 @@ router.put("/users/:id",
               // Update existing membership
               console.log(`Updating membership for user ${userId} in club ${membership.clubId}`);
               await storage.updateClubMembership(userId, membership.clubId, {
-                role: membership.role,
+                roleId: membership.roleId,
                 status: membership.status,
               });
             }
@@ -806,14 +808,16 @@ router.patch("/users/:userId",
           await storage.createClubMembership({
             userId: userId,
             clubId: membership.clubId,
-            role: membership.role,
+            roleId: membership.roleId,
             status: membership.status,
+            joinedAt: new Date(),
           });
-          console.log(`SUPER ADMIN: Added user ${userId} to club ${membership.clubId} as ${membership.role}`);
+          const memberRole = await storage.getRoleById(membership.roleId);
+          console.log(`SUPER ADMIN: Added user ${userId} to club ${membership.clubId} as ${memberRole?.name || 'member'}`);
         } else if (membership.isModified) {
           // Update existing membership
           await storage.updateClubMembership(userId, membership.clubId, {
-            role: membership.role,
+            roleId: membership.roleId,
             status: membership.status,
           });
           console.log(`SUPER ADMIN: Updated user ${userId} membership in club ${membership.clubId}`);

@@ -360,7 +360,7 @@ export function UserDetailsModal({ user, open, onClose }: UserDetailsModalProps)
                     <div>
                       <p className="font-medium">{club.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {roles ? getRoleDisplayName(club.roleName || club.role, roles) : (club.roleName || club.role)}
+                        {roles ? getRoleDisplayName(club.roleName || 'member', roles) : (club.roleName || 'member')}
                       </p>
                     </div>
                     <Badge variant="outline">{club.status}</Badge>
@@ -562,7 +562,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
                     <div>
                       <Label className="text-xs">Rolle</Label>
                       <Select
-                        value={membership.roleId?.toString() || membership.role}
+                        value={membership.roleId?.toString() || '8'}
                         onValueChange={(value) => handleUpdateMembership(index, 'roleId', parseInt(value))}
                         disabled={membership.toDelete}
                       >

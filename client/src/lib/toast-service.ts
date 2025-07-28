@@ -19,8 +19,8 @@ class ToastService {
   // Success notifications (green)
   success(title: string, description?: string, duration = 5000) {
     useToastHook({
-      title,
-      description,
+      title: String(title || ''),
+      description: description ? String(description) : undefined,
       duration,
       className: "border-green-200 bg-green-50 text-green-900",
     });
@@ -29,8 +29,8 @@ class ToastService {
   // Error notifications (red)
   error(title: string, description?: string, duration = 8000) {
     useToastHook({
-      title,
-      description,
+      title: String(title || ''),
+      description: description ? String(description) : undefined,
       duration,
       variant: "destructive",
     });
@@ -39,8 +39,8 @@ class ToastService {
   // Warning notifications (yellow)
   warning(title: string, description?: string, duration = 6000) {
     useToastHook({
-      title,
-      description,
+      title: String(title || ''),
+      description: description ? String(description) : undefined,
       duration,
       className: "border-yellow-200 bg-yellow-50 text-yellow-900",
     });
@@ -49,8 +49,8 @@ class ToastService {
   // Info notifications (blue)
   info(title: string, description?: string, duration = 5000) {
     useToastHook({
-      title,
-      description,
+      title: String(title || ''),
+      description: description ? String(description) : undefined,
       duration,
       className: "border-blue-200 bg-blue-50 text-blue-900",
     });
@@ -59,8 +59,8 @@ class ToastService {
   // Loading notifications
   loading(title: string, description?: string) {
     useToastHook({
-      title,
-      description,
+      title: String(title || ''),
+      description: description ? String(description) : undefined,
       duration: 10000, // Longer duration for loading
       className: "border-gray-200 bg-gray-50 text-gray-900",
     });

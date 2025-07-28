@@ -31,7 +31,14 @@
               message.includes('execution-while') ||
               message.includes('layout-animations') ||
               message.includes('legacy-image-formats') ||
-              message.includes('navigation-override')) {
+              message.includes('navigation-override') ||
+              message.includes('oversized-images') ||
+              message.includes('publickey-credentials') ||
+              message.includes('speaker-selection') ||
+              message.includes('unoptimized-images') ||
+              message.includes('unsized-media') ||
+              message.includes('pointer-lock') ||
+              message.includes('stallwart')) {
             return; // Suppress all Replit warnings
           }
           originalWarn.apply(console, args);
@@ -45,7 +52,14 @@
               message.includes('execution-while') ||
               message.includes('layout-animations') ||
               message.includes('legacy-image-formats') ||
-              message.includes('navigation-override')) {
+              message.includes('navigation-override') ||
+              message.includes('oversized-images') ||
+              message.includes('publickey-credentials') ||
+              message.includes('speaker-selection') ||
+              message.includes('unoptimized-images') ||
+              message.includes('unsized-media') ||
+              message.includes('pointer-lock') ||
+              message.includes('stallwart')) {
             return; // Suppress all Replit errors
           }
           originalError.apply(console, args);
@@ -71,10 +85,6 @@
         }
         
         console.log('Enhanced Replit console spam suppression active');
-      }
-            );
-          };
-        }
       }
     </script>
     <script>

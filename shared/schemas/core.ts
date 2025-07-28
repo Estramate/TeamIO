@@ -104,6 +104,9 @@ export const clubs = pgTable("clubs", {
   email: varchar("email", { length: 255 }),
   website: varchar("website", { length: 255 }),
   logo: varchar("logo", { length: 500 }),
+  // Club metadata
+  foundedYear: integer("founded_year").default(new Date().getFullYear()),
+  memberCount: integer("member_count").default(0),
   // Club theme and branding
   primaryColor: varchar("primary_color", { length: 7 }).default("#3b82f6"), // hex color
   secondaryColor: varchar("secondary_color", { length: 7 }).default("#64748b"), // hex color

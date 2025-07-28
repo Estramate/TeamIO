@@ -326,6 +326,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(allClubs);
   }));
 
+  // Individual club route
+  app.get('/api/clubs/:id', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.id);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const club = await storage.getClub(clubId);
+    if (!club) {
+      throw new NotFoundError('Club not found');
+    }
+    
+    // Check if user has access to this club
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    logger.info('Club details retrieved', { clubId, userId, requestId: req.id });
+    res.json(club);
+  }));
+
+  // Update club (admin only)
+  app.patch('/api/clubs/:id', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.id);
+    const userId = req.user.claims.sub;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Check if user is club admin
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership || membership.role !== 'club-administrator') {
+      throw new AuthorizationError('You must be a club administrator to update club settings');
+    }
+    
+    // Validate update data
+    const updateData = req.body;
+    
+    // Clean up empty strings to prevent PostgreSQL errors
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === '') {
+        updateData[key] = null;
+      }
+    });
+    
+    const updatedClub = await storage.updateClub(clubId, updateData);
+    
+    // Log the activity
+    const admin = await storage.getUser(userId);
+    if (admin) {
+      await storage.createActivityLog({
+        clubId,
+        userId,
+        action: 'club_updated',
+        targetResource: 'club',
+        targetResourceId: clubId,
+        description: `${admin.firstName} ${admin.lastName} hat die Vereinseinstellungen aktualisiert`,
+        metadata: { updatedFields: Object.keys(updateData) },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+    }
+    
+    logger.info('Club updated', { clubId, updatedBy: userId, fields: Object.keys(updateData), requestId: req.id });
+    res.json(updatedClub);
+  }));
+
   // Club routes (authenticated - returns user's ACTIVE clubs only for selection)
   app.get('/api/clubs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.claims.sub;

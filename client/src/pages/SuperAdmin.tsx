@@ -102,142 +102,126 @@ export default function SuperAdminPage() {
   // Create club mutation
   const createClubMutation = useMutation({
     mutationFn: async (clubData: any) => {
-      return apiRequest('/api/super-admin/clubs', {
-        method: 'POST',
-        body: JSON.stringify(clubData),
-      });
+      return apiRequest('POST', '/api/super-admin/clubs', clubData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/clubs'] });
       setShowCreateClub(false);
-      toastService.success({
-        title: "Verein erfolgreich erstellt",
-        description: "Der neue Verein wurde angelegt und ist bereit für die Nutzung."
-      });
+      toastService.success(
+        "Verein erfolgreich erstellt",
+        "Der neue Verein wurde angelegt und ist bereit für die Nutzung."
+      );
     },
     onError: (error: any) => {
-      toastService.error({
-        title: "Fehler beim Erstellen",
-        description: error.message || "Der Verein konnte nicht erstellt werden."
-      });
+      toastService.error(
+        "Fehler beim Erstellen",
+        error.message || "Der Verein konnte nicht erstellt werden."
+      );
     },
   });
 
   // Create admin mutation
   const createAdminMutation = useMutation({
     mutationFn: async (adminData: any) => {
-      return apiRequest('/api/super-admin/create-admin', {
-        method: 'POST',
-        body: JSON.stringify(adminData),
-      });
+      return apiRequest('POST', '/api/super-admin/create-admin', adminData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/users'] });
       setShowCreateAdmin(false);
-      toastService.success({
-        title: "Administrator erfolgreich erstellt",
-        description: "Der neue Vereinsadministrator wurde angelegt und per E-Mail benachrichtigt."
-      });
+      toastService.success(
+        "Administrator erfolgreich erstellt",
+        "Der neue Vereinsadministrator wurde angelegt und per E-Mail benachrichtigt."
+      );
     },
     onError: (error: any) => {
-      toastService.error({
-        title: "Fehler beim Erstellen",
-        description: error.message || "Der Administrator konnte nicht erstellt werden."
-      });
+      toastService.error(
+        "Fehler beim Erstellen",
+        error.message || "Der Administrator konnte nicht erstellt werden."
+      );
     },
   });
 
   // Update club mutation
   const updateClubMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return apiRequest(`/api/super-admin/clubs/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('PUT', `/api/super-admin/clubs/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/clubs'] });
       setShowEditClub(null);
-      toastService.success({
-        title: "Verein erfolgreich aktualisiert",
-        description: "Die Vereinsdaten wurden erfolgreich gespeichert."
-      });
+      toastService.success(
+        "Verein erfolgreich aktualisiert",
+        "Die Vereinsdaten wurden erfolgreich gespeichert."
+      );
     },
     onError: (error: any) => {
-      toastService.error({
-        title: "Fehler beim Speichern",
-        description: error.message || "Die Vereinsdaten konnten nicht gespeichert werden."
-      });
+      toastService.error(
+        "Fehler beim Speichern",
+        error.message || "Die Vereinsdaten konnten nicht gespeichert werden."
+      );
     },
   });
 
   // Deactivate club mutation
   const deactivateClubMutation = useMutation({
     mutationFn: async (clubId: number) => {
-      return apiRequest(`/api/super-admin/clubs/${clubId}/deactivate`, {
-        method: 'POST',
-      });
+      return apiRequest('POST', `/api/super-admin/clubs/${clubId}/deactivate`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/clubs'] });
       setShowDeactivateClub(null);
-      toastService.success({
-        title: "Verein deaktiviert",
-        description: "Der Verein wurde erfolgreich deaktiviert."
-      });
+      toastService.success(
+        "Verein deaktiviert",
+        "Der Verein wurde erfolgreich deaktiviert."
+      );
     },
     onError: (error: any) => {
-      toastService.error({
-        title: "Fehler beim Deaktivieren",
-        description: error.message || "Der Verein konnte nicht deaktiviert werden."
-      });
+      toastService.error(
+        "Fehler beim Deaktivieren",
+        error.message || "Der Verein konnte nicht deaktiviert werden."
+      );
     },
   });
 
   // Update user mutation
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest(`/api/super-admin/users/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('PUT', `/api/super-admin/users/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/users'] });
       setShowEditUser(null);
-      toastService.success({
-        title: "Benutzer erfolgreich aktualisiert",
-        description: "Die Benutzerdaten wurden erfolgreich gespeichert."
-      });
+      toastService.success(
+        "Benutzer erfolgreich aktualisiert",
+        "Die Benutzerdaten wurden erfolgreich gespeichert."
+      );
     },
     onError: (error: any) => {
-      toastService.error({
-        title: "Fehler beim Speichern",
-        description: error.message || "Die Benutzerdaten konnten nicht gespeichert werden."
-      });
+      toastService.error(
+        "Fehler beim Speichern",
+        error.message || "Die Benutzerdaten konnten nicht gespeichert werden."
+      );
     },
   });
 
   // Deactivate user mutation
   const deactivateUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/super-admin/users/${userId}/deactivate`, {
-        method: 'POST',
-      });
+      return apiRequest('POST', `/api/super-admin/users/${userId}/deactivate`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/users'] });
       setShowDeactivateUser(null);
-      toastService.success({
-        title: "Benutzer deaktiviert",
-        description: "Der Benutzer wurde erfolgreich deaktiviert."
-      });
+      toastService.success(
+        "Benutzer deaktiviert",
+        "Der Benutzer wurde erfolgreich deaktiviert."
+      );
     },
     onError: (error: any) => {
-      toastService.error({
-        title: "Fehler beim Deaktivieren",
-        description: error.message || "Der Benutzer konnte nicht deaktiviert werden."
-      });
+      toastService.error(
+        "Fehler beim Deaktivieren",
+        error.message || "Der Benutzer konnte nicht deaktiviert werden."
+      );
     },
   });
 

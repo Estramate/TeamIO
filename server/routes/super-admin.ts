@@ -18,9 +18,7 @@ const createClubSchema = z.object({
   address: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email("Valid email is required"),
-  website: z.string().optional().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, {
-    message: "Website must be a valid URL or empty"
-  }),
+  website: z.string().optional(),
   primaryColor: z.string().regex(/^#[0-9A-F]{6}$/i).default("#3b82f6"),
   secondaryColor: z.string().regex(/^#[0-9A-F]{6}$/i).default("#64748b"),
   accentColor: z.string().regex(/^#[0-9A-F]{6}$/i).default("#10b981"),

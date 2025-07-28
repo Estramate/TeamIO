@@ -439,6 +439,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Validate update data
     const updateData = req.body;
     
+    console.log('🔧 Club update attempt:', { clubId, updateData, userId });
+    
     // Clean up empty strings to prevent PostgreSQL errors
     Object.keys(updateData).forEach(key => {
       if (updateData[key] === '') {
@@ -446,26 +448,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
     
-    const updatedClub = await storage.updateClub(clubId, updateData);
+    // Filter out undefined values and non-club fields
+    const allowedFields = [
+      'name', 'shortName', 'description', 'address', 'phone', 'email', 
+      'website', 'logo', 'foundedYear', 'memberCount', 'primaryColor', 
+      'secondaryColor', 'accentColor', 'settings'
+    ];
     
-    // Log the activity
-    const admin = await storage.getUser(userId);
-    if (admin) {
-      await storage.createActivityLog({
-        clubId,
-        userId,
-        action: 'club_updated',
-        targetResource: 'club',
-        targetResourceId: clubId,
-        description: `${admin.firstName} ${admin.lastName} hat die Vereinseinstellungen aktualisiert`,
-        metadata: { updatedFields: Object.keys(updateData) },
-        ipAddress: req.ip,
-        userAgent: req.get('User-Agent'),
-      });
+    const cleanedData: any = {};
+    allowedFields.forEach(field => {
+      if (updateData[field] !== undefined) {
+        cleanedData[field] = updateData[field];
+      }
+    });
+    
+    console.log('🔧 Cleaned update data:', cleanedData);
+    
+    try {
+      const updatedClub = await storage.updateClub(clubId, cleanedData);
+      
+      // Log the activity only if update was successful
+      const admin = await storage.getUser(userId);
+      if (admin) {
+        await storage.createActivityLog({
+          clubId,
+          userId,
+          action: 'club_updated',
+          targetResource: 'club',
+          targetResourceId: clubId,
+          description: `${admin.firstName} ${admin.lastName} hat die Vereinseinstellungen aktualisiert`,
+          metadata: { updatedFields: Object.keys(cleanedData) },
+          ipAddress: req.ip,
+          userAgent: req.get('User-Agent'),
+        });
+      }
+      
+      logger.info('Club updated successfully', { clubId, updatedBy: userId, fields: Object.keys(cleanedData), requestId: req.id });
+      res.json(updatedClub);
+    } catch (error) {
+      console.error('🔥 Club update error:', error);
+      logger.error('Club update failed', { clubId, userId, error: error.message, updateData: cleanedData });
+      throw new DatabaseError('Failed to update club settings');
     }
-    
-    logger.info('Club updated', { clubId, updatedBy: userId, fields: Object.keys(updateData), requestId: req.id });
-    res.json(updatedClub);
   }));
 
   // Club routes (authenticated - returns user's ACTIVE clubs only for selection)

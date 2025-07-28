@@ -43,6 +43,7 @@ interface ClubData {
   email: string;
   website: string;
   logoUrl: string;
+  logo: string; // Backend field name
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
@@ -69,6 +70,7 @@ export default function Settings() {
     email: '',
     website: '',
     logoUrl: '',
+    logo: '',
     primaryColor: '#3b82f6',
     secondaryColor: '#64748b',
     accentColor: '#10b981',
@@ -121,7 +123,8 @@ export default function Settings() {
         phone: club.phone || '',
         email: club.email || '',
         website: club.website || '',
-        logoUrl: club.logoUrl || '',
+        logoUrl: club.logoUrl || club.logo || '',
+        logo: club.logo || club.logoUrl || '',
         primaryColor: club.primaryColor || '#3b82f6',
         secondaryColor: club.secondaryColor || '#64748b',
         accentColor: club.accentColor || '#10b981',
@@ -173,7 +176,25 @@ export default function Settings() {
   });
 
   const handleSaveSettings = () => {
-    updateClubMutation.mutate(clubData);
+    // Create a clean data object with backend field names
+    const updateData = {
+      name: clubData.name,
+      shortName: clubData.shortName,
+      description: clubData.description,
+      address: clubData.address,
+      phone: clubData.phone,
+      email: clubData.email,
+      website: clubData.website,
+      logo: clubData.logoUrl, // Use logoUrl value but send as logo field
+      primaryColor: clubData.primaryColor,
+      secondaryColor: clubData.secondaryColor,
+      accentColor: clubData.accentColor,
+      foundedYear: clubData.foundedYear,
+      memberCount: clubData.memberCount,
+      settings: clubData.settings
+    };
+    
+    updateClubMutation.mutate(updateData);
   };
 
   const handleInputChange = (field: keyof ClubData, value: string | number) => {
@@ -195,7 +216,8 @@ export default function Settings() {
         phone: club.phone || '',
         email: club.email || '',
         website: club.website || '',
-        logoUrl: club.logoUrl || '',
+        logoUrl: club.logoUrl || club.logo || '',
+        logo: club.logo || club.logoUrl || '',
         primaryColor: club.primaryColor || '#3b82f6',
         secondaryColor: club.secondaryColor || '#64748b',
         accentColor: club.accentColor || '#10b981',
@@ -473,19 +495,19 @@ export default function Settings() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-md">
                   <Users className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                  <div className="text-2xl font-bold">{clubData.memberCount}</div>
+                  <div className="text-2xl font-bold">{clubData.memberCount || 0}</div>
                   <div className="text-sm text-muted-foreground">Mitglieder</div>
                 </div>
                 
                 <div className="text-center p-4 border rounded-md">
                   <Calendar className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                  <div className="text-2xl font-bold">{clubData.foundedYear}</div>
+                  <div className="text-2xl font-bold">{clubData.foundedYear || new Date().getFullYear()}</div>
                   <div className="text-sm text-muted-foreground">Gegründet</div>
                 </div>
                 
                 <div className="text-center p-4 border rounded-md">
                   <Clock className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-                  <div className="text-2xl font-bold">{new Date(clubData.createdAt).getFullYear()}</div>
+                  <div className="text-2xl font-bold">{clubData.createdAt ? new Date(clubData.createdAt).getFullYear() : new Date().getFullYear()}</div>
                   <div className="text-sm text-muted-foreground">ClubFlow beigetreten</div>
                 </div>
                 

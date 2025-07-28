@@ -498,7 +498,7 @@ export class DatabaseStorage implements IStorage {
       .returning();
       
     console.log(`✅ STORAGE DEBUG: Updated membership:`, updatedMembership);
-    return updatedMembership;
+    return updatedMembership;hip;
   }
 
   async getUserClubMembership(userId: string, clubId: number): Promise<ClubMembership | undefined> {

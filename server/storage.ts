@@ -2517,7 +2517,7 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
       
-      console.log(`📧 EMAIL INVITATION CREATED: ${invitation.email} invited to club ${invitation.clubId} as ${invitation.role}`);
+      console.log(`📧 EMAIL INVITATION CREATED: ${invitation.email} invited to club ${invitation.clubId} with roleId ${invitation.roleId}`);
       return newInvitation;
     } catch (error) {
       console.error('Error creating email invitation:', error);

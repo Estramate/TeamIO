@@ -192,13 +192,24 @@ export async function registerUserFromInvitation(registrationData: RegistrationD
     const userId = crypto.randomUUID();
     const user = await storage.upsertUser({
       id: userId,
-      email,
-      passwordHash,
-      firstName,
-      lastName,
+      email: email,
+      passwordHash: passwordHash,
+      firstName: firstName,
+      lastName: lastName,
       authProvider: 'email',
       isActive: true,
-      hasCompletedOnboarding: true
+      hasCompletedOnboarding: true,
+      profileImageUrl: undefined,
+      twoFactorSecret: undefined,
+      twoFactorEnabled: false,
+      twoFactorBackupCodes: undefined,
+      providerUserId: undefined,
+      providerData: undefined,
+      preferredLanguage: 'de',
+      isSuperAdmin: false,
+      superAdminGrantedAt: undefined,
+      superAdminGrantedBy: undefined,
+      lastLoginAt: undefined
     });
 
     // Create club membership

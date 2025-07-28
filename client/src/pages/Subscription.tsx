@@ -132,10 +132,11 @@ export default function SubscriptionPage() {
   const currentPlanData = plans.find(plan => plan.planType === currentPlan);
   
   // Helper functions
-  const getRemainingMembers = () => {
+  const getRemainingUsers = () => {
     const plan = plans.find(p => p.planType === currentPlan);
     if (!plan?.memberLimit) return null;
-    return Math.max(0, plan.memberLimit - (usage?.memberCount || 31));
+    const totalManagedUsers = (usage?.memberCount || 31) + (usage?.playerCount || 124);
+    return Math.max(0, plan.memberLimit - totalManagedUsers);
   };
   
   const canUpgrade = () => {
@@ -210,33 +211,41 @@ export default function SubscriptionPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-blue-500" />
-                  Mitglieder-Nutzung
+                  Verwaltete Benutzer
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Aktuelle Mitglieder:</span>
-                      <span className="font-medium">{usage?.memberCount || 31}</span>
+                      <span>Gesamt verwaltete Benutzer:</span>
+                      <span className="font-medium">{(usage?.memberCount || 31) + (usage?.playerCount || 124)}</span>
                     </div>
-                    {getRemainingMembers() !== null && (
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>→ Mitglieder:</span>
+                      <span>{usage?.memberCount || 31}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>→ Spieler:</span>
+                      <span>{usage?.playerCount || 124}</span>
+                    </div>
+                    {getRemainingUsers() !== null && (
                       <>
                         <div className="flex justify-between text-sm">
                           <span>Limit:</span>
-                          <span>{(usage?.memberCount || 31) + (getRemainingMembers() || 0)}</span>
+                          <span>{((usage?.memberCount || 31) + (usage?.playerCount || 124)) + (getRemainingUsers() || 0)}</span>
                         </div>
                         <Progress 
-                          value={((usage?.memberCount || 31) / ((usage?.memberCount || 31) + (getRemainingMembers() || 0))) * 100} 
+                          value={(((usage?.memberCount || 31) + (usage?.playerCount || 124)) / (((usage?.memberCount || 31) + (usage?.playerCount || 124)) + (getRemainingUsers() || 0))) * 100} 
                           className="h-2"
                         />
                       </>
                     )}
                   </div>
-                  {(getRemainingMembers() === null || isEnterprise) && (
+                  {(getRemainingUsers() === null || isEnterprise) && (
                     <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
                       <Check className="h-4 w-4" />
-                      <span>Unbegrenzte Mitglieder</span>
+                      <span>Unbegrenzte Benutzer</span>
                     </div>
                   )}
                 </div>

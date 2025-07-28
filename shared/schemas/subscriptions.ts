@@ -95,13 +95,13 @@ export const clubSubscriptions = pgTable("club_subscriptions", {
   // Usage tracking (commented out as it doesn't exist in database)
   // currentMemberCount: integer("current_member_count").default(0).notNull(),
   
-  // Metadata
-  metadata: jsonb("metadata").$type<{
-    upgradeReason?: string;
-    downgradeReason?: string;
-    cancelReason?: string;
-    customFeatures?: string[];
-  }>(),
+  // Metadata (removed as it doesn't exist in database yet)
+  // metadata: jsonb("metadata").$type<{
+  //   upgradeReason?: string;
+  //   downgradeReason?: string;
+  //   cancelReason?: string;
+  //   customFeatures?: string[];
+  // }>(),
   
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

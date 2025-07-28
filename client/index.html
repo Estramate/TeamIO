@@ -10,6 +10,34 @@
     <meta name="theme-color" content="#ffffff" />
     <title>ClubFlow - Professionelle Vereinsverwaltung</title>
     <meta name="description" content="ClubFlow - Die moderne, umfassende Lösung für die Verwaltung von Sportvereinen. Mitgliederverwaltung, Teams, Finanzen und mehr." />
+    
+    <!-- Disable Replit's permissions policy warnings -->
+    <meta http-equiv="Permissions-Policy" content="ambient-light-sensor=(), battery=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), layout-animations=(), legacy-image-formats=(), navigation-override=(), oversized-images=(), publickey-credentials=(), speaker-selection=(), unoptimized-images=(), unsized-media=(), pointer-lock=()" />
+    
+    <script>
+      // Override Replit's console spam by intercepting and filtering messages
+      if (typeof window !== 'undefined') {
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        console.warn = function(...args) {
+          const message = args.join(' ');
+          if (message.includes('Unrecognized feature:') || 
+              message.includes('Allow attribute will take precedence')) {
+            return; // Suppress Replit warnings
+          }
+          originalWarn.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+          const message = args.join(' ');
+          if (message.includes('Unrecognized feature:')) {
+            return; // Suppress Replit errors
+          }
+          originalError.apply(console, args);
+        };
+      }
+    </script>
     <script>
       // Disable WebSocket completely in development to prevent Replit internal errors
       if (location.hostname.includes('replit.dev') || location.hostname === 'localhost') {

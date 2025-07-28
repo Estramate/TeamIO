@@ -69,7 +69,7 @@ export const emailInvitations = pgTable("email_invitations", {
 ]);
 
 // User storage table (supports multiple auth providers + password auth)
-export const users = pgTable("users", {
+export const users: any = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
   passwordHash: varchar("password_hash"), // For email/password authentication
@@ -91,7 +91,7 @@ export const users = pgTable("users", {
   // Platform administration privileges
   isSuperAdmin: boolean("is_super_admin").default(false),
   superAdminGrantedAt: timestamp("super_admin_granted_at"),
-  superAdminGrantedBy: varchar("super_admin_granted_by").references(() => users.id),
+  superAdminGrantedBy: varchar("super_admin_granted_by"),
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

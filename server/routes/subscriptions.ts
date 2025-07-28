@@ -111,7 +111,7 @@ router.get("/club/:clubId", requiresClubAdmin, asyncHandler(async (req: any, res
     console.error('Error in /api/subscriptions/club/:clubId:', error);
     res.status(500).json({ 
       error: "Failed to fetch club subscription", 
-      details: error.message 
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }));
@@ -200,8 +200,7 @@ router.post("/club/:clubId",
 
         // Send notifications if plan changed
         if (oldPlan !== planType) {
-          const { getStorage } = await import("../storage");
-          const storage = getStorage();
+          const { storage } = await import("../storage");
           const club = await storage.getClub(clubId);
           const userInfo = await storage.getUser(user.claims?.sub);
 
@@ -242,6 +241,7 @@ router.post("/club/:clubId",
         const newSubscription = await subscriptionStorage.createClubSubscription({
           clubId,
           planId: plan.id,
+          planType: planType,
           billingInterval,
           currentPeriodStart,
           currentPeriodEnd,
@@ -251,8 +251,7 @@ router.post("/club/:clubId",
 
         // Send notifications for new subscription
         if (oldPlan !== planType) {
-          const { getStorage } = await import("../storage");
-          const storage = getStorage();
+          const { storage } = await import("../storage");
           const club = await storage.getClub(clubId);
           const userInfo = await storage.getUser(user.claims?.sub);
 
@@ -467,6 +466,7 @@ router.put("/super-admin/force-plan/:clubId",
         result = await subscriptionStorage.createClubSubscription({
           clubId,
           planId: plan.id,
+          planType: planType,
           billingInterval: billingInterval || 'monthly',
           currentPeriodStart,
           currentPeriodEnd,
@@ -475,8 +475,7 @@ router.put("/super-admin/force-plan/:clubId",
       }
 
       // Log the super admin action
-      const { getStorage } = await import("../storage");
-      const storage = getStorage();
+      const { storage } = await import("../storage");
       const club = await storage.getClub(clubId);
       
       console.log(`SUPER ADMIN ACTION: Plan force-changed by ${req.user.email} for club ${club?.name} (${oldPlan} → ${planType}). Reason: ${reason || 'No reason provided'}`);

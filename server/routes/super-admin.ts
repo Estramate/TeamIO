@@ -120,15 +120,16 @@ router.post("/clubs",
     }
   }));
 
-// GET /api/super-admin/users - Get all users
+// GET /api/super-admin/users - Get all users (SYSTEM-WIDE for Super Admin)
 router.get("/users",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
       const { storage } = await import("../storage");
       
-      // Get all users
+      // Get ALL users across the entire system
       const users = await storage.getAllUsers();
+      console.log(`📊 Getting ALL USERS for Super Admin - Total: ${users.length}`);
       
       // Enhance users with club memberships
       const enhancedUsers = await Promise.all(
@@ -156,6 +157,7 @@ router.get("/users",
         })
       );
       
+      console.log(`📊 Enhanced ${enhancedUsers.length} users with membership details for Super Admin`);
       res.json(enhancedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -281,17 +283,18 @@ router.delete("/clubs/:clubId",
     }
   }));
 
-// GET /api/super-admin/subscription-analytics - Get subscription analytics (aggregated across all clubs)
+// GET /api/super-admin/subscription-analytics - Get SYSTEM-WIDE subscription analytics
 router.get("/subscription-analytics",
   requiresSuperAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
       const { storage } = await import("../storage");
       
-      // Get all club subscriptions (system-wide view for Super Admin)
+      // Get ALL club subscriptions across the ENTIRE system
       const clubSubscriptions = await storage.getAllClubSubscriptions();
+      console.log(`🌐 SUPER ADMIN ANALYTICS: Processing ${clubSubscriptions.length} subscriptions across ALL clubs`);
       
-      // Count plans by type across all clubs
+      // Count plans by type across ALL clubs in the system
       const planCounts = {
         free: 0,
         starter: 0,
@@ -347,13 +350,35 @@ router.get("/subscription-analytics",
         }
       });
       
+      // Get system-wide user count across ALL clubs
+      const allUsers = await storage.getAllUsers();
+      const allClubs = await storage.getAllClubs();
+      
+      // Calculate total managed users across all clubs
+      let totalManagedUsers = 0;
+      for (const club of allClubs) {
+        const clubUsers = [];
+        for (const user of allUsers) {
+          const memberships = await storage.getUserClubMemberships(user.id);
+          const isClubMember = memberships.some(m => m.clubId === club.id && m.status === 'active');
+          if (isClubMember) {
+            clubUsers.push(user);
+          }
+        }
+        totalManagedUsers += clubUsers.length;
+        console.log(`🏛️ Club ${club.name}: ${clubUsers.length} active users`);
+      }
+      
       // Get previous month revenue (mock for now - would need historical data)
       const previousRevenue = Math.floor(totalRevenue * 0.85); // 15% growth simulation
       
-      console.log(`📊 Super Admin Subscription Analytics:`, {
+      console.log(`🌐 SUPER ADMIN SYSTEM-WIDE ANALYTICS:`, {
         planCounts,
         revenue: { current: totalRevenue, previous: previousRevenue },
-        totalSubscriptions: clubSubscriptions.length
+        totalSubscriptions: clubSubscriptions.length,
+        totalUsers: allUsers.length,
+        totalClubs: allClubs.length,
+        totalManagedUsers
       });
       
       res.json({
@@ -363,7 +388,13 @@ router.get("/subscription-analytics",
           previous: previousRevenue
         },
         totalSubscriptions: clubSubscriptions.length,
-        activeClubs: clubSubscriptions.filter((sub: any) => sub.status === 'active').length
+        activeClubs: clubSubscriptions.filter((sub: any) => sub.status === 'active').length,
+        systemStats: {
+          totalUsers: allUsers.length,
+          totalClubs: allClubs.length,
+          totalManagedUsers: totalManagedUsers,
+          averageUsersPerClub: Math.round(totalManagedUsers / allClubs.length)
+        }
       });
     } catch (error) {
       console.error("Error fetching subscription analytics:", error);

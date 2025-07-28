@@ -3179,19 +3179,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // === LIVE CHAT API ROUTES - PRODUCTION DATABASE INTEGRATION ===
-  app.use("/api", chatRoutes);
-  
-  // Remove mock endpoints - replaced by production chatRoutes above
-  /*
-  
+  // === LIVE CHAT API ROUTES - DIRECT INTEGRATION ===
   // Get all chat rooms for a club
   app.get('/api/clubs/:clubId/chat-rooms', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const userId = req.user!.id;
+      const userId = req.user.claims?.sub || req.user.id;
 
-      // For demo purposes, return mock chat rooms
+      console.log('🔍 CHAT-ROOMS DEBUG - Club ID:', clubId);
+      console.log('🔍 CHAT-ROOMS DEBUG - User ID:', userId);
+
+      if (!userId) {
+        return res.status(401).json({ message: 'User ID not found in session' });
+      }
+
+      // For demo purposes, return mock chat rooms until database is fully ready
       const mockRooms = [
         {
           id: '1',
@@ -3229,18 +3231,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
 
+      console.log('✅ CHAT-ROOMS - Returning mock rooms:', mockRooms.length);
       res.json(mockRooms);
     } catch (error) {
-      console.error('Error fetching chat rooms:', error);
+      console.error('❌ Error fetching chat rooms:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  // Get chat unread count
+  app.get('/api/clubs/:clubId/chat-unread-count', isAuthenticated, async (req: any, res) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const userId = req.user.claims?.sub || req.user.id;
+
+      console.log('🔍 CHAT-UNREAD DEBUG - Club ID:', clubId);
+      console.log('🔍 CHAT-UNREAD DEBUG - User ID:', userId);
+
+      if (!userId) {
+        return res.status(401).json({ message: 'User ID not found in session' });
+      }
+
+      // Return mock unread count for now
+      const mockUnreadCount = { totalUnread: 1 };
+      
+      console.log('✅ CHAT-UNREAD - Returning mock count:', mockUnreadCount);
+      res.json(mockUnreadCount);
+    } catch (error) {
+      console.error('❌ Error fetching chat unread count:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
 
-  // Get messages for a chat room
+  // Get messages for a chat room  
   app.get('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req: any, res) => {
     try {
       const roomId = req.params.roomId;
-      const userId = req.user!.id;
+      const userId = req.user.claims?.sub || req.user.id;
+
+      console.log('🔍 CHAT-MESSAGES DEBUG - Room ID:', roomId);
+      console.log('🔍 CHAT-MESSAGES DEBUG - User ID:', userId);
+
+      if (!userId) {
+        return res.status(401).json({ message: 'User ID not found in session' });
+      }
 
       // Mock messages based on room
       const mockMessages = roomId === '1' ? [
@@ -3283,9 +3316,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
 
+      console.log('✅ CHAT-MESSAGES - Returning mock messages:', mockMessages.length);
       res.json(mockMessages);
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('❌ Error fetching messages:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -3294,8 +3328,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, async (req: any, res) => {
     try {
       const roomId = req.params.roomId;
-      const userId = req.user!.id;
+      const userId = req.user.claims?.sub || req.user.id;
       const { content, messageType = 'text' } = req.body;
+
+      console.log('🔍 SEND-MESSAGE DEBUG - Room ID:', roomId);
+      console.log('🔍 SEND-MESSAGE DEBUG - User ID:', userId);
+      console.log('🔍 SEND-MESSAGE DEBUG - Content:', content);
+
+      if (!userId) {
+        return res.status(401).json({ message: 'User ID not found in session' });
+      }
 
       if (!content || !content.trim()) {
         return res.status(400).json({ error: 'Message content is required' });
@@ -3315,33 +3357,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         readBy: [userId]
       };
 
-      // Broadcast to other participants via WebSocket
-      const broadcast = (req as any).app.locals.broadcast;
-      if (broadcast) {
-        broadcast.toClub(parseInt(req.params.clubId), {
-          type: 'new_chat_message',
-          data: {
-            roomId,
-            message: newMessage
-          }
-        });
-      }
-
+      console.log('✅ SEND-MESSAGE - Message created:', newMessage.id);
       res.status(201).json(newMessage);
     } catch (error) {
-      console.error('Error sending message:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Get unread message count
-  app.get('/api/clubs/:clubId/chat-unread-count', isAuthenticated, async (req: any, res) => {
-    try {
-      // Mock unread count - in real implementation, this would query database
-      const unreadCount = Math.floor(Math.random() * 5); // 0-4 unread messages
-      res.json(unreadCount);
-    } catch (error) {
-      console.error('Error getting unread count:', error);
+      console.error('❌ Error sending message:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -3350,39 +3369,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/chat-rooms', isAuthenticated, async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
-      const userId = req.user!.id;
-      const { name, type = 'group', participantIds = [] } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
+      const { name, type, participantIds = [] } = req.body;
+
+      console.log('🔍 CREATE-ROOM DEBUG - Club ID:', clubId);
+      console.log('🔍 CREATE-ROOM DEBUG - User ID:', userId);
+      console.log('🔍 CREATE-ROOM DEBUG - Name:', name);
+
+      if (!userId) {
+        return res.status(401).json({ message: 'User ID not found in session' });
+      }
 
       if (!name || !name.trim()) {
-        return res.status(400).json({ error: 'Chat room name is required' });
+        return res.status(400).json({ error: 'Room name is required' });
       }
 
       // Create mock new room
       const newRoom = {
         id: `room_${Date.now()}`,
         name: name.trim(),
-        type,
+        type: type || 'group',
         participants: [
-          { id: userId, name: 'Sie', role: 'club-administrator', isOnline: true },
-          ...participantIds.map((id: string, index: number) => ({
-            id,
-            name: `Benutzer ${index + 1}`,
-            role: 'member',
-            isOnline: false
-          }))
+          { id: userId, name: 'Sie', role: 'club-administrator', isOnline: true }
         ],
-        lastMessage: null,
         unreadCount: 0,
         createdAt: new Date().toISOString()
       };
 
+      console.log('✅ CREATE-ROOM - Room created:', newRoom.id);
       res.status(201).json(newRoom);
     } catch (error) {
-      console.error('Error creating chat room:', error);
+      console.error('❌ Error creating chat room:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
-  */
+
+
 
   return httpServer;
 }

@@ -96,28 +96,44 @@ function LiveChat({ className }: LiveChatProps) {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData: { content: string; messageType: string }) => {
-      return apiRequest(`/api/clubs/${selectedClub?.id}/chat-rooms/${selectedRoom}/messages`, {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/chat-rooms/${selectedRoom}/messages`, {
         method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(messageData),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       setNewMessage('');
-      queryClient.invalidateQueries(['/api/clubs', selectedClub?.id, 'chat-rooms', selectedRoom, 'messages']);
-      queryClient.invalidateQueries(['/api/clubs', selectedClub?.id, 'chat-rooms']);
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'chat-rooms', selectedRoom, 'messages'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'chat-rooms'] });
     },
   });
 
   // Create new chat room mutation
   const createRoomMutation = useMutation({
     mutationFn: async (roomData: { name: string; type: string; participantIds: string[] }) => {
-      return apiRequest(`/api/clubs/${selectedClub?.id}/chat-rooms`, {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/chat-rooms`, {
         method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(roomData),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create chat room');  
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['/api/clubs', selectedClub?.id, 'chat-rooms']);
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'chat-rooms'] });
     },
   });
 
@@ -153,7 +169,7 @@ function LiveChat({ className }: LiveChatProps) {
     }
   };
 
-  const unreadCount = chatRooms.reduce((total, room) => total + room.unreadCount, 0);
+  const unreadCount = (chatRooms || []).reduce((total, room) => total + room.unreadCount, 0);
 
   if (!isOpen) {
     return (
@@ -189,7 +205,7 @@ function LiveChat({ className }: LiveChatProps) {
               <MessageCircle className="h-5 w-5" />
               <CardTitle className="text-lg">
                 {selectedRoom ? 
-                  chatRooms.find(r => r.id === selectedRoom)?.name || 'Chat' : 
+                  (chatRooms || []).find(r => r.id === selectedRoom)?.name || 'Chat' : 
                   'Live Chat'
                 }
               </CardTitle>

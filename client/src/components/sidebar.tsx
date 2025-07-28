@@ -60,12 +60,12 @@ const navigation = [
 
 const adminNavigation = [
   { name: "Benutzer", href: "/users", icon: UserCog, feature: "multiAdmin" as FeatureName },
-  { name: "Subscription", href: "/subscription", icon: Zap, feature: "basicManagement" as FeatureName },
+  { name: "Subscription", href: "/subscription", icon: Euro, feature: "basicManagement" as FeatureName },
   { name: "Einstellungen", href: "/settings", icon: Settings, feature: "basicManagement" as FeatureName },
 ];
 
 const superAdminNavigation = [
-  { name: "Super Admin", href: "/super-admin", icon: ShieldCheck },
+  { name: "Super Admin", href: "/super-admin", icon: Crown },
 ];
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
@@ -286,7 +286,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 mb-3">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                        <ShieldCheck className="w-3 h-3 text-white" />
+                        <Crown className="w-3 h-3 text-white" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-orange-800 dark:text-orange-200">
@@ -332,17 +332,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                           navigate('/super-admin');
                           onClose();
                         }}
-                        className={cn(
-                          "w-full flex justify-center p-2 rounded-lg transition-all duration-200 group mb-2",
-                          location === '/super-admin'
-                            ? "bg-gradient-to-br from-orange-500 to-amber-500 text-white"
-                            : "hover:bg-gradient-to-br hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-900/20 dark:hover:to-amber-900/20 text-muted-foreground hover:text-foreground"
-                        )}
+                        className="w-full flex justify-center p-2 rounded-lg transition-all duration-200 group mb-2 bg-gradient-to-br from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
                       >
-                        <ShieldCheck className={cn(
-                          "w-5 h-5 transition-colors",
-                          location === '/super-admin' ? "text-white" : "text-muted-foreground group-hover:text-foreground"
-                        )} />
+                        <Crown className="w-5 h-5 text-white" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="right">

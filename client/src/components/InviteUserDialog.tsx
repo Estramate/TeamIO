@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Mail, Send, Loader2 } from 'lucide-react';
 import { emailInvitationFormSchema } from '@shared/schemas/core';
 import type { z } from 'zod';
+import { useRoles } from '@/hooks/useRoles';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +48,7 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { roles, isLoading: rolesLoading } = useRoles();
 
   const form = useForm<InviteFormData>({
     resolver: zodResolver(emailInvitationFormSchema),
@@ -86,11 +88,7 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
     inviteUserMutation.mutate(data);
   };
 
-  const roleOptions = [
-    { value: 1, label: 'Mitglied' },
-    { value: 2, label: 'Trainer' },
-    { value: 3, label: 'Vereinsadministrator' },
-  ];
+  // Use roles from database instead of hardcoded options
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -149,11 +147,21 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {roleOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value.toString()}>
-                          {option.label}
+                      {rolesLoading ? (
+                        <SelectItem value="loading" disabled>
+                          Lade Rollen...
                         </SelectItem>
-                      ))}
+                      ) : roles && roles.length > 0 ? (
+                        roles.map((role) => (
+                          <SelectItem key={role.id} value={role.id.toString()}>
+                            {role.displayName}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-roles" disabled>
+                          Keine Rollen verfügbar
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormDescription>

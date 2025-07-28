@@ -506,6 +506,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Roles API (authenticated - returns all available roles)
+  app.get('/api/roles', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    try {
+      const roles = await storage.getAllRoles();
+      console.log(`📋 Loaded ${roles.length} roles for role selection`);
+      res.json(roles);
+    } catch (error) {
+      console.error('❌ Error loading roles:', error);
+      logger.error('Failed to load roles', { error: error.message });
+      res.status(500).json({ message: 'Failed to load roles' });
+    }
+  }));
+
   // Club routes (authenticated - returns user's ACTIVE clubs only for selection)
   app.get('/api/clubs', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const userId = req.user.claims.sub;

@@ -2763,6 +2763,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const chatRoutes = (await import("./routes/chat")).default;
   app.use('/api', chatRoutes);
 
+  // ====== USER NOTIFICATION PREFERENCES ROUTES ======
+  
+  // Get user notification preferences
+  app.get('/api/clubs/:clubId/notification-preferences', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.id || req.user?.claims?.sub;
+    
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in session');
+    }
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const preferences = await storage.getUserNotificationPreferences(userId, clubId);
+    
+    // If no preferences exist, return default preferences
+    if (!preferences) {
+      const defaultPreferences = {
+        userId,
+        clubId,
+        desktopNotificationsEnabled: false,
+        desktopPermissionGranted: false,
+        soundNotificationsEnabled: true,
+        soundVolume: 'normal',
+        testNotificationsEnabled: true,
+        testNotificationTypes: {
+          info: true,
+          success: true,
+          warning: true,
+          error: true
+        },
+        emailNotifications: true,
+        pushNotifications: true,
+        emailDigest: 'daily',
+        newMessageNotifications: true,
+        announcementNotifications: true,
+        eventReminderNotifications: true,
+        paymentDueNotifications: true,
+        systemAlertNotifications: true
+      };
+      
+      return res.json(defaultPreferences);
+    }
+    
+    logger.info('Notification preferences retrieved', { userId, clubId, requestId: req.id });
+    res.json(preferences);
+  }));
+  
+  // Get global notification preferences (not club-specific)
+  app.get('/api/notification-preferences', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    const userId = req.user?.id || req.user?.claims?.sub;
+    
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in session');
+    }
+    
+    const preferences = await storage.getUserNotificationPreferences(userId, undefined);
+    
+    // If no preferences exist, return default preferences
+    if (!preferences) {
+      const defaultPreferences = {
+        userId,
+        clubId: null,
+        desktopNotificationsEnabled: false,
+        desktopPermissionGranted: false,
+        soundNotificationsEnabled: true,
+        soundVolume: 'normal',
+        testNotificationsEnabled: true,
+        testNotificationTypes: {
+          info: true,
+          success: true,
+          warning: true,
+          error: true
+        },
+        emailNotifications: true,
+        pushNotifications: true,
+        emailDigest: 'daily',
+        newMessageNotifications: true,
+        announcementNotifications: true,
+        eventReminderNotifications: true,
+        paymentDueNotifications: true,
+        systemAlertNotifications: true
+      };
+      
+      return res.json(defaultPreferences);
+    }
+    
+    logger.info('Global notification preferences retrieved', { userId, requestId: req.id });
+    res.json(preferences);
+  }));
+  
+  // Update user notification preferences
+  app.put('/api/clubs/:clubId/notification-preferences', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.id || req.user?.claims?.sub;
+    
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in session');
+    }
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    const updates = req.body;
+    
+    // Validate the update data structure
+    if (typeof updates !== 'object' || updates === null) {
+      throw new ValidationError('Invalid request body', 'body');
+    }
+    
+    const updatedPreferences = await storage.upsertUserNotificationPreferences(userId, clubId, updates);
+    
+    logger.info('Notification preferences updated', { 
+      userId, 
+      clubId, 
+      updates: Object.keys(updates),
+      requestId: req.id 
+    });
+    
+    res.json(updatedPreferences);
+  }));
+  
+  // Update global notification preferences
+  app.put('/api/notification-preferences', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    const userId = req.user?.id || req.user?.claims?.sub;
+    
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in session');
+    }
+    
+    const updates = req.body;
+    
+    // Validate the update data structure
+    if (typeof updates !== 'object' || updates === null) {
+      throw new ValidationError('Invalid request body', 'body');
+    }
+    
+    const updatedPreferences = await storage.upsertUserNotificationPreferences(userId, null, updates);
+    
+    logger.info('Global notification preferences updated', { 
+      userId, 
+      updates: Object.keys(updates),
+      requestId: req.id 
+    });
+    
+    res.json(updatedPreferences);
+  }));
+  
+  // Delete user notification preferences
+  app.delete('/api/clubs/:clubId/notification-preferences', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.id || req.user?.claims?.sub;
+    
+    if (!userId) {
+      throw new AuthorizationError('User ID not found in session');
+    }
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    await storage.deleteUserNotificationPreferences(userId, clubId);
+    
+    logger.info('Notification preferences deleted', { userId, clubId, requestId: req.id });
+    res.json({ message: 'Benachrichtigungseinstellungen erfolgreich gelöscht' });
+  }));
+
   const httpServer = createServer(app);
   
   // WebSocket server for real-time communication

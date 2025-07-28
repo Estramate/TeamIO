@@ -54,6 +54,9 @@ import {
   type InsertNotification,
   type Role,
   type InsertRole,
+  userNotificationPreferences,
+  type UserNotificationPreferences,
+  type InsertUserNotificationPreferences,
   
   // Live Chat types
   liveChatRooms,
@@ -2993,6 +2996,111 @@ export class DatabaseStorage implements IStorage {
       console.error('Error deleting chat message:', error);
       throw error;
     }
+  }
+
+  // User Notification Preferences operations
+  async getUserNotificationPreferences(userId: string, clubId?: number): Promise<UserNotificationPreferences | undefined> {
+    const [preferences] = await db
+      .select()
+      .from(userNotificationPreferences)
+      .where(
+        clubId 
+          ? and(
+              eq(userNotificationPreferences.userId, userId),
+              eq(userNotificationPreferences.clubId, clubId)
+            )
+          : and(
+              eq(userNotificationPreferences.userId, userId),
+              isNull(userNotificationPreferences.clubId)
+            )
+      );
+    return preferences;
+  }
+
+  async createUserNotificationPreferences(preferences: InsertUserNotificationPreferences): Promise<UserNotificationPreferences> {
+    const [newPreferences] = await db
+      .insert(userNotificationPreferences)
+      .values(preferences)
+      .returning();
+    return newPreferences;
+  }
+
+  async updateUserNotificationPreferences(
+    userId: string,
+    clubId: number | null,
+    updates: Partial<InsertUserNotificationPreferences>
+  ): Promise<UserNotificationPreferences> {
+    const [updatedPreferences] = await db
+      .update(userNotificationPreferences)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(
+        clubId 
+          ? and(
+              eq(userNotificationPreferences.userId, userId),
+              eq(userNotificationPreferences.clubId, clubId)
+            )
+          : and(
+              eq(userNotificationPreferences.userId, userId),
+              isNull(userNotificationPreferences.clubId)
+            )
+      )
+      .returning();
+    return updatedPreferences;
+  }
+
+  async upsertUserNotificationPreferences(
+    userId: string,
+    clubId: number | null,
+    preferences: Partial<InsertUserNotificationPreferences>
+  ): Promise<UserNotificationPreferences> {
+    // Check if preferences exist
+    const existing = await this.getUserNotificationPreferences(userId, clubId);
+    
+    if (existing) {
+      // Update existing preferences
+      return await this.updateUserNotificationPreferences(userId, clubId, preferences);
+    } else {
+      // Create new preferences with defaults
+      const defaultPreferences: InsertUserNotificationPreferences = {
+        userId,
+        clubId,
+        desktopNotificationsEnabled: false,
+        desktopPermissionGranted: false,
+        soundNotificationsEnabled: true,
+        soundVolume: 'normal',
+        testNotificationsEnabled: true,
+        testNotificationTypes: {
+          info: true,
+          success: true,
+          warning: true,
+          error: true
+        },
+        emailNotifications: true,
+        pushNotifications: true,
+        emailDigest: 'daily',
+        newMessageNotifications: true,
+        announcementNotifications: true,
+        eventReminderNotifications: true,
+        paymentDueNotifications: true,
+        systemAlertNotifications: true,
+        ...preferences
+      };
+      
+      return await this.createUserNotificationPreferences(defaultPreferences);
+    }
+  }
+
+  async deleteUserNotificationPreferences(userId: string, clubId?: number): Promise<void> {
+    await db
+      .delete(userNotificationPreferences)
+      .where(
+        clubId 
+          ? and(
+              eq(userNotificationPreferences.userId, userId),
+              eq(userNotificationPreferences.clubId, clubId)
+            )
+          : eq(userNotificationPreferences.userId, userId)
+      );
   }
 }
 

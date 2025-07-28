@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { useNotifications } from '@/hooks/use-notifications';
 import { cn } from '@/lib/utils';
+import NotificationSettingsModal from '@/components/NotificationSettingsModal';
 
 interface NotificationCenterProps {
   className?: string;
@@ -43,6 +44,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
   } = useNotifications();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false);
 
   // Test different notification types
   const testNotifications = {
@@ -76,108 +78,13 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
         <DropdownMenuContent align="end" className="w-80">
           <DropdownMenuLabel className="flex items-center justify-between">
             Benachrichtigungen
-            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Benachrichtigungseinstellungen</DialogTitle>
-                  <DialogDescription>
-                    Konfigurieren Sie Ihre Benachrichtigungspräferenzen
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-6">
-                  {/* Desktop Notifications */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Monitor className="h-4 w-4" />
-                        Desktop-Benachrichtigungen
-                      </CardTitle>
-                      <CardDescription className="text-xs">
-                        Erhalten Sie Benachrichtigungen auch wenn die App nicht geöffnet ist
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-2">
-                      {!isDesktopSupported ? (
-                        <p className="text-sm text-muted-foreground">
-                          Ihr Browser unterstützt keine Desktop-Benachrichtigungen
-                        </p>
-                      ) : desktopPermission === 'denied' ? (
-                        <p className="text-sm text-destructive">
-                          Desktop-Benachrichtigungen wurden abgelehnt. Bitte in den Browser-Einstellungen aktivieren.
-                        </p>
-                      ) : desktopPermission === 'granted' ? (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-green-600">Aktiviert</span>
-                          <Badge variant="secondary">Erlaubt</Badge>
-                        </div>
-                      ) : (
-                        <Button 
-                          onClick={requestDesktopPermission}
-                          size="sm"
-                          className="w-full"
-                        >
-                          Berechtigung anfordern
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Sound Settings */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        {isSoundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                        Sound-Benachrichtigungen
-                      </CardTitle>
-                      <CardDescription className="text-xs">
-                        Akustische Benachrichtigungen für wichtige Ereignisse
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Sounds aktiviert</span>
-                        <Switch 
-                          checked={isSoundEnabled}
-                          onCheckedChange={toggleSound}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Test Notifications */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Test-Benachrichtigungen</CardTitle>
-                      <CardDescription className="text-xs">
-                        Testen Sie verschiedene Benachrichtigungstypen
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-2">
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button size="sm" variant="outline" onClick={testNotifications.info}>
-                          Info
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={testNotifications.success}>
-                          Erfolg
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={testNotifications.warning}>
-                          Warnung
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={testNotifications.error}>
-                          Fehler
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsAdvancedSettingsOpen(true)}
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           
@@ -216,6 +123,12 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+      
+      {/* Advanced Settings Modal */}
+      <NotificationSettingsModal 
+        open={isAdvancedSettingsOpen}
+        onClose={() => setIsAdvancedSettingsOpen(false)}
+      />
     </div>
   );
 }

@@ -178,7 +178,6 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 whitespace-nowrap">
                         Beta
                       </span>
-                      <SuperAdminBadge />
                     </div>
                     <p className="text-sm text-muted-foreground truncate">
                       {selectedClub?.name || "Verein auswählen"}

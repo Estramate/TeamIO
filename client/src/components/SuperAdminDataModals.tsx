@@ -352,22 +352,6 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
         </div>
       </DialogContent>
     </Dialog>
-
-    {/* Individual CRUD Modals */}
-    <>
-      <PriceAdjustmentModal 
-        open={isPriceModalOpen} 
-        onClose={() => setIsPriceModalOpen(false)} 
-      />
-      <PlanLimitsModal 
-        open={isPlanLimitsModalOpen} 
-        onClose={() => setIsPlanLimitsModalOpen(false)} 
-      />
-      <UpgradeNotificationModal 
-        open={isUpgradeNotificationModalOpen} 
-        onClose={() => setIsUpgradeNotificationModalOpen(false)} 
-      />
-    </>
   );
 }
 

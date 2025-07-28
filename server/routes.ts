@@ -208,6 +208,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Import super admin middleware
+  const { requiresSuperAdmin } = await import("./lib/super-admin");
+
+  // Super Admin Management Routes
+  app.get('/api/super-admin/administrators', requiresSuperAdmin, asyncHandler(async (req: any, res: any) => {
+    try {
+      const superAdmins = await storage.getAllSuperAdmins();
+      res.json(superAdmins);
+    } catch (error) {
+      console.error("Error fetching super administrators:", error);
+      res.status(500).json({ error: "Failed to fetch super administrators" });
+    }
+  }));
+
+  app.post('/api/super-admin/grant/:userId', requiresSuperAdmin, asyncHandler(async (req: any, res: any) => {
+    try {
+      const { userId } = req.params;
+      const currentUserId = req.user?.claims?.sub || req.user?.id;
+      
+      const success = await storage.setSuperAdminStatus(userId, true, currentUserId);
+      
+      if (success) {
+        res.json({ message: "Super administrator privileges granted successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to grant super administrator privileges" });
+      }
+    } catch (error) {
+      console.error("Error granting super admin privileges:", error);
+      res.status(500).json({ error: "Failed to grant super administrator privileges" });
+    }
+  }));
+
+  app.post('/api/super-admin/revoke/:userId', requiresSuperAdmin, asyncHandler(async (req: any, res: any) => {
+    try {
+      const { userId } = req.params;
+      const currentUserId = req.user?.claims?.sub || req.user?.id;
+      
+      // Prevent users from revoking their own super admin status
+      if (userId === currentUserId) {
+        return res.status(400).json({ error: "Cannot revoke your own super administrator privileges" });
+      }
+      
+      const success = await storage.setSuperAdminStatus(userId, false);
+      
+      if (success) {
+        res.json({ message: "Super administrator privileges revoked successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to revoke super administrator privileges" });
+      }
+    } catch (error) {
+      console.error("Error revoking super admin privileges:", error);
+      res.status(500).json({ error: "Failed to revoke super administrator privileges" });
+    }
+  }));
+
   // Enhanced isAuthenticated middleware for Replit auth only
   const isAuthenticatedEnhanced = async (req: any, res: any, next: any) => {
     const user = req.user as any;

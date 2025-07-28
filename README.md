@@ -1,8 +1,8 @@
 # ClubFlow - Professionelle Vereinsmanagement-Plattform
 
 ![ClubFlow Logo](https://img.shields.io/badge/ClubFlow-Vereinsmanagement-blue?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Enterprise%20Ready-green?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-2.0-orange?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-green?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-2.1-orange?style=for-the-badge)
 
 ## 🏆 Überblick
 
@@ -10,62 +10,72 @@ ClubFlow ist eine moderne, webbasierte Plattform für die umfassende Verwaltung 
 
 ### ✨ Hauptfunktionen
 
-- **🔐 Multi-Provider-Authentifizierung** - Replit & Google OAuth Integration
-- **👥 Mitgliederverwaltung** - Genehmigungssystem für neue Mitglieder
+- **🔐 Multi-Provider-Authentifizierung** - Replit OAuth + E-Mail/Passwort mit 2FA
+- **👥 Mitgliederverwaltung** - Genehmigungssystem mit E-Mail-Einladungen
 - **🏅 Team-Management** - Vollständige Team- und Spielerverwaltung
-- **🏟️ Anlagenbuchung** - Buchungssystem für Vereinsanlagen
-- **💰 Finanzmanagement** - Budgetverfolgung und Beitragsverwaltung
-- **📧 Kommunikation** - Nachrichten, Ankündigungen und Benachrichtigungen
-- **📊 Activity-Tracking** - Vollständiges Aktivitätsprotokoll aller Benutzeraktionen
+- **🏟️ Anlagenbuchung** - Intelligentes Buchungssystem für Vereinsanlagen
+- **💰 Finanzmanagement** - Umfassende Budgetverfolgung und Beitragsverwaltung
+- **📧 Kommunikation** - Echtzeit-Nachrichten, Ankündigungen und Benachrichtigungen
+- **⚙️ Vereinseinstellungen** - Professionelle Konfiguration mit Logo und Branding
+- **📊 Subscription-Management** - Tiered Plans mit Nutzungsverfolgung
 - **📱 Responsive Design** - Optimiert für Desktop, Tablet und Mobile
 
-## 🚀 Aktuelle Version - Enterprise Ready+
+## 🚀 Aktuelle Version - Production Ready
 
-### Neueste Updates (Juli 26, 2025)
+### Neueste Updates (Juli 28, 2025)
 
-#### ✅ Komponenten-Standardisierung Abgeschlossen
-- **PascalCase-Namenskonvention** für alle Komponentendateien
-- **Import-Optimierung** - Alle @shared/schema zu @shared/schemas/core
-- **Datei-Struktur bereinigt** für bessere Code-Qualität
+#### ✅ Professionelle Settings-Seite Implementiert
+- **Vollständige CRUD-Funktionalität** - Echte Datenbank-Integration
+- **3-Tab-Interface** - Allgemein, Design, Erweitert mit modernem Layout
+- **Logo-Management** - URL-basiert mit Live-Vorschau und Fehlerbehandlung
+- **Farbsystem** - Primary/Secondary/Accent-Farben mit Live-Vorschau
+- **Edit/View-Modi** - Professionelle Speichern/Abbrechen-Funktionalität
+- **Live-Statistiken** - Mitgliederzahl, Gründungsjahr, System-Daten
 
-#### ✅ Activity-Logging-System Implementiert
-- **Automatisches Protokollieren** aller kritischen Benutzeraktionen:
-  - Mitgliedschaftsanträge, Genehmigungen, Ablehnungen
-  - Rollenänderungen und Status-Updates
-  - E-Mail-Einladungen und Administratoraktionen
-- **Datenbank-Integration** mit vollständiger Metadaten-Erfassung
-- **Admin-Dashboard** für Aktivitätseinsicht
+#### ✅ Kritische Bug-Fixes
+- **Users-Seite repariert** - FeatureGate Icon-Fehler vollständig behoben
+- **Subscription-Logic** - Unlimited Plans korrekt erkannt (2099 End-Datum)
+- **TypeScript-Compliance** - Alle LSP-Diagnostics gelöst
+- **Database-Schema** - foundedYear/memberCount Felder hinzugefügt
 
-#### ✅ CSS-Layout-Optimierungen
-- **Team-Status-Widget** repariert - keine Container-Überschreitungen mehr
-- **Responsive Grid-Layouts** für alle Dashboard-Komponenten
-- **Text-Truncation** für lange Inhalte implementiert
+#### ✅ E-Mail-Einladungssystem
+- **SendGrid-Integration** - Professionelle E-Mail-Templates
+- **Token-basierte Registrierung** - Sichere Einladungslinks
+- **2-Faktor-Authentifizierung** - TOTP mit Google Authenticator
+- **Multi-Provider-Login** - Replit OAuth + E-Mail/Passwort
 
 ### Vollständig Implementierte Features
 
 #### 🔒 Authentifizierung & Sicherheit
-- Multi-Provider OAuth (Replit + Google)
-- Sichere Session-Verwaltung mit PostgreSQL
-- Rollenbasierte Zugriffskontrolle
-- Activity-Logging für Compliance
+- **Multi-Provider OAuth** - Replit + E-Mail/Passwort-Authentifizierung
+- **Zwei-Faktor-Authentifizierung** - TOTP mit Google Authenticator
+- **Sichere Session-Verwaltung** - PostgreSQL-basierte Sessions
+- **Rollenbasierte Zugriffskontrolle** - Granulare Berechtigungen
+- **Activity-Logging** - Vollständige Auditierung aller Aktionen
 
 #### 👤 Benutzer- & Mitgliederverwaltung
-- Genehmigungsworkflow für neue Mitglieder
-- E-Mail-Einladungssystem mit SendGrid
-- Automatische Rollenzuweisung
-- Vollständiges Aktivitätsprotokoll
+- **E-Mail-Einladungssystem** - SendGrid-powered mit professionellen Templates
+- **Genehmigungsworkflow** - Strukturierte Mitgliedschaftsanträge
+- **Token-basierte Registrierung** - Sichere Einladungslinks
+- **Automatische Rollenzuweisung** - Intelligente Berechtigungsvergabe
 
 #### 🏢 Multi-Vereins-Architektur
-- Beliebig viele Vereine pro Benutzer
-- Vereinsspezifische Berechtigungen
-- Club-Branding und Anpassung
-- Isolierte Datenverwaltung
+- **Unbegrenzte Vereine** pro Benutzer
+- **Vereinsspezifische Berechtigungen** - Isolierte Datenverwaltung
+- **Club-Branding** - Logo-Upload und Farbsystem
+- **Professionelle Settings** - Vollständige Vereinskonfiguration
 
-#### 📊 Dashboard & Reporting
-- Echtzeit-Statistiken und Metriken
-- Aktivitätsverfolgung
-- Team-Status-Übersicht
-- Finanzielle Zusammenfassungen
+#### 📊 Dashboard & Analytics
+- **Echtzeit-Statistiken** - Live-Daten aus der Datenbank
+- **Subscription-Management** - Tiered Plans mit Nutzungsverfolgung
+- **Team-Status-Übersicht** - Kompakte Teamverwaltung
+- **Finanzielle Zusammenfassungen** - Budgets und Beitragsverwaltung
+
+#### 💬 Kommunikationssystem
+- **WebSocket-Integration** - Echtzeit-Nachrichten
+- **Ankündigungssystem** - Strukturierte Vereinskommunikation
+- **Benachrichtigungen** - Intelligente Notification-Engine
+- **E-Mail-Templates** - Professionelle automatisierte E-Mails
 
 ## 🛠️ Technische Architektur
 
@@ -81,18 +91,21 @@ ClubFlow ist eine moderne, webbasierte Plattform für die umfassende Verwaltung 
 - **Express.js** mit TypeScript für REST API
 - **Drizzle ORM** mit PostgreSQL für typsichere Datenbankoperationen
 - **Neon Database** (serverless PostgreSQL) für Cloud-Hosting
-- **OpenID Connect** Authentifizierung mit Express Sessions
-- **Winston** für strukturiertes Logging
+- **Multi-Provider-Auth** - Replit OAuth + E-Mail/Passwort mit 2FA
+- **SendGrid** für E-Mail-Service und Templates
+- **WebSocket** für Echtzeit-Kommunikation
+- **Winston** für strukturiertes Logging mit Datenschutz
 
 ### Datenbank-Schema (Modularisiert)
 ```
 shared/schemas/
-├── core.ts        # Users, Clubs, Sessions, Activity Logs
-├── members.ts     # Memberships, Team Assignments
-├── teams.ts       # Teams, Players, Statistics
-├── facilities.ts  # Facilities, Bookings
-├── finances.ts    # Budgets, Fees, Transactions
-└── communication.ts # Messages, Announcements, Notifications
+├── core.ts           # Users, Clubs, Sessions, Activity Logs
+├── members.ts        # Memberships, Team Assignments, Email Invitations
+├── teams.ts          # Teams, Players, Statistics
+├── facilities.ts     # Facilities, Bookings, Events
+├── finances.ts       # Budgets, Fees, Transactions
+├── communication.ts  # Messages, Announcements, Notifications
+└── subscriptions.ts  # Plans, Club Subscriptions, Usage Tracking
 ```
 
 ### Entwicklungstools
@@ -107,7 +120,8 @@ shared/schemas/
 ### Voraussetzungen
 - Node.js 18+ 
 - PostgreSQL-Datenbank (Neon empfohlen)
-- Replit-Account für Authentifizierung
+- Replit-Account für OAuth-Authentifizierung
+- SendGrid-Account für E-Mail-Service (optional)
 
 ### Schnellstart
 ```bash
@@ -208,6 +222,14 @@ Die vollständige API-Dokumentation ist verfügbar unter `/api-docs` wenn der Se
 - Automatische Club-Auswahl bei einzelner Mitgliedschaft
 - Vereinsisolierte Datenansicht
 
+### Professional Club Settings
+- **Vollständige CRUD-Operationen** - Echte Datenbank-Integration
+- **3-Tab-Interface** - Allgemein, Design, Erweitert 
+- **Logo-Management** - URL-basiert mit Live-Vorschau
+- **Farbsystem** - Primary/Secondary/Accent-Farben
+- **Edit/View-Modi** - Professionelle Speichern/Abbrechen-Funktionalität
+- **Live-Statistiken** - Mitgliederzahl, Gründungsjahr, System-Daten
+
 ### Activity-Tracking-System
 - Protokollierung aller kritischen Benutzeraktionen
 - Metadaten-Erfassung (IP, User-Agent, Timestamps)
@@ -257,4 +279,4 @@ Bei Fragen oder Problemen:
 
 ---
 
-**Status**: Enterprise-Ready+ ✅ | **Letzte Aktualisierung**: Juli 26, 2025 | **Version**: 2.0
+**Status**: Production-Ready ✅ | **Letzte Aktualisierung**: Juli 28, 2025 | **Version**: 2.1

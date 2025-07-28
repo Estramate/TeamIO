@@ -43,14 +43,16 @@ router.get("/clubs",
       // Get all clubs with additional statistics
       const clubs = await storage.getAllClubs();
       
-      // Enhance clubs with member counts and subscription info
+      // Enhance clubs with user counts (all users associated with club)
       const enhancedClubs = await Promise.all(
         clubs.map(async (club: any) => {
           const members = await storage.getClubMembers(club.id);
+          const clubUsers = await storage.getClubUsersWithMembership(club.id);
           
           return {
             ...club,
             memberCount: members.length,
+            userCount: clubUsers.length, // Total users for super admin view
             subscriptionPlan: 'free', // Default subscription plan
             createdAt: club.createdAt || new Date(),
           };

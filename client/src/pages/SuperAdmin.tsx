@@ -36,18 +36,6 @@ import {
   Trash2,
   Eye
 } from 'lucide-react';
-import {
-  ClubDetailsModal,
-  EditClubModal,
-  DeactivateClubDialog,
-  UserDetailsModal,
-  EditUserModal,
-  DeactivateUserDialog,
-} from '@/components/SuperAdminModalsComplete';
-  UserDetailsModal,
-  EditUserModal,
-  DeactivateUserDialog
-} from '@/components/SuperAdminModals';
 
 export default function SuperAdminPage() {
   const { data: superAdminStatus, isLoading } = useSuperAdminStatus();
@@ -798,7 +786,7 @@ function ClubsTable({ clubs, onViewDetails, onEdit, onDeactivate }: {
         <thead>
           <tr className="border-b">
             <th className="text-left p-3">Verein</th>
-            <th className="text-left p-3">Mitglieder</th>
+            <th className="text-left p-3">Benutzer</th>
             <th className="text-left p-3">Plan</th>
             <th className="text-left p-3">Status</th>
             <th className="text-left p-3">Läuft bis</th>
@@ -816,7 +804,7 @@ function ClubsTable({ clubs, onViewDetails, onEdit, onDeactivate }: {
                 </div>
               </td>
               <td className="p-3">
-                <Badge variant="outline">{club.memberCount || 0}</Badge>
+                <Badge variant="outline">{club.userCount || club.memberCount || 0}</Badge>
               </td>
               <td className="p-3">
                 <Badge variant="secondary">{getClubSubscription(club.id).displayName}</Badge>

@@ -72,6 +72,9 @@ export interface IStorage {
   // Activity logging operations
   createActivityLog(activityLog: InsertActivityLog): Promise<ActivityLog>;
   getActivityLogs(clubId: number, limit?: number): Promise<ActivityLog[]>;
+  
+  // Email invitation operations
+  getAllEmailInvitations(): Promise<EmailInvitation[]>;
   // User operations (supports multiple auth providers)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -2044,6 +2047,10 @@ export class DatabaseStorage implements IStorage {
   async createEmailInvitation(invitation: InsertEmailInvitation): Promise<EmailInvitation> {
     const [newInvitation] = await db.insert(emailInvitations).values(invitation).returning();
     return newInvitation;
+  }
+
+  async getAllEmailInvitations(): Promise<EmailInvitation[]> {
+    return await db.select().from(emailInvitations).orderBy(desc(emailInvitations.createdAt));
   }
 
   async getEmailInvitationByToken(token: string): Promise<EmailInvitation | undefined> {

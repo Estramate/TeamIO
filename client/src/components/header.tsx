@@ -41,6 +41,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
     enabled: !!selectedClub?.id,
   });
 
+  // Get recent notifications
+  const { data: notifications = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'notifications'],
+    enabled: !!selectedClub?.id,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
   const unreadCount = (stats?.unreadNotifications || 0) + (stats?.unreadMessages || 0);
 
   return (
@@ -96,13 +103,48 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     </DropdownMenuItem>
                   )}
                   
-                  {stats?.unreadNotifications && stats.unreadNotifications > 0 && (
+                  {notifications.filter((n: any) => !n.isRead).slice(0, 3).map((notification: any) => (
+                    <DropdownMenuItem key={notification.id} asChild>
+                      <Link 
+                        href={notification.type === 'announcement' ? "/communication?tab=announcements" : "/communication"} 
+                        className="flex items-center gap-2 cursor-pointer p-3 hover:bg-muted"
+                        onClick={async () => {
+                          // Mark notification as read
+                          try {
+                            await fetch(`/api/clubs/${selectedClub?.id}/notifications/${notification.id}/read`, {
+                              method: 'POST',
+                              credentials: 'include',
+                            });
+                          } catch (error) {
+                            console.error('Failed to mark notification as read:', error);
+                          }
+                        }}
+                      >
+                        <div className="flex-shrink-0">
+                          {notification.type === 'announcement' ? (
+                            <Megaphone className="h-4 w-4 text-orange-500" />
+                          ) : notification.type === 'message' ? (
+                            <MessageCircle className="h-4 w-4 text-blue-500" />
+                          ) : (
+                            <Bell className="h-4 w-4 text-gray-500" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">{notification.title}</div>
+                          <div className="text-xs text-muted-foreground truncate">{notification.message}</div>
+                        </div>
+                        {!notification.isRead && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                        )}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  
+                  {stats?.unreadNotifications && stats.unreadNotifications > 3 && (
                     <DropdownMenuItem asChild>
-                      <Link href="/communication" className="flex items-center gap-2 cursor-pointer">
-                        <Megaphone className="h-4 w-4 text-orange-500" />
-                        <div className="flex-1">
-                          <div className="font-medium">{stats.unreadNotifications} neue Ankündigungen</div>
-                          <div className="text-xs text-muted-foreground">Klicken zum Anzeigen</div>
+                      <Link href="/communication" className="flex items-center gap-2 cursor-pointer text-center">
+                        <div className="flex-1 text-sm text-muted-foreground">
+                          +{stats.unreadNotifications - 3} weitere Benachrichtigungen
                         </div>
                       </Link>
                     </DropdownMenuItem>

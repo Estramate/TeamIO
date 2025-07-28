@@ -1848,6 +1848,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
     
     const announcement = await storage.createAnnouncement(announcementData);
+    
+    // Create notification for all club members about new announcement
+    try {
+      const clubMembers = await storage.getClubMembers(clubId);
+      const author = await storage.getUserById(userId);
+      
+      for (const member of clubMembers) {
+        if (member.userId !== userId) { // Don't notify the author
+          await storage.createNotification({
+            userId: member.userId,
+            clubId,
+            type: 'announcement',
+            title: `Neue Ankündigung: ${announcement.title}`,
+            message: `${author?.firstName || 'Ein Mitglied'} ${author?.lastName || ''} hat eine neue Ankündigung veröffentlicht.`,
+            relatedId: announcement.id.toString(),
+            isRead: false,
+          });
+        }
+      }
+      
+      logger.info('Announcement notifications created', { 
+        announcementId: announcement.id, 
+        clubId, 
+        userId, 
+        notificationCount: clubMembers.length - 1,
+        requestId: req.id 
+      });
+    } catch (error) {
+      logger.error('Failed to create announcement notifications', { 
+        error: error.message, 
+        announcementId: announcement.id, 
+        clubId, 
+        requestId: req.id 
+      });
+    }
+    
     logger.info('Announcement created', { announcementId: announcement.id, clubId, userId, requestId: req.id });
     res.status(201).json(announcement);
   }));

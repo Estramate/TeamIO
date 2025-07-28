@@ -108,9 +108,16 @@ export default function Communication() {
   });
   const { setPage } = usePage();
 
-  // Set page title
+  // Set page title and handle URL tab parameter
   useEffect(() => {
     setPage("Kommunikation", "Nachrichten und Ankündigungen verwalten");
+    
+    // Check URL for tab parameter
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['messages', 'announcements', 'settings'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
   }, [setPage]);
 
   // Communication hook
@@ -338,10 +345,14 @@ export default function Communication() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="messages" className="flex items-center gap-2">
             <MessageCircle className="w-4 h-4" />
             Nachrichten
+          </TabsTrigger>
+          <TabsTrigger value="announcements" className="flex items-center gap-2">
+            <Megaphone className="w-4 h-4" />
+            Ankündigungen
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
@@ -489,6 +500,123 @@ export default function Communication() {
                   <p className="text-gray-600 text-center">
                     Sie haben noch keine Nachrichten erhalten. Sobald Ihnen jemand schreibt, erscheinen die Nachrichten hier.
                   </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Announcements Tab */}
+        <TabsContent value="announcements" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Ankündigungen</h2>
+            <Button onClick={() => setShowNewAnnouncement(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Neue Ankündigung
+            </Button>
+          </div>
+
+          <div className="grid gap-4">
+            {announcements && announcements.length > 0 ? (
+              announcements.map((announcement: any) => (
+                <Card key={announcement.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2">
+                        <CardTitle className="text-lg">{announcement.title}</CardTitle>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>von {announcement.authorFirstName} {announcement.authorLastName}</span>
+                          <span>•</span>
+                          <span>{formatDistanceToNow(new Date(announcement.createdAt), { addSuffix: true, locale: de })}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {announcement.isPinned && (
+                          <Pin className="w-4 h-4 text-orange-500" />
+                        )}
+                        <Badge variant={
+                          announcement.category === 'important' ? 'destructive' : 
+                          announcement.category === 'event' ? 'default' : 
+                          'secondary'
+                        }>
+                          {announcement.category === 'important' ? 'Wichtig' :
+                           announcement.category === 'event' ? 'Veranstaltung' :
+                           announcement.category === 'training' ? 'Training' :
+                           announcement.category === 'news' ? 'Neuigkeiten' : 'Allgemein'}
+                        </Badge>
+                        <Badge variant={announcement.priority === 'high' ? 'destructive' : announcement.priority === 'medium' ? 'default' : 'secondary'}>
+                          {announcement.priority === 'high' ? 'Hoch' : announcement.priority === 'medium' ? 'Mittel' : 'Normal'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 whitespace-pre-wrap">
+                      {announcement.content}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="border-t bg-gray-50 flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">
+                      Zielgruppe: {announcement.targetAudience === 'all' ? 'Alle Mitglieder' : 
+                                 announcement.targetAudience === 'members' ? 'Nur Mitglieder' :
+                                 announcement.targetAudience === 'players' ? 'Nur Spieler' : 'Bestimmte Gruppe'}
+                    </div>
+                    {announcement.authorId === (user as any)?.id && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          showConfirm({
+                            title: "Ankündigung löschen",
+                            description: "Möchten Sie diese Ankündigung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+                            confirmText: "Löschen",
+                            cancelText: "Abbrechen",
+                            variant: "destructive",
+                            onConfirm: async () => {
+                              try {
+                                const response = await fetch(`/api/clubs/${selectedClub?.id}/announcements/${announcement.id}`, {
+                                  method: 'DELETE',
+                                  credentials: 'include',
+                                });
+                                
+                                if (response.ok) {
+                                  toastService.database.deleted("Ankündigung");
+                                  queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/announcements`] });
+                                  queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/communication-stats`] });
+                                } else {
+                                  toastService.database.error("Löschen", "Ankündigung");
+                                }
+                              } catch (error) {
+                                toastService.database.error("Löschen", "Ankündigung");
+                              }
+                            }
+                          });
+                        }}
+                        className="text-gray-500 hover:text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <Megaphone className="w-12 h-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Keine Ankündigungen</h3>
+                  <p className="text-gray-600 text-center">
+                    Es wurden noch keine Ankündigungen erstellt. Erstellen Sie eine neue Ankündigung, um wichtige Informationen zu teilen.
+                  </p>
+                  <Button 
+                    onClick={() => setShowNewAnnouncement(true)} 
+                    className="mt-4"
+                    variant="outline"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Erste Ankündigung erstellen
+                  </Button>
                 </CardContent>
               </Card>
             )}

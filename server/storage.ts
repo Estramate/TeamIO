@@ -74,7 +74,7 @@ import {
   type SubscriptionPlan,
 
 } from "@shared/schema";
-import { announcements, type Announcement, type InsertAnnouncement } from "@shared/schemas/communication";
+import { announcements, messageRecipients, type Announcement, type InsertAnnouncement } from "@shared/schemas/communication";
 import { chatRooms, chatRoomParticipants, liveChatMessages, liveChatMessageReadStatus } from '@shared/schemas/chat';
 import { db } from "./db";
 import { eq, and, desc, asc, gte, ne, or, sql, isNull } from "drizzle-orm";

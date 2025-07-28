@@ -148,6 +148,9 @@ export interface IStorage {
 
   // Super admin operations
   getAllClubSubscriptions(): Promise<any[]>;
+  setSuperAdminStatus(userId: string, isSuperAdmin: boolean, grantedByUserId?: string): Promise<boolean>;
+  getAllSuperAdmins(): Promise<User[]>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   updateUser(id: string, updates: Partial<User>): Promise<User>;
   getClubUsersWithMembership(clubId: number): Promise<any[]>;
 
@@ -2177,6 +2180,43 @@ export class DatabaseStorage implements IStorage {
       })
       .from(clubSubscriptions)
       .where(eq(clubSubscriptions.status, 'active'));
+  }
+
+  // Super admin operations
+  async setSuperAdminStatus(userId: string, isSuperAdmin: boolean, grantedByUserId?: string): Promise<boolean> {
+    try {
+      const updateData: any = {
+        isSuperAdmin,
+        updatedAt: new Date()
+      };
+
+      if (isSuperAdmin && grantedByUserId) {
+        updateData.superAdminGrantedAt = new Date();
+        updateData.superAdminGrantedBy = grantedByUserId;
+      } else if (!isSuperAdmin) {
+        updateData.superAdminGrantedAt = null;
+        updateData.superAdminGrantedBy = null;
+      }
+
+      const [updatedUser] = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, userId))
+        .returning();
+
+      return !!updatedUser;
+    } catch (error) {
+      console.error('Error updating super admin status:', error);
+      return false;
+    }
+  }
+
+  async getAllSuperAdmins(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.isSuperAdmin, true))
+      .orderBy(asc(users.email));
   }
 }
 

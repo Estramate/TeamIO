@@ -88,6 +88,10 @@ export const users = pgTable("users", {
   hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
   preferredLanguage: varchar("preferred_language", { length: 10 }).default("de"),
   isActive: boolean("is_active").default(true),
+  // Platform administration privileges
+  isSuperAdmin: boolean("is_super_admin").default(false),
+  superAdminGrantedAt: timestamp("super_admin_granted_at"),
+  superAdminGrantedBy: varchar("super_admin_granted_by").references(() => users.id),
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

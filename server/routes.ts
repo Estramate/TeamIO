@@ -167,17 +167,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check super admin status
-      const { isSuperAdministrator, isSuperAdministratorById } = await import("./lib/super-admin");
-      const isSuperAdmin = (userEmail && isSuperAdministrator(userEmail)) || 
-                          (userId && isSuperAdministratorById(userId));
+      // Check super admin status using database
+      const { isSuperAdministrator, isSuperAdministratorByEmail } = await import("./lib/super-admin");
+      
+      let isSuperAdmin = false;
+      if (userId) {
+        isSuperAdmin = await isSuperAdministrator(userId);
+      } else if (userEmail) {
+        isSuperAdmin = await isSuperAdministratorByEmail(userEmail);
+      }
       
       console.log('🔍 Super Admin Result:', {
         userId,
         userEmail,
         isSuperAdmin,
-        checkedByEmail: userEmail && isSuperAdministrator(userEmail),
-        checkedById: userId && isSuperAdministratorById(userId)
+        checkedByUserId: !!userId,
+        checkedByEmail: !!userEmail
       });
       
       res.json({

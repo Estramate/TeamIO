@@ -8,10 +8,14 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes (Latest Session - July 28, 2025) - SUPER ADMIN MODALS UPDATED
 
+**CRITICAL ADMINISTRATOR ROLE FIX (July 28, 2025 - 12:06):**
+- ✅ **Club-Administrator Rolle korrigiert**: 'club_admin' → 'club-administrator' in Super-Admin Erstellung
+- ✅ **Konsistente Rollenvergabe**: Super-Admin erstellt jetzt Club-Administratoren mit korrekter Rolle
+- ✅ **Upgrade-Benachrichtigungen entfernt**: Button und Modal komplett aus Subscription-Verwaltung entfernt
+
 **SUBSCRIPTION-MODAL DATENBANKINTEGRATION ABGESCHLOSSEN (July 28, 2025 - 12:05):**
 - ✅ **Preise anpassen Modal**: Lädt echte Subscription-Pläne aus Datenbank, zeigt aktuelle Preise
 - ✅ **Plan-Limits Modal**: Zeigt aktuelle Limits, aktualisiert maxMembers in Datenbank
-- ✅ **Upgrade-Benachrichtigungen Modal**: Zeigt berechtigte Vereine, sendet echte Notifications
 - ✅ **Neue API-Endpunkte**: update-limits, send-upgrade-notifications, clubs-eligible
 - ✅ **Cache-Invalidierung**: Alle Modals invalidieren relevante Query-Caches nach Updates
 - ✅ **Error-Handling**: Umfassende Fehlerbehandlung mit benutzerfreundlichen Toast-Messages

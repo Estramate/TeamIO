@@ -1507,6 +1507,7 @@ export class DatabaseStorage implements IStorage {
   // Communication operations - Classic Messages System (restored)
   async getMessages(clubId: number, userId?: string): Promise<Message[]> {
     try {
+      // Get only main messages (not replies) first
       const messageList = await db
         .select({
           message: messages,
@@ -1521,18 +1522,22 @@ export class DatabaseStorage implements IStorage {
         .leftJoin(users, eq(messages.senderId, users.id))
         .where(and(
           eq(messages.clubId, clubId),
-          isNull(messages.deletedAt)
+          isNull(messages.deletedAt),
+          isNull(messages.threadId) // Only main messages, not replies
         ))
         .orderBy(desc(messages.createdAt));
 
-      // Get recipients for each message
+      // Get recipients and replies for each message
       const messagesWithRecipients = await Promise.all(
         messageList.map(async (item) => {
           const recipients = await this.getMessageRecipients(item.message.id);
+          const replies = await this.getMessageReplies(item.message.id);
           return {
             ...item.message,
             recipients,
             sender: item.sender,
+            replies,
+            replyCount: replies.length,
           };
         })
       );

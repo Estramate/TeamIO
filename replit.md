@@ -8,6 +8,15 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
+- **2025-07-28**: THREAD-SYSTEM VOLLSTÄNDIG IMPLEMENTIERT - Antworten werden korrekt bei ursprünglicher Nachricht gruppiert
+  - **Backend-Optimierung**: getMessages lädt nur Haupt-Nachrichten (ohne threadId), Replies als verschachtelte Daten
+  - **UI-Verbesserung**: Antworten erscheinen NICHT mehr als separate Nachrichten-Einträge in der Liste
+  - **Thread-Ansicht**: Ursprüngliche Nachricht + alle Antworten in chronologischer Reihenfolge angezeigt
+  - **Real-Time-Updates**: Neue Antworten erscheinen sofort ohne Page-Reload über sendReply Hook
+  - **Reply-Zähler**: Nachrichten-Liste zeigt "X Antworten anzeigen" Button mit korrekter Anzahl
+  - **Cache-Invalidierung**: TanStack Query Hook für optimale Performance und sofortige UI-Updates
+  - **System-Status**: Klassisches Nachrichten-System mit perfekter Thread-Funktionalität einsatzbereit
+
 - **2025-07-28**: KLASSISCHES NACHRICHTEN-SYSTEM ERFOLGREICH REAKTIVIERT - Parallel zum Live Chat System
   - **Schema-Konflikte behoben**: messageRecipients korrekt in shared/schemas/communication.ts importiert
   - **Storage-Integration repariert**: messageRecipients Import in server/storage.ts hinzugefügt

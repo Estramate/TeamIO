@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ClubThemeProvider } from "@/contexts/ClubThemeContext";
 import { PageProvider } from "@/contexts/PageContext";
+import { SubscriptionProvider } from "@/hooks/use-subscription";
 import { useAuth } from "@/hooks/useAuth";
 
 import { useClub } from "@/hooks/use-club";
@@ -33,6 +34,7 @@ const Communication = lazy(() => import("@/pages/Communication"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const Users = lazy(() => import("@/pages/Users"));
 const Settings = lazy(() => import("@/pages/Settings"));
+const Subscription = lazy(() => import("@/pages/Subscription"));
 
 // Lazy loading wrapper component
 const LazyPage = ({ component: Component }: { component: React.ComponentType }) => (
@@ -45,8 +47,9 @@ const LazyPage = ({ component: Component }: { component: React.ComponentType }) 
 
 function AuthenticatedApp() {
   return (
-    <PageProvider>
-      <Layout>
+    <SubscriptionProvider>
+      <PageProvider>
+        <Layout>
         <Switch>
           <Route path="/" component={() => <LazyPage component={Dashboard} />} />
           <Route path="/members" component={() => <LazyPage component={Members} />} />
@@ -60,11 +63,13 @@ function AuthenticatedApp() {
           <Route path="/reports" component={() => <LazyPage component={Reports} />} />
           <Route path="/users" component={() => <LazyPage component={Users} />} />
           <Route path="/settings" component={() => <LazyPage component={Settings} />} />
+          <Route path="/subscription" component={() => <LazyPage component={Subscription} />} />
 
           <Route component={NotFound} />
         </Switch>
       </Layout>
     </PageProvider>
+    </SubscriptionProvider>
   );
 }
 

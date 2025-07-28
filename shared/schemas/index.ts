@@ -10,6 +10,7 @@ export * from "./teams";
 export * from "./facilities";
 export * from "./finances";
 export * from "./communication";
+export * from "./subscriptions";
 
 // Update relations to include cross-domain references
 import { relations } from "drizzle-orm";

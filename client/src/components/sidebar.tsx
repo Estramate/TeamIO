@@ -23,6 +23,7 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -44,6 +45,7 @@ const navigation = [
   { name: "Finanzen", href: "/finance", icon: Euro },
   { name: "Berichte", href: "/reports", icon: FileText },
   { name: "Kommunikation", href: "/communication", icon: MessageCircle },
+  { name: "Subscription", href: "/subscription", icon: Crown },
 ];
 
 const adminNavigation = [

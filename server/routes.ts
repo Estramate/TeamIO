@@ -6,6 +6,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 // ClubFlow authentication system - Replit integration only
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
 import { handleErrorReports, handlePerformanceMetrics } from "./error-reporting";
+import subscriptionRoutes from "./routes/subscriptions";
 
 import { z } from 'zod';
 import {
@@ -2341,6 +2342,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Fehler beim Deaktivieren der 2FA' });
     }
   }));
+
+  // ====== SUBSCRIPTION ROUTES ======
+  app.use('/api/subscriptions', subscriptionRoutes);
 
   const httpServer = createServer(app);
   

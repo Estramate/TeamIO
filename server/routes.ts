@@ -2458,7 +2458,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Super admin routes
   const superAdminRoutes = (await import("./routes/super-admin")).default;
+  const superAdminAnalyticsRoutes = (await import("./routes/super-admin-analytics")).default;
   app.use('/api/super-admin', superAdminRoutes);
+  app.use('/api/super-admin', superAdminAnalyticsRoutes);
 
   const httpServer = createServer(app);
   

@@ -45,6 +45,10 @@ import {
   EditUserModal,
   DeactivateUserDialog,
 } from '@/components/SuperAdminModals';
+import {
+  EmailSettingsModal,
+  SubscriptionManagementModal,
+} from '@/components/SuperAdminDataModals';
 
 export default function SuperAdminPage() {
   const { data: superAdminStatus, isLoading } = useSuperAdminStatus();

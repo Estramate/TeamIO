@@ -63,8 +63,7 @@ import {
   type InsertActivityLog,
   type EmailInvitation,
   type InsertEmailInvitation,
-  subscriptions,
-  subscriptionPlans,
+
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, gte, ne, or, sql, isNull } from "drizzle-orm";
@@ -2147,19 +2146,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllClubSubscriptions(): Promise<any[]> {
-    // Return mock data for now since real subscription system exists but needs integration
-    return [
-      {
-        clubId: 1,
-        planType: 'enterprise',
-        displayName: 'Vereins-Enterprise', 
-        status: 'active',
-        billingInterval: 'monthly',
-        currentPeriodStart: new Date('2025-07-28'),
-        currentPeriodEnd: new Date('2099-12-31'),
-        createdAt: new Date('2025-07-28'),
-      }
-    ];
+    // Return mock subscription data since subscription tables are not implemented
+    const clubs = await this.getAllClubs();
+    return clubs.map((club, index) => ({
+      clubId: club.id,
+      planType: index === 0 ? 'enterprise' : 'free', // Mock: First club has enterprise, others free
+      status: 'active',
+      billingInterval: 'monthly',
+      monthlyPrice: index === 0 ? 99 : 0,
+      yearlyPrice: index === 0 ? 990 : 0,
+      displayName: index === 0 ? 'Enterprise' : 'Free',
+      maxMembers: index === 0 ? null : 50,
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    }));
   }
 }
 

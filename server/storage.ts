@@ -1779,6 +1779,8 @@ export class DatabaseStorage implements IStorage {
   // Announcement operations
   async getAnnouncements(clubId: number): Promise<any[]> {
     try {
+      console.log(`🔍 Getting announcements for club ${clubId}...`);
+      
       const result = await db
         .select()
         .from(announcements)
@@ -1789,11 +1791,11 @@ export class DatabaseStorage implements IStorage {
         ))
         .orderBy(desc(announcements.isPinned), desc(announcements.publishedAt));
       
-      console.log(`📢 Found ${result.length} published announcements for club ${clubId}`);
+      console.log(`📢 Found ${result.length} published announcements for club ${clubId}:`, result.map(a => ({ id: a.id, title: a.title, published: a.isPublished, deleted: a.deletedAt })));
       return result || [];
     } catch (error) {
-      console.error('Error getting announcements:', error);
-      return [];
+      console.error('❌ Error getting announcements:', error);
+      throw error;
     }
   }
 
@@ -1975,13 +1977,46 @@ export class DatabaseStorage implements IStorage {
 
   // Communication statistics
   async getCommunicationStats(clubId: number, userId?: string): Promise<any> {
-    return {
-      totalMessages: 0,
-      unreadMessages: 0, 
-      totalAnnouncements: 1,
-      unreadNotifications: 0,
-      recentActivity: 0
-    };
+    try {
+      // Count messages
+      const [messageStats] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(messages)
+        .where(and(
+          eq(messages.clubId, clubId),
+          isNull(messages.deletedAt),
+          isNull(messages.threadId) // Only count main messages, not replies
+        ));
+
+      // Count announcements
+      const [announcementStats] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(announcements)
+        .where(and(
+          eq(announcements.clubId, clubId),
+          isNull(announcements.deletedAt),
+          eq(announcements.isPublished, true)
+        ));
+
+      console.log(`📊 Communication Stats for club ${clubId}: Messages=${messageStats?.count || 0}, Announcements=${announcementStats?.count || 0}`);
+
+      return {
+        totalMessages: messageStats?.count || 0,
+        unreadMessages: 0,
+        totalAnnouncements: announcementStats?.count || 0,
+        unreadNotifications: 0,
+        recentActivity: 0
+      };
+    } catch (error) {
+      console.error('❌ Error getting communication stats:', error);
+      return {
+        totalMessages: 0,
+        unreadMessages: 0,
+        totalAnnouncements: 0,
+        unreadNotifications: 0,
+        recentActivity: 0
+      };
+    }
   }
 
   async getCommunicationStats_old(clubId: number, userId?: string): Promise<any> {

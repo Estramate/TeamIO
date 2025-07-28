@@ -2138,13 +2138,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/clubs/:clubId/announcements', isAuthenticated, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     
+    console.log(`🔍 ANNOUNCEMENT GET - Club ID: ${clubId}, User: ${req.user?.id}`);
+    
     if (!clubId || isNaN(clubId)) {
+      console.error('❌ Invalid club ID:', req.params.clubId);
       throw new ValidationError('Invalid club ID', 'clubId');
     }
     
-    const announcements = await storage.getAnnouncements(clubId);
-    logger.info('Announcements retrieved', { clubId, count: announcements.length, requestId: req.id });
-    res.json(announcements);
+    try {
+      const announcements = await storage.getAnnouncements(clubId);
+      console.log(`✅ ANNOUNCEMENT GET SUCCESS - Found ${announcements.length} announcements`);
+      logger.info('Announcements retrieved', { clubId, count: announcements.length, requestId: req.id });
+      res.json(announcements);
+    } catch (error) {
+      console.error('❌ ANNOUNCEMENT GET ERROR:', error);
+      throw error;
+    }
   }));
 
   app.get('/api/clubs/:clubId/announcements/:announcementId', isAuthenticated, asyncHandler(async (req: any, res: any) => {

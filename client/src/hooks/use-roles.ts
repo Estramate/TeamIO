@@ -65,11 +65,55 @@ export function formatRoleBadge(roleName: string, roles: Role[] = []): string {
   switch (role.name) {
     case 'club-administrator':
       return 'Admin';
+    case 'kassier':
+      return 'Kassier';
+    case 'schriftfuehrer':
+      return 'Sekretär';
     case 'trainer':
       return 'Trainer';
     case 'member':
       return 'Mitglied';
+    case 'obmann':
+      return 'Obmann';
+    case 'platzwart':
+      return 'Platzwart';
+    case 'eventmanager':
+      return 'Event-Mgr';
     default:
       return role.displayName;
   }
+}
+
+/**
+ * Get role color for badges and UI elements
+ */
+export function getRoleColor(role: string): string {
+  const roleColors: Record<string, string> = {
+    'club-administrator': '#8b5cf6', // Purple
+    'kassier': '#10b981', // Green  
+    'schriftfuehrer': '#3b82f6', // Blue
+    'trainer': '#f59e0b', // Orange
+    'member': '#6b7280', // Gray
+    'obmann': '#dc2626', // Red
+    'platzwart': '#059669', // Teal
+    'eventmanager': '#7c3aed', // Violet
+  };
+  return roleColors[role] || '#6b7280';
+}
+
+/**
+ * Get role permissions description for tooltips
+ */
+export function getRolePermissions(role: string): string[] {
+  const permissions: Record<string, string[]> = {
+    'club-administrator': ['Alle Bereiche verwalten', 'Benutzer und Rollen verwalten', 'Systemkonfiguration'],
+    'kassier': ['Finanzen verwalten', 'Berichte erstellen', 'Mitgliedsbeiträge'],
+    'schriftfuehrer': ['Mitglieder verwalten', 'Kommunikation', 'Dokumente', 'Meetings'],
+    'trainer': ['Teams verwalten', 'Training planen', 'Spieler betreuen'],
+    'member': ['Persönliche Daten', 'Termine ansehen', 'Nachrichten lesen'],
+    'obmann': ['Alle Statistiken', 'Strategische Übersicht', 'Auswertungen'],
+    'platzwart': ['Anlagen verwalten', 'Platzbelegung', 'Wartung'],
+    'eventmanager': ['Veranstaltungen planen', 'Teilnehmer verwalten', 'Budget'],
+  };
+  return permissions[role] || ['Grundlegende Berechtigungen'];
 }

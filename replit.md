@@ -7,6 +7,14 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 **Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. All critical bugs resolved and application running smoothly.
 
 ## Recent Changes
+- **2025-07-28**: ERWEITERTE ROLLENVERWALTUNG IMPLEMENTIERT - Professionelles 8-Rollen-System für realistische Vereinsstrukturen
+  - **Neue Rollen hinzugefügt**: Kassier/Finanzverwalter, Schriftführer/Sekretär, Obmann/Vereinsleitung, Platzwart/Facility Manager, Eventmanager
+  - **Datenbankbasierte Rollenverwaltung**: Alle Rollen werden aus der normalisierten roles-Tabelle geladen
+  - **Detaillierte Berechtigungen**: Jede Rolle hat spezifische Berechtigungen für verschiedene Vereinsbereiche
+  - **React Hook (useRoles)**: Frontend-Hook für dynamisches Laden und Formatieren von Rollen
+  - **Club-Auswahl-Problem behoben**: System überspringt Onboarding für Benutzer mit aktiven Mitgliedschaften
+  - **Feature-Gating verbessert**: Alle Features verfügbar wenn kein Club ausgewählt (Subscription irrelevant)
+
 - **2025-07-28**: Fixed critical user role assignment - User correctly set as Club Administrator (not Super Administrator)
   - Removed isSuperAdmin flag from user account - user is now properly identified as Club Administrator for both clubs
   - User has club-administrator role in both SV Oberglan 1975 and Testverein

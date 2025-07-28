@@ -10,6 +10,7 @@ import { SubscriptionProvider } from "@/hooks/use-subscription";
 import { useAuth } from "@/hooks/useAuth";
 
 import { useClub } from "@/hooks/use-club";
+import { useNavigation } from "@/hooks/use-navigation";
 import { lazy, useState, useEffect } from 'react';
 import { LazyComponentWrapper } from '@/components/LazyPageWrapper';
 import { Landing } from "@/pages/Landing";
@@ -19,6 +20,7 @@ import { OnboardingWizard } from "@/components/auth/OnboardingWizard";
 import { PendingMembershipDashboard } from "@/components/PendingMembershipDashboard";
 import Layout from "@/components/layout";
 import NotFound from "@/pages/Not-Found";
+import { useLocation, useRoute } from "wouter";
 
 // Lazy load all major pages for better performance
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -39,6 +41,29 @@ const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
 
 
 function AuthenticatedApp() {
+  const [location, setLocation] = useLocation();
+  const { setLastVisitedPage, getInitialRoute } = useNavigation();
+  const [hasNavigatedToInitial, setHasNavigatedToInitial] = useState(false);
+
+  // Track page visits for next time
+  useEffect(() => {
+    if (location && location !== '/') {
+      setLastVisitedPage(location);
+    }
+  }, [location, setLastVisitedPage]);
+
+  // Navigate to last visited page on initial load
+  useEffect(() => {
+    if (!hasNavigatedToInitial && location === '/') {
+      const initialRoute = getInitialRoute();
+      console.log('🏠 Navigating to initial route:', initialRoute);
+      if (initialRoute !== '/') {
+        setLocation(initialRoute);
+      }
+      setHasNavigatedToInitial(true);
+    }
+  }, [location, hasNavigatedToInitial, getInitialRoute, setLocation]);
+
   return (
     <SubscriptionProvider>
       <PageProvider>
@@ -109,14 +134,35 @@ function Router() {
               console.log('✅ User has active memberships, bypassing onboarding');
               setShowOnboarding(false);
               
-              // If no club is selected, auto-select first available
+              // Wenn kein Club ausgewählt ist, lade verfügbare Clubs und wähle intelligente aus
               if (!selectedClub) {
                 fetch('/api/clubs', { credentials: 'include' })
                   .then(res => res.ok ? res.json() : [])
                   .then(clubs => {
                     if (clubs && clubs.length > 0) {
-                      console.log('🎯 Auto-selecting first club:', clubs[0].name);
-                      setSelectedClub(clubs[0]);
+                      // Versuche den zuletzt ausgewählten Club zu finden (falls localStorage nicht vollständig)
+                      const storedClubId = localStorage.getItem('clubflow-selected-club');
+                      let targetClub = clubs[0]; // Fallback zum ersten Club
+                      
+                      if (storedClubId) {
+                        try {
+                          const parsed = JSON.parse(storedClubId);
+                          const lastClubId = parsed?.state?.selectedClub?.id;
+                          const foundClub = clubs.find((club: any) => club.id === lastClubId);
+                          if (foundClub) {
+                            targetClub = foundClub;
+                            console.log('🎯 Restoring last selected club:', targetClub.name);
+                          } else {
+                            console.log('🎯 Last club not found, selecting first available:', targetClub.name);
+                          }
+                        } catch (e) {
+                          console.log('🎯 Could not parse stored club, selecting first available:', targetClub.name);
+                        }
+                      } else {
+                        console.log('🎯 No stored club found, auto-selecting first club:', targetClub.name);
+                      }
+                      
+                      setSelectedClub(targetClub);
                     }
                   })
                   .catch(err => console.error('Error fetching clubs:', err));

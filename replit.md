@@ -7,6 +7,13 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 **Current Status**: Fully functional club management platform with complete CRUD operations, professional Settings interface, unlimited subscription handling, error-free user management, and enterprise-grade features including email invitations, 2FA authentication, and Super Admin capabilities. Dual-admin-role system (club-administrator & obmann) with unified permissions across all backend routes and frontend interfaces. All critical bugs resolved and application running smoothly.
 
 ## Recent Changes
+- **2025-07-28**: BENUTZERFREUNDLICHE NAVIGATION UND CLUB-PERSISTIERUNG IMPLEMENTIERT - Session-Management für bessere UX
+  - **Letzte besuchte Seite**: useNavigation Hook speichert und lädt automatisch letzte Seite in localStorage
+  - **Dashboard als Standard-Startseite**: App startet jetzt im Dashboard statt Settings-Seite
+  - **Intelligente Club-Auswahl**: System merkt sich zuletzt ausgewählten Verein und stellt ihn automatisch wieder her
+  - **Automatische Weiterleitung**: Bei App-Start wird automatisch zur letzten besuchten Seite navigiert
+  - **Verbesserte Club-Persistierung**: Robuste Wiederherstellung des ausgewählten Vereins aus localStorage
+
 - **2025-07-28**: INTELLIGENTE API-PERFORMANCE-OPTIMIERUNG ABGESCHLOSSEN - Ausgewogene Balance zwischen Performance und Benutzerfreundlichkeit
   - **Query Cache optimiert**: StaleTime 2-10 Minuten je nach Datentyp für Balance zwischen Performance und Aktualität 
   - **Header Polling benutzerfreundlich**: Communication-stats/notifications alle 2 Minuten für rechtzeitige Updates

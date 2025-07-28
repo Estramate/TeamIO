@@ -47,7 +47,9 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "returnNull" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnReconnect: false,
+      staleTime: 15 * 60 * 1000, // 15 minutes - viel länger für weniger API-Calls
+      gcTime: 30 * 60 * 1000, // 30 minutes cache retention
       retry: false,
       // Don't disable by default - let components control with enabled
     },

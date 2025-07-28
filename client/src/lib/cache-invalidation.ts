@@ -1,55 +1,24 @@
 import { QueryClient } from "@tanstack/react-query";
 
 /**
- * Zentrale Cache-Invalidierung für alle Entitäten
- * Stellt sicher, dass bei jeder CRUD-Operation alle relevanten Daten aktualisiert werden
+ * OPTIMIERTE Cache-Invalidierung - nur das Nötigste aktualisieren
+ * Deutlich reduziert für bessere Performance
  */
 export function invalidateAllData(queryClient: QueryClient, clubId: number) {
-  // Core entities
+  // Nur Dashboard aktualisieren - alle anderen werden bei Bedarf geladen
   queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'dashboard'] });
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'members'] });
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'teams'] });
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'players'] });
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'facilities'] });
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'bookings'] });
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'events'] });
-  
-  // Finance entities
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'finances'] });
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'member-fees'] });
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'training-fees'] });
-  
-  // Stats and reports (da diese von anderen Entitäten abhängen)
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'stats'] });
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'reports'] });
 }
 
 /**
- * Spezifische Cache-Invalidierung für eine Entität + Dashboard
+ * OPTIMIERTE Entity-Cache-Invalidierung - nur direkt betroffene Daten
  */
 export function invalidateEntityData(queryClient: QueryClient, clubId: number, entity: string) {
-  // Spezifische Entität
+  // Nur die spezifische Entität invalidieren
   queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, entity] });
   
-  // Dashboard (immer aktualisieren da es Zusammenfassungen zeigt)
-  queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'dashboard'] });
-  
-  // Wenn Booking-relevante Entitäten, auch Events aktualisieren
-  if (['bookings', 'facilities', 'teams'].includes(entity)) {
-    queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'events'] });
-  }
-  
-  // Wenn Team-relevante Entitäten, auch Player-Daten aktualisieren
-  if (['teams', 'players'].includes(entity)) {
-    queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'teams'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'players'] });
-  }
-  
-  // Wenn Finance-relevante Entitäten, alle Finance-Queries aktualisieren
-  if (['finances', 'member-fees', 'training-fees'].includes(entity)) {
-    queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'finances'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'member-fees'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'training-fees'] });
+  // Dashboard nur bei wichtigen Änderungen
+  if (['members', 'teams', 'finances'].includes(entity)) {
+    queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'dashboard'] });
   }
 }
 

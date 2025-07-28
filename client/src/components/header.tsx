@@ -22,7 +22,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const { title, subtitle } = usePage();
   const { selectedClub } = useClub();
 
-  // Get unread notifications count
+  // Get unread notifications count - viel seltener aktualisieren
   const { data: stats } = useQuery<{
     totalMessages: number;
     unreadMessages: number;
@@ -32,7 +32,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
   }>({
     queryKey: ['/api/clubs', selectedClub?.id, 'communication-stats'],
     enabled: !!selectedClub?.id,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 10 * 60 * 1000, // 10 Minuten Cache
+    refetchInterval: 5 * 60 * 1000, // Nur alle 5 Minuten aktualisieren
   });
 
   // Get recent messages for notification preview
@@ -41,11 +42,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
     enabled: !!selectedClub?.id,
   });
 
-  // Get recent notifications
+  // Get recent notifications - viel seltener aktualisieren
   const { data: notifications = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'notifications'],
     enabled: !!selectedClub?.id,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 10 * 60 * 1000, // 10 Minuten Cache
+    refetchInterval: 5 * 60 * 1000, // Nur alle 5 Minuten aktualisieren
   });
 
   const unreadCount = (stats?.unreadNotifications || 0) + (stats?.unreadMessages || 0);

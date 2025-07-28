@@ -6,28 +6,33 @@ interface TeamStatusProps {
 }
 
 export default function TeamStatus({ clubId }: TeamStatusProps) {
+  // Sehr aggressive Cache-Einstellungen da Teams/Players selten ändern
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useQuery({
     queryKey: ['/api/clubs', clubId, 'teams'],
     enabled: !!clubId,
     retry: false,
+    staleTime: 30 * 60 * 1000, // 30 Minuten Cache
   });
 
   const { data: players, isLoading: playersLoading } = useQuery({
     queryKey: ['/api/clubs', clubId, 'players'],
     enabled: !!clubId,
     retry: false,
+    staleTime: 30 * 60 * 1000, // 30 Minuten Cache
   });
 
   const { data: bookings, isLoading: bookingsLoading } = useQuery({
     queryKey: ['/api/clubs', clubId, 'bookings'],
     enabled: !!clubId,
     retry: false,
+    staleTime: 20 * 60 * 1000, // 20 Minuten Cache
   });
 
   const { data: events } = useQuery({
     queryKey: ['/api/clubs', clubId, 'events'],
     enabled: !!clubId,
     retry: false,
+    staleTime: 20 * 60 * 1000, // 20 Minuten Cache
   });
 
   // Handle loading state

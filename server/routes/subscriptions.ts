@@ -15,6 +15,8 @@ import {
 } from "@shared/schemas/subscriptions";
 import { isAuthenticated } from "../replitAuth";
 import { asyncHandler } from "../middleware/errorHandler";
+import { sendPlanChangeNotification, sendPlanChangeConfirmation } from "../lib/plan-change-notifications";
+import { requiresSuperAdmin, hasSuperAdminAccess } from "../lib/super-admin";
 
 const router = Router();
 
@@ -128,6 +130,7 @@ const createSubscriptionSchema = insertClubSubscriptionSchema.extend({
 });
 
 router.post("/club/:clubId", 
+  requiresClubAdmin,
   asyncHandler(async (req: any, res: any) => {
     try {
       const clubId = parseInt(req.params.clubId);
@@ -137,11 +140,29 @@ router.post("/club/:clubId",
       }
 
       const { planType, billingInterval, ...subscriptionData } = req.body;
+      const user = req.user;
+
+      // Get current subscription for comparison
+      const currentSubscription = await subscriptionStorage.getClubSubscription(clubId);
+      const oldPlan = currentSubscription?.subscription?.planType || 'free';
 
       // Get the plan by type
       const plan = await subscriptionStorage.getSubscriptionPlanByType(planType);
       if (!plan) {
         return res.status(400).json({ error: "Invalid plan type" });
+      }
+
+      // For plan downgrades or critical changes, require super admin approval
+      const planHierarchy = { free: 0, starter: 1, professional: 2, enterprise: 3 };
+      const isDowngrade = planHierarchy[oldPlan as keyof typeof planHierarchy] > planHierarchy[planType as keyof typeof planHierarchy];
+      const isEnterpriseChange = oldPlan === 'enterprise' || planType === 'enterprise';
+      
+      if ((isDowngrade || isEnterpriseChange) && !hasSuperAdminAccess(user)) {
+        return res.status(403).json({ 
+          error: "Super administrator approval required",
+          message: "Plan downgrades and Enterprise plan changes require super administrator approval. Please contact support.",
+          requiresSuperAdmin: true
+        });
       }
 
       // Calculate period dates
@@ -171,8 +192,46 @@ router.post("/club/:clubId",
             ...subscriptionData,
           }
         );
+
+        // Send notifications if plan changed
+        if (oldPlan !== planType) {
+          const { getStorage } = await import("../storage");
+          const storage = getStorage();
+          const club = await storage.getClub(clubId);
+          const userInfo = await storage.getUser(user.claims?.sub);
+
+          await sendPlanChangeNotification({
+            clubName: club?.name || `Club ${clubId}`,
+            clubId,
+            userEmail: userInfo?.email || user.email || 'unknown@example.com',
+            userName: userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : 'Unknown User',
+            oldPlan,
+            newPlan: planType,
+            billingInterval: billingInterval || 'monthly',
+            timestamp: new Date(),
+            ipAddress: req.ip,
+            userAgent: req.get('User-Agent')
+          });
+
+          await sendPlanChangeConfirmation({
+            clubName: club?.name || `Club ${clubId}`,
+            clubId,
+            userEmail: userInfo?.email || user.email || 'unknown@example.com',
+            userName: userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : 'Unknown User',
+            oldPlan,
+            newPlan: planType,
+            billingInterval: billingInterval || 'monthly',
+            timestamp: new Date()
+          });
+        }
         
-        res.json(updatedSubscription);
+        res.json({
+          ...updatedSubscription,
+          notifications: {
+            adminNotified: oldPlan !== planType,
+            userNotified: oldPlan !== planType
+          }
+        });
       } else {
         // Create new subscription
         const newSubscription = await subscriptionStorage.createClubSubscription({
@@ -184,8 +243,46 @@ router.post("/club/:clubId",
           status: 'active',
           ...subscriptionData,
         });
+
+        // Send notifications for new subscription
+        if (oldPlan !== planType) {
+          const { getStorage } = await import("../storage");
+          const storage = getStorage();
+          const club = await storage.getClub(clubId);
+          const userInfo = await storage.getUser(user.claims?.sub);
+
+          await sendPlanChangeNotification({
+            clubName: club?.name || `Club ${clubId}`,
+            clubId,
+            userEmail: userInfo?.email || user.email || 'unknown@example.com',
+            userName: userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : 'Unknown User',
+            oldPlan,
+            newPlan: planType,
+            billingInterval: billingInterval || 'monthly',
+            timestamp: new Date(),
+            ipAddress: req.ip,
+            userAgent: req.get('User-Agent')
+          });
+
+          await sendPlanChangeConfirmation({
+            clubName: club?.name || `Club ${clubId}`,
+            clubId,
+            userEmail: userInfo?.email || user.email || 'unknown@example.com',
+            userName: userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : 'Unknown User',
+            oldPlan,
+            newPlan: planType,
+            billingInterval: billingInterval || 'monthly',
+            timestamp: new Date()
+          });
+        }
         
-        res.json(newSubscription);
+        res.json({
+          ...newSubscription,
+          notifications: {
+            adminNotified: oldPlan !== planType,
+            userNotified: oldPlan !== planType
+          }
+        });
       }
     } catch (error) {
       console.error("Error creating/updating subscription:", error);
@@ -311,5 +408,129 @@ function getFeatureDescription(featureName: string): string {
   
   return descriptions[featureName] || featureName;
 }
+
+// GET /api/subscriptions/super-admin/status - Check super admin status
+router.get("/super-admin/status", 
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      // Get user from session without requiring auth middleware
+      const userId = req.session?.user?.id || req.session?.passport?.user?.id;
+      const userEmail = req.session?.user?.email || req.session?.passport?.user?.email;
+      
+      if (!userId && !userEmail) {
+        return res.json({
+          isSuperAdmin: false,
+          userEmail: null,
+          userId: null,
+          permissions: []
+        });
+      }
+
+      // Check super admin status
+      const { isSuperAdministrator, isSuperAdministratorById } = await import("../lib/super-admin");
+      const isSuperAdmin = (userEmail && isSuperAdministrator(userEmail)) || 
+                          (userId && isSuperAdministratorById(userId));
+      
+      res.json({
+        isSuperAdmin,
+        userEmail: userEmail,
+        userId: userId,
+        permissions: isSuperAdmin ? [
+          'platform-management',
+          'all-club-access', 
+          'plan-management',
+          'user-management'
+        ] : []
+      });
+    } catch (error) {
+      console.error("Error checking super admin status:", error);
+      res.json({
+        isSuperAdmin: false,
+        userEmail: null,
+        userId: null,
+        permissions: []
+      });
+    }
+  }));
+
+// PUT /api/subscriptions/super-admin/force-plan/:clubId - Force plan change (super admin only)
+router.put("/super-admin/force-plan/:clubId",
+  requiresSuperAdmin,
+  asyncHandler(async (req: any, res: any) => {
+    try {
+      const clubId = parseInt(req.params.clubId);
+      const { planType, billingInterval, reason } = req.body;
+      
+      if (isNaN(clubId)) {
+        return res.status(400).json({ error: "Invalid club ID" });
+      }
+
+      // Get current subscription for comparison
+      const currentSubscription = await subscriptionStorage.getClubSubscription(clubId);
+      const oldPlan = currentSubscription?.subscription?.planType || 'free';
+
+      // Get the plan by type
+      const plan = await subscriptionStorage.getSubscriptionPlanByType(planType);
+      if (!plan) {
+        return res.status(400).json({ error: "Invalid plan type" });
+      }
+
+      // Calculate period dates
+      const now = new Date();
+      const currentPeriodStart = now;
+      const currentPeriodEnd = new Date(now);
+      
+      if (billingInterval === 'yearly') {
+        currentPeriodEnd.setFullYear(currentPeriodEnd.getFullYear() + 1);
+      } else {
+        currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
+      }
+
+      let result;
+      if (currentSubscription.subscription) {
+        // Update existing subscription
+        result = await subscriptionStorage.updateClubSubscription(
+          currentSubscription.subscription.id,
+          {
+            planId: plan.id,
+            billingInterval: billingInterval || 'monthly',
+            currentPeriodStart,
+            currentPeriodEnd,
+            status: 'active',
+          }
+        );
+      } else {
+        // Create new subscription
+        result = await subscriptionStorage.createClubSubscription({
+          clubId,
+          planId: plan.id,
+          billingInterval: billingInterval || 'monthly',
+          currentPeriodStart,
+          currentPeriodEnd,
+          status: 'active',
+        });
+      }
+
+      // Log the super admin action
+      const { getStorage } = await import("../storage");
+      const storage = getStorage();
+      const club = await storage.getClub(clubId);
+      
+      console.log(`SUPER ADMIN ACTION: Plan force-changed by ${req.user.email} for club ${club?.name} (${oldPlan} → ${planType}). Reason: ${reason || 'No reason provided'}`);
+
+      res.json({
+        success: true,
+        subscription: result,
+        plan: plan,
+        action: 'super-admin-force-change',
+        oldPlan,
+        newPlan: planType,
+        reason: reason || 'No reason provided'
+      });
+    } catch (error) {
+      console.error("Error force-changing plan:", error);
+      res.status(500).json({ error: "Failed to force-change plan" });
+    }
+  }));
 
 export default router;

@@ -86,6 +86,9 @@ export default function Users() {
   const queryClient = useQueryClient();
   const { setPage } = usePage();
   
+  // Load roles for role management
+  const { data: roles, isLoading: rolesLoading } = useRoles();
+  
   // Set page title
   useEffect(() => {
     setPage("Benutzerverwaltung", "Verwalten Sie Mitglieder, Rollen und Berechtigungen für " + (selectedClub?.name || "Ihren Verein"));
@@ -235,6 +238,14 @@ export default function Users() {
   };
 
   const getRoleBadge = (role: string) => {
+    // Use the formatRoleBadge from use-roles hook if roles are loaded
+    if (roles && !rolesLoading) {
+      return <Badge variant={role === 'club-administrator' ? 'destructive' : 'outline'}>
+        {formatRoleBadge(role, roles)}
+      </Badge>;
+    }
+    
+    // Fallback for when roles are loading
     switch (role) {
       case 'admin': return <Badge variant="destructive">Administrator</Badge>;
       case 'club-administrator': return <Badge variant="destructive">Vereins-Administrator</Badge>;
@@ -311,10 +322,20 @@ export default function Users() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Alle Rollen</SelectItem>
-                <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="club-administrator">Vereins-Administrator</SelectItem>
-                <SelectItem value="coach">Trainer</SelectItem>
-                <SelectItem value="member">Mitglied</SelectItem>
+                {roles && !rolesLoading ? (
+                  roles.map((role) => (
+                    <SelectItem key={role.id} value={role.name}>
+                      {role.displayName}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <>
+                    <SelectItem value="admin">Administrator</SelectItem>
+                    <SelectItem value="club-administrator">Vereins-Administrator</SelectItem>
+                    <SelectItem value="coach">Trainer</SelectItem>
+                    <SelectItem value="member">Mitglied</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
 
@@ -619,10 +640,20 @@ export default function Users() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="member">Mitglied</SelectItem>
-                    <SelectItem value="coach">Trainer</SelectItem>
-                    <SelectItem value="admin">Administrator</SelectItem>
-                    <SelectItem value="club-administrator">Vereins-Administrator</SelectItem>
+                    {roles && !rolesLoading ? (
+                      roles.map((role) => (
+                        <SelectItem key={role.id} value={role.name}>
+                          {role.displayName}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <>
+                        <SelectItem value="member">Mitglied</SelectItem>
+                        <SelectItem value="coach">Trainer</SelectItem>
+                        <SelectItem value="admin">Administrator</SelectItem>
+                        <SelectItem value="club-administrator">Vereins-Administrator</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

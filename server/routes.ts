@@ -973,7 +973,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('You must be a club administrator to manage member roles');
     }
     
-    const updatedMembership = await storage.updateClubMembershipById(memberId, { role });
+    // Convert role name to roleId
+    const targetRole = await storage.getRoleByName(role);
+    if (!targetRole) {
+      throw new ValidationError(`Role '${role}' not found`, 'role');
+    }
+    
+    console.log(`🔧 USERS PAGE DEBUG: Updating member ${memberId} role from API to roleId ${targetRole.id} (${targetRole.name})`);
+    
+    const updatedMembership = await storage.updateClubMembershipById(memberId, { roleId: targetRole.id });
     
     // Log the role change activity
     const member = await storage.getUser(updatedMembership.userId);
@@ -986,14 +994,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         targetUserId: member.id,
         targetResource: 'membership',
         targetResourceId: memberId,
-        description: `${admin.firstName} ${admin.lastName} hat die Rolle von ${member.firstName} ${member.lastName} zu ${role === 'club-administrator' ? 'Administrator' : role === 'trainer' ? 'Trainer' : 'Mitglied'} geändert`,
-        metadata: { oldRole: updatedMembership.role, newRole: role },
+        description: `${admin.firstName} ${admin.lastName} hat die Rolle von ${member.firstName} ${member.lastName} zu ${targetRole.displayName} geändert`,
+        metadata: { oldRoleId: updatedMembership.roleId, newRoleId: targetRole.id, newRoleName: targetRole.name },
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
       });
     }
     
-    logger.info('Member role updated', { clubId, memberId, newRole: role, updatedBy: userId, requestId: req.id });
+    logger.info('Member role updated', { clubId, memberId, newRoleId: targetRole.id, newRole: targetRole.name, updatedBy: userId, requestId: req.id });
     res.json(updatedMembership);
   }));
 

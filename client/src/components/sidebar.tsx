@@ -144,17 +144,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           )}
         >
           {/* Header - Collapsed Layout */}
-          <div className={cn("border-b border-border transition-all duration-300 relative", collapsed ? "p-3" : "p-6")}>
+          <div className={cn("border-b border-border transition-all duration-300 relative", collapsed ? "p-2" : "p-6")}>
             {collapsed ? (
-              <div className="flex flex-col items-center space-y-4">
+              <div className="flex flex-col items-center space-y-3">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center relative overflow-hidden">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden">
                       {selectedClub?.logoUrl ? (
                         <img 
                           src={selectedClub.logoUrl} 
                           alt={`${selectedClub.name} Logo`}
-                          className="w-10 h-10 object-cover rounded-lg"
+                          className="w-8 h-8 object-cover rounded-lg"
                           onError={(e) => {
                             // Fallback to ClubFlow icon if club logo fails to load
                             const target = e.target as HTMLImageElement;
@@ -168,12 +168,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         src="/favicon-96x96.png" 
                         alt="ClubFlow" 
                         className={cn(
-                          "w-10 h-10 object-contain",
+                          "w-8 h-8 object-contain",
                           selectedClub?.logoUrl ? "hidden" : "block"
                         )}
                       />
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
-                        <span className="text-[8px] font-bold text-white">β</span>
+                      <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 rounded-full flex items-center justify-center">
+                        <span className="text-[6px] font-bold text-white">β</span>
                       </div>
                     </div>
                   </TooltipTrigger>
@@ -184,10 +184,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-8 h-8 p-0 hover:bg-muted border border-border rounded-md"
+                  className="w-6 h-6 p-0 hover:bg-muted"
                   onClick={() => setCollapsed(!collapsed)}
                 >
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </div>
             ) : (
@@ -323,9 +323,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 {collapsed && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center mb-2 cursor-pointer">
+                      <button 
+                        onClick={() => navigate('/super-admin')}
+                        className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center mb-2 cursor-pointer hover:from-orange-600 hover:to-amber-600 transition-all duration-200"
+                      >
                         <Crown className="w-5 h-5 text-white" />
-                      </div>
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent side="right">
                       <p className="font-medium">Super Administrator</p>

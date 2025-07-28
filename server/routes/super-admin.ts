@@ -136,11 +136,13 @@ router.get("/users",
         users.map(async (user: any) => {
           const memberships = await storage.getUserClubMemberships(user.id);
           
-          // Get club names for memberships
+          // Get club names for memberships WITH ROLEIDS FOR EDIT MODAL
           const membershipDetails = await Promise.all(
             memberships.map(async (membership: any) => {
               const club = await storage.getClub(membership.clubId);
               const role = await storage.getRoleById(membership.roleId);
+              
+              console.log(`🔍 SUPER ADMIN USER LOAD DEBUG: User ${user.id}, Club ${membership.clubId}, roleId ${membership.roleId} = ${role?.name}`);
               
               return {
                 clubId: membership.clubId,
@@ -148,6 +150,7 @@ router.get("/users",
                 role: role?.name || 'member',
                 roleName: role?.name || 'member',
                 roleDisplayName: role?.displayName || 'Mitglied',
+                roleId: membership.roleId, // CRITICAL: Include roleId for EditUserModal
                 status: membership.status,
                 joinedAt: membership.joinedAt,
               };

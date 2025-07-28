@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DataSyncIndicatorCompact } from "@/components/DataSyncIndicator";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -77,6 +78,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
           
           <div className="flex items-center space-x-4">
+            {/* Real-time Data Sync Indicator */}
+            <DataSyncIndicatorCompact className="hidden sm:flex" />
+            
             <div className="relative">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

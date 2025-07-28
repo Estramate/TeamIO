@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { SuperAdminBadge } from "@/components/SuperAdminBadge";
 import { SuperAdminNavigation } from "@/components/SuperAdminNavigation";
 import { useRoles, getRoleDisplayName } from "@/hooks/use-roles";
+import { SidebarSyncStatus } from "@/components/GlobalSyncStatus";
 import type { FeatureName } from "@shared/lib/subscription-manager";
 
 interface SidebarProps {
@@ -661,6 +662,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               </div>
             )}
           </div>
+          
+          {/* Sync Status Indicator */}
+          <SidebarSyncStatus />
         </aside>
       </TooltipProvider>
     </>

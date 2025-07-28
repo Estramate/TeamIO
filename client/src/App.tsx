@@ -37,6 +37,7 @@ const Users = lazy(() => import("@/pages/Users"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Subscription = lazy(() => import("@/pages/Subscription"));
 const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
+const SyncDemo = lazy(() => import("@/pages/SyncDemo"));
 
 
 
@@ -83,6 +84,7 @@ function AuthenticatedApp() {
           <Route path="/settings" component={() => <LazyComponentWrapper component={Settings} />} />
           <Route path="/subscription" component={() => <LazyComponentWrapper component={Subscription} />} />
           <Route path="/super-admin" component={() => <LazyComponentWrapper component={SuperAdmin} />} />
+          <Route path="/sync-demo" component={() => <LazyComponentWrapper component={SyncDemo} />} />
 
           <Route component={NotFound} />
         </Switch>

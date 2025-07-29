@@ -1550,7 +1550,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(events);
   }));
 
-  app.post('/api/clubs/:clubId/events', isAuthenticated, requiresClubMembership, asyncHandler(async (req: any, res: any) => {
+  app.post('/api/clubs/:clubId/events', isAuthenticated, requiresClubMembership, async (req: any, res: any) => {
+    try {
     const clubId = parseInt(req.params.clubId);
     
     console.log('Event creation request:', req.body);
@@ -1585,7 +1586,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Event created successfully:', event.id);
     
     res.status(201).json(event);
-  }));
+    } catch (error: any) {
+      console.error('ERROR creating event:', error);
+      console.error('Stack trace:', error.stack);
+      console.error('Request body:', req.body);
+      res.status(500).json({ message: 'Failed to create event', error: error.message });
+    }
+  });
 
   app.put('/api/clubs/:clubId/events/:id', isAuthenticated, requiresClubMembership, asyncHandler(async (req: any, res: any) => {
     const id = parseInt(req.params.id);

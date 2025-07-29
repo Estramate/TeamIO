@@ -34,16 +34,16 @@ export function useSmartNotifications() {
   const { data: messages = [], dataUpdatedAt: messagesUpdatedAt } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'messages'],
     enabled: !!selectedClub?.id,
-    staleTime: 30 * 1000, // Check every 30 seconds
-    refetchInterval: 30 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 Minuten Cache - KEINE automatischen Reloads
+    refetchInterval: false, // DEAKTIVIERT: Verursacht störende Seiten-Reloads
   });
 
   // Monitor new notifications  
   const { data: notifications = [], dataUpdatedAt: notificationsUpdatedAt } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'notifications'],
     enabled: !!selectedClub?.id,
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 Minuten Cache - KEINE automatischen Reloads  
+    refetchInterval: false, // DEAKTIVIERT: Verursacht störende Seiten-Reloads
   });
 
   // Monitor communication stats for changes
@@ -56,8 +56,8 @@ export function useSmartNotifications() {
   }>({
     queryKey: ['/api/clubs', selectedClub?.id, 'communication-stats'],
     enabled: !!selectedClub?.id,
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 Minuten Cache - KEINE automatischen Reloads
+    refetchInterval: false, // DEAKTIVIERT: Verursacht störende Seiten-Reloads
   });
 
   // Track previous values to detect changes

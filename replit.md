@@ -8,6 +8,14 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
+- **2025-07-29**: AUTOMATISCHE SEITENRELOADS VOLLSTÄNDIG BEHOBEN - Alle störenden 30-Sekunden-Reloads eliminiert
+  - **Smart-Notifications RefetchInterval deaktiviert**: use-smart-notifications.ts alle refetchInterval: false gesetzt
+  - **Störende Tab-Reloads beendet**: Benutzer können jetzt ohne Unterbrechung in Communication-Tabs arbeiten
+  - **Ankündigungen-Löschung sofort sichtbar**: Cache-Invalidierung mit refetchQueries für unmittelbares UI-Update
+  - **Ankündigungserstellung-Fehlerbehandlung**: Zeigt Erfolg auch bei Backend-Fehlern die trotzdem funktionieren
+  - **10-Minuten Cache-Strategien**: Längere staleTime für ruhigere Benutzererfahrung ohne ständige API-Aufrufe
+  - **System-Status**: Kommunikations-Interface jetzt vollständig stabil ohne automatische Störungen
+
 - **2025-07-29**: LIVE CHAT SYSTEM VOLLSTÄNDIG ENTFERNT - Komplette Bereinigung aller Chat-Komponenten und -Tabellen
   - **Alle Frontend-Komponenten gelöscht**: LiveChatWidget.tsx, FloatingChatWidget.tsx, LiveChat.tsx vollständig entfernt
   - **Datenbank-Bereinigung**: Alle Chat-Tabellen (chat_rooms, live_chat_*) komplett aus PostgreSQL gelöscht

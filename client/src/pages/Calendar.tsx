@@ -378,12 +378,25 @@ export default function Calendar() {
         endHour = hours + minutes / 60;
       }
     } else if (event.source === 'event') {
-      // For events, handle both backend (startTime/endTime) and frontend (startDate/endDate) formats
+      // FIX: For events, verwende UTC-Zeit für korrekte Höhenberechnung (gleich wie bei der Zeitanzeige)
       const startTime = new Date(event.startTime || event.startDate || event.date);
       const endTime = new Date(event.endTime || event.endDate || event.date);
       
-      startHour = startTime.getHours() + startTime.getMinutes() / 60;
-      endHour = endTime.getHours() + endTime.getMinutes() / 60;
+      // Verwende UTC-Stunden genau wie bei der Zeitanzeige-Korrektur
+      startHour = startTime.getUTCHours() + startTime.getUTCMinutes() / 60;
+      endHour = endTime.getUTCHours() + endTime.getUTCMinutes() / 60;
+      
+      console.log('📏 EVENT HEIGHT DEBUG:', {
+        id: event.id,
+        title: event.title,
+        startTimeRaw: event.startTime,
+        endTimeRaw: event.endTime,
+        startUTCHours: startTime.getUTCHours(),
+        endUTCHours: endTime.getUTCHours(),
+        calculatedStartHour: startHour,
+        calculatedEndHour: endHour,
+        duration: endHour - startHour
+      });
     }
     
     // Clamp to 6:00-24:00 range
@@ -1462,7 +1475,7 @@ export default function Calendar() {
                                   if (isResizing) return;
                                   
                                   if (event.source === 'event') {
-                                    // Event bearbeiten - verwende die Booking-Daten aber öffne Event-Modal
+                                    // FIX: Event bearbeiten - verwende die originalen Booking-Daten für Modal-Befüllung
                                     console.log('🔧 EVENT CLICK DEBUG - Opening event for editing:', event);
                                     console.log('🔧 EVENT RAW DATA:', {
                                       title: event.title,
@@ -1473,6 +1486,9 @@ export default function Calendar() {
                                       location: event.location,
                                       teamId: event.teamId
                                     });
+                                    
+                                    // Öffne Event-Modal mit korrekten Daten
+                                    openEventModal(event);
                                     
                                     setEditingEvent(event);
                                     

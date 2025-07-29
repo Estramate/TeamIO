@@ -1242,13 +1242,6 @@ export default function Communication() {
                         return;
                       }
                       
-
-                        content: replyText,
-                        originalSubject: selectedMessage?.subject,
-                        messageId: selectedMessage?.id,
-                        clubId: selectedClub?.id
-                      });
-                      
                       // Use the new sendReply hook function for proper cache invalidation
                       sendReply({
                         messageId: selectedMessage?.id,

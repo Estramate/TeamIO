@@ -17,6 +17,7 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
   - **System-Fokus**: Konzentration ausschließlich auf Kernfunktionen der Vereinsverwaltung ohne Chat-Funktionalität
   - **Performance-Optimierung**: Background-Loading-System bleibt vollständig integriert und funktionsfähig
   - **Benutzeranforderung erfüllt**: "funktioniert erstens nicht und bringt nur fehler!" - Problem vollständig behoben
+  - **Communication-UI optimiert**: Tab-Layout auf 3 gleichmäßig verteilte Tabs korrigiert (Nachrichten, Ankündigungen, Einstellungen)
 
 - **2025-07-29**: INTELLIGENTE BACKGROUND-LOADING-SYSTEM IMPLEMENTIERT - Unsichtbare API-Calls mit WebSocket-Support
   - **useBackgroundSync Hook**: Lädt kritische Daten (30s), normale Daten (2min), niedrige Priorität (5min) unsichtbar im Hintergrund

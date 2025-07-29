@@ -350,7 +350,7 @@ export default function Communication() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="messages" className="flex items-center gap-2">
             <MessageCircle className="w-4 h-4" />
             Nachrichten
@@ -358,10 +358,6 @@ export default function Communication() {
           <TabsTrigger value="announcements" className="flex items-center gap-2">
             <Megaphone className="w-4 h-4" />
             Ankündigungen
-          </TabsTrigger>
-          <TabsTrigger value="email" className="flex items-center gap-2">
-            <Mail className="w-4 h-4" />
-            E-Mail
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
@@ -758,94 +754,6 @@ export default function Communication() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        {/* E-Mail Tab - Neue Tab für Kontaktfunktionen */}
-        <TabsContent value="email" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">E-Mail Kontakte</h2>
-            <Button variant="outline">
-              <Mail className="w-4 h-4 mr-2" />
-              E-Mail senden
-            </Button>
-          </div>
-          
-          <div className="grid gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="w-5 h-5" />
-                  E-Mail Funktionen
-                </CardTitle>
-                <CardDescription>
-                  Verwalten Sie E-Mail-Kontakte und -Verteilerlisten
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardContent className="pt-4">
-                      <div className="flex items-center gap-3">
-                        <Users className="w-8 h-8 text-blue-500" />
-                        <div>
-                          <h3 className="font-medium">Mitglieder-E-Mails</h3>
-                          <p className="text-sm text-gray-600">{members?.length || 0} E-Mail-Adressen</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="pt-4">
-                      <div className="flex items-center gap-3">
-                        <Globe className="w-8 h-8 text-green-500" />
-                        <div>
-                          <h3 className="font-medium">Externe Kontakte</h3>
-                          <p className="text-sm text-gray-600">Verwaltung externer E-Mail-Kontakte</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <h4 className="font-medium">Schnellzugriff</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm">
-                      <Mail className="w-4 h-4 mr-2" />
-                      An alle Mitglieder
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Users className="w-4 h-4 mr-2" />
-                      An Vereinsleitung
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Globe className="w-4 h-4 mr-2" />
-                      Newsletter versenden
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>E-Mail Verlauf</CardTitle>
-                <CardDescription>
-                  Übersicht der gesendeten E-Mails
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Noch keine E-Mails versendet</p>
-                  <p className="text-sm">E-Mail-Funktionen sind in Entwicklung</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
 
         {/* Settings Tab */}

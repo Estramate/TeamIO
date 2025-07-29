@@ -810,8 +810,8 @@ export default function Calendar() {
         ...booking,
         date: startDate,
         time: displayTime,
-        // FIX: Behalte originale DateTime für Event-Höhen-Berechnung
-        endTime: booking.endTime, // Vollständige DateTime statt Zeit-String
+        // FIX: Behalte originale DateTime für Event-Höhen-Berechnung und verwende displayEndTime für UI
+        endTime: booking.endTime, // Vollständige DateTime für Berechnungen
         displayEndTime: displayEndTime, // Zeit-String für UI-Anzeige
         source: booking.type === 'event' ? 'event' : 'booking', // Events bekommen 'event' als source
         color: getBookingTypeColor(booking.type),
@@ -883,13 +883,26 @@ export default function Calendar() {
 
   // Form handlers
   const handleEventSubmit = (data: any) => {
+    console.log('🔧 EVENT SUBMIT DEBUG - Raw Form Data:', data);
+    
+    // FIX: Korrekte Zeitzonenkonvertierung für Event-Daten  
+    const startTime = new Date(data.startDate);
+    const endTime = data.endDate ? new Date(data.endDate) : null;
+    
+    console.log('🔧 EVENT SUBMIT DEBUG - Parsed Dates:', {
+      startTime: startTime.toISOString(),
+      endTime: endTime?.toISOString(),
+      startTimeLocal: startTime.toString(),
+      endTimeLocal: endTime?.toString()
+    });
+    
     // Konvertiere startDate/endDate zu startTime/endTime für Backend
     const processedData = {
       ...data,
       clubId: selectedClub?.id,
       teamId: data.teamId ? Number(data.teamId) : null,
-      startTime: data.startDate, // Backend erwartet startTime
-      endTime: data.endDate,     // Backend erwartet endTime
+      startTime: startTime.toISOString(), // Korrekte ISO-String-Konvertierung
+      endTime: endTime ? endTime.toISOString() : null, // Korrekte ISO-String-Konvertierung
     };
     
     // Entferne startDate/endDate um Verwirrung zu vermeiden
@@ -1575,7 +1588,7 @@ export default function Calendar() {
                                 {event.time && event.height >= 50 && (
                                   <div className="text-xs opacity-90 mt-1">
                                     {event.time}
-                                    {event.endTime && ` - ${event.endTime}`}
+                                    {event.displayEndTime && ` - ${event.displayEndTime}`}
                                   </div>
                                 )}
                                 {event.facilityName && event.height >= 60 && (

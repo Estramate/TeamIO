@@ -76,6 +76,7 @@ import {
 } from "@shared/schema";
 import { announcements, messageRecipients, type Announcement, type InsertAnnouncement } from "@shared/schemas/communication";
 import { db } from "./db";
+import { and, eq, desc, isNull, gte, lte, sql, or, ilike, asc, inArray } from 'drizzle-orm';
 
 export interface IStorage {
   // Role operations

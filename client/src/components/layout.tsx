@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Sidebar from "./sidebar";
 import Header from "./header";
-import { LiveChatWidget } from './LiveChatWidget';
+// ENTFERNT - LiveChatWidget komplett aus System entfernt
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -21,8 +21,7 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </div>
       
-      {/* Live Chat Widget - Fixed position */}
-      <LiveChatWidget />
+      {/* LIVE CHAT WIDGET ENTFERNT - Vollständige System-Bereinigung */}
     </div>
   );
 }

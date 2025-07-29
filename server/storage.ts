@@ -14,7 +14,7 @@ import {
   memberFees,
   trainingFees,
   messages,
-  notifications,
+  // notifications entfernt - Live Chat System komplett entfernt
   announcements,
   roles,
   type User,
@@ -74,7 +74,7 @@ import {
   type SubscriptionPlan,
 
 } from "@shared/schema";
-import { announcements, messageRecipients, type Announcement, type InsertAnnouncement, chatRooms, chatParticipants, chatMessages, messageReadStatus } from "@shared/schemas/communication";
+import { announcements, messageRecipients, type Announcement, type InsertAnnouncement } from "@shared/schemas/communication";
 import { db } from "./db";
 import { eq, and, desc, asc, gte, ne, or, sql, isNull } from "drizzle-orm";
 

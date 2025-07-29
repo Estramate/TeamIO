@@ -80,10 +80,8 @@ export function useBackgroundSync(config: Partial<BackgroundSyncConfig> = {}) {
     if (!selectedClub?.id || !finalConfig.enabled) return;
     
     try {
-      await queryClient.prefetchQuery({
-        queryKey: [`/api/clubs/${selectedClub.id}/chat/rooms`],
-        staleTime: 0,
-      });
+      // Chat-Räume Sync entfernt - Live Chat System vollständig deaktiviert
+      console.debug('Chat-Räume Background-Sync übersprungen - System deaktiviert');
     } catch (error) {
       console.debug('Background sync error (low):', error);
     }

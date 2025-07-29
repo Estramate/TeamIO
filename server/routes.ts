@@ -24,7 +24,7 @@ import {
   insertTeamMembershipSchema,
   messageFormSchema,
   insertMessageSchema,
-  insertNotificationSchema,
+  // insertNotificationSchema entfernt - Live Chat System komplett entfernt
 
 } from "@shared/schema";
 import {
@@ -2475,11 +2475,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(announcements);
   }));
 
-  // ====== VERALTETE LIVE CHAT ROUTEN ENTFERNT ======
-  // HINWEIS: Alle Chat-Funktionen sind jetzt über das moderne Communication System verfügbar
-
-  // ===== ALLE VERALTETEN LIVE CHAT API-ROUTEN ENTFERNT =====
-  // Chat-Funktionalität ist jetzt vollständig über das moderne Communication System verfügbar
+  // ====== LIVE CHAT SYSTEM VOLLSTÄNDIG DEAKTIVIERT ======
+  // Explicit 404 für alle Chat-Routen um verwirrende Responses zu vermeiden
+  app.all('/api/clubs/:clubId/chat/*', (req, res) => {
+    res.status(404).json({ 
+      error: 'Live Chat System deaktiviert', 
+      message: 'Chat-Funktionalität wurde vollständig entfernt. Verwenden Sie das klassische Nachrichten-System.' 
+    });
+  });
 
   // ====== EMAIL INVITATION SYSTEM ======
 

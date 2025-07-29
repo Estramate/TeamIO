@@ -42,12 +42,8 @@ export function useSmartRefresh() {
             const chatQueries = queryClient.getQueriesData({
               queryKey: [`/api/clubs/${selectedClub.id}/chat`],
             });
-            if (chatQueries.length > 0) {
-              await queryClient.prefetchQuery({
-                queryKey: [`/api/clubs/${selectedClub.id}/chat/rooms`],
-                staleTime: 0,
-              });
-            }
+            // Chat-Query-Handling entfernt - Live Chat System vollständig deaktiviert
+            console.debug('Chat-Räume Smart-Refresh übersprungen - System deaktiviert');
             break;
         }
       } catch (error) {

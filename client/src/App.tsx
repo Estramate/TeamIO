@@ -39,10 +39,9 @@ const Settings = lazy(() => import("@/pages/Settings"));
 const Subscription = lazy(() => import("@/pages/Subscription"));
 const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
 const SyncDemo = lazy(() => import("@/pages/SyncDemo"));
-const ChatDemo = lazy(() => import("@/pages/ChatDemo"));
+// const ChatDemo = lazy(() => import("@/pages/ChatDemo")); // ENTFERNT - Live Chat System komplett entfernt
 
-// Import FloatingChatWidget
-import FloatingChatWidget from "@/components/FloatingChatWidget";
+// ENTFERNT - FloatingChatWidget komplett aus System entfernt
 
 
 
@@ -93,12 +92,11 @@ function AuthenticatedApp() {
           <Route path="/subscription" component={() => <LazyComponentWrapper component={Subscription} />} />
           <Route path="/super-admin" component={() => <LazyComponentWrapper component={SuperAdmin} />} />
           <Route path="/sync-demo" component={() => <LazyComponentWrapper component={SyncDemo} />} />
-          <Route path="/chat-demo" component={() => <LazyComponentWrapper component={ChatDemo} />} />
+          {/* ENTFERNT - Chat Demo Route vollständig entfernt */}
 
           <Route component={NotFound} />
         </Switch>
-        {/* Floating Chat Widget - Available throughout the app */}
-        <FloatingChatWidget />
+        {/* LIVE CHAT WIDGET ENTFERNT - System vollständig bereinigt */}
       </Layout>
     </PageProvider>
     </SubscriptionProvider>

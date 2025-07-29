@@ -23,7 +23,7 @@ import { facilities, bookings } from "./facilities";
 import { finances, memberFees, trainingFees } from "./finances";
 import { 
   messages, 
-  notifications, 
+  announcements,
   messageFormSchema, 
   announcementFormSchema,
   insertAnnouncementSchema 
@@ -40,8 +40,7 @@ export const clubsRelationsEnhanced = relations(clubs, ({ many }) => ({
   memberFees: many(memberFees),
   trainingFees: many(trainingFees),
   messages: many(messages),
-
-  notifications: many(notifications),
+  announcements: many(announcements),
 }));
 
 // Enhanced member relations
@@ -79,12 +78,14 @@ export const teamMembershipsRelationsEnhanced = relations(teamMemberships, ({ on
   }),
 }));
 
-// Export all schemas and types for easier access
+// Export all schemas and types for easier access - NUR KLASSISCHES NACHRICHTEN-SYSTEM
 export {
   messages,
-  notifications,
+  messageRecipients,
+  announcements,
   messageFormSchema,
   announcementFormSchema,
   insertAnnouncementSchema,
-  insertNotificationSchema
+  insertMessageSchema,
+  selectMessageSchema
 } from "./communication";

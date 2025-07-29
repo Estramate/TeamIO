@@ -156,7 +156,8 @@ export function useRealtimeSync() {
       case 'announcements':
         return ['/api/clubs', clubId, 'announcements'];
       case 'chat-rooms':
-        return [`/api/clubs/${clubId}/chat/rooms`];
+        // Chat-Rooms vollständig entfernt - kein Live Chat System mehr verfügbar
+        return [];
       default:
         return ['/api/clubs', clubId, entity];
     }

@@ -57,7 +57,7 @@ import {
   Reply
 } from "lucide-react";
 import { useConfirmDialog } from "@/components/ui/confirm-dialog";
-import LiveChat from "@/components/LiveChat";
+// ENTFERNT - LiveChat Komponente vollständig aus System entfernt
 
 // Form schemas
 const messageFormSchema = z.object({
@@ -359,10 +359,7 @@ export default function Communication() {
             <Megaphone className="w-4 h-4" />
             Ankündigungen
           </TabsTrigger>
-          <TabsTrigger value="livechat" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Live Chat
-          </TabsTrigger>
+          {/* ENTFERNT - Live Chat Tab vollständig entfernt */}
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Einstellungen
@@ -760,23 +757,7 @@ export default function Communication() {
           </Card>
         </TabsContent>
 
-        {/* Live Chat Tab */}
-        <TabsContent value="livechat" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Live Chat System
-              </CardTitle>
-              <CardDescription>
-                Echtzeit-Chat für Vereinsmitglieder. Erstellen Sie Chat-Räume und kommunizieren Sie direkt mit anderen Mitgliedern.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <LiveChat />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* LIVE CHAT TAB VOLLSTÄNDIG ENTFERNT - System bereinigt */}
       </Tabs>
 
       {/* New Message Dialog */}

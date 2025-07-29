@@ -785,17 +785,28 @@ export default function Calendar() {
   // Combine events, bookings and birthdays for calendar display
   // WICHTIG: Events sind jetzt auch in bookings gespeichert (type='event'), daher keine doppelte Anzeige
   const allEvents = [
-    ...(bookings as any[]).filter(b => b.status !== 'cancelled').map((booking: any) => ({
-      ...booking,
-      date: new Date(booking.startTime),
-      time: format(new Date(booking.startTime), 'HH:mm'),
-      endTime: format(new Date(booking.endTime), 'HH:mm'),
-      source: booking.type === 'event' ? 'event' : 'booking', // Events bekommen 'event' als source
-      color: getBookingTypeColor(booking.type),
-      icon: getBookingTypeIcon(booking.type),
-      typeLabel: getBookingTypeLabel(booking.type),
-      facilityName: getFacilityName(booking.facilityId)
-    }))
+    ...(bookings as any[]).filter(b => b.status !== 'cancelled').map((booking: any) => {
+      // Debug: Log booking data to see actual times
+      console.log('Processing booking:', {
+        id: booking.id,
+        title: booking.title,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        type: booking.type
+      });
+      
+      return {
+        ...booking,
+        date: new Date(booking.startTime),
+        time: format(new Date(booking.startTime), 'HH:mm'),
+        endTime: booking.endTime ? format(new Date(booking.endTime), 'HH:mm') : null,
+        source: booking.type === 'event' ? 'event' : 'booking', // Events bekommen 'event' als source
+        color: getBookingTypeColor(booking.type),
+        icon: getBookingTypeIcon(booking.type),
+        typeLabel: getBookingTypeLabel(booking.type),
+        facilityName: getFacilityName(booking.facilityId)
+      };
+    })
   ];
 
   // Calendar navigation and event handling
@@ -1433,13 +1444,19 @@ export default function Calendar() {
                                     console.log('Opening event for editing:', event);
                                     setEditingEvent(event);
                                     
+                                    // Korrigiere Datum-Formatierung für Event-Formular
+                                    const startDate = new Date(event.startTime);
+                                    const endDate = new Date(event.endTime);
+                                    
+                                    console.log('Event dates:', { startDate, endDate });
+                                    
                                     // Setze Formular-Werte für Event (verwende startTime/endTime statt startDate/endDate)
                                     eventForm.reset({
                                       title: event.title || '',
                                       description: event.description || '',
-                                      startDate: event.startTime ? format(new Date(event.startTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
-                                      endDate: event.endTime ? format(new Date(event.endTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
-                                      teamId: event.teamId ? String(event.teamId) : '',
+                                      startDate: format(startDate, 'yyyy-MM-dd\'T\'HH:mm'),
+                                      endDate: format(endDate, 'yyyy-MM-dd\'T\'HH:mm'),
+                                      teamId: event.teamId ? String(event.teamId) : null,
                                       location: event.location || '',
                                     });
                                     setShowEventModal(true);

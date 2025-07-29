@@ -2372,59 +2372,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   }));
 
-  // Communication preferences routes
-  app.get('/api/clubs/:clubId/communication-preferences', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.user?.claims?.sub || req.user?.id;
-    
-    if (!clubId || isNaN(clubId)) {
-      throw new ValidationError('Invalid club ID', 'clubId');
-    }
-    
-    try {
-      const preferences = await storage.getUserCommunicationPreferences(userId, clubId);
-      res.json(preferences || {});
-    } catch (error: any) {
-      // Return default preferences if table doesn't exist or other errors
-      logger.warn('Communication preferences error, returning defaults', { 
-        error: error.message, 
-        userId, 
-        clubId,
-        requestId: req.id 
-      });
-      res.json({
-        emailNotifications: true,
-        smsNotifications: false,
-        pushNotifications: true,
-        weeklyDigest: true,
-        eventReminders: true,
-        messageUpdates: true
-      });
-    }
-  }));
-
-  app.put('/api/clubs/:clubId/communication-preferences', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.user?.claims?.sub || req.user?.id;
-    
-    if (!clubId || isNaN(clubId)) {
-      throw new ValidationError('Invalid club ID', 'clubId');
-    }
-    
-    try {
-      const preferences = await storage.updateUserCommunicationPreferences(userId, clubId, req.body);
-      logger.info('Communication preferences updated', { clubId, userId, requestId: req.id });
-      res.json(preferences);
-    } catch (error: any) {
-      logger.error('Failed to update communication preferences', { 
-        error: error.message, 
-        userId, 
-        clubId,
-        requestId: req.id 
-      });
-      res.status(500).json({ message: 'Fehler beim Aktualisieren der Kommunikationseinstellungen' });
-    }
-  }));
+  // ENTFERNT - Communication preferences routes hatten keine Backend-Implementation
+  // Die eigentlichen Benachrichtigungseinstellungen sind im Header über NotificationSettingsModal verfügbar
 
   // Communication statistics routes
   app.get('/api/clubs/:clubId/communication-stats', isAuthenticated, asyncHandler(async (req: any, res: any) => {

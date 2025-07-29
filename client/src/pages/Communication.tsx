@@ -350,7 +350,7 @@ export default function Communication() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="messages" className="flex items-center gap-2">
             <MessageCircle className="w-4 h-4" />
             Nachrichten
@@ -358,10 +358,6 @@ export default function Communication() {
           <TabsTrigger value="announcements" className="flex items-center gap-2">
             <Megaphone className="w-4 h-4" />
             Ankündigungen
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="w-4 h-4" />
-            Einstellungen
           </TabsTrigger>
         </TabsList>
 
@@ -764,134 +760,7 @@ export default function Communication() {
           </Card>
         </TabsContent>
 
-        {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Benachrichtigungseinstellungen</CardTitle>
-              <CardDescription>
-                Verwalten Sie Ihre Kommunikationspräferenzen
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <label className="text-sm font-medium">E-Mail Benachrichtigungen</label>
-                  <p className="text-sm text-gray-600">E-Mails bei neuen Nachrichten erhalten</p>
-                </div>
-                <Switch 
-                  checked={preferences?.emailNotifications || false}
-                  onCheckedChange={(checked) => {
-                    updatePreferences({
-                      emailNotifications: checked,
-                      pushNotifications: preferences?.pushNotifications || false,
-                      soundNotifications: preferences?.soundNotifications || false,
-                      emailDigest: preferences?.emailDigest || 'daily'
-                    });
-                  }}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <label className="text-sm font-medium">Push Benachrichtigungen</label>
-                  <p className="text-sm text-gray-600">Browser-Benachrichtigungen aktivieren</p>
-                </div>
-                <Switch 
-                  checked={preferences?.pushNotifications || false}
-                  onCheckedChange={(checked) => {
-                    updatePreferences({
-                      emailNotifications: preferences?.emailNotifications || false,
-                      pushNotifications: checked,
-                      soundNotifications: preferences?.soundNotifications || false,
-                      emailDigest: preferences?.emailDigest || 'daily'
-                    });
-                  }}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <label className="text-sm font-medium">Sound Benachrichtigungen</label>
-                  <p className="text-sm text-gray-600">Ton bei neuen Nachrichten abspielen</p>
-                </div>
-                <Switch 
-                  checked={preferences?.soundNotifications || false}
-                  onCheckedChange={(checked) => {
-                    updatePreferences({
-                      emailNotifications: preferences?.emailNotifications || false,
-                      pushNotifications: preferences?.pushNotifications || false,
-                      soundNotifications: checked,
-                      emailDigest: preferences?.emailDigest || 'daily'
-                    });
-                  }}
-                />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>E-Mail Einstellungen</CardTitle>
-              <CardDescription>
-                Konfigurieren Sie Ihre E-Mail-Präferenzen
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">E-Mail Zusammenfassung</label>
-                <Select 
-                  value={preferences?.emailDigest || "daily"}
-                  onValueChange={(value) => {
-                    updatePreferences({
-                      emailNotifications: preferences?.emailNotifications || false,
-                      pushNotifications: preferences?.pushNotifications || false,
-                      soundNotifications: preferences?.soundNotifications || false,
-                      emailDigest: value
-                    });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wählen Sie die Häufigkeit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="immediate">Sofort</SelectItem>
-                    <SelectItem value="daily">Täglich</SelectItem>
-                    <SelectItem value="weekly">Wöchentlich</SelectItem>
-                    <SelectItem value="never">Nie</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Kommunikationsstatistiken</CardTitle>
-              <CardDescription>
-                Ihre aktuellen Kommunikationsdaten
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Nachrichten gesendet:</span>
-                <Badge variant="secondary">{stats?.recentActivity || 0}</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Nachrichten erhalten:</span>
-                <Badge variant="secondary">{stats?.totalMessages || 0}</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Ungelesene Nachrichten:</span>
-                <Badge variant="destructive">{stats?.unreadMessages || 0}</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Ankündigungen:</span>
-                <Badge variant="outline">{stats?.totalAnnouncements || 0}</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+
       </Tabs>
 
       {/* New Message Dialog */}

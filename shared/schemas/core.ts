@@ -114,52 +114,7 @@ export const users: any = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// User Notification Preferences table
-export const userNotificationPreferences = pgTable("user_notification_preferences", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  clubId: integer("club_id").references(() => clubs.id, { onDelete: 'cascade' }),
-  
-  // Desktop notifications
-  desktopNotificationsEnabled: boolean("desktop_notifications_enabled").default(false),
-  desktopPermissionGranted: boolean("desktop_permission_granted").default(false),
-  
-  // Sound notifications  
-  soundNotificationsEnabled: boolean("sound_notifications_enabled").default(true),
-  soundVolume: varchar("sound_volume", { length: 20 }).default("normal"), // low, normal, high, critical
-  
-  // Test notification preferences
-  testNotificationsEnabled: boolean("test_notifications_enabled").default(true),
-  testNotificationTypes: jsonb("test_notification_types").$type<{
-    info: boolean;
-    success: boolean; 
-    warning: boolean;
-    error: boolean;
-  }>().default({
-    info: true,
-    success: true,
-    warning: true,
-    error: true
-  }),
-  
-  // Communication preferences
-  emailNotifications: boolean("email_notifications").default(true),
-  pushNotifications: boolean("push_notifications").default(true),
-  emailDigest: varchar("email_digest", { length: 20 }).default("daily"), // none, daily, weekly
-  
-  // Event-specific notification settings
-  newMessageNotifications: boolean("new_message_notifications").default(true),
-  announcementNotifications: boolean("announcement_notifications").default(true),
-  eventReminderNotifications: boolean("event_reminder_notifications").default(true),
-  paymentDueNotifications: boolean("payment_due_notifications").default(true),
-  systemAlertNotifications: boolean("system_alert_notifications").default(true),
-  
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => [
-  index("idx_notification_prefs_user_id").on(table.userId),
-  index("idx_notification_prefs_club_id").on(table.clubId),
-]);
+// ENTFERNT - userNotificationPreferences Tabelle auf Benutzerwunsch komplett entfernt
 
 // Clubs table - main entity for multi-club support
 export const clubs = pgTable("clubs", {
@@ -339,11 +294,7 @@ export const insertEmailInvitationSchema = createInsertSchema(emailInvitations).
   updatedAt: true,
 });
 
-export const insertUserNotificationPreferencesSchema = createInsertSchema(userNotificationPreferences).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// ENTFERNT - insertUserNotificationPreferencesSchema auf Benutzerwunsch komplett entfernt
 
 // Form schemas for core entities
 export const clubFormSchema = createInsertSchema(clubs, {
@@ -419,5 +370,4 @@ export type ActivityLog = typeof activityLogs.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 export type EmailInvitation = typeof emailInvitations.$inferSelect;
 export type InsertEmailInvitation = z.infer<typeof insertEmailInvitationSchema>;
-export type UserNotificationPreferences = typeof userNotificationPreferences.$inferSelect;
-export type InsertUserNotificationPreferences = z.infer<typeof insertUserNotificationPreferencesSchema>;
+// ENTFERNT - UserNotificationPreferences Typen auf Benutzerwunsch komplett entfernt

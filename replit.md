@@ -8,6 +8,16 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
+- **2025-07-29**: NOTIFICATION-SETTINGS-SYSTEM VOLLSTÄNDIG ENTFERNT - Komplette Bereinigung auf Benutzerwunsch
+  - **NotificationSettingsModal komplett gelöscht**: client/src/components/NotificationSettingsModal.tsx vollständig entfernt
+  - **Datenbank-Tabelle entfernt**: userNotificationPreferences Tabelle aus PostgreSQL gelöscht
+  - **Schema-Bereinigung**: Alle userNotificationPreferences Referenzen aus shared/schemas/core.ts entfernt
+  - **Backend-Routes bereinigt**: Alle notification-preferences API-Endpunkte aus server/routes.ts entfernt
+  - **NotificationCenter vereinfacht**: Settings-Button und erweiterte Modal-Funktionalität entfernt
+  - **Communication-UI optimiert**: Interface auf 2 Tabs reduziert (Nachrichten + Ankündigungen)
+  - **System-Status**: Nur noch grundlegende Desktop/Sound-Notifications ohne erweiterte Einstellungen
+  - **Benutzeranforderung erfüllt**: "hatte keine funktionierende Implementation" - Problem vollständig behoben
+
 - **2025-07-29**: AUTOMATISCHE SEITENRELOADS VOLLSTÄNDIG BEHOBEN - Alle störenden 30-Sekunden-Reloads eliminiert
   - **Smart-Notifications RefetchInterval deaktiviert**: use-smart-notifications.ts alle refetchInterval: false gesetzt
   - **Störende Tab-Reloads beendet**: Benutzer können jetzt ohne Unterbrechung in Communication-Tabs arbeiten

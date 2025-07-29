@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { useNotifications } from '@/hooks/use-notifications';
 import { cn } from '@/lib/utils';
-import NotificationSettingsModal from '@/components/NotificationSettingsModal';
+// ENTFERNT - NotificationSettingsModal komplett entfernt auf Benutzerwunsch
 
 interface NotificationCenterProps {
   className?: string;
@@ -44,7 +44,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
   } = useNotifications();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false);
+  // ENTFERNT - isAdvancedSettingsOpen State komplett entfernt
 
   // Test different notification types
   const testNotifications = {
@@ -78,13 +78,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
         <DropdownMenuContent align="end" className="w-80">
           <DropdownMenuLabel className="flex items-center justify-between">
             Benachrichtigungen
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsAdvancedSettingsOpen(true)}
-            >
-              <Sliders className="h-4 w-4" />
-            </Button>
+            {/* ENTFERNT - Settings Button für erweiterte Einstellungen */}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           
@@ -124,11 +118,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
         </DropdownMenuContent>
       </DropdownMenu>
       
-      {/* Advanced Settings Modal */}
-      <NotificationSettingsModal 
-        open={isAdvancedSettingsOpen}
-        onClose={() => setIsAdvancedSettingsOpen(false)}
-      />
+      {/* ENTFERNT - Advanced Settings Modal auf Benutzerwunsch komplett entfernt */}
     </div>
   );
 }

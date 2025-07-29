@@ -822,7 +822,9 @@ export default function Calendar() {
         ...booking,
         date: startDate,
         time: displayTime,
-        endTime: displayEndTime,
+        // FIX: Behalte originale DateTime für Event-Höhen-Berechnung
+        endTime: booking.endTime, // Vollständige DateTime statt Zeit-String
+        displayEndTime: displayEndTime, // Zeit-String für UI-Anzeige
         source: booking.type === 'event' ? 'event' : 'booking', // Events bekommen 'event' als source
         color: getBookingTypeColor(booking.type),
         icon: getBookingTypeIcon(booking.type),
@@ -1636,7 +1638,7 @@ export default function Calendar() {
                                 <Clock className="w-4 h-4" />
                                 <span>
                                   {event.time}
-                                  {event.endTime && ` - ${event.endTime}`}
+                                  {event.displayEndTime && ` - ${event.displayEndTime}`}
                                 </span>
                               </div>
                             )}

@@ -362,9 +362,9 @@ export default function Calendar() {
         endHour = hours + minutes / 60;
       }
     } else if (event.source === 'event') {
-      // For events, use the date and time
-      const startTime = new Date(event.startDate || event.date);
-      const endTime = new Date(event.endDate || event.date);
+      // For events, handle both backend (startTime/endTime) and frontend (startDate/endDate) formats
+      const startTime = new Date(event.startTime || event.startDate || event.date);
+      const endTime = new Date(event.endTime || event.endDate || event.date);
       
       startHour = startTime.getHours() + startTime.getMinutes() / 60;
       endHour = endTime.getHours() + endTime.getMinutes() / 60;
@@ -899,11 +899,15 @@ export default function Calendar() {
   const openEventModal = (event?: any) => {
     if (event) {
       setEditingEvent(event);
+      // Handle both startTime/endTime and startDate/endDate
+      const startTime = event.startTime || event.startDate;
+      const endTime = event.endTime || event.endDate;
+      
       eventForm.reset({
         title: event.title,
         description: event.description || '',
-        startDate: format(new Date(event.startDate), 'yyyy-MM-dd\'T\'HH:mm'),
-        endDate: event.endDate ? format(new Date(event.endDate), 'yyyy-MM-dd\'T\'HH:mm') : '',
+        startDate: startTime ? format(new Date(startTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
+        endDate: endTime ? format(new Date(endTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
         teamId: event.teamId || '',
         location: event.location || '',
       });

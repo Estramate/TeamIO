@@ -1813,13 +1813,33 @@ export default function Calendar() {
                 />
               </div>
 
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setShowEventModal(false)}>
-                  Abbrechen
-                </Button>
-                <Button type="submit" disabled={createEventMutation.isPending || updateEventMutation.isPending}>
-                  {editingEvent ? 'Aktualisieren' : 'Erstellen'}
-                </Button>
+              <div className="flex justify-between">
+                {editingEvent && (
+                  <Button 
+                    type="button" 
+                    variant="destructive" 
+                    onClick={() => {
+                      if (confirm('Möchten Sie dieses Event wirklich löschen?')) {
+                        deleteEventMutation.mutate(editingEvent.id);
+                        setShowEventModal(false);
+                        setEditingEvent(null);
+                        eventForm.reset();
+                      }
+                    }}
+                    disabled={deleteEventMutation.isPending}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Löschen
+                  </Button>
+                )}
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" onClick={() => setShowEventModal(false)}>
+                    Abbrechen
+                  </Button>
+                  <Button type="submit" disabled={createEventMutation.isPending || updateEventMutation.isPending}>
+                    {editingEvent ? 'Aktualisieren' : 'Erstellen'}
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>

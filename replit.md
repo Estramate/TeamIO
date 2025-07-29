@@ -18,6 +18,13 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
   - **System-Status**: Events verfügbar für kostenlose und bezahlte Pläne, Buchungen nur für bezahlte Pläne
   - **Benutzeranforderung erfüllt**: "Events-Funktionalität für ALLE Subscriptions im Kalender" - Problem vollständig gelöst
 
+- **2025-07-29**: EVENT-LÖSCHFUNKTION IM KALENDER IMPLEMENTIERT - User kann Events direkt aus Modal löschen
+  - **Löschen-Button hinzugefügt**: Roter "Löschen" Button mit Trash-Icon links im Event-Modal bei Bearbeitung
+  - **Sicherheitsabfrage**: Browser-Confirm Dialog vor Löschung zur Bestätigung der Aktion
+  - **Modal-Schließung**: Event-Modal schließt automatisch nach erfolgreichem Löschen
+  - **Cache-Invalidierung**: Kalender aktualisiert sich sofort nach Löschung ohne Page-Reload
+  - **Benutzeranforderung erfüllt**: "kann man hier auch einfügen, dass man ein event löschen kann?" - Problem behoben
+
 - **2025-07-29**: BUCHUNGS-BUTTON FEATURE-GATING REPARIERT - "Buchung hinzufügen" nur für bezahlte Subscriptions
   - **Subscription-Detection korrigiert**: planType wird jetzt korrekt aus plan-Objekt statt subscription gelesen
   - **Kostenlose Pläne ausgeschlossen**: Button verschwindet für 'free' planType da keine Anlagenverwaltung möglich

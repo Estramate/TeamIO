@@ -2589,6 +2589,73 @@ export class DatabaseStorage implements IStorage {
 
   // VERALTETE LIVE CHAT METHODEN ENTFERNT - Konsolidierung auf Communication Chat System
 
+  // Event management methods (uses bookings table with facilityId = null)
+  async getEvents(clubId: number): Promise<any[]> {
+    return await db
+      .select()
+      .from(bookings)
+      .where(and(eq(bookings.clubId, clubId), isNull(bookings.facilityId)))
+      .orderBy(desc(bookings.startTime));
+  }
+
+  async createEvent(eventData: any): Promise<any> {
+    const [event] = await db
+      .insert(bookings)
+      .values({
+        ...eventData,
+        facilityId: null, // Events don't have facilities
+        type: eventData.type || 'event'
+      })
+      .returning();
+    return event;
+  }
+
+  async updateEvent(id: number, eventData: any): Promise<any> {
+    const [event] = await db
+      .update(bookings)
+      .set({ ...eventData, updatedAt: new Date() })
+      .where(eq(bookings.id, id))
+      .returning();
+    return event;
+  }
+
+  async deleteEvent(id: number): Promise<void> {
+    await db.delete(bookings).where(eq(bookings.id, id));
+  }
+
+  // Get both bookings and events for calendar view
+  async getCalendarItems(clubId: number): Promise<any[]> {
+    return await db
+      .select({
+        id: bookings.id,
+        clubId: bookings.clubId,
+        facilityId: bookings.facilityId,
+        teamId: bookings.teamId,
+        memberId: bookings.memberId,
+        title: bookings.title,
+        description: bookings.description,
+        startTime: bookings.startTime,
+        endTime: bookings.endTime,
+        type: bookings.type,
+        location: bookings.location,
+        isPublic: bookings.isPublic,
+        status: bookings.status,
+        participants: bookings.participants,
+        cost: bookings.cost,
+        contactPerson: bookings.contactPerson,
+        contactEmail: bookings.contactEmail,
+        contactPhone: bookings.contactPhone,
+        notes: bookings.notes,
+        recurring: bookings.recurring,
+        recurringPattern: bookings.recurringPattern,
+        recurringUntil: bookings.recurringUntil,
+        createdAt: bookings.createdAt,
+        updatedAt: bookings.updatedAt,
+      })
+      .from(bookings)
+      .where(eq(bookings.clubId, clubId))
+      .orderBy(desc(bookings.startTime));
+  }
 }
 
 const storage = new DatabaseStorage();

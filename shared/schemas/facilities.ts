@@ -108,6 +108,22 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   updatedAt: true,
 });
 
+// Separate insert schema for events (without facilityId requirement)
+export const insertEventSchema = createInsertSchema(bookings, {
+  title: z.string().min(1, "Titel ist erforderlich"),
+  description: z.string().optional().nullable(),
+  startTime: z.string().min(1, "Startzeit ist erforderlich"),
+  endTime: z.string().min(1, "Endzeit ist erforderlich"),
+  type: z.string().default("event"),
+  location: z.string().optional().nullable(),
+}).omit({
+  id: true,
+  clubId: true,
+  facilityId: true, // Events don't require facility
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Form schemas for facilities and bookings
 export const facilityFormSchema = createInsertSchema(facilities, {
   name: z.string().min(1, "Facility name is required"),
@@ -169,3 +185,5 @@ export type Facility = typeof facilities.$inferSelect;
 export type InsertFacility = z.infer<typeof insertFacilitySchema>;
 export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
+export type Event = typeof bookings.$inferSelect; // Events use same table as bookings
+export type InsertEvent = z.infer<typeof insertEventSchema>;

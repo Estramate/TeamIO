@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
+import { useSubscription } from "@/hooks/use-subscription";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -83,6 +84,7 @@ export default function Calendar() {
   const { selectedClub } = useClub();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
+  const { data: subscription } = useSubscription(selectedClub?.id);
 
   // Set page title
   useEffect(() => {
@@ -989,15 +991,27 @@ export default function Calendar() {
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons with Feature Gating */}
           <div className="flex items-center gap-2">
+            {/* Event Button - available for all subscription types */}
             <Button
-              onClick={() => openBookingModal()}
-              className="bg-blue-600 hover:bg-blue-700 h-10"
+              onClick={() => openEventModal()}
+              className="bg-purple-600 hover:bg-purple-700 h-10"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Buchung
+              Event
             </Button>
+            
+            {/* Booking Button - only for paid subscriptions (feature gating) */}
+            {subscription?.planType !== 'free' && (
+              <Button
+                onClick={() => openBookingModal()}
+                className="bg-blue-600 hover:bg-blue-700 h-10"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Buchung
+              </Button>
+            )}
           </div>
         </div>
       </div>

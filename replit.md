@@ -8,6 +8,16 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
+- **2025-07-29**: EVENTS-SYSTEM FÜR ALLE SUBSCRIPTIONS VOLLSTÄNDIG IMPLEMENTIERT - Separate Events-Funktionalität neben Buchungen
+  - **Events-CRUD-Methoden**: getEvents, createEvent, updateEvent, deleteEvent in server/storage.ts implementiert
+  - **Events-API-Routen**: /api/clubs/:clubId/events mit vollständigen REST-Endpunkten in server/routes.ts
+  - **Kalender-Feature-Gating**: "Event"-Button für alle Nutzer, "Buchung"-Button nur für bezahlte Subscriptions
+  - **Events vs. Buchungen**: Events verwenden bookings-Tabelle mit facilityId=null zur Unterscheidung
+  - **Subscription-basierte UI**: useSubscription Hook implementiert für dynamisches Feature-Gating
+  - **Event-Modal**: Vollständiges Modal für Event-Erstellung und -Bearbeitung im Kalender
+  - **System-Status**: Events verfügbar für kostenlose und bezahlte Pläne, Buchungen nur für bezahlte Pläne
+  - **Benutzeranforderung erfüllt**: "Events-Funktionalität für ALLE Subscriptions im Kalender" - Problem vollständig gelöst
+
 - **2025-07-29**: SOUND-BENACHRICHTIGUNGEN VOLLSTÄNDIG DEAKTIVIERT - "Scheußlicher Ton" komplett entfernt auf Benutzerwunsch
   - **playSound-Funktion deaktiviert**: Alle Audio-Ausgaben in use-notifications.ts vollständig entfernt
   - **NotificationTriggers bereinigt**: Alle triggerSound-Aufrufe durch reine Toast-Benachrichtigungen ersetzt

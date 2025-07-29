@@ -1540,18 +1540,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Event routes (Events sind jetzt Teil der Bookings - diese Route ist deprecated)
-  // Der Kalender sollte nur noch /api/clubs/:clubId/bookings verwenden
-  app.get('/api/clubs/:clubId/events', isAuthenticated, async (req: any, res) => {
-    try {
-      // Zurückgabe eines leeren Arrays, um Duplikate zu vermeiden
-      // Alle Events sind jetzt in der Bookings-API enthalten
-      res.json([]);
-    } catch (error) {
-      console.error("Error fetching events:", error);
-      res.status(500).json({ message: "Failed to fetch events" });
-    }
-  });
+  // Event routes - separate from bookings for all subscription types
+  app.get('/api/clubs/:clubId/events', isAuthenticated, requiresClubMembership, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const events = await storage.getEvents(clubId);
+    res.json(events);
+  }));
+
+  app.post('/api/clubs/:clubId/events', isAuthenticated, requiresClubMembership, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    
+    // Validate event data
+    const eventSchema = z.object({
+      title: z.string().min(1, "Titel ist erforderlich"),
+      description: z.string().optional(),
+      startTime: z.string().min(1, "Startzeit ist erforderlich"),
+      endTime: z.string().min(1, "Endzeit ist erforderlich"),
+      location: z.string().optional(),
+      type: z.string().default("event"),
+      teamId: z.number().optional(),
+      notes: z.string().optional(),
+    });
+
+    const validatedData = eventSchema.parse(req.body);
+    
+    const eventData = {
+      ...validatedData,
+      clubId,
+      startTime: new Date(validatedData.startTime),
+      endTime: new Date(validatedData.endTime),
+    };
+
+    const event = await storage.createEvent(eventData);
+    
+    logger.info(`Event created: ${event.title} for club ${clubId}`, { 
+      eventId: event.id, 
+      clubId, 
+      userId: req.user.id 
+    });
+    
+    res.status(201).json(event);
+  }));
+
+  app.put('/api/clubs/:clubId/events/:id', isAuthenticated, requiresClubMembership, asyncHandler(async (req: any, res: any) => {
+    const id = parseInt(req.params.id);
+    const clubId = parseInt(req.params.clubId);
+    
+    const eventSchema = z.object({
+      title: z.string().min(1, "Titel ist erforderlich"),
+      description: z.string().optional(),
+      startTime: z.string().min(1, "Startzeit ist erforderlich"),
+      endTime: z.string().min(1, "Endzeit ist erforderlich"),
+      location: z.string().optional(),
+      type: z.string().default("event"),
+      teamId: z.number().optional(),
+      notes: z.string().optional(),
+    });
+
+    const validatedData = eventSchema.parse(req.body);
+    
+    const eventData = {
+      ...validatedData,
+      startTime: new Date(validatedData.startTime),
+      endTime: new Date(validatedData.endTime),
+    };
+
+    const event = await storage.updateEvent(id, eventData);
+    
+    logger.info(`Event updated: ${event.title} (ID: ${id})`, { 
+      eventId: id, 
+      clubId, 
+      userId: req.user.id 
+    });
+    
+    res.json(event);
+  }));
+
+  app.delete('/api/clubs/:clubId/events/:id', isAuthenticated, requiresClubMembership, asyncHandler(async (req: any, res: any) => {
+    const id = parseInt(req.params.id);
+    const clubId = parseInt(req.params.clubId);
+    
+    await storage.deleteEvent(id);
+    
+    logger.info(`Event deleted (ID: ${id})`, { 
+      eventId: id, 
+      clubId, 
+      userId: req.user.id 
+    });
+    
+    res.status(204).send();
+  }));
+
+  // Calendar route that returns both bookings and events
+  app.get('/api/clubs/:clubId/calendar', isAuthenticated, requiresClubMembership, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const calendarItems = await storage.getCalendarItems(clubId);
+    res.json(calendarItems);
+  }));
 
   // Finance routes
   app.get('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {

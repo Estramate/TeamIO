@@ -58,7 +58,7 @@ export function Landing() {
   ];
 
   const stats = [
-    { number: "100+", label: "Zufriedene Vereine" },
+    { number: "2025", label: "Entwickelt" },
     { number: "24/7", label: "Verfügbar" },
     { number: "DSGVO", label: "Konform" },
     { number: "€0", label: "Startkosten" }
@@ -66,22 +66,22 @@ export function Landing() {
 
   const testimonials = [
     {
-      name: "Martin Huber",
-      role: "Obmann, SV Thalheim",
-      content: "Endlich haben wir alle Mitgliederdaten digital! Keine Zettelwirtschaft mehr, automatische Beitragsabrechnung und die Trainer sind immer informiert. ClubFlow hat unseren Vereinsalltag revolutioniert.",
-      avatar: "MH"
+      name: "Beta-Tester",
+      role: "Vereinsvorstand",
+      content: "ClubFlow vereinfacht die digitale Vereinsverwaltung erheblich. Die intuitive Benutzeroberfläche und die umfassenden Funktionen machen die tägliche Vereinsarbeit deutlich effizienter.",
+      avatar: "BT"
     },
     {
-      name: "Sandra Klein", 
-      role: "Kassiererin, FC Grünau",
-      content: "Die Finanzverwaltung funktioniert perfekt! Ich sehe sofort wer bezahlt hat und wer noch offen ist. Reports für die Vorstandssitzung erstelle ich in 2 Minuten statt 2 Stunden.",
-      avatar: "SK"
+      name: "Early Adopter", 
+      role: "Kassier",
+      content: "Die Plattform bietet eine solide Grundlage für moderne Vereinsverwaltung. Besonders die Mitgliederverwaltung und Kommunikationsfunktionen sind sehr durchdacht konzipiert.",
+      avatar: "EA"
     },
     {
-      name: "Thomas Egger",
-      role: "Trainer, TC Bergheim", 
-      content: "Platzbuchungen waren früher ein Alptraum. Ständig Doppelbuchungen und Streit. Jetzt buche ich online, sehe sofort was frei ist und alle Teams können fair planen.",
-      avatar: "TE"
+      name: "Test-Nutzer",
+      role: "Trainer", 
+      content: "Als Vereinsmanagement-Software zeigt ClubFlow großes Potenzial. Die Kalenderfunktionen und Platzbuchungen funktionieren bereits sehr gut in der aktuellen Version.",
+      avatar: "TN"
     }
   ];
 
@@ -102,7 +102,7 @@ export function Landing() {
             {/* Premium badge */}
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Deutschlands modernste Vereinsplattform • DSGVO-konform • Kostenlos starten</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Moderne Vereinsplattform aus Österreich • DSGVO-konform • Kostenlos starten</span>
             </div>
             
             {/* Hero headline - Clean typography */}
@@ -263,12 +263,12 @@ export function Landing() {
           
           <div className="text-center mb-20">
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6">
-              Das sagen unsere
+              Erste Erfahrungen
               <br />
-              <span className="font-medium">Vereinsvorstände</span>
+              <span className="font-medium">unserer Beta-Tester</span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Erfahrungen von echten Vereinen, die ClubFlow bereits erfolgreich nutzen.
+              Feedback von Vereinsvertretern die ClubFlow in der Entwicklungsphase testen.
             </p>
           </div>
 
@@ -328,7 +328,7 @@ export function Landing() {
           </h2>
           
           <p className="text-xl text-gray-300 dark:text-gray-600 mb-12 max-w-3xl mx-auto font-light">
-            Tausende Vereine vertrauen bereits auf ClubFlow. Werden Sie Teil der digitalen Revolution
+            Schluss mit Excel-Listen und Zettelwirtschaft! Werden Sie Teil der digitalen Revolution
             <br className="hidden sm:block" />
             und sparen Sie Zeit, Geld und Nerven bei der Vereinsverwaltung.
           </p>

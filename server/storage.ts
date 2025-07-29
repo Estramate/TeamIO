@@ -2596,15 +2596,24 @@ export class DatabaseStorage implements IStorage {
 
   // Event management methods (uses bookings table with facilityId = null)
   async getEvents(clubId: number): Promise<any[]> {
-    return await db
-      .select()
-      .from(bookings)
-      .where(and(eq(bookings.clubId, clubId), isNull(bookings.facilityId)))
-      .orderBy(desc(bookings.startTime));
+    try {
+      console.log('📅 Getting events for club:', clubId);
+      const events = await db
+        .select()
+        .from(bookings)
+        .where(and(eq(bookings.clubId, clubId), isNull(bookings.facilityId)))
+        .orderBy(desc(bookings.startTime));
+      console.log('📅 Found', events.length, 'events for club', clubId);
+      return events;
+    } catch (error: any) {
+      console.error('💥 Error in getEvents:', error.message);
+      console.error('📚 getEvents stack:', error.stack);
+      throw error;
+    }
   }
 
   async createEvent(eventData: any): Promise<any> {
-    console.log('Storage createEvent called with:', eventData);
+    console.log('🏗️ Storage createEvent called with:', JSON.stringify(eventData, null, 2));
     
     try {
       const [event] = await db
@@ -2636,12 +2645,13 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
       
-      console.log('Event created in database:', event);
+      console.log('✅ Event created in database:', JSON.stringify(event, null, 2));
       return event;
     } catch (error: any) {
-      console.error('Database error in createEvent:', error);
-      console.error('Error details:', error.message);
-      console.error('Error stack:', error.stack);
+      console.error('💥 Database error in createEvent:', error.message);
+      console.error('🔍 Error details:', error);
+      console.error('📚 Error stack:', error.stack);
+      console.error('🗃️ Failed eventData:', JSON.stringify(eventData, null, 2));
       throw error;
     }
   }

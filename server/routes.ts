@@ -1554,7 +1554,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
     const clubId = parseInt(req.params.clubId);
     
-    console.log('Event creation request:', req.body);
+    console.log('🔥 EVENT CREATION START');
+    console.log('📝 Request body:', JSON.stringify(req.body, null, 2));
+    console.log('🏢 Club ID:', clubId);
+    console.log('👤 User:', req.user?.id, req.user?.email);
     
     // Validate event data - Team is optional for events
     const eventSchema = z.object({
@@ -1571,9 +1574,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let validatedData;
     try {
       validatedData = eventSchema.parse(req.body);
-      console.log('Validation successful:', validatedData);
+      console.log('✅ Validation successful:', JSON.stringify(validatedData, null, 2));
     } catch (validationError: any) {
-      console.error('Validation error:', validationError.errors);
+      console.error('❌ Validation error:', validationError.errors);
       return res.status(400).json({ message: 'Validation error', errors: validationError.errors });
     }
     
@@ -1599,25 +1602,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       updatedAt: new Date()
     };
 
-    console.log('Creating event with data:', eventData);
+    console.log('📊 Creating event with data:', JSON.stringify(eventData, null, 2));
     
     let event;
     try {
+      console.log('🔄 Calling storage.createEvent...');
       event = await storage.createEvent(eventData);
-      console.log('Event created successfully:', event);
+      console.log('✅ Event created successfully:', JSON.stringify(event, null, 2));
     } catch (storageError: any) {
-      console.error('Storage error:', storageError);
-      console.error('Storage stack:', storageError.stack);
+      console.error('💥 Storage error:', storageError.message);
+      console.error('📚 Storage stack:', storageError.stack);
+      console.error('🔍 Storage error details:', storageError);
       return res.status(500).json({ message: 'Database error', error: storageError.message });
     }
     
-    console.log('Event created successfully:', event.id);
+    console.log('🎉 Event creation complete! ID:', event.id);
     
     res.status(201).json(event);
     } catch (error: any) {
-      console.error('ERROR creating event:', error);
-      console.error('Stack trace:', error.stack);
-      console.error('Request body:', req.body);
+      console.error('💀 CRITICAL ERROR creating event:', error.message);
+      console.error('📚 Stack trace:', error.stack);
+      console.error('📝 Request body:', JSON.stringify(req.body, null, 2));
       res.status(500).json({ message: 'Failed to create event', error: error.message });
     }
   });

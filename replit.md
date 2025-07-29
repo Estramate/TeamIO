@@ -8,6 +8,13 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
+- **2025-07-29**: SOUND-BENACHRICHTIGUNGEN VOLLSTÄNDIG DEAKTIVIERT - "Scheußlicher Ton" komplett entfernt auf Benutzerwunsch
+  - **playSound-Funktion deaktiviert**: Alle Audio-Ausgaben in use-notifications.ts vollständig entfernt
+  - **NotificationTriggers bereinigt**: Alle triggerSound-Aufrufe durch reine Toast-Benachrichtigungen ersetzt
+  - **Nur visuelle Benachrichtigungen**: Push-Notifications zeigen nur noch Text ohne störende Töne
+  - **System-Status**: Komplett geräuschlose Benachrichtigungen bei allen Vereinsaktionen
+  - **Benutzeranforderung erfüllt**: "können wir den scheußlichen ton bei den push notifications entfernen?" - Problem behoben
+
 - **2025-07-29**: NOTIFICATION-SETTINGS-SYSTEM VOLLSTÄNDIG ENTFERNT - Komplette Bereinigung auf Benutzerwunsch
   - **NotificationSettingsModal komplett gelöscht**: client/src/components/NotificationSettingsModal.tsx vollständig entfernt
   - **Datenbank-Tabelle entfernt**: userNotificationPreferences Tabelle aus PostgreSQL gelöscht

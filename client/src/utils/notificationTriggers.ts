@@ -1,279 +1,86 @@
-import { useSmartNotifications } from '@/hooks/use-smart-notifications';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from '@/hooks/use-toast';
 
 /**
- * Smart Notification Triggers for wichtige Vereinsaktionen
- * Automatische Benachrichtigungen bei wichtigen Events
+ * Smart Notification Triggers für wichtige Vereinsaktionen
+ * NUR VISUELLE BENACHRICHTIGUNGEN - Sound komplett deaktiviert auf Benutzerwunsch
  */
 
-export interface NotificationTriggerConfig {
-  title: string;
-  message: string;
-  type: 'success' | 'info' | 'warning' | 'error';
-  priority: 'low' | 'normal' | 'high' | 'critical';
-  sound?: boolean;
-  desktop?: boolean;
-  persistent?: boolean;
-}
-
 export function useNotificationTriggers() {
-  const { triggerNotification, triggerSound } = useSmartNotifications();
   const queryClient = useQueryClient();
 
-  // Neue Mitteilung versendet
+  // Neue Mitteilung versendet - NUR VISUELLE BENACHRICHTIGUNG OHNE SOUND
   const notifyNewMessage = (recipientCount: number, messageType: string = 'Nachricht') => {
-    const config: NotificationTriggerConfig = {
+    toast({
       title: `${messageType} versendet`,
-      message: `Neue ${messageType.toLowerCase()} an ${recipientCount} Empfänger gesendet`,
-      type: 'success',
-      priority: 'normal',
-      sound: true,
-      desktop: true
-    };
-    
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority,
-      persistent: false
+      description: `Neue ${messageType.toLowerCase()} an ${recipientCount} Empfänger gesendet`,
+      variant: 'default',
     });
-    
-    if (config.sound) {
-      triggerSound('normal');
-    }
   };
 
-  // Neue Ankündigung erstellt
+  // Neue Ankündigung erstellt - NUR VISUELLE BENACHRICHTIGUNG OHNE SOUND
   const notifyNewAnnouncement = (title: string, priority: string) => {
-    const soundLevel = priority === 'urgent' ? 'high' : 'normal';
-    
-    const config: NotificationTriggerConfig = {
-      title: 'Ankündigung veröffentlicht',
-      message: `"${title}" wurde erfolgreich veröffentlicht`,
-      type: 'success',
-      priority: priority === 'urgent' ? 'high' : 'normal',
-      sound: true,
-      desktop: true
-    };
-    
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority,
-      persistent: priority === 'urgent'
+    toast({
+      title: 'Ankündigung erstellt',
+      description: `"${title}" wurde erfolgreich veröffentlicht`,
+      variant: 'default',
     });
-    
-    triggerSound(soundLevel as any);
   };
 
-  // Neue Buchung erstellt
-  const notifyNewBooking = (facilityName: string, date: string, memberName?: string) => {
-    const config: NotificationTriggerConfig = {
-      title: 'Buchung bestätigt',
-      message: `${facilityName} für ${date}${memberName ? ` (${memberName})` : ''} gebucht`,
-      type: 'success',
-      priority: 'normal',
-      sound: true,
-      desktop: true
-    };
+  // Mitglied hinzugefügt - NUR VISUELLE BENACHRICHTIGUNG OHNE SOUND
+  const notifyMemberAdded = (memberName: string, teamName?: string) => {
+    const message = teamName 
+      ? `${memberName} wurde zu Team "${teamName}" hinzugefügt`
+      : `${memberName} wurde als neues Mitglied hinzugefügt`;
     
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority
+    toast({
+      title: 'Mitglied hinzugefügt',
+      description: message,
+      variant: 'default',
     });
-    
-    triggerSound('normal');
   };
 
-  // Neues Mitglied hinzugefügt
-  const notifyNewMember = (memberName: string, role?: string) => {
-    const config: NotificationTriggerConfig = {
-      title: 'Neues Mitglied',
-      message: `${memberName}${role ? ` als ${role}` : ''} wurde hinzugefügt`,
-      type: 'success',
-      priority: 'normal',
-      sound: true,
-      desktop: true
-    };
-    
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority
+  // Team erstellt - NUR VISUELLE BENACHRICHTIGUNG OHNE SOUND
+  const notifyTeamCreated = (teamName: string, playerCount: number) => {
+    toast({
+      title: 'Team erstellt',
+      description: `Team "${teamName}" mit ${playerCount} Spielern erstellt`,
+      variant: 'default',
     });
-    
-    triggerSound('normal');
   };
 
-  // Mitgliedschaft genehmigt
-  const notifyMembershipApproved = (memberName: string) => {
-    const config: NotificationTriggerConfig = {
-      title: 'Mitgliedschaft genehmigt',
-      message: `${memberName} wurde als Vereinsmitglied genehmigt`,
-      type: 'success',
-      priority: 'high',
-      sound: true,
-      desktop: true,
-      persistent: true
-    };
-    
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority,
-      persistent: config.persistent
-    });
-    
-    triggerSound('high');
-  };
-
-  // Neuer Spieler registriert
-  const notifyNewPlayer = (playerName: string, teamName?: string) => {
-    const config: NotificationTriggerConfig = {
-      title: 'Spieler registriert',
-      message: `${playerName}${teamName ? ` (${teamName})` : ''} wurde registriert`,
-      type: 'success',
-      priority: 'normal',
-      sound: true,
-      desktop: true
-    };
-    
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority
-    });
-    
-    triggerSound('normal');
-  };
-
-  // Team erstellt/aktualisiert
-  const notifyTeamChange = (teamName: string, action: 'erstellt' | 'aktualisiert') => {
-    const config: NotificationTriggerConfig = {
-      title: `Team ${action}`,
-      message: `${teamName} wurde erfolgreich ${action}`,
-      type: 'success',
-      priority: 'normal',
-      sound: true,
-      desktop: true
-    };
-    
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority
-    });
-    
-    triggerSound('normal');
-  };
-
-  // Finanz-Transaktion
+  // Finanz-Transaktion - NUR VISUELLE BENACHRICHTIGUNG OHNE SOUND
   const notifyFinanceTransaction = (amount: number, type: 'Einnahme' | 'Ausgabe', description?: string) => {
-    const config: NotificationTriggerConfig = {
+    toast({
       title: `${type} verbucht`,
-      message: `${type}: €${amount}${description ? ` - ${description}` : ''}`,
-      type: type === 'Einnahme' ? 'success' : 'info',
-      priority: amount > 1000 ? 'high' : 'normal',
-      sound: true,
-      desktop: true
-    };
-    
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority
+      description: `${type}: €${amount}${description ? ` - ${description}` : ''}`,
+      variant: 'default',
     });
-    
-    triggerSound(amount > 1000 ? 'high' : 'normal');
   };
 
-  // Kritische System-Benachrichtigungen
-  const notifySystemCritical = (title: string, message: string) => {
-    const config: NotificationTriggerConfig = {
-      title: `🚨 ${title}`,
-      message,
-      type: 'error',
-      priority: 'critical',
-      sound: true,
-      desktop: true,
-      persistent: true
-    };
-    
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority,
-      persistent: config.persistent
+  // Buchung erstellt - NUR VISUELLE BENACHRICHTIGUNG OHNE SOUND
+  const notifyBookingCreated = (facilityName: string, date: string) => {
+    toast({
+      title: 'Buchung erstellt',
+      description: `${facilityName} für ${date} gebucht`,
+      variant: 'default',
     });
-    
-    triggerSound('critical');
   };
 
-  // Benutzer-Einladung versendet
-  const notifyUserInvitation = (email: string, role: string) => {
-    const config: NotificationTriggerConfig = {
-      title: 'Einladung versendet',
-      message: `Einladung als ${role} an ${email} gesendet`,
-      type: 'success',
-      priority: 'normal',
-      sound: true,
-      desktop: true
-    };
-    
-    triggerNotification(config.title, config.message, {
-      type: config.type,
-      priority: config.priority
+  // Cache invalidation - Hintergrund-Funktionalität ohne UI-Störung
+  const invalidateRelevantCache = (keys: string[]) => {
+    keys.forEach(key => {
+      queryClient.invalidateQueries({ queryKey: [key] });
     });
-    
-    triggerSound('normal');
-  };
-
-  // Cache-Invalidierung für relevante Daten
-  const invalidateRelevantCache = (entityType: string, clubId?: number) => {
-    if (entityType === 'member' || entityType === 'player') {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'members'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'players'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'dashboard'] });
-    }
-    
-    if (entityType === 'message' || entityType === 'announcement') {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'messages'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'communication-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'notifications'] });
-    }
-    
-    if (entityType === 'booking') {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'facilities'] });
-    }
-    
-    if (entityType === 'team') {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'teams'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'dashboard'] });
-    }
-    
-    if (entityType === 'finance') {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'finances'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'dashboard'] });
-    }
   };
 
   return {
     notifyNewMessage,
     notifyNewAnnouncement,
-    notifyNewBooking,
-    notifyNewMember,
-    notifyMembershipApproved,
-    notifyNewPlayer,
-    notifyTeamChange,
+    notifyMemberAdded,
+    notifyTeamCreated,
     notifyFinanceTransaction,
-    notifySystemCritical,
-    notifyUserInvitation,
-    invalidateRelevantCache
+    notifyBookingCreated,
+    invalidateRelevantCache,
   };
 }
-
-// Export für direkten Import in Komponenten
-export const notificationTriggers = {
-  newMessage: (recipientCount: number, messageType: string = 'Nachricht') => {
-    // Direct trigger ohne Hook für Server-Side oder externe Calls
-    if (typeof window !== 'undefined' && window.navigator && 'serviceWorker' in window.navigator) {
-      new Notification(`${messageType} versendet`, {
-        body: `Neue ${messageType.toLowerCase()} an ${recipientCount} Empfänger gesendet`,
-        icon: '/favicon.ico'
-      });
-    }
-  }
-};

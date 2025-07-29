@@ -61,21 +61,12 @@ export function useNotifications() {
     }
   }, [isDesktopSupported]);
 
-  // Play notification sound
+  // Play notification sound - KOMPLETT DEAKTIVIERT auf Benutzerwunsch
   const playSound = useCallback((priority: NotificationPriority) => {
-    if (!isSoundEnabled) return;
-
-    try {
-      const sound = NOTIFICATION_SOUNDS[priority];
-      const audio = new Audio(sound.file);
-      audio.volume = sound.volume;
-      audio.play().catch(error => {
-        console.warn('Failed to play notification sound:', error);
-      });
-    } catch (error) {
-      console.warn('Error playing notification sound:', error);
-    }
-  }, [isSoundEnabled]);
+    // SOUND KOMPLETT DEAKTIVIERT - "scheußlicher ton bei den push notifications entfernen"
+    // Nur noch visuelle Benachrichtigungen ohne störende Töne
+    return;
+  }, []);
 
   // Show desktop notification
   const showDesktopNotification = useCallback((options: NotificationOptions) => {

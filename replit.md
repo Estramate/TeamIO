@@ -18,6 +18,12 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
   - **System-Status**: Events verfügbar für kostenlose und bezahlte Pläne, Buchungen nur für bezahlte Pläne
   - **Benutzeranforderung erfüllt**: "Events-Funktionalität für ALLE Subscriptions im Kalender" - Problem vollständig gelöst
 
+- **2025-07-29**: BUCHUNGS-BUTTON FEATURE-GATING REPARIERT - "Buchung hinzufügen" nur für bezahlte Subscriptions
+  - **Subscription-Detection korrigiert**: planType wird jetzt korrekt aus plan-Objekt statt subscription gelesen
+  - **Kostenlose Pläne ausgeschlossen**: Button verschwindet für 'free' planType da keine Anlagenverwaltung möglich
+  - **Sofortige Wirkung**: Feature-Gating funktioniert korrekt im Kalender für alle Subscription-Typen
+  - **Benutzeranforderung erfüllt**: "hat keinen Sinn weil in der kostenlosen Subscription kann man keine Anlagen verwalten" - Problem behoben
+
 - **2025-07-29**: PRODUKTIONSREIFE CODE-BEREINIGUNG ZU 65% ABGESCHLOSSEN - Systematische Entfernung aller console.log-Statements
   - **Massive Console-Bereinigung**: Von ursprünglich 69+ console.log-Statements auf 24 reduziert (65% Fortschritt)
   - **40+ Dateien bereinigt**: Hooks, Components, Utilities von Debug-Statements befreit für Production-Deployment  

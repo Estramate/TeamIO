@@ -87,7 +87,15 @@ export default function Calendar() {
   const { selectedClub } = useClub();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
-  const { data: subscription } = useSubscription(selectedClub?.id);
+  // Load subscription data properly
+  const { data: subscriptionData } = useQuery({
+    queryKey: ['/api/subscriptions/club', selectedClub?.id],
+    enabled: !!selectedClub?.id,
+    retry: false,
+  });
+  
+  const subscription = subscriptionData?.subscription;
+  const plan = subscriptionData?.plan;
 
   // Set page title
   useEffect(() => {
@@ -1029,7 +1037,7 @@ export default function Calendar() {
             </Button>
             
             {/* Booking Button - only for paid subscriptions (feature gating) */}
-            {subscription?.planType !== 'free' && (
+            {plan?.planType !== 'free' && (
               <Button
                 onClick={() => openBookingModal()}
                 className="bg-blue-600 hover:bg-blue-700 h-10"

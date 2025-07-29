@@ -8,6 +8,15 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
+- **2025-07-29**: NOTIFICATION-SYSTEM BEREINIGT UND OPTIMIERT - Push-Benachrichtigungen und UI-Verbesserungen
+  - **Verwirrende NotificationCenter-Komponente entfernt**: Test-Widget mit Glocken-Icon aus Header entfernt (war nur für Tests)
+  - **Push-Notification "Verein gewechselt" repariert**: Wird jetzt nur bei echten Vereinswechseln angezeigt, nicht mehr bei Navigation
+  - **"Alle Nachrichten anzeigen" Button funktioniert**: Navigation zur Communication-Seite implementiert mit window.location.href
+  - **Logout-Doppelladen behoben**: Entfernung des überflüssigen window.location.reload() beim Ausloggen
+  - **Notification-System vereinfacht**: Nur noch ein Inbox-Button für echte Benachrichtigungen, keine verwirrenden Test-Widgets
+  - **localStorage-basierte Club-Switch-Detection**: Persistente Erkennung echter Vereinswechsel über Page-Navigation hinweg
+  - **System-Status**: Sauberes, benutzerfreundliches Notification-System ohne unnötige UI-Elemente
+
 - **2025-07-28**: THREAD-SYSTEM VOLLSTÄNDIG IMPLEMENTIERT - Antworten werden korrekt bei ursprünglicher Nachricht gruppiert
   - **Backend-Optimierung**: getMessages lädt nur Haupt-Nachrichten (ohne threadId), Replies als verschachtelte Daten
   - **UI-Verbesserung**: Antworten erscheinen NICHT mehr als separate Nachrichten-Einträge in der Liste

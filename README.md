@@ -23,9 +23,18 @@ ClubFlow ist eine moderne, webbasierte Plattform für die umfassende Verwaltung 
 
 ## 🚀 Aktuelle Version - Production Ready
 
-### Neueste Updates (Juli 28, 2025)
+### Neueste Updates (Juli 29, 2025)
 
-#### ✅ DUAL-ADMIN-SYSTEM VOLLSTÄNDIG FUNKTIONSFÄHIG (14:01)
+#### ✅ NOTIFICATION-SYSTEM BEREINIGT UND OPTIMIERT (04:24)
+- **Verwirrende NotificationCenter-Komponente entfernt** - Test-Widget mit Glocken-Icon aus Header entfernt
+- **Push-Notification "Verein gewechselt" repariert** - Wird nur bei echten Vereinswechseln angezeigt
+- **"Alle Nachrichten anzeigen" Button funktioniert** - Navigation zur Communication-Seite implementiert
+- **Logout-Doppelladen behoben** - Überflüssiges window.location.reload() beim Ausloggen entfernt
+- **Notification-System vereinfacht** - Nur noch ein Inbox-Button für echte Benachrichtigungen
+- **localStorage-basierte Club-Switch-Detection** - Persistente Erkennung echter Vereinswechsel
+- **System-Status** - Sauberes, benutzerfreundliches Notification-System ohne unnötige UI-Elemente
+
+#### ✅ DUAL-ADMIN-SYSTEM VOLLSTÄNDIG FUNKTIONSFÄHIG (Juli 28, 14:01)
 - **Obmann-Rolle gleichberechtigt** - "Obmann" hat identische Berechtigungen wie "Club Administrator"
 - **Backend-Berechtigungen vereinheitlicht** - Alle 18 Admin-API-Routen erkennen beide Rollen
 - **Frontend-Sidebar korrigiert** - Administration-Bereich für beide Rollen beim Vereinswechsel sichtbar

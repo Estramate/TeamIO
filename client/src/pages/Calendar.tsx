@@ -795,11 +795,19 @@ export default function Calendar() {
         type: booking.type
       });
       
+      // FIX: Verwende UTC-Zeiten ohne Timezone-Konvertierung für korrekte Anzeige
+      const startDate = new Date(booking.startTime);
+      const endDate = booking.endTime ? new Date(booking.endTime) : null;
+      
+      // Korrigiere Timezone-Problem: Verwende UTC-Stunden direkt statt lokale Konvertierung
+      const displayTime = `${startDate.getUTCHours().toString().padStart(2, '0')}:${startDate.getUTCMinutes().toString().padStart(2, '0')}`;
+      const displayEndTime = endDate ? `${endDate.getUTCHours().toString().padStart(2, '0')}:${endDate.getUTCMinutes().toString().padStart(2, '0')}` : null;
+
       const processedEvent = {
         ...booking,
-        date: new Date(booking.startTime),
-        time: format(new Date(booking.startTime), 'HH:mm'),
-        endTime: booking.endTime ? format(new Date(booking.endTime), 'HH:mm') : null,
+        date: startDate,
+        time: displayTime,
+        endTime: displayEndTime,
         source: booking.type === 'event' ? 'event' : 'booking', // Events bekommen 'event' als source
         color: getBookingTypeColor(booking.type),
         icon: getBookingTypeIcon(booking.type),
@@ -807,16 +815,16 @@ export default function Calendar() {
         facilityName: getFacilityName(booking.facilityId)
       };
       
-      // Debug: Check time formatting
-      console.log('🕐 TIME PROCESSING DEBUG:', {
+      // Debug: Check corrected time formatting
+      console.log('🕐 CORRECTED TIME DEBUG:', {
         id: booking.id,
         title: booking.title,
         startTimeRaw: booking.startTime,
         endTimeRaw: booking.endTime,
-        startTimeParsed: new Date(booking.startTime).toISOString(),
-        endTimeParsed: booking.endTime ? new Date(booking.endTime).toISOString() : 'null',
-        displayTime: processedEvent.time,
-        displayEndTime: processedEvent.endTime
+        startUTCHours: startDate.getUTCHours(),
+        endUTCHours: endDate?.getUTCHours(),
+        displayTime: displayTime,
+        displayEndTime: displayEndTime
       });
       
       return processedEvent;
@@ -1480,11 +1488,15 @@ export default function Calendar() {
                                         endValid: !isNaN(endDate.getTime())
                                       });
                                       
+                                      // FIX: Verwende UTC-Zeit für Formular um Timezone-Probleme zu vermeiden
+                                      const startDateUTC = `${startDate.getUTCFullYear()}-${(startDate.getUTCMonth() + 1).toString().padStart(2, '0')}-${startDate.getUTCDate().toString().padStart(2, '0')}T${startDate.getUTCHours().toString().padStart(2, '0')}:${startDate.getUTCMinutes().toString().padStart(2, '0')}`;
+                                      const endDateUTC = `${endDate.getUTCFullYear()}-${(endDate.getUTCMonth() + 1).toString().padStart(2, '0')}-${endDate.getUTCDate().toString().padStart(2, '0')}T${endDate.getUTCHours().toString().padStart(2, '0')}:${endDate.getUTCMinutes().toString().padStart(2, '0')}`;
+
                                       const formData = {
                                         title: event.title || '',
                                         description: event.description || '',
-                                        startDate: format(startDate, 'yyyy-MM-dd\'T\'HH:mm'),
-                                        endDate: format(endDate, 'yyyy-MM-dd\'T\'HH:mm'),
+                                        startDate: startDateUTC,
+                                        endDate: endDateUTC,
                                         teamId: event.teamId ? String(event.teamId) : null,
                                         location: event.location || '',
                                       };

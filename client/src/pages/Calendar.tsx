@@ -131,12 +131,12 @@ export default function Calendar() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  // Data fetching
-  const { data: events = [], isLoading: isEventsLoading } = useQuery({
-    queryKey: ['/api/clubs', selectedClub?.id, 'events'],
-    enabled: !!selectedClub?.id,
-    retry: false,
-  });
+  // Events werden jetzt über /api/bookings geladen (type='event'), daher kein separater events-Call
+  // const { data: events = [], isLoading: isEventsLoading } = useQuery({
+  //   queryKey: ['/api/clubs', selectedClub?.id, 'events'],
+  //   enabled: !!selectedClub?.id,
+  //   retry: false,
+  // });
 
   const { data: bookings = [] } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'bookings'],
@@ -204,36 +204,52 @@ export default function Calendar() {
     },
   });
 
-  // Mutations
+  // Events werden jetzt als Bookings mit type='event' verwaltet
   const createEventMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('POST', `/api/clubs/${selectedClub?.id}/events`, data),
+    mutationFn: (data: any) => apiRequest('POST', `/api/clubs/${selectedClub?.id}/bookings`, {
+      ...data,
+      type: 'event',
+      facilityId: null, // Events haben keine Anlage
+      status: 'confirmed'
+    }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
+      // Invalidate nur booking-relevanten Queries (Events sind jetzt Bookings)
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'dashboard'] });
       setShowEventModal(false);
       eventForm.reset();
-      toast({ title: "Termin erstellt", description: "Der Termin wurde erfolgreich erstellt." });
+      toast({ title: "Event erstellt", description: "Das Event wurde erfolgreich erstellt." });
     },
     onError: (error: any) => {
-      toast({ title: "Fehler", description: error.message || "Termin konnte nicht erstellt werden.", variant: "destructive" });
+      toast({ title: "Fehler", description: error.message || "Event konnte nicht erstellt werden.", variant: "destructive" });
     }
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/events/${id}`, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/bookings/${id}`, {
+      ...data,
+      type: 'event',
+      facilityId: null,
+      status: 'confirmed'
+    }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
+      // Invalidate booking-relevanten Queries
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'dashboard'] });
       setShowEventModal(false);
       setEditingEvent(null);
       eventForm.reset();
-      toast({ title: "Termin aktualisiert", description: "Der Termin wurde erfolgreich aktualisiert." });
+      toast({ title: "Event aktualisiert", description: "Das Event wurde erfolgreich aktualisiert." });
     },
   });
 
   const deleteEventMutation = useMutation({
-    mutationFn: (id: number) => apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/events/${id}`),
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/clubs/${selectedClub?.id}/bookings/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
-      toast({ title: "Termin gelöscht", description: "Der Termin wurde erfolgreich gelöscht." });
+      // Invalidate booking-relevanten Queries
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'dashboard'] });
+      toast({ title: "Event gelöscht", description: "Das Event wurde erfolgreich gelöscht." });
     },
   });
 
@@ -767,23 +783,14 @@ export default function Calendar() {
   };
 
   // Combine events, bookings and birthdays for calendar display
+  // WICHTIG: Events sind jetzt auch in bookings gespeichert (type='event'), daher keine doppelte Anzeige
   const allEvents = [
-    ...(events as any[]).map((event: any) => ({
-      ...event,
-      date: new Date(event.startTime), // Events haben startTime, nicht startDate
-      time: format(new Date(event.startTime), 'HH:mm'),
-      endTime: event.endTime ? format(new Date(event.endTime), 'HH:mm') : null,
-      source: 'event',
-      color: 'bg-indigo-500',
-      icon: '📅',
-      typeLabel: 'Termin'
-    })),
     ...(bookings as any[]).filter(b => b.status !== 'cancelled').map((booking: any) => ({
       ...booking,
       date: new Date(booking.startTime),
       time: format(new Date(booking.startTime), 'HH:mm'),
       endTime: format(new Date(booking.endTime), 'HH:mm'),
-      source: 'booking',
+      source: booking.type === 'event' ? 'event' : 'booking', // Events bekommen 'event' als source
       color: getBookingTypeColor(booking.type),
       icon: getBookingTypeIcon(booking.type),
       typeLabel: getBookingTypeLabel(booking.type),
@@ -846,11 +853,18 @@ export default function Calendar() {
 
   // Form handlers
   const handleEventSubmit = (data: any) => {
+    // Konvertiere startDate/endDate zu startTime/endTime für Backend
     const processedData = {
       ...data,
       clubId: selectedClub?.id,
       teamId: data.teamId ? Number(data.teamId) : null,
+      startTime: data.startDate, // Backend erwartet startTime
+      endTime: data.endDate,     // Backend erwartet endTime
     };
+    
+    // Entferne startDate/endDate um Verwirrung zu vermeiden
+    delete processedData.startDate;
+    delete processedData.endDate;
 
     if (editingEvent) {
       updateEventMutation.mutate({ id: editingEvent.id, data: processedData });

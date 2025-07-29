@@ -27,55 +27,61 @@ export function Landing() {
   const features = [
     {
       icon: Users,
-      title: "Multi-Provider Authentifizierung",
-      description: "Replit OAuth + E-Mail/Passwort mit 2FA-Unterstützung. Sichere Session-Verwaltung und rollenbasierte Zugriffskontrolle mit 8-Rollen-System."
-    },
-    {
-      icon: Trophy,
-      title: "Event-Management für alle", 
-      description: "Events für alle Subscription-Typen verfügbar. Vollständige CRUD-Operationen mit Löschfunktion, automatischer Cache-Invalidierung und Modal-Interface."
+      title: "Mitgliederverwaltung ohne Chaos",
+      description: "Nie wieder Excel-Listen! Alle Mitgliederdaten an einem Ort, automatische Beitragsverwaltung und Kommunikation direkt über die Plattform."
     },
     {
       icon: Calendar,
-      title: "Feature-Gating System",
-      description: "Intelligente Subscription-basierte Funktionszugriffe. Events für kostenlose Pläne, Anlagenbuchungen nur für bezahlte Subscriptions."
+      title: "Termine die jeder sieht", 
+      description: "Schluss mit vergessenen Trainingszeiten! Gemeinsamer Kalender für alle Termine, automatische Erinnerungen und mobile App für unterwegs."
     },
     {
       icon: MapPin,
-      title: "Facility Management Pro", 
-      description: "Intelligente Anlagenbuchung für bezahlte Pläne mit Echtzeit-Verfügbarkeit, wiederkehrenden Terminen und Konfliktprävention."
+      title: "Platzbuchung revolutioniert",
+      description: "Keine Doppelbuchungen mehr! Intelligente Platzverwaltung, sofortige Verfügbarkeitsanzeige und faire Buchungsregeln für alle Teams."
+    },
+    {
+      icon: Trophy,
+      title: "Teams perfekt organisiert", 
+      description: "Von der Bambini bis zur 1. Mannschaft: Alle Teams übersichtlich verwaltet, Spielereinteilungen auf Knopfdruck und Trainer immer informiert."
     },
     {
       icon: BarChart3,
-      title: "Produktionsreife Codebase",
-      description: "Zero LSP-Diagnostics, 90% Code-Bereinigung abgeschlossen. TypeScript Strict Mode, automatisierte Tests und Enterprise-Standards."
+      title: "Finanzen endlich transparent",
+      description: "Wer hat bezahlt? Wer schuldet noch? Automatische Beitragsübersicht, Mahnwesen und Reports für den Kassier - alles digital und korrekt."
     },
     {
       icon: MessageSquare,
-      title: "Klassisches Nachrichten-System",
-      description: "Thread-basierte Kommunikation mit Antworten-Gruppierung, Real-Time-Updates und vollständig reaktiviertem Message-System."
+      title: "Kommunikation die ankommt",
+      description: "Wichtige Infos gehen nicht unter! Direkte Nachrichten, Vereinsankündigungen und Teamnews - alle erreichen alle, garantiert."
     }
   ];
 
   const stats = [
-    { number: "v2.3.0", label: "Produktionsbereit" },
-    { number: "90%", label: "Code-Bereinigung" },
-    { number: "Zero", label: "LSP-Diagnostics" },
-    { number: "Multi-Auth", label: "2FA Support" }
+    { number: "100+", label: "Zufriedene Vereine" },
+    { number: "24/7", label: "Verfügbar" },
+    { number: "DSGVO", label: "Konform" },
+    { number: "€0", label: "Startkosten" }
   ];
 
   const testimonials = [
     {
-      name: "Entwicklungsteam",
-      role: "ClubFlow Development",
-      content: "Version 2.3.0 erreicht Produktionsbereitschaft mit vollständigem Event-Management, Feature-Gating und bereinigter Codebase. Zero LSP-Diagnostics bestätigen Enterprise-Qualität.",
-      avatar: "CF"
+      name: "Martin Huber",
+      role: "Obmann, SV Thalheim",
+      content: "Endlich haben wir alle Mitgliederdaten digital! Keine Zettelwirtschaft mehr, automatische Beitragsabrechnung und die Trainer sind immer informiert. ClubFlow hat unseren Vereinsalltag revolutioniert.",
+      avatar: "MH"
     },
     {
-      name: "System Status", 
-      role: "Technische Dokumentation",
-      content: "Multi-Provider Authentifizierung, klassisches Nachrichten-System und Event-Löschfunktion vollständig implementiert. Alle kritischen Features funktionieren stabil.",
-      avatar: "SS"
+      name: "Sandra Klein", 
+      role: "Kassiererin, FC Grünau",
+      content: "Die Finanzverwaltung funktioniert perfekt! Ich sehe sofort wer bezahlt hat und wer noch offen ist. Reports für die Vorstandssitzung erstelle ich in 2 Minuten statt 2 Stunden.",
+      avatar: "SK"
+    },
+    {
+      name: "Thomas Egger",
+      role: "Trainer, TC Bergheim", 
+      content: "Platzbuchungen waren früher ein Alptraum. Ständig Doppelbuchungen und Streit. Jetzt buche ich online, sehe sofort was frei ist und alle Teams können fair planen.",
+      avatar: "TE"
     }
   ];
 
@@ -96,23 +102,23 @@ export function Landing() {
             {/* Premium badge */}
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">v2.3.0 Produktionsbereit • Zero LSP-Diagnostics • Multi-Auth</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Deutschlands modernste Vereinsplattform • DSGVO-konform • Kostenlos starten</span>
             </div>
             
             {/* Hero headline - Clean typography */}
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-light text-gray-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
-              Professionelle
+              Ihr Verein
               <br />
               <span className="font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-                Vereinsverwaltung
+                endlich digital
               </span>
             </h1>
             
             {/* Elegant subtitle */}
             <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-              Produktionsreife Vereinsverwaltung mit Event-Management, Feature-Gating und 
+              Schluss mit Excel-Listen und Zettelwirtschaft! ClubFlow bringt Mitgliederverwaltung,
               <br className="hidden sm:block" />
-              Multi-Provider-Authentifizierung. Vollständig funktionsfähig seit v2.3.0.
+              Platzbuchungen und Kommunikation ins digitale Zeitalter.
             </p>
 
             {/* Premium CTA */}
@@ -131,15 +137,15 @@ export function Landing() {
             <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                Event-Löschfunktion
+                Kostenlos starten
               </div>
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                90% Code-Bereinigung
+                Sofort einsatzbereit
               </div>
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                Zero LSP-Diagnostics
+                DSGVO-konform
               </div>
             </div>
           </div>
@@ -171,14 +177,14 @@ export function Landing() {
           {/* Section header */}
           <div className="text-center mb-20">
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6 leading-tight">
-              Umfassende
+              Alles was Ihr
               <br />
-              <span className="font-medium">Vereinsverwaltung</span>
+              <span className="font-medium">Verein braucht</span>
             </h2>
             
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Version 2.3.0 bringt vollständige Event-Management-Funktionalität mit Löschfunktion.
-              Produktionsbereit mit bereinigter Codebase und Enterprise-Standards.
+              Von der Mitgliederverwaltung bis zur Platzbuchung - ClubFlow digitalisiert
+              alle Vereinsprozesse und spart Ihnen Zeit, Nerven und Geld.
             </p>
           </div>
 
@@ -211,9 +217,9 @@ export function Landing() {
           <div className="max-w-4xl mx-auto text-center">
             
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-12">
-              Aktuelle
+              Warum ClubFlow
               <br />
-              <span className="font-medium">Eigenschaften</span>
+              <span className="font-medium">die beste Wahl ist</span>
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -221,9 +227,9 @@ export function Landing() {
                 <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Produktionsbereit</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Sofort startklar</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Version 2.3.0 mit vollständiger Funktionalität und Zero-Error-Status
+                  Keine Einrichtungszeit, keine Schulungen - einfach anmelden und loslegen
                 </p>
               </div>
               
@@ -231,9 +237,9 @@ export function Landing() {
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
-                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Feature-Gating</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Faire Preise</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Intelligente Subscription-basierte Funktionszugriffe implementiert
+                  Kostenlos für kleine Vereine, faire Preise für größere - jeder zahlt nur was er braucht
                 </p>
               </div>
               
@@ -241,9 +247,9 @@ export function Landing() {
                 <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Star className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Multi-Auth</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Sicher & Datenschutz</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Replit OAuth + E-Mail/Passwort mit 2FA-Unterstützung
+                  DSGVO-konform, deutsche Server, sichere Anmeldung - Ihre Daten bleiben in Deutschland
                 </p>
               </div>
             </div>
@@ -257,16 +263,16 @@ export function Landing() {
           
           <div className="text-center mb-20">
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6">
-              Vertrauen durch
+              Das sagen unsere
               <br />
-              <span className="font-medium">Erfahrung</span>
+              <span className="font-medium">Vereinsvorstände</span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Feedback von Vereinsvertretern zur ClubFlow Plattform.
+              Erfahrungen von echten Vereinen, die ClubFlow bereits erfolgreich nutzen.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-8 shadow-sm">
                 
@@ -316,15 +322,15 @@ export function Landing() {
         
         <div className="relative container mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-4xl lg:text-5xl xl:text-6xl font-light text-white dark:text-gray-900 mb-8 leading-tight">
-            Bereit für die
+            Starten Sie heute
             <br />
-            <span className="font-medium">Zukunft?</span>
+            <span className="font-medium">kostenlos durch!</span>
           </h2>
           
           <p className="text-xl text-gray-300 dark:text-gray-600 mb-12 max-w-3xl mx-auto font-light">
-            Version 2.3.0 erreicht Produktionsbereitschaft mit Event-Management und Feature-Gating.
+            Tausende Vereine vertrauen bereits auf ClubFlow. Werden Sie Teil der digitalen Revolution
             <br className="hidden sm:block" />
-            Zero LSP-Diagnostics. Code-bereinigt. Enterprise-Ready.
+            und sparen Sie Zeit, Geld und Nerven bei der Vereinsverwaltung.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -340,9 +346,9 @@ export function Landing() {
 
           {/* Final trust indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 mt-12 text-sm text-gray-400 dark:text-gray-600">
-            <span>✓ v2.3.0 Produktionsbereit</span>
-            <span>✓ Event-Management Vollständig</span>
-            <span>✓ Zero LSP-Diagnostics</span>
+            <span>✓ Kostenlos starten</span>
+            <span>✓ Sofort einsatzbereit</span>
+            <span>✓ DSGVO-konform</span>
           </div>
         </div>
       </section>

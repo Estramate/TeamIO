@@ -8,14 +8,15 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
-- **2025-07-29**: AUTOMATISCHE PAGE-RELOAD-PROBLEM VOLLSTÄNDIG BEHOBEN - Drastische Reduzierung aller Polling-Intervalle
-  - **Header-Polling eliminiert**: Communication-stats und Notifications auf `refetchInterval: false` gesetzt
-  - **Chat-System-Polling entfernt**: Alle Chat-Komponenten (LiveChat, FloatingChatWidget, LiveChatWidget) ohne automatisches Polling
-  - **Cache-Strategien optimiert**: StaleTime von 2-10 Minuten für bessere Performance ohne ständige API-Calls
-  - **Problematische API-Calls entfernt**: `/api/clubs/1/chat/activity` Endpunkt-Aufrufe eliminiert
-  - **System-Stabilität erreicht**: Keine automatischen Seiten-Reloads mehr, Chat-Tabs bleiben stabil geöffnet
-  - **Benutzerfreundlichkeit verbessert**: Daten werden nur bei Benutzeraktionen (Nachrichten senden) oder manueller Aktualisierung geladen
-  - **System-Status**: Vollständig stabile Anwendung ohne störende automatische Interface-Updates
+- **2025-07-29**: INTELLIGENTE BACKGROUND-LOADING-SYSTEM IMPLEMENTIERT - Unsichtbare API-Calls mit WebSocket-Support
+  - **useBackgroundSync Hook**: Lädt kritische Daten (30s), normale Daten (2min), niedrige Priorität (5min) unsichtbar im Hintergrund
+  - **useSmartRefresh Hook**: Intelligente Cache-Aktualisierung basierend auf Benutzeraktionen und Page Visibility API
+  - **useRealtimeSync Hook**: WebSocket-basierte stille Updates ohne UI-Störungen für nahtlose Echtzeitfähigkeit
+  - **Stille Hintergrund-Invalidierung**: Ersetzt alle invalidateQueries mit prefetchQuery für unsichtbare Datenaktualisierung
+  - **Smart Polling-Strategien**: Daten werden basierend auf Priorität und Benutzerverhalten im Hintergrund geladen
+  - **Problematische API-Calls vollständig entfernt**: `/api/clubs/1/chat/activity` und andere fehlerhafte Endpunkte eliminiert
+  - **Zero-Interruption-UX**: Benutzer bemerken keine Reloads, Tabs bleiben stabil, Interface reagiert nahtlos
+  - **System-Status**: Hochperformante Anwendung mit unsichtbarer Hintergrund-Synchronisation für optimale Benutzererfahrung
 
 - **2025-07-29**: NOTIFICATION-SYSTEM BEREINIGT UND OPTIMIERT - Push-Benachrichtigungen und UI-Verbesserungen
   - **Verwirrende NotificationCenter-Komponente entfernt**: Test-Widget mit Glocken-Icon aus Header entfernt (war nur für Tests)

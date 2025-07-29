@@ -8,6 +8,7 @@ import { MessageCircle, Send, Users, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiRequest } from '@/lib/queryClient';
 import { useClub } from '@/hooks/use-club';
+import { useSmartRefresh } from '@/hooks/use-smart-refresh';
 
 interface ChatRoom {
   id: number;
@@ -34,6 +35,7 @@ interface ChatMessage {
 export default function LiveChat() {
   const { selectedClub } = useClub();
   const queryClient = useQueryClient();
+  const { refreshAfterAction } = useSmartRefresh();
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
@@ -64,7 +66,8 @@ export default function LiveChat() {
         body: JSON.stringify(roomData),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms`] });
+      // Stille Hintergrund-Aktualisierung statt invalidateQueries
+      refreshAfterAction('chat');
       setNewRoomName('');
       setShowCreateRoom(false);
     },
@@ -78,9 +81,8 @@ export default function LiveChat() {
         body: JSON.stringify(messageData),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ 
-        queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms/${selectedRoom?.id}/messages`] 
-      });
+      // Stille Hintergrund-Aktualisierung nach Nachricht senden
+      refreshAfterAction('chat');
       setNewMessage('');
     },
   });
@@ -90,21 +92,7 @@ export default function LiveChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Update user activity periodically
-  useEffect(() => {
-    if (!selectedClub?.id) return;
-    
-    const updateActivity = () => {
-      apiRequest(`/api/clubs/${selectedClub.id}/chat/activity`, {
-        method: 'POST',
-      }).catch(console.error);
-    };
-    
-    updateActivity();
-    const interval = setInterval(updateActivity, 60000); // Every minute
-    
-    return () => clearInterval(interval);
-  }, [selectedClub?.id]);
+  // Activity tracking entfernt - verursachte API-Fehler
 
   const handleCreateRoom = () => {
     if (!newRoomName.trim()) return;

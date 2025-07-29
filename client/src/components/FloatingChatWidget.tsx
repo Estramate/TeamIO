@@ -9,6 +9,7 @@ import { MessageCircle, Send, X, Minus, Maximize2, Search, Users, Plus } from 'l
 import { cn } from '@/lib/utils';
 import { apiRequest } from '@/lib/queryClient';
 import { useClub } from '@/hooks/use-club';
+import { useSmartRefresh } from '@/hooks/use-smart-refresh';
 
 interface ChatRoom {
   id: number;
@@ -35,6 +36,7 @@ interface ChatMessage {
 export default function FloatingChatWidget() {
   const { selectedClub } = useClub();
   const queryClient = useQueryClient();
+  const { refreshAfterAction } = useSmartRefresh();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
@@ -71,7 +73,8 @@ export default function FloatingChatWidget() {
         body: JSON.stringify(roomData),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms`] });
+      // Stille Hintergrund-Aktualisierung statt invalidateQueries
+      refreshAfterAction('chat');
       setNewRoomName('');
       setShowCreateRoom(false);
     },
@@ -85,9 +88,8 @@ export default function FloatingChatWidget() {
         body: JSON.stringify(messageData),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ 
-        queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms/${selectedRoom?.id}/messages`] 
-      });
+      // Stille Hintergrund-Aktualisierung nach Nachricht senden
+      refreshAfterAction('chat');
       setNewMessage('');
     },
   });

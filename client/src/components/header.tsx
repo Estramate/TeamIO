@@ -14,6 +14,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataSyncIndicatorCompact } from "@/components/DataSyncIndicator";
+import { useBackgroundSync } from "@/hooks/use-background-sync";
+import { useSmartRefresh } from "@/hooks/use-smart-refresh";
+import { useRealtimeSync } from "@/hooks/use-realtime-sync";
 
 
 interface HeaderProps {
@@ -23,6 +26,22 @@ interface HeaderProps {
 export default function Header({ onMenuClick }: HeaderProps) {
   const { title, subtitle } = usePage();
   const { selectedClub } = useClub();
+  
+  // Background Sync - lädt Daten unsichtbar im Hintergrund
+  useBackgroundSync({ 
+    enabled: true,
+    intervals: {
+      critical: 30 * 1000,   // Notifications alle 30 Sek
+      normal: 2 * 60 * 1000, // Communication alle 2 Min
+      low: 5 * 60 * 1000     // Chat alle 5 Min
+    }
+  });
+  
+  // Smart Refresh für intelligente Updates
+  const { refreshAfterAction } = useSmartRefresh();
+  
+  // Real-time Sync für nahtlose WebSocket-Updates
+  const { isConnected, triggerUpdate } = useRealtimeSync();
 
   // Get unread notifications count - reduzierte Aktualisierung
   const { data: stats } = useQuery<{

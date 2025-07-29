@@ -378,11 +378,25 @@ export default function Calendar() {
         endHour = hours + minutes / 60;
       }
     } else if (event.source === 'event') {
-      // DB: UTC Zeit, Frontend: Lokale Zeit für Kalender-Darstellung
+      // FIX: Events haben startTime und endTime als vollständige Datetime-Strings
       const startTime = new Date(event.startTime || event.startDate || event.date);
       const endTime = new Date(event.endTime || event.endDate || event.date);
       
-      // Verwende lokale Zeit für Kalender (nicht UTC)
+      // DEBUG: Prüfe ob endTime korrekt geparst wird
+      console.log('🔧 EVENT HEIGHT FIX:', {
+        id: event.id,
+        title: event.title,
+        startTimeRaw: event.startTime,
+        endTimeRaw: event.endTime,
+        startParsed: startTime.toString(),
+        endParsed: endTime.toString(),
+        startHours: startTime.getHours(),
+        endHours: endTime.getHours(),
+        isValidStart: !isNaN(startTime.getTime()),
+        isValidEnd: !isNaN(endTime.getTime())
+      });
+      
+      // Verwende lokale Zeit für Kalender
       startHour = startTime.getHours() + startTime.getMinutes() / 60;
       endHour = endTime.getHours() + endTime.getMinutes() / 60;
     }
@@ -1458,15 +1472,28 @@ export default function Calendar() {
                                     // Event bearbeiten
                                     setEditingEvent(event);
                                     
-                                    // Setze Formular-Daten für Event-Modal
+                                    // FIX: Event-Modal korrekt befüllen
+                                    console.log('🔧 MODAL DEBUG - Event data:', event);
+                                    
+                                    // Sichere Datum-Formatierung
+                                    const startDate = new Date(event.startTime);
+                                    const endDate = new Date(event.endTime);
+                                    
+                                    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                                      console.error('❌ Invalid dates for event:', { startTime: event.startTime, endTime: event.endTime });
+                                      return;
+                                    }
+                                    
                                     const formData = {
                                       title: event.title || '',
                                       description: event.description || '',
-                                      startDate: format(new Date(event.startTime), 'yyyy-MM-dd\'T\'HH:mm'),
-                                      endDate: format(new Date(event.endTime), 'yyyy-MM-dd\'T\'HH:mm'),
-                                      teamId: event.teamId ? String(event.teamId) : null,
+                                      startDate: format(startDate, 'yyyy-MM-dd\'T\'HH:mm'),
+                                      endDate: format(endDate, 'yyyy-MM-dd\'T\'HH:mm'),
+                                      teamId: event.teamId || null,
                                       location: event.location || '',
                                     };
+                                    
+                                    console.log('🔧 MODAL FORM DATA:', formData);
                                     
                                     eventForm.reset(formData);
                                     setShowEventModal(true);

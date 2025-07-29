@@ -378,25 +378,13 @@ export default function Calendar() {
         endHour = hours + minutes / 60;
       }
     } else if (event.source === 'event') {
-      // FIX: For events, verwende UTC-Zeit für korrekte Höhenberechnung (gleich wie bei der Zeitanzeige)
+      // DB: UTC Zeit, Frontend: Lokale Zeit für Kalender-Darstellung
       const startTime = new Date(event.startTime || event.startDate || event.date);
       const endTime = new Date(event.endTime || event.endDate || event.date);
       
-      // Verwende UTC-Stunden genau wie bei der Zeitanzeige-Korrektur
-      startHour = startTime.getUTCHours() + startTime.getUTCMinutes() / 60;
-      endHour = endTime.getUTCHours() + endTime.getUTCMinutes() / 60;
-      
-      console.log('📏 EVENT HEIGHT DEBUG:', {
-        id: event.id,
-        title: event.title,
-        startTimeRaw: event.startTime,
-        endTimeRaw: event.endTime,
-        startUTCHours: startTime.getUTCHours(),
-        endUTCHours: endTime.getUTCHours(),
-        calculatedStartHour: startHour,
-        calculatedEndHour: endHour,
-        duration: endHour - startHour
-      });
+      // Verwende lokale Zeit für Kalender (nicht UTC)
+      startHour = startTime.getHours() + startTime.getMinutes() / 60;
+      endHour = endTime.getHours() + endTime.getMinutes() / 60;
     }
     
     // Clamp to 6:00-24:00 range
@@ -812,9 +800,9 @@ export default function Calendar() {
       const startDate = new Date(booking.startTime);
       const endDate = booking.endTime ? new Date(booking.endTime) : null;
       
-      // Korrigiere Timezone-Problem: Verwende UTC-Stunden direkt statt lokale Konvertierung
-      const displayTime = `${startDate.getUTCHours().toString().padStart(2, '0')}:${startDate.getUTCMinutes().toString().padStart(2, '0')}`;
-      const displayEndTime = endDate ? `${endDate.getUTCHours().toString().padStart(2, '0')}:${endDate.getUTCMinutes().toString().padStart(2, '0')}` : null;
+      // DB: UTC Zeit, Frontend: Lokale Zeit (wie gewünscht)
+      const displayTime = format(startDate, 'HH:mm');
+      const displayEndTime = endDate ? format(endDate, 'HH:mm') : null;
 
       const processedEvent = {
         ...booking,
@@ -828,17 +816,8 @@ export default function Calendar() {
         facilityName: getFacilityName(booking.facilityId)
       };
       
-      // Debug: Check corrected time formatting
-      console.log('🕐 CORRECTED TIME DEBUG:', {
-        id: booking.id,
-        title: booking.title,
-        startTimeRaw: booking.startTime,
-        endTimeRaw: booking.endTime,
-        startUTCHours: startDate.getUTCHours(),
-        endUTCHours: endDate?.getUTCHours(),
-        displayTime: displayTime,
-        displayEndTime: displayEndTime
-      });
+      // Clean time display without debug spam
+      // DB speichert UTC, Frontend zeigt lokale Zeit
       
       return processedEvent;
     })
@@ -1504,15 +1483,12 @@ export default function Calendar() {
                                         endValid: !isNaN(endDate.getTime())
                                       });
                                       
-                                      // FIX: Verwende UTC-Zeit für Formular um Timezone-Probleme zu vermeiden
-                                      const startDateUTC = `${startDate.getUTCFullYear()}-${(startDate.getUTCMonth() + 1).toString().padStart(2, '0')}-${startDate.getUTCDate().toString().padStart(2, '0')}T${startDate.getUTCHours().toString().padStart(2, '0')}:${startDate.getUTCMinutes().toString().padStart(2, '0')}`;
-                                      const endDateUTC = `${endDate.getUTCFullYear()}-${(endDate.getUTCMonth() + 1).toString().padStart(2, '0')}-${endDate.getUTCDate().toString().padStart(2, '0')}T${endDate.getUTCHours().toString().padStart(2, '0')}:${endDate.getUTCMinutes().toString().padStart(2, '0')}`;
-
+                                      // Formular: Zeige lokale Zeit (DB speichert automatisch als UTC)
                                       const formData = {
                                         title: event.title || '',
                                         description: event.description || '',
-                                        startDate: startDateUTC,
-                                        endDate: endDateUTC,
+                                        startDate: format(new Date(event.startTime), 'yyyy-MM-dd\'T\'HH:mm'),
+                                        endDate: format(new Date(event.endTime), 'yyyy-MM-dd\'T\'HH:mm'),
                                         teamId: event.teamId ? String(event.teamId) : null,
                                         location: event.location || '',
                                       };

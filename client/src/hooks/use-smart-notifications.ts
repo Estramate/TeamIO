@@ -162,21 +162,32 @@ export function useSmartNotifications() {
   useEffect(() => {
     if (!selectedClub?.id) return;
 
+    console.log('🔔 Club switch check:', {
+      currentClubId: selectedClub.id,
+      previousClubId: prevClubIdRef.current,
+      hasInitialized: hasInitializedRef.current,
+      clubName: selectedClub.name
+    });
+
     // On first load, just store the current club ID without showing notification
     if (!hasInitializedRef.current) {
       prevClubIdRef.current = selectedClub.id;
       hasInitializedRef.current = true;
+      console.log('🔔 First load - no notification');
       return;
     }
 
     // Only show notification if the club ID actually changed
     if (prevClubIdRef.current !== null && prevClubIdRef.current !== selectedClub.id) {
+      console.log('🔔 Club actually changed - showing notification');
       showNotification({
         title: `Verein gewechselt`,
         message: `Sie haben zu "${selectedClub.name}" gewechselt`,
         type: 'info',
         priority: 'low'
       });
+    } else {
+      console.log('🔔 Same club - no notification needed');
     }
 
     // Update the previous club ID

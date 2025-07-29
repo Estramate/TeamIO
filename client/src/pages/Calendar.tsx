@@ -8,7 +8,7 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -1261,8 +1261,8 @@ export default function Calendar() {
                                   location: event.location
                                 });
                                 
-                                setEditingEvent(event);
-                                setShowEventModal(true);
+                                // FIX: Verwende openEventModal Helper für konsistente Modal-Befüllung
+                                openEventModal(event);
                               } else if (event.source === 'booking') {
                                 // Reset form with booking data for day view - handle endTime correctly
                                 const formatSafeDate = (dateValue: any) => {
@@ -1504,8 +1504,8 @@ export default function Calendar() {
                                     
                                     console.log('🔧 TIMELINE MODAL FORM DATA:', formData);
                                     
-                                    eventForm.reset(formData);
-                                    setShowEventModal(true);
+                                    // FIX: Verwende openEventModal Helper für konsistente Modal-Befüllung  
+                                    openEventModal(event);
                                   } else if (event.source === 'booking') {
                                     // Reset form with booking data - handle endTime correctly
                                     const formatSafeDate = (dateValue: any) => {
@@ -1742,6 +1742,9 @@ export default function Calendar() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingEvent ? 'Termin bearbeiten' : 'Neuer Termin'}</DialogTitle>
+            <DialogDescription>
+              {editingEvent ? 'Bearbeiten Sie die Details des ausgewählten Termins.' : 'Erstellen Sie einen neuen Termin für Ihren Verein.'}
+            </DialogDescription>
           </DialogHeader>
           <Form {...eventForm}>
             <form onSubmit={eventForm.handleSubmit(handleEventSubmit)} className="space-y-4">

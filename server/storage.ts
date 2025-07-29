@@ -951,6 +951,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async checkBookingAvailability(facilityId: number, startTime: Date, endTime: Date, excludeBookingId?: number): Promise<{ available: boolean; maxConcurrent: number; currentBookings: number; conflictingBookings: any[] }> {
+    // Skip availability check for events (facilityId = null)
+    if (facilityId === null || facilityId === undefined) {
+      return { available: true, maxConcurrent: 999, currentBookings: 0, conflictingBookings: [] };
+    }
+    
     // Get facility to check maxConcurrentBookings
     const [facility] = await db.select().from(facilities).where(eq(facilities.id, facilityId));
     if (!facility) {

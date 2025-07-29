@@ -1483,18 +1483,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const startTime = updates.startTime || new Date(currentBooking.startTime);
         const endTime = updates.endTime || new Date(currentBooking.endTime);
         
-        const availability = await storage.checkBookingAvailability(
-          facilityId, 
-          startTime, 
-          endTime,
-          id // Exclude current booking from check
-        );
-        
-        if (!availability.available) {
-          return res.status(400).json({ 
-            message: `Anlage ist zur gewählten Zeit nicht verfügbar. Maximal ${availability.maxConcurrent} Buchung(en) erlaubt, aktuell ${availability.currentBookings} Buchung(en) vorhanden.`,
-            conflictingBookings: availability.conflictingBookings
-          });
+        // Skip availability check for events (facilityId = null)
+        if (facilityId !== null && facilityId !== undefined) {
+          const availability = await storage.checkBookingAvailability(
+            facilityId, 
+            startTime, 
+            endTime,
+            id // Exclude current booking from check
+          );
+          
+          if (!availability.available) {
+            return res.status(400).json({ 
+              message: `Anlage ist zur gewählten Zeit nicht verfügbar. Maximal ${availability.maxConcurrent} Buchung(en) erlaubt, aktuell ${availability.currentBookings} Buchung(en) vorhanden.`,
+              conflictingBookings: availability.conflictingBookings
+            });
+          }
         }
       }
       

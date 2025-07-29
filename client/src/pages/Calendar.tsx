@@ -382,19 +382,7 @@ export default function Calendar() {
       const startTime = new Date(event.startTime || event.startDate || event.date);
       const endTime = new Date(event.endTime || event.endDate || event.date);
       
-      // DEBUG: Prüfe ob endTime korrekt geparst wird
-      console.log('🔧 EVENT HEIGHT FIX:', {
-        id: event.id,
-        title: event.title,
-        startTimeRaw: event.startTime,
-        endTimeRaw: event.endTime,
-        startParsed: startTime.toString(),
-        endParsed: endTime.toString(),
-        startHours: startTime.getHours(),
-        endHours: endTime.getHours(),
-        isValidStart: !isNaN(startTime.getTime()),
-        isValidEnd: !isNaN(endTime.getTime())
-      });
+      // Event-Höhen funktionieren jetzt korrekt
       
       // Verwende lokale Zeit für Kalender
       startHour = startTime.getHours() + startTime.getMinutes() / 60;
@@ -829,7 +817,8 @@ export default function Calendar() {
         color: getBookingTypeColor(booking.type),
         icon: getBookingTypeIcon(booking.type),
         typeLabel: getBookingTypeLabel(booking.type),
-        facilityName: getFacilityName(booking.facilityId)
+        // FIX: Events zeigen "location" statt "facilityName"
+        facilityName: booking.type === 'event' ? booking.location : getFacilityName(booking.facilityId)
       };
       
       // Clean time display without debug spam
@@ -1474,10 +1463,7 @@ export default function Calendar() {
                                     // Event bearbeiten
                                     setEditingEvent(event);
                                     
-                                    // FIX: Event-Modal korrekt befüllen
-                                    console.log('🔧 MODAL DEBUG - Event data:', event);
-                                    
-                                    // Sichere Datum-Formatierung
+                                    // Event-Modal befüllen
                                     const startDate = new Date(event.startTime);
                                     const endDate = new Date(event.endTime);
                                     
@@ -1491,11 +1477,11 @@ export default function Calendar() {
                                       description: event.description || '',
                                       startDate: format(startDate, 'yyyy-MM-dd\'T\'HH:mm'),
                                       endDate: format(endDate, 'yyyy-MM-dd\'T\'HH:mm'),
-                                      teamId: event.teamId || null,
-                                      location: event.location || '',
+                                      teamId: event.teamId ? String(event.teamId) : '',
+                                      location: event.location || event.facilityName || '',
                                     };
                                     
-                                    console.log('🔧 MODAL FORM DATA:', formData);
+                                    // Formular mit Event-Daten befüllen
                                     
                                     eventForm.reset(formData);
                                     setShowEventModal(true);

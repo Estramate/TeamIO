@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useClub } from '@/hooks/use-club';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -19,6 +19,10 @@ export function useSmartNotifications() {
   const { selectedClub } = useClub();
   const { showNotification } = useNotifications();
   const queryClient = useQueryClient();
+  
+  // Track the previous club ID to detect actual club switches
+  const prevClubIdRef = useRef<number | null>(null);
+  const hasInitializedRef = useRef(false);
 
   // Monitor new messages
   const { data: messages = [], dataUpdatedAt: messagesUpdatedAt } = useQuery<any[]>({
@@ -154,17 +158,30 @@ export function useSmartNotifications() {
     };
   }, [showNotification]);
 
-  // Club switching notifications
+  // Club switching notifications - only trigger on actual club changes
   useEffect(() => {
-    if (!selectedClub) return;
+    if (!selectedClub?.id) return;
 
-    showNotification({
-      title: `Verein gewechselt`,
-      message: `Sie haben zu "${selectedClub.name}" gewechselt`,
-      type: 'info',
-      priority: 'low'
-    });
-  }, [selectedClub?.id, showNotification]);
+    // On first load, just store the current club ID without showing notification
+    if (!hasInitializedRef.current) {
+      prevClubIdRef.current = selectedClub.id;
+      hasInitializedRef.current = true;
+      return;
+    }
+
+    // Only show notification if the club ID actually changed
+    if (prevClubIdRef.current !== null && prevClubIdRef.current !== selectedClub.id) {
+      showNotification({
+        title: `Verein gewechselt`,
+        message: `Sie haben zu "${selectedClub.name}" gewechselt`,
+        type: 'info',
+        priority: 'low'
+      });
+    }
+
+    // Update the previous club ID
+    prevClubIdRef.current = selectedClub.id;
+  }, [selectedClub?.id, selectedClub?.name, showNotification]);
 
   return {
     // Manually trigger specific notifications

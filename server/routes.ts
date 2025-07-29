@@ -1553,16 +1553,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/clubs/:clubId/events', isAuthenticated, requiresClubMembership, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     
-    // Validate event data
+    console.log('Event creation request:', req.body);
+    
+    // Validate event data - Team is optional for events
     const eventSchema = z.object({
       title: z.string().min(1, "Titel ist erforderlich"),
-      description: z.string().optional(),
+      description: z.string().optional().default(""),
       startTime: z.string().min(1, "Startzeit ist erforderlich"),
       endTime: z.string().min(1, "Endzeit ist erforderlich"),
-      location: z.string().optional(),
+      location: z.string().optional().default(""),
       type: z.string().default("event"),
-      teamId: z.number().optional(),
-      notes: z.string().optional(),
+      teamId: z.number().optional().nullable(), // Allow null for "Kein Team"
+      notes: z.string().optional().default(""),
     });
 
     const validatedData = eventSchema.parse(req.body);
@@ -1572,15 +1574,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       clubId,
       startTime: new Date(validatedData.startTime),
       endTime: new Date(validatedData.endTime),
+      facilityId: null, // Events don't have facilities
+      teamId: validatedData.teamId || null, // Handle "Kein Team" case
     };
 
+    console.log('Creating event with data:', eventData);
+    
     const event = await storage.createEvent(eventData);
     
-    logger.info(`Event created: ${event.title} for club ${clubId}`, { 
-      eventId: event.id, 
-      clubId, 
-      userId: req.user.id 
-    });
+    console.log('Event created successfully:', event.id);
     
     res.status(201).json(event);
   }));

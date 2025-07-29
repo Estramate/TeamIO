@@ -202,11 +202,7 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
 
   // Debug revenue calculation
   if (analytics && (analytics as any)?.revenue) {
-    console.log('🔍 SUBSCRIPTION MODAL DEBUG - Revenue Calculation:');
-    console.log('Analytics data:', analytics);
-    console.log('Current revenue:', (analytics as any)?.revenue?.current);
-    console.log('Previous revenue:', (analytics as any)?.revenue?.previous);
-    console.log('Full analytics object:', JSON.stringify(analytics, null, 2));
+
   }
 
   return (
@@ -368,9 +364,7 @@ function PriceAdjustmentModal({ open, onClose }: PriceAdjustmentModalProps) {
 
   // Debug subscription plans data
   if (subscriptionPlans) {
-    console.log('🔍 PRICE MODAL DEBUG - Subscription Plans:', subscriptionPlans);
-    console.log('🔍 Plans length:', subscriptionPlans?.length);
-    console.log('🔍 First plan:', subscriptionPlans?.[0]);
+
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -539,9 +533,8 @@ function PlanLimitsModal({ open, onClose }: PlanLimitsModalProps) {
 
   // Debug subscription plans data
   if (subscriptionPlans) {
-    console.log('🔍 LIMITS MODAL DEBUG - Subscription Plans:', subscriptionPlans);
-    console.log('🔍 Plans length:', subscriptionPlans?.length);
-    console.log('🔍 First plan:', subscriptionPlans?.[0]);
+
+
   }
 
   // Update form when plan is selected

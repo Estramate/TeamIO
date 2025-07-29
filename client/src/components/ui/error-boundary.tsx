@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo });
     
     // Log error to monitoring service
-    console.error('Error caught by boundary:', error, errorInfo);
+
     
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);

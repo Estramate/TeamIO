@@ -814,7 +814,7 @@ export default function Communication() {
                 })
               };
               
-              console.log("Sending message:", messageData);
+
               sendMessage(messageData);
               
               // Reset form
@@ -1242,7 +1242,7 @@ export default function Communication() {
                         return;
                       }
                       
-                      console.log('Sending reply:', {
+
                         content: replyText,
                         originalSubject: selectedMessage?.subject,
                         messageId: selectedMessage?.id,

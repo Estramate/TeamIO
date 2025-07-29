@@ -498,8 +498,7 @@ export default function Calendar() {
     setResizeStartY(e.clientY);
     setResizeStartTime(new Date(event.startTime));
     
-    console.log('Resize start - original event:', event);
-    console.log('Original startTime:', event.startTime, 'endTime:', event.endTime);
+
     
     if (event.endTime) {
       if (typeof event.endTime === 'string' && event.endTime.includes(':') && !event.endTime.includes('T')) {
@@ -508,11 +507,11 @@ export default function Calendar() {
         const startDate = new Date(event.startTime);
         const endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), hours, minutes || 0, 0, 0);
         setResizeEndTime(endDate);
-        console.log('Parsed time string endTime:', endDate);
+
       } else {
         const endDate = new Date(event.endTime);
         setResizeEndTime(endDate);
-        console.log('Parsed ISO endTime:', endDate);
+
       }
     }
     
@@ -554,18 +553,15 @@ export default function Calendar() {
     const hourDelta = deltaY / 50;
     const snappedHourDelta = Math.round(hourDelta * 2) / 2;
     
-    console.log('Resize end - deltaY:', deltaY, 'hourDelta:', hourDelta, 'snappedHourDelta:', snappedHourDelta);
-    console.log('Resize direction:', resizeDirection, 'resizeStartTime:', resizeStartTime, 'resizeEndTime:', resizeEndTime);
+
     
     let newStartTime = resizeStartTime;
     let newEndTime = resizeEndTime;
     
     if (resizeDirection === 'start' && resizeStartTime) {
       newStartTime = new Date(resizeStartTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
-      console.log('New start time:', newStartTime);
     } else if (resizeDirection === 'end' && resizeEndTime) {
       newEndTime = new Date(resizeEndTime.getTime() + snappedHourDelta * 60 * 60 * 1000);
-      console.log('New end time:', newEndTime);
     }
     
     // Only handle end time resizing now
@@ -574,11 +570,9 @@ export default function Calendar() {
       if (newEndTime <= newStartTime) {
         const minDuration = 30 * 60 * 1000; // 30 minutes minimum
         newEndTime = new Date(newStartTime.getTime() + minDuration);
-        console.log('Auto-adjusted end time to maintain minimum duration:', newEndTime);
       }
       
-      console.log('Updating booking with new end time:', { start: newStartTime, end: newEndTime });
-      console.log('Timezone info - start offset:', newStartTime.getTimezoneOffset(), 'end offset:', newEndTime.getTimezoneOffset());
+
       
       const updateData = {
         title: resizingEvent.title,
@@ -641,7 +635,7 @@ export default function Calendar() {
     setIsCheckingCalendarAvailability(true);
     
     try {
-      console.log('Checking availability...', { facilityId, startTime, endTime });
+
       
       const response = await apiRequest("POST", `/api/clubs/${selectedClub?.id}/bookings/check-availability`, {
         facilityId: parseInt(facilityId),
@@ -651,7 +645,7 @@ export default function Calendar() {
       });
       
       const data = await response.json();
-      console.log('Availability check result:', data);
+
       
       setCalendarAvailabilityStatus({
         available: data.available || false,
@@ -662,7 +656,7 @@ export default function Calendar() {
           : `Nicht verfügbar (${data.currentBookings || 0}/${data.maxConcurrent || 1} Buchungen)`
       });
     } catch (error) {
-      console.error('Availability check error:', error);
+
       setCalendarAvailabilityStatus({
         available: false,
         message: "Fehler bei der Verfügbarkeitsprüfung"
@@ -676,7 +670,7 @@ export default function Calendar() {
     e.preventDefault();
     if (!draggedEvent) return;
 
-    console.log('Drag & Drop - Original event:', draggedEvent);
+
 
     const oldStartTime = new Date(draggedEvent.startTime || draggedEvent.date);
     
@@ -705,7 +699,7 @@ export default function Calendar() {
         oldEndTime = new Date(draggedEvent.date);
       }
     } catch (error) {
-      console.warn('Error calculating duration, using default:', error);
+
     }
 
     let newStartTime: Date;
@@ -722,12 +716,6 @@ export default function Calendar() {
     }
 
     const newEndTime = new Date(newStartTime.getTime() + duration);
-    
-    console.log('Drag & Drop - New times:', {
-      start: newStartTime.toISOString(),
-      end: newEndTime.toISOString(),
-      duration: duration / (60 * 60 * 1000) + ' hours'
-    });
 
     // Update the event - ensure proper data structure for backend
     if (draggedEvent.source === 'booking') {
@@ -789,14 +777,7 @@ export default function Calendar() {
   // WICHTIG: Events sind jetzt auch in bookings gespeichert (type='event'), daher keine doppelte Anzeige
   const allEvents = [
     ...(bookings as any[]).filter(b => b.status !== 'cancelled').map((booking: any) => {
-      // Debug: Log booking data to see actual times
-      console.log('Processing booking:', {
-        id: booking.id,
-        title: booking.title,
-        startTime: booking.startTime,
-        endTime: booking.endTime,
-        type: booking.type
-      });
+
       
       // FIX: Verwende UTC-Zeiten ohne Timezone-Konvertierung für korrekte Anzeige
       const startDate = new Date(booking.startTime);
@@ -883,18 +864,9 @@ export default function Calendar() {
 
   // Form handlers
   const handleEventSubmit = (data: any) => {
-    console.log('🔧 EVENT SUBMIT DEBUG - Raw Form Data:', data);
-    
     // FIX: Korrekte Zeitzonenkonvertierung für Event-Daten  
     const startTime = new Date(data.startDate);
     const endTime = data.endDate ? new Date(data.endDate) : null;
-    
-    console.log('🔧 EVENT SUBMIT DEBUG - Parsed Dates:', {
-      startTime: startTime.toISOString(),
-      endTime: endTime?.toISOString(),
-      startTimeLocal: startTime.toString(),
-      endTimeLocal: endTime?.toString()
-    });
     
     // Konvertiere startDate/endDate zu startTime/endTime für Backend
     const processedData = {
@@ -917,17 +889,11 @@ export default function Calendar() {
   };
 
   const handleBookingSubmit = (data: any) => {
-    console.log('Calendar booking form submitted:', data);
+
     
     // Create dates in local timezone and convert to proper ISO for backend
     const startTime = new Date(data.startTime);
     const endTime = new Date(data.endTime);
-    
-    console.log('Calendar local datetime inputs:', { startTime, endTime });
-    console.log('Calendar converting to ISO:', { 
-      startTimeISO: startTime.toISOString(), 
-      endTimeISO: endTime.toISOString() 
-    });
     
     const processedData = {
       ...data,
@@ -944,7 +910,7 @@ export default function Calendar() {
       recurringUntil: data.recurring && data.recurringUntil ? new Date(data.recurringUntil).toISOString() : null,
     };
 
-    console.log('Calendar processed data:', processedData);
+
 
     if (editingBooking) {
       updateBookingMutation.mutate({ id: editingBooking.id, data: processedData });
@@ -991,12 +957,8 @@ export default function Calendar() {
     
     if (booking) {
       setEditingBooking(booking);
-      console.log('Opening booking modal with:', booking);
-      console.log('Original startTime:', booking.startTime, 'endTime:', booking.endTime);
-      console.log('Formatted for form:', {
-        startTime: formatForDateTimeLocal(booking.startTime),
-        endTime: formatForDateTimeLocal(booking.endTime)
-      });
+
+
       
       bookingForm.reset({
         title: booking.title,
@@ -1209,7 +1171,7 @@ export default function Calendar() {
                         // Snap to 30-minute intervals
                         const snappedHours = Math.round(totalHours * 2) / 2;
                         const finalHour = snappedHours + 6;
-                        console.log('Day view drop - totalHours:', totalHours, 'snapped:', snappedHours, 'final:', finalHour);
+
                         handleDrop(e, currentDate, finalHour);
                       }}
                     >
@@ -1263,16 +1225,7 @@ export default function Calendar() {
                               if (isResizing) return;
                               
                               if (event.source === 'event') {
-                                // DEBUG: Event-Modal-Problem debuggen
-                                console.log('🔧 EVENT CLICK DEBUG:', {
-                                  event: event,
-                                  source: event.source,
-                                  hasId: !!event.id,
-                                  hasTitle: !!event.title,
-                                  hasStartTime: !!event.startTime,
-                                  hasEndTime: !!event.endTime,
-                                  location: event.location
-                                });
+
                                 
                                 // FIX: Verwende openEventModal Helper für konsistente Modal-Befüllung
                                 openEventModal(event);
@@ -1483,16 +1436,7 @@ export default function Calendar() {
                                   if (isResizing) return;
                                   
                                   if (event.source === 'event') {
-                                    // DEBUG: Event-Modal-Problem debuggen (Timeline View)
-                                    console.log('🔧 TIMELINE EVENT CLICK DEBUG:', {
-                                      event: event,
-                                      source: event.source,
-                                      hasId: !!event.id,
-                                      hasTitle: !!event.title,
-                                      hasStartTime: !!event.startTime,
-                                      hasEndTime: !!event.endTime,
-                                      location: event.location
-                                    });
+
                                     
                                     // Event bearbeiten
                                     setEditingEvent(event);
@@ -1502,7 +1446,7 @@ export default function Calendar() {
                                     const endDate = new Date(event.endTime);
                                     
                                     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-                                      console.error('❌ Invalid dates for event:', { startTime: event.startTime, endTime: event.endTime });
+
                                       return;
                                     }
                                     
@@ -1515,7 +1459,7 @@ export default function Calendar() {
                                       location: event.location || event.facilityName || '',
                                     };
                                     
-                                    console.log('🔧 TIMELINE MODAL FORM DATA:', formData);
+
                                     
                                     // FIX: Verwende openEventModal Helper für konsistente Modal-Befüllung  
                                     openEventModal(event);
@@ -1533,7 +1477,7 @@ export default function Calendar() {
                                     
                                     // Handle endTime - if it's just time string, combine with startTime date
                                     let endTimeFormatted = '';
-                                    console.log('Processing endTime:', event.endTime, 'startTime:', event.startTime);
+
                                     
                                     if (event.endTime) {
                                       if (event.endTime.includes('T') || event.endTime.includes('-')) {
@@ -1547,15 +1491,15 @@ export default function Calendar() {
                                           const endDate = new Date(startDate);
                                           endDate.setHours(hours, minutes || 0, 0, 0);
                                           endTimeFormatted = format(endDate, 'yyyy-MM-dd\'T\'HH:mm');
-                                          console.log('Formatted endTime:', endTimeFormatted);
+
                                         } catch (error) {
-                                          console.error('Error formatting endTime:', error);
+
                                           endTimeFormatted = '';
                                         }
                                       }
                                     }
                                     
-                                    console.log('Final endTimeFormatted:', endTimeFormatted);
+
                                     
                                     bookingForm.reset({
                                       title: event.title || '',

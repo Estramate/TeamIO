@@ -296,7 +296,6 @@ export default function ReportsPage() {
           targets += playerIds.length;
         }
       } catch (error) {
-        console.error('Error parsing fee targets:', error);
         targets = 1;
       }
       
@@ -333,7 +332,6 @@ export default function ReportsPage() {
               targets += playerIds.length;
             }
           } catch (error) {
-            console.error('Error parsing fee targets:', error);
             targets = 1;
           }
           return {

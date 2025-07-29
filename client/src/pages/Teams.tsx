@@ -427,7 +427,7 @@ export default function Teams() {
         });
       }
     } catch (error) {
-      console.error('Error submitting team:', error);
+
     }
   };
 

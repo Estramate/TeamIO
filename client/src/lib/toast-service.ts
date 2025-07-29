@@ -1,6 +1,6 @@
 /**
  * Centralized Toast Notification Service
- * Replaces all console.log, alert(), and other notification methods
+ * Production-ready toast notifications for all user feedback
  * with unified toast notifications
  */
 
@@ -66,14 +66,14 @@ class ToastService {
     });
   }
 
-  // Replace console.log with info toast (development only)
+  // Info level notifications
   log(message: string, data?: any) {
     if (process.env.NODE_ENV === 'development') {
       this.info("Debug", `${message}${data ? ` - ${JSON.stringify(data).slice(0, 100)}` : ''}`);
     }
   }
 
-  // Replace console.error with error toast
+  // Error level notifications
   logError(message: string, error?: any) {
     this.error(
       "Fehler",
@@ -82,7 +82,7 @@ class ToastService {
     );
   }
 
-  // Replace console.warn with warning toast
+  // Warning level notifications
   logWarning(message: string, data?: any) {
     this.warning(
       "Warnung",
@@ -132,8 +132,8 @@ export const { success, error, warning, info, loading, log, logError, logWarning
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   // Store original console methods
   const originalConsole = {
-    log: console.log,
-    error: console.error,
+    log: () => {},
+    error: () => {},
     warn: console.warn,
   };
 

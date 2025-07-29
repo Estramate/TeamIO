@@ -91,7 +91,7 @@ export function PendingMembershipDashboard({ onJoinAnotherClub }: PendingMembers
       window.location.href = '/api/logout';
       
     } catch (error) {
-      console.error('Logout error:', error);
+
       toast({
         title: "Fehler beim Abmelden",
         description: "Versuche direkte Abmeldung...",

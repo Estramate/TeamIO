@@ -81,7 +81,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { data: roles } = useRoles();
   
   // Debug: Log collapsed state
-  console.log('Sidebar collapsed state:', collapsed);
+
 
   const { data: clubs } = useQuery({
     queryKey: ['/api/clubs'],

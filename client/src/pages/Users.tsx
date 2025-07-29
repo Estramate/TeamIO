@@ -75,9 +75,9 @@ const LoadingSpinner = ({ size = 'md', className = '' }: { size?: 'sm' | 'md' | 
 
 // Simple toast service helper
 const toastService = {
-  success: (message: string) => console.log('✅', message),
-  error: (message: string) => console.error('❌', message),
-  info: (message: string) => console.info('ℹ️', message)
+  success: (message: string) => {},
+  error: (message: string) => {},
+  info: (message: string) => {}
 };
 
 export default function Users() {

@@ -35,8 +35,7 @@ class ErrorHandler {
       this.queueError(error, enrichedContext);
     } else {
       // In development, log to console
-      console.error('Error:', error);
-      console.error('Context:', enrichedContext);
+
     }
   }
 
@@ -74,7 +73,7 @@ class ErrorHandler {
       this.performanceQueue.push(performanceMetric);
       this.flushPerformanceQueue();
     } else {
-      console.warn(`Performance Issue - ${metric}:`, value, 'ms', context);
+
     }
   }
 
@@ -112,7 +111,7 @@ class ErrorHandler {
 
       this.errorQueue = [];
     } catch (sendError) {
-      console.error('Failed to send error reports:', sendError);
+
       // Keep errors in queue for retry
     }
   }
@@ -130,7 +129,7 @@ class ErrorHandler {
 
       this.performanceQueue = [];
     } catch (error) {
-      console.error('Failed to send performance metrics:', error);
+
     }
   }
 

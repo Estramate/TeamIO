@@ -24,7 +24,7 @@ export function useRealtimeSync() {
   // WebSocket Connection Setup - VOLLSTÄNDIG DEAKTIVIERT
   const connectWebSocket = () => {
     // KOMPLETT DEAKTIVIERT - Keine WebSocket-Verbindungen nach Chat-Entfernung
-    console.debug('🔗 WebSocket-Verbindung übersprungen - Real-time Sync deaktiviert');
+
     return;
   };
 
@@ -61,7 +61,7 @@ export function useRealtimeSync() {
       queryClient.setQueryData(queryKey, data);
       
     } catch (error) {
-      console.debug('Data update error:', error);
+
     }
   };
 
@@ -79,7 +79,7 @@ export function useRealtimeSync() {
       });
       
     } catch (error) {
-      console.debug('Cache invalidate error:', error);
+
     }
   };
 
@@ -97,7 +97,7 @@ export function useRealtimeSync() {
       });
       
     } catch (error) {
-      console.debug('Sync request error:', error);
+
     }
   };
 

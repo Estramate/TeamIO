@@ -455,7 +455,7 @@ export default function SuperAdminPage() {
           open={!!showEditClub} 
           onClose={() => setShowEditClub(null)}
           onSave={(data) => {
-            console.log('Update club:', data);
+
             setShowEditClub(null);
           }}
         />
@@ -467,7 +467,7 @@ export default function SuperAdminPage() {
           open={!!showDeactivateClub} 
           onClose={() => setShowDeactivateClub(null)}
           onConfirm={() => {
-            console.log('Deactivate club:', showDeactivateClub.id);
+
             setShowDeactivateClub(null);
           }}
         />
@@ -488,7 +488,7 @@ export default function SuperAdminPage() {
           onClose={() => setShowEditUser(null)}
           onSave={async (data) => {
             try {
-              console.log('Update user:', data);
+
               
               // Use the new PATCH endpoint
               const response = await fetch(`/api/super-admin/users/${showEditUser.id}`, {

@@ -64,7 +64,7 @@ function AuthenticatedApp() {
   useEffect(() => {
     if (!hasNavigatedToInitial && location === '/') {
       const initialRoute = getInitialRoute();
-      console.log('🏠 Navigating to initial route:', initialRoute);
+
       if (initialRoute !== '/') {
         setLocation(initialRoute);
       }
@@ -120,13 +120,13 @@ function Router() {
       fetch('/api/user/memberships/status', { credentials: 'include' })
         .then(res => res.ok ? res.json() : { hasMemberships: false })
         .then(membershipStatus => {
-          console.log('📊 Membership Status Check:', membershipStatus);
+
           
           if (membershipStatus.hasMemberships) {
             // User has memberships, check for active ones
             if (membershipStatus.activeMemberships > 0) {
               // User has active memberships - skip onboarding entirely
-              console.log('✅ User has active memberships, bypassing onboarding');
+
               setShowOnboarding(false);
               
               // Wenn kein Club ausgewählt ist, lade verfügbare Clubs und wähle intelligente aus

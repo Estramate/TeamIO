@@ -78,9 +78,7 @@ export class PerformanceMonitor {
   }
 
   reportMetrics() {
-    console.group('🚀 Performance Metrics');
-    console.log('Load Time:', `${this.metrics.loadTime}ms`);
-    console.log('DOM Content Loaded:', `${this.metrics.domContentLoaded}ms`);
+
     if (this.metrics.firstContentfulPaint) {
       console.log('First Contentful Paint:', `${this.metrics.firstContentfulPaint}ms`);
     }

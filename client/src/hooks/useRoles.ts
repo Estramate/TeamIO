@@ -29,10 +29,10 @@ export function useRoles() {
         }
         
         const data = await response.json();
-        console.log('🎯 useRoles API Response:', data);
+
         return data as Role[];
       } catch (error) {
-        console.error('❌ useRoles API Error:', error);
+
         throw error;
       }
     },

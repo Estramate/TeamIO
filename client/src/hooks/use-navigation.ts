@@ -17,7 +17,7 @@ export const useNavigation = create<NavigationStore>()(
         const isRootRoute = path === '/';
         
         if (!isAuthRoute) {
-          console.log('📍 Storing last visited page:', path);
+
           set({ lastVisitedPage: path });
         }
       },

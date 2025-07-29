@@ -56,7 +56,7 @@ export function useNotifications() {
       setDesktopPermission(permission);
       return permission === 'granted';
     } catch (error) {
-      console.error('Failed to request notification permission:', error);
+
       return false;
     }
   }, [isDesktopSupported]);
@@ -110,7 +110,7 @@ export function useNotifications() {
 
       return notification;
     } catch (error) {
-      console.error('Failed to show desktop notification:', error);
+
       return null;
     }
   }, [isDesktopSupported, desktopPermission]);

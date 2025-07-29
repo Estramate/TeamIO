@@ -393,15 +393,7 @@ interface EditUserModalProps {
 export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUserModalProps) {
   const { roles, isLoading: rolesLoading, error: rolesError } = useRoles();
   
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 EDIT USER MODAL DEBUG:', {
-      rolesLoading,
-      rolesCount: roles?.length || 0,
-      rolesError: rolesError?.message,
-      firstRole: roles?.[0]
-    });
-  }, [roles, rolesLoading, rolesError]);
+  // Debug logging removed for production
   const [formData, setFormData] = useState({
     email: user?.email || '',
     isActive: user?.isActive ?? true,
@@ -436,7 +428,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
           setAllClubs(clubs);
         }
       } catch (error) {
-        console.error('Failed to fetch clubs:', error);
+
       }
     };
     if (open) {

@@ -52,7 +52,7 @@ export function useBackgroundSync(config: Partial<BackgroundSyncConfig> = {}) {
       });
     } catch (error) {
       // Stille Fehlerbehandlung - kein UI-Feedback
-      console.debug('Background sync error (critical):', error);
+
     }
   };
 
@@ -71,7 +71,7 @@ export function useBackgroundSync(config: Partial<BackgroundSyncConfig> = {}) {
         staleTime: 0,
       });
     } catch (error) {
-      console.debug('Background sync error (normal):', error);
+
     }
   };
 
@@ -81,9 +81,7 @@ export function useBackgroundSync(config: Partial<BackgroundSyncConfig> = {}) {
     
     try {
       // Chat-Räume Sync entfernt - Live Chat System vollständig deaktiviert
-      console.debug('Chat-Räume Background-Sync übersprungen - System deaktiviert');
     } catch (error) {
-      console.debug('Background sync error (low):', error);
     }
   };
 

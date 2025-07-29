@@ -29,10 +29,7 @@ export const usePerformanceMonitor = (componentName: string) => {
     if (process.env.NODE_ENV === 'development' && 'memory' in performance) {
       const memoryInfo = (performance as any).memory;
       if (memoryInfo.usedJSHeapSize > 50 * 1024 * 1024) { // 50MB threshold
-        console.warn(`High memory usage in ${componentName}:`, {
-          used: Math.round(memoryInfo.usedJSHeapSize / 1024 / 1024) + 'MB',
-          total: Math.round(memoryInfo.totalJSHeapSize / 1024 / 1024) + 'MB'
-        });
+
       }
     }
   });
@@ -77,7 +74,7 @@ export const WebVitalsMonitor = () => {
       observer.observe({ entryTypes: ['paint', 'largest-contentful-paint', 'layout-shift'] });
     } catch (error) {
       // Browser might not support all entry types
-      console.warn('Performance observer setup failed:', error);
+
     }
 
     return () => observer.disconnect();
@@ -96,17 +93,17 @@ export const BundleAnalyzer = () => {
         const modules = await import.meta.glob('/src/**/*.{ts,tsx,js,jsx}');
         const moduleCount = Object.keys(modules).length;
         
-        console.log('📊 Bundle Analysis:', {
+
           totalModules: moduleCount,
           timestamp: new Date().toISOString()
         });
 
         // Warn about potential bundle bloat
         if (moduleCount > 100) {
-          console.warn('⚠️ Large bundle detected. Consider code splitting for better performance.');
+
         }
       } catch (error) {
-        console.warn('Bundle analysis failed:', error);
+
       }
     };
 

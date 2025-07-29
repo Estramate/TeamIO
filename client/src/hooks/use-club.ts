@@ -22,7 +22,7 @@ export const useClub = create<ClubStore>()(
     (set, get) => ({
       selectedClub: null,
       setSelectedClub: (club) => {
-        console.log('Setting selected club:', club);
+
         
         // Invalidate all subscription-related queries when club changes
         if (club?.id !== get().selectedClub?.id) {
@@ -35,7 +35,7 @@ export const useClub = create<ClubStore>()(
           queryClient.invalidateQueries({ 
             queryKey: ['/api/subscriptions/super-admin'] 
           });
-          console.log('🔄 SUBSCRIPTION CACHE INVALIDATED: Cleared all subscription data for new club');
+
         }
         
         set({ selectedClub: club });

@@ -136,7 +136,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                               credentials: 'include',
                             });
                           } catch (error) {
-                            console.error('Failed to mark notification as read:', error);
+
                           }
                         }}
                       >

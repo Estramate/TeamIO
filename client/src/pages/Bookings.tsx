@@ -284,7 +284,7 @@ export default function Bookings() {
         window.location.href = "/";
         return;
       }
-      console.error("DEBUG: Create booking error:", error);
+
       const errorMessage = error.response?.data?.message || "Buchung konnte nicht erstellt werden.";
       toast({
         title: "Fehler",
@@ -329,7 +329,7 @@ export default function Bookings() {
         window.location.href = "/";
         return;
       }
-      console.error("DEBUG: Update booking error:", error);
+
       const errorMessage = error.response?.data?.message || "Buchung konnte nicht aktualisiert werden.";
       toast({
         title: "Fehler",
@@ -409,7 +409,7 @@ export default function Bookings() {
       return response.json();
     },
     onSuccess: (data: any) => {
-      console.log("DEBUG: Availability check result:", data);
+
       setIsCheckingAvailability(false);
       setAvailabilityStatus({
         available: data.available || false,

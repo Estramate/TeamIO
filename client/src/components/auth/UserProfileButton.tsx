@@ -49,7 +49,7 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
 
   const handleLogout = async () => {
     try {
-      console.log('UserProfileButton logout - starting logout process');
+
       
       // Mark that we're logging out
       sessionStorage.setItem('just_logged_out', 'true');
@@ -57,12 +57,12 @@ export function UserProfileButton({ className }: UserProfileButtonProps) {
       // Clear all local data immediately
       localStorage.clear();
       
-      console.log('Local data cleared, redirecting to server logout');
+
       
       // Always call server logout to clear cookies and sessions
       window.location.assign("/api/logout");
     } catch (error) {
-      console.error('Logout process error:', error);
+
       // Fallback: Force logout even if something fails
       localStorage.clear();
       sessionStorage.clear();

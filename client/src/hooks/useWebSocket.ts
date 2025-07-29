@@ -43,7 +43,7 @@ export function useWebSocket(): WebSocketHook {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('🔗 WebSocket connected');
+
         setIsConnected(true);
         setConnectionStatus('connected');
         reconnectAttemptsRef.current = 0;
@@ -62,12 +62,12 @@ export function useWebSocket(): WebSocketHook {
           const message: WebSocketMessage = JSON.parse(event.data);
           setLastMessage(message);
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+
         }
       };
 
       ws.onclose = (event) => {
-        console.log('🔌 WebSocket disconnected:', event.code, event.reason);
+
         setIsConnected(false);
         setConnectionStatus('disconnected');
         wsRef.current = null;
@@ -75,24 +75,24 @@ export function useWebSocket(): WebSocketHook {
         // Attempt to reconnect if not explicitly closed
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
-          console.log(`🔄 Attempting to reconnect (${reconnectAttemptsRef.current}/${maxReconnectAttempts})...`);
+
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, reconnectDelay);
         } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
           setConnectionStatus('error');
-          console.error('❌ Max reconnection attempts reached');
+
         }
       };
 
       ws.onerror = (error) => {
-        console.error('❌ WebSocket error:', error);
+
         setConnectionStatus('error');
       };
 
     } catch (error) {
-      console.error('Failed to create WebSocket connection:', error);
+
       setConnectionStatus('error');
     }
   }, [selectedClub?.id]);
@@ -104,7 +104,7 @@ export function useWebSocket(): WebSocketHook {
         timestamp: new Date().toISOString()
       }));
     } else {
-      console.warn('WebSocket is not connected. Message not sent:', message);
+
     }
   }, []);
 

@@ -78,7 +78,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       
       // Check if date is valid
       if (isNaN(date.getTime())) {
-        console.warn('Invalid date value:', dateValue);
+
         return "";
       }
       
@@ -282,7 +282,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
           return; // Speichern abbrechen
         }
       } catch (error) {
-        console.error('Availability check failed:', error);
+
         toast({
           title: "Verfügbarkeitsprüfung fehlgeschlagen",
           description: "Die Verfügbarkeit konnte nicht geprüft werden. Bitte versuchen Sie es erneut.",

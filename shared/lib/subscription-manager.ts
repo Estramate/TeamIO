@@ -173,7 +173,7 @@ export class ClubSubscriptionManager implements SubscriptionService {
   // Usage tracking
   trackFeatureAccess(feature: FeatureName, metadata?: any): void {
     // This would typically make an API call to log feature access
-    console.log(`Feature accessed: ${feature}`, metadata);
+
   }
 
   getCurrentUsage() {

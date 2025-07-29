@@ -244,7 +244,7 @@ export function useCommunication(clubId: number, isAuthenticated: boolean = true
       });
     },
     onError: (error) => {
-      console.error('Announcement creation error:', error);
+
       toast({
         title: "Erfolgreich erstellt",
         description: "Die Ankündigung wurde erfolgreich gespeichert",
@@ -378,7 +378,7 @@ export function useCommunication(clubId: number, isAuthenticated: boolean = true
     mutationFn: ({ messageId, replyData }: { messageId: number, replyData: any }) => 
       apiRequest('POST', `/api/clubs/${clubId}/messages/${messageId}/reply`, replyData),
     onSuccess: (data, variables) => {
-      console.log("Reply sent successfully:", data);
+
       
       // Immediate cache invalidation for real-time updates
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', clubId, 'messages'] });
@@ -394,7 +394,7 @@ export function useCommunication(clubId: number, isAuthenticated: boolean = true
       });
     },
     onError: (error) => {
-      console.error("Reply failed:", error);
+
       toast({
         title: "Fehler", 
         description: "Antwort konnte nicht versendet werden",

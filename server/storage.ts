@@ -2604,15 +2604,46 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createEvent(eventData: any): Promise<any> {
-    const [event] = await db
-      .insert(bookings)
-      .values({
-        ...eventData,
-        facilityId: null, // Events don't have facilities
-        type: eventData.type || 'event'
-      })
-      .returning();
-    return event;
+    console.log('Storage createEvent called with:', eventData);
+    
+    try {
+      const [event] = await db
+        .insert(bookings)
+        .values({
+          clubId: eventData.clubId,
+          facilityId: null, // Events don't have facilities
+          teamId: eventData.teamId || null,
+          memberId: eventData.memberId || null,
+          title: eventData.title,
+          description: eventData.description || '',
+          startTime: eventData.startTime,
+          endTime: eventData.endTime,
+          type: eventData.type || 'event',
+          location: eventData.location || '',
+          isPublic: eventData.isPublic !== false,
+          recurring: eventData.recurring || false,
+          recurringPattern: eventData.recurringPattern || null,
+          recurringUntil: eventData.recurringUntil || null,
+          contactPerson: eventData.contactPerson || null,
+          contactEmail: eventData.contactEmail || null,
+          contactPhone: eventData.contactPhone || null,
+          participants: eventData.participants || null,
+          cost: eventData.cost || null,
+          status: eventData.status || 'confirmed',
+          notes: eventData.notes || '',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      console.log('Event created in database:', event);
+      return event;
+    } catch (error: any) {
+      console.error('Database error in createEvent:', error);
+      console.error('Error details:', error.message);
+      console.error('Error stack:', error.stack);
+      throw error;
+    }
   }
 
   async updateEvent(id: number, eventData: any): Promise<any> {

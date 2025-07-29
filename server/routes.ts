@@ -8,7 +8,7 @@ import { requiresClubMembership } from "./middleware/auth";
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
 import { handleErrorReports, handlePerformanceMetrics } from "./error-reporting";
 import subscriptionRoutes from "./routes/subscriptions";
-import chatRoutes from "./chatRoutes";
+// import chatRoutes from "./chatRoutes"; // ENTFERNT - Veraltetes Live Chat System
 
 import { z } from 'zod';
 import {
@@ -2475,99 +2475,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(announcements);
   }));
 
-  // ====== LIVE CHAT SYSTEM ======
-  
-  // Get chat rooms for user
-  app.get('/api/clubs/:clubId/chat/rooms', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.user?.claims?.sub || req.user?.id;
-    
-    if (!clubId || isNaN(clubId)) {
-      throw new ValidationError('Invalid club ID', 'clubId');
-    }
-    
-    const rooms = await storage.getChatRooms(userId, clubId);
-    res.json(rooms);
-  }));
+  // ====== VERALTETE LIVE CHAT ROUTEN ENTFERNT ======
+  // HINWEIS: Alle Chat-Funktionen sind jetzt über das moderne Communication System verfügbar
 
-  // Create new chat room
-  app.post('/api/clubs/:clubId/chat/rooms', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.user?.claims?.sub || req.user?.id;
-    
-    if (!clubId || isNaN(clubId)) {
-      throw new ValidationError('Invalid club ID', 'clubId');
-    }
-
-    const roomData = {
-      ...req.body,
-      clubId,
-      createdBy: userId
-    };
-
-    const room = await storage.createChatRoom(roomData);
-    res.status(201).json(room);
-  }));
-
-  // Get messages for chat room
-  app.get('/api/clubs/:clubId/chat/rooms/:roomId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const roomId = parseInt(req.params.roomId);
-    const limit = parseInt(req.query.limit) || 50;
-    
-    if (!clubId || isNaN(clubId) || !roomId || isNaN(roomId)) {
-      throw new ValidationError('Invalid club ID or room ID', 'clubId');
-    }
-    
-    const messages = await storage.getChatMessages(roomId, limit);
-    res.json(messages);
-  }));
-
-  // Send message to chat room
-  app.post('/api/clubs/:clubId/chat/rooms/:roomId/messages', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const roomId = parseInt(req.params.roomId);
-    const userId = req.user?.claims?.sub || req.user?.id;
-    
-    if (!clubId || isNaN(clubId) || !roomId || isNaN(roomId)) {
-      throw new ValidationError('Invalid club ID or room ID', 'clubId');
-    }
-
-    const messageData = {
-      ...req.body,
-      roomId,
-      senderId: userId
-    };
-
-    const message = await storage.sendChatMessage(messageData);
-    res.status(201).json(message);
-  }));
-
-  // Mark message as read
-  app.post('/api/clubs/:clubId/chat/messages/:messageId/read', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const messageId = parseInt(req.params.messageId);
-    const userId = req.user?.claims?.sub || req.user?.id;
-    
-    if (!messageId || isNaN(messageId)) {
-      throw new ValidationError('Invalid message ID', 'messageId');
-    }
-
-    await storage.markChatMessageAsRead(messageId, userId);
-    res.json({ success: true });
-  }));
-
-  // Update user activity (heartbeat)
-  app.post('/api/clubs/:clubId/chat/activity', isAuthenticated, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.user?.claims?.sub || req.user?.id;
-    
-    if (!clubId || isNaN(clubId)) {
-      throw new ValidationError('Invalid club ID', 'clubId');
-    }
-
-    await storage.updateUserActivity(userId, clubId);
-    res.json({ success: true });
-  }));
+  // ===== ALLE VERALTETEN LIVE CHAT API-ROUTEN ENTFERNT =====
+  // Chat-Funktionalität ist jetzt vollständig über das moderne Communication System verfügbar
 
   // ====== EMAIL INVITATION SYSTEM ======
 
@@ -2845,9 +2757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/super-admin', superAdminRoutes);
   app.use('/api/super-admin', superAdminAnalyticsRoutes);
   
-  // Live Chat routes
-  const chatRoutes = (await import("./routes/chat")).default;
-  app.use('/api', chatRoutes);
+  // VERALTETE LIVE CHAT ROUTES ENTFERNT - Ersetzt durch modernes Communication System
 
   // ====== USER NOTIFICATION PREFERENCES ROUTES ======
   
@@ -3265,209 +3175,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // === LIVE CHAT API ROUTES - DIRECT INTEGRATION ===
-  // Get all chat rooms for a club
-  app.get('/api/clubs/:clubId/chat-rooms', isAuthenticated, requiresClubMembership, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const userId = req.user!.id || req.user!.claims?.sub;
+  // === ALLE VERALTETEN LIVE CHAT API-ROUTEN VOLLSTÄNDIG ENTFERNT ===
+  // Chat-Funktionalität ist vollständig über das moderne Communication System verfügbar
 
-      console.log('🔍 CHAT-ROOMS DEBUG - Club ID:', clubId);
-      console.log('🔍 CHAT-ROOMS DEBUG - User ID:', userId);
-
-      if (!userId) {
-        return res.status(401).json({ message: 'User ID not found in session' });
-      }
-
-      // Get real chat rooms from database
-      const chatRooms = await storage.getChatRooms(clubId, userId);
-      
-      console.log('✅ CHAT-ROOMS - Returning real rooms:', chatRooms.length);
-      res.json(chatRooms);
-    } catch (error) {
-      console.error('❌ Error fetching chat rooms:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-  // Get chat unread count
-  app.get('/api/clubs/:clubId/chat-unread-count', isAuthenticated, requiresClubMembership, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const userId = req.user!.id;
-
-      console.log('🔍 CHAT-UNREAD DEBUG - Club ID:', clubId);
-      console.log('🔍 CHAT-UNREAD DEBUG - User ID:', userId);
-
-      if (!userId) {
-        return res.status(401).json({ message: 'User ID not found in session' });
-      }
-
-      // Get real unread count from database
-      const unreadCount = await storage.getChatUnreadCount(clubId, userId);
-      
-      console.log('✅ CHAT-UNREAD - Returning real count:', unreadCount);
-      res.json({ totalUnread: unreadCount });
-    } catch (error) {
-      console.error('❌ Error fetching chat unread count:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Get messages for a chat room  
-  app.get('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, requiresClubMembership, async (req: any, res) => {
-    try {
-      const roomId = req.params.roomId;
-      const userId = req.user!.id;
-
-      console.log('🔍 CHAT-MESSAGES DEBUG - Room ID:', roomId);
-      console.log('🔍 CHAT-MESSAGES DEBUG - User ID:', userId);
-
-      if (!userId) {
-        return res.status(401).json({ message: 'User ID not found in session' });
-      }
-
-      // Mock messages based on room
-      const mockMessages = roomId === '1' ? [
-        {
-          id: '1',
-          chatRoomId: roomId,
-          senderId: '2',
-          senderName: 'Maria Schmidt',
-          senderRole: 'Obmann',
-          content: 'Hallo! Können wir das nächste Vorstandsmeeting für nächste Woche planen?',
-          messageType: 'text',
-          timestamp: '2025-01-28T17:25:00Z',
-          isRead: false,
-          readBy: ['2']
-        },
-        {
-          id: '2',
-          chatRoomId: roomId,
-          senderId: '2',
-          senderName: 'Maria Schmidt',
-          senderRole: 'Obmann',
-          content: 'Wann ist das nächste Vorstandsmeeting?',
-          messageType: 'text',
-          timestamp: '2025-01-28T17:30:00Z',
-          isRead: false,
-          readBy: ['2']
-        }
-      ] : [
-        {
-          id: '3',
-          chatRoomId: roomId,
-          senderId: 'support',
-          senderName: 'ClubFlow Support',
-          senderRole: 'Support',
-          content: 'Hallo! Wie kann ich Ihnen bei ClubFlow helfen?',
-          messageType: 'text',
-          timestamp: '2025-01-28T16:00:00Z',
-          isRead: true,
-          readBy: ['support', userId]
-        }
-      ];
-
-      console.log('✅ CHAT-MESSAGES - Returning mock messages:', mockMessages.length);
-      res.json(mockMessages);
-    } catch (error) {
-      console.error('❌ Error fetching messages:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Send a message
-  app.post('/api/clubs/:clubId/chat-rooms/:roomId/messages', isAuthenticated, requiresClubMembership, async (req: any, res) => {
-    try {
-      const roomId = req.params.roomId;
-      const userId = req.user!.id;
-      const { content, messageType = 'text' } = req.body;
-
-      console.log('🔍 SEND-MESSAGE DEBUG - Room ID:', roomId);
-      console.log('🔍 SEND-MESSAGE DEBUG - User ID:', userId);
-      console.log('🔍 SEND-MESSAGE DEBUG - Content:', content);
-
-      if (!userId) {
-        return res.status(401).json({ message: 'User ID not found in session' });
-      }
-
-      if (!content || !content.trim()) {
-        return res.status(400).json({ error: 'Message content is required' });
-      }
-
-      // Create real message in database
-      const newMessage = await storage.createChatMessage({
-        roomId: parseInt(roomId),
-        senderId: userId,
-        content: content.trim(),
-        messageType
-      });
-
-      console.log('✅ SEND-MESSAGE - Message created:', newMessage.id);
-      res.status(201).json(newMessage);
-    } catch (error) {
-      console.error('❌ Error sending message:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Create new chat room
-  app.post('/api/clubs/:clubId/chat-rooms', isAuthenticated, requiresClubMembership, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const userId = req.user!.id;
-      const { name, type, participantIds = [] } = req.body;
-
-      console.log('🔍 CREATE-ROOM DEBUG - Club ID:', clubId);
-      console.log('🔍 CREATE-ROOM DEBUG - User ID:', userId);
-      console.log('🔍 CREATE-ROOM DEBUG - Name:', name);
-
-      if (!userId) {
-        return res.status(401).json({ message: 'User ID not found in session' });
-      }
-
-      if (!name || !name.trim()) {
-        return res.status(400).json({ error: 'Room name is required' });
-      }
-
-      // Create mock new room
-      const newRoom = {
-        id: `room_${Date.now()}`,
-        name: name.trim(),
-        type: type || 'group',
-        participants: [
-          { id: userId, name: 'Sie', role: 'club-administrator', isOnline: true }
-        ],
-        unreadCount: 0,
-        createdAt: new Date().toISOString()
-      };
-
-      console.log('✅ CREATE-ROOM - Room created:', newRoom.id);
-      res.status(201).json(newRoom);
-    } catch (error) {
-      console.error('❌ Error creating chat room:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Get online users for a club
-  app.get('/api/clubs/:clubId/online-users', isAuthenticated, requiresClubMembership, async (req: any, res) => {
-    try {
-      const clubId = parseInt(req.params.clubId);
-      const userId = req.user!.id;
-
-      console.log('🔍 ONLINE-USERS DEBUG - Club ID:', clubId);
-      console.log('🔍 ONLINE-USERS DEBUG - User ID:', userId);
-
-      // Mock online users - in production this would check actual WebSocket connections
-      const mockOnlineUsers = [userId, '2', '3']; // Include current user and some others
-      
-      console.log('✅ ONLINE-USERS - Returning mock online users:', mockOnlineUsers.length);
-      res.json(mockOnlineUsers);
-    } catch (error) {
-      console.error('❌ Error fetching online users:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
+  // VERALTETE CHAT-API-ROUTEN VOLLSTÄNDIG ENTFERNT - Chat-Funktionalität über Communication System verfügbar
 
 
 

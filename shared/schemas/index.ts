@@ -12,21 +12,7 @@ export * from "./finances";
 export * from "./communication";
 export * from "./subscriptions";
 
-// Live Chat exports (separate namespace to avoid conflicts)
-export {
-  chatRooms as liveChatRooms,
-  chatRoomParticipants,
-  liveChatMessages,
-  liveChatMessageReadStatus,
-  userActivity,
-  type ChatRoom as LiveChatRoom,
-  type NewChatRoom as NewLiveChatRoom,
-  type LiveChatMessage,
-  type NewLiveChatMessage,
-  type NewChatRoomParticipant as NewLiveChatRoomParticipant,
-  type NewLiveChatMessageReadStatus,
-  type NewUserActivity,
-} from "./chat";
+// VERALTETES LIVE CHAT SYSTEM ENTFERNT - Konsolidierung auf Communication Chat System
 
 // Update relations to include cross-domain references
 import { relations } from "drizzle-orm";

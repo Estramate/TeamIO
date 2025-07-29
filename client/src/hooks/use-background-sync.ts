@@ -12,7 +12,7 @@ interface BackgroundSyncConfig {
 }
 
 const DEFAULT_CONFIG: BackgroundSyncConfig = {
-  enabled: true,
+  enabled: false, // DEAKTIVIERT - Keine automatischen Background-Syncs mehr nach Chat-Entfernung
   intervals: {
     critical: 30 * 1000,   // 30 Sekunden
     normal: 2 * 60 * 1000,  // 2 Minuten  

@@ -21,54 +21,11 @@ export function useRealtimeSync() {
   const [isConnected, setIsConnected] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // WebSocket Connection Setup
+  // WebSocket Connection Setup - VOLLSTÄNDIG DEAKTIVIERT
   const connectWebSocket = () => {
-    if (!selectedClub?.id) return;
-
-    try {
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
-      
-      wsRef.current = new WebSocket(wsUrl);
-
-      wsRef.current.onopen = () => {
-        setIsConnected(true);
-        console.debug('🔗 Real-time sync connected');
-        
-        // Registriere für Club-spezifische Updates
-        wsRef.current?.send(JSON.stringify({
-          type: 'subscribe',
-          clubId: selectedClub.id,
-          entities: ['messages', 'notifications', 'communication-stats', 'chat']
-        }));
-      };
-
-      wsRef.current.onmessage = (event) => {
-        try {
-          const message: RealtimeMessage = JSON.parse(event.data);
-          handleRealtimeUpdate(message);
-        } catch (error) {
-          console.debug('WebSocket message parse error:', error);
-        }
-      };
-
-      wsRef.current.onclose = () => {
-        setIsConnected(false);
-        console.debug('🔗 Real-time sync disconnected');
-        
-        // Auto-reconnect nach 5 Sekunden
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connectWebSocket();
-        }, 5000);
-      };
-
-      wsRef.current.onerror = (error) => {
-        console.debug('WebSocket error:', error);
-      };
-
-    } catch (error) {
-      console.debug('WebSocket connection error:', error);
-    }
+    // KOMPLETT DEAKTIVIERT - Keine WebSocket-Verbindungen nach Chat-Entfernung
+    console.debug('🔗 WebSocket-Verbindung übersprungen - Real-time Sync deaktiviert');
+    return;
   };
 
   // Handle Real-time Updates

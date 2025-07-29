@@ -14,9 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataSyncIndicatorCompact } from "@/components/DataSyncIndicator";
-import { useBackgroundSync } from "@/hooks/use-background-sync";
-import { useSmartRefresh } from "@/hooks/use-smart-refresh";
-import { useRealtimeSync } from "@/hooks/use-realtime-sync";
+// ENTFERNT - Background Sync Hooks deaktiviert um störende Seitenreloads zu vermeiden
+// import { useBackgroundSync } from "@/hooks/use-background-sync";
+// import { useSmartRefresh } from "@/hooks/use-smart-refresh";
+// import { useRealtimeSync } from "@/hooks/use-realtime-sync";
 
 
 interface HeaderProps {
@@ -27,21 +28,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const { title, subtitle } = usePage();
   const { selectedClub } = useClub();
   
-  // Background Sync - lädt Daten unsichtbar im Hintergrund
-  useBackgroundSync({ 
-    enabled: true,
-    intervals: {
-      critical: 30 * 1000,   // Notifications alle 30 Sek
-      normal: 2 * 60 * 1000, // Communication alle 2 Min
-      low: 5 * 60 * 1000     // Chat alle 5 Min
-    }
-  });
-  
-  // Smart Refresh für intelligente Updates
-  const { refreshAfterAction } = useSmartRefresh();
-  
-  // Real-time Sync für nahtlose WebSocket-Updates
-  const { isConnected, triggerUpdate } = useRealtimeSync();
+  // ENTFERNT - Background Sync Hooks deaktiviert um störende Tab-Reloads zu verhindern
+  // useBackgroundSync({ enabled: false });
+  // const { refreshAfterAction } = useSmartRefresh();
+  // const { isConnected, triggerUpdate } = useRealtimeSync();
 
   // Get unread notifications count - reduzierte Aktualisierung
   const { data: stats } = useQuery<{
@@ -57,10 +47,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
     refetchInterval: false, // Kein automatisches Polling - verhindert Page-Reloads
   });
 
-  // Get recent messages for notification preview
+  // Get recent messages for notification preview - ohne automatische Aktualisierung
   const { data: recentMessages = [] } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'messages'],
     enabled: !!selectedClub?.id,
+    staleTime: 10 * 60 * 1000, // 10 Minuten Cache - sehr reduzierte Aktualisierung
+    refetchInterval: false, // Kein automatisches Polling
   });
 
   // Get recent notifications - reduzierte Aktualisierung

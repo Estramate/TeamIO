@@ -10,66 +10,17 @@ export function useSmartRefresh() {
   const queryClient = useQueryClient();
   const { selectedClub } = useClub();
 
-  // Stille Cache-Aktualisierung nach Benutzeraktionen
+  // DEAKTIVIERTE Cache-Aktualisierung - keine automatischen Refreshs mehr
   const refreshAfterAction = (entityType: 'message' | 'notification' | 'communication' | 'chat') => {
-    if (!selectedClub?.id) return;
-
-    // Verwende prefetchQuery statt invalidateQueries für stille Updates
-    const silentRefresh = async () => {
-      try {
-        switch (entityType) {
-          case 'message':
-          case 'communication':
-            await queryClient.prefetchQuery({
-              queryKey: ['/api/clubs', selectedClub.id, 'messages'],
-              staleTime: 0,
-            });
-            await queryClient.prefetchQuery({
-              queryKey: ['/api/clubs', selectedClub.id, 'communication-stats'],
-              staleTime: 0,
-            });
-            break;
-            
-          case 'notification':
-            await queryClient.prefetchQuery({
-              queryKey: ['/api/clubs', selectedClub.id, 'notifications'],
-              staleTime: 0,
-            });
-            break;
-            
-          case 'chat':
-            // Chat-Daten nur prefetchen wenn Chat aktiv ist
-            const chatQueries = queryClient.getQueriesData({
-              queryKey: [`/api/clubs/${selectedClub.id}/chat`],
-            });
-            // Chat-Query-Handling entfernt - Live Chat System vollständig deaktiviert
-            console.debug('Chat-Räume Smart-Refresh übersprungen - System deaktiviert');
-            break;
-        }
-      } catch (error) {
-        // Stille Fehlerbehandlung
-        console.debug('Silent refresh error:', error);
-      }
-    };
-
-    // Verzögerter Refresh um Race Conditions zu vermeiden
-    setTimeout(silentRefresh, 1000);
+    // VOLLSTÄNDIG DEAKTIVIERT - Keine automatischen Background-Refreshs nach Chat-Entfernung
+    console.debug(`Smart refresh für ${entityType} übersprungen - System deaktiviert um Tab-Störungen zu vermeiden`);
+    return;
   };
 
-  // Page Visibility API - Refresh wenn Tab wieder aktiv wird
+  // Page Visibility API - DEAKTIVIERT um Tab-Störungen zu vermeiden
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && selectedClub?.id) {
-        // Stiller Refresh aller wichtigen Daten wenn Tab wieder fokussiert wird
-        setTimeout(() => {
-          refreshAfterAction('communication');
-          refreshAfterAction('notification');
-        }, 500);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    // VOLLSTÄNDIG DEAKTIVIERT - Keine automatischen Page Visibility Refreshs
+    console.debug('Page Visibility Refresh deaktiviert - verhindert Tab-Störungen');
   }, [selectedClub?.id]);
 
   // Connection Status - Refresh bei Netzwerk-Wiederherstellung

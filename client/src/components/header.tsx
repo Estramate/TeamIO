@@ -14,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataSyncIndicatorCompact } from "@/components/DataSyncIndicator";
-import { NotificationCenter } from "@/components/NotificationCenter";
 
 
 interface HeaderProps {
@@ -80,9 +79,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
           
           <div className="flex items-center space-x-4">
-            {/* Smart Notification Center */}
-            <NotificationCenter />
-            
             {/* Real-time Data Sync Indicator */}
             <DataSyncIndicatorCompact className="flex" />
             

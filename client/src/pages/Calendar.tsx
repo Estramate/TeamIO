@@ -1429,7 +1429,19 @@ export default function Calendar() {
                                   if (isResizing) return;
                                   
                                   if (event.source === 'event') {
+                                    // Event bearbeiten - verwende die Booking-Daten aber öffne Event-Modal
+                                    console.log('Opening event for editing:', event);
                                     setEditingEvent(event);
+                                    
+                                    // Setze Formular-Werte für Event (verwende startTime/endTime statt startDate/endDate)
+                                    eventForm.reset({
+                                      title: event.title || '',
+                                      description: event.description || '',
+                                      startDate: event.startTime ? format(new Date(event.startTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
+                                      endDate: event.endTime ? format(new Date(event.endTime), 'yyyy-MM-dd\'T\'HH:mm') : '',
+                                      teamId: event.teamId ? String(event.teamId) : '',
+                                      location: event.location || '',
+                                    });
                                     setShowEventModal(true);
                                   } else if (event.source === 'booking') {
                                     // Reset form with booking data - handle endTime correctly

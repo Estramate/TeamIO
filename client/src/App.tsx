@@ -111,23 +111,7 @@ function Router() {
   const [showOnboarding, setShowOnboarding] = useState<boolean | 'pending'>(false);
   const [membershipChecked, setMembershipChecked] = useState(false);
   
-  // Force redirect to landing page after logout
-  useEffect(() => {
-    const checkLogoutState = () => {
-      // If we're authenticated but we're on root and have no session data
-      // this likely means we just logged out and need to refresh
-      if (!isLoading && !isAuthenticated && window.location.pathname === '/') {
-        // User not authenticated, ensuring landing page is shown
-        // Force a page reload to ensure clean state
-        if (sessionStorage.getItem('just_logged_out') === 'true') {
-          sessionStorage.removeItem('just_logged_out');
-          window.location.reload();
-        }
-      }
-    };
-    
-    checkLogoutState();
-  }, [isAuthenticated, isLoading]);
+
 
   // Check if authenticated user needs club selection or auto-select first club
   useEffect(() => {

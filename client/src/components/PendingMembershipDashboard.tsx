@@ -87,10 +87,7 @@ export function PendingMembershipDashboard({ onJoinAnotherClub }: PendingMembers
 
       // Firebase auth removed - using only Replit auth
 
-      // Mark logout state and redirect to server logout
-      sessionStorage.setItem('just_logged_out', 'true');
-      
-      // Immediate redirect to logout endpoint
+      // Redirect to logout endpoint (server handles the redirect)
       window.location.href = '/api/logout';
       
     } catch (error) {

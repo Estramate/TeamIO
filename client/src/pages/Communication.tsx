@@ -577,9 +577,17 @@ export default function Communication() {
                                 
                                 if (response.ok) {
                                   toastService.database.deleted("Ankündigung");
-                                  // Invalidate both announcements and stats caches to force immediate UI refresh
-                                  await queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/announcements`] });
-                                  await queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/communication-stats`] });
+                                  // SOFORTIGE Cache-Invalidierung für unmittelbares UI-Update
+                                  await queryClient.invalidateQueries({ 
+                                    queryKey: ['/api/clubs', selectedClub?.id, 'announcements'],
+                                    exact: false 
+                                  });
+                                  await queryClient.invalidateQueries({ 
+                                    queryKey: ['/api/clubs', selectedClub?.id, 'communication-stats'],
+                                    exact: false 
+                                  });
+                                  // Zusätzliche Refetch für sofortige UI-Aktualisierung
+                                  queryClient.refetchQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'announcements'] });
                                 } else {
                                   toastService.database.error("Löschen", "Ankündigung");
                                 }

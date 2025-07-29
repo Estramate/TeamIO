@@ -8,6 +8,15 @@ ClubFlow is a comprehensive, modern web-based platform designed for sports clubs
 
 ## Recent Changes
 
+- **2025-07-29**: AUTOMATISCHE PAGE-RELOAD-PROBLEM VOLLSTÄNDIG BEHOBEN - Drastische Reduzierung aller Polling-Intervalle
+  - **Header-Polling eliminiert**: Communication-stats und Notifications auf `refetchInterval: false` gesetzt
+  - **Chat-System-Polling entfernt**: Alle Chat-Komponenten (LiveChat, FloatingChatWidget, LiveChatWidget) ohne automatisches Polling
+  - **Cache-Strategien optimiert**: StaleTime von 2-10 Minuten für bessere Performance ohne ständige API-Calls
+  - **Problematische API-Calls entfernt**: `/api/clubs/1/chat/activity` Endpunkt-Aufrufe eliminiert
+  - **System-Stabilität erreicht**: Keine automatischen Seiten-Reloads mehr, Chat-Tabs bleiben stabil geöffnet
+  - **Benutzerfreundlichkeit verbessert**: Daten werden nur bei Benutzeraktionen (Nachrichten senden) oder manueller Aktualisierung geladen
+  - **System-Status**: Vollständig stabile Anwendung ohne störende automatische Interface-Updates
+
 - **2025-07-29**: NOTIFICATION-SYSTEM BEREINIGT UND OPTIMIERT - Push-Benachrichtigungen und UI-Verbesserungen
   - **Verwirrende NotificationCenter-Komponente entfernt**: Test-Widget mit Glocken-Icon aus Header entfernt (war nur für Tests)
   - **Push-Notification "Verein gewechselt" repariert**: Wird jetzt nur bei echten Vereinswechseln angezeigt, nicht mehr bei Navigation

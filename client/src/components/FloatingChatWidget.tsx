@@ -44,20 +44,20 @@ export default function FloatingChatWidget() {
   const [newRoomName, setNewRoomName] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get chat rooms only when widget is open to improve performance
+  // Get chat rooms only when widget is open - kein Polling
   const { data: chatRooms = [], isLoading: roomsLoading } = useQuery({
     queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms`],
     enabled: !!selectedClub?.id && isOpen,
-    staleTime: 60000, // 1 minute cache
-    refetchInterval: isOpen ? 30000 : false, // Only poll when open
+    staleTime: 10 * 60 * 1000, // 10 Minuten Cache
+    refetchInterval: false, // Kein automatisches Polling - verhindert Page-Reloads
   });
 
-  // Get messages for selected room - optimized for performance
+  // Get messages for selected room - kein Polling
   const { data: messages = [], isLoading: messagesLoading } = useQuery({
     queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms/${selectedRoom?.id}/messages`],
     enabled: !!selectedClub?.id && !!selectedRoom?.id && isOpen && !isMinimized,
-    staleTime: 30000, // 30 seconds cache
-    refetchInterval: (isOpen && !isMinimized && selectedRoom) ? 10000 : false, // Only poll when actively viewing
+    staleTime: 2 * 60 * 1000, // 2 Minuten Cache
+    refetchInterval: false, // Kein automatisches Polling - verhindert Page-Reloads
   });
 
   // Calculate total unread messages
@@ -99,24 +99,7 @@ export default function FloatingChatWidget() {
     }
   }, [messages, isOpen, isMinimized, selectedRoom]);
 
-  // Update user activity only when widget is actively being used
-  useEffect(() => {
-    if (!selectedClub?.id || !isOpen || isMinimized) return;
-    
-    const updateActivity = () => {
-      fetch(`/api/clubs/${selectedClub.id}/chat/activity`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      }).catch(() => {}); // Silent fail to avoid console spam
-    };
-    
-    // Only update activity when actually using the chat
-    updateActivity();
-    const interval = setInterval(updateActivity, 120000); // Reduced frequency to 2 minutes
-    
-    return () => clearInterval(interval);
-  }, [selectedClub?.id, isOpen, isMinimized]);
+  // Activity tracking entfernt - verursachte API-Fehler und Page-Reloads
 
   const handleCreateRoom = () => {
     if (!newRoomName.trim()) return;

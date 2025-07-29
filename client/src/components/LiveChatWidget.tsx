@@ -78,25 +78,28 @@ export function LiveChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Chat rooms query
+  // Chat rooms query - kein automatisches Polling
   const { data: chatRooms = [], isLoading: roomsLoading } = useQuery<ChatRoom[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'chat-rooms'],
     enabled: !!selectedClub?.id && isOpen,
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: false, // Kein automatisches Polling - verhindert Page-Reloads
+    staleTime: 10 * 60 * 1000, // 10 Minuten Cache
   });
 
-  // Messages query for selected room
+  // Messages query for selected room - kein automatisches Polling
   const { data: messages = [], isLoading: messagesLoading } = useQuery<ChatMessage[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'chat-rooms', selectedRoom?.id, 'messages'],
     enabled: !!selectedClub?.id && !!selectedRoom && isOpen,
-    refetchInterval: 2000, // Refresh every 2 seconds for real-time feel
+    refetchInterval: false, // Kein automatisches Polling - verhindert Page-Reloads
+    staleTime: 2 * 60 * 1000, // 2 Minuten Cache
   });
 
-  // Online users query
+  // Online users query - kein automatisches Polling
   const { data: onlineUsers = [] } = useQuery<string[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'online-users'],
     enabled: !!selectedClub?.id && isOpen,
-    refetchInterval: 10000, // Check online status every 10 seconds
+    refetchInterval: false, // Kein automatisches Polling - verhindert Page-Reloads
+    staleTime: 5 * 60 * 1000, // 5 Minuten Cache
   });
 
   // Send message mutation

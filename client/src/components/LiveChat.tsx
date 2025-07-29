@@ -40,18 +40,20 @@ export default function LiveChat() {
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get chat rooms
+  // Get chat rooms - reduziertes Polling
   const { data: chatRooms = [], isLoading: roomsLoading } = useQuery({
     queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms`],
     enabled: !!selectedClub?.id,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: false, // Kein automatisches Polling - verhindert Page-Reloads
+    staleTime: 10 * 60 * 1000, // 10 Minuten Cache
   });
 
-  // Get messages for selected room
+  // Get messages for selected room - reduziertes Polling
   const { data: messages = [], isLoading: messagesLoading } = useQuery({
     queryKey: [`/api/clubs/${selectedClub?.id}/chat/rooms/${selectedRoom?.id}/messages`],
     enabled: !!selectedClub?.id && !!selectedRoom?.id,
-    refetchInterval: 5000, // Refresh every 5 seconds for real-time effect
+    refetchInterval: false, // Kein automatisches Polling - verhindert Page-Reloads
+    staleTime: 2 * 60 * 1000, // 2 Minuten Cache
   });
 
   // Create room mutation

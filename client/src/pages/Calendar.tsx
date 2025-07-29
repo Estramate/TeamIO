@@ -1250,6 +1250,17 @@ export default function Calendar() {
                               if (isResizing) return;
                               
                               if (event.source === 'event') {
+                                // DEBUG: Event-Modal-Problem debuggen
+                                console.log('🔧 EVENT CLICK DEBUG:', {
+                                  event: event,
+                                  source: event.source,
+                                  hasId: !!event.id,
+                                  hasTitle: !!event.title,
+                                  hasStartTime: !!event.startTime,
+                                  hasEndTime: !!event.endTime,
+                                  location: event.location
+                                });
+                                
                                 setEditingEvent(event);
                                 setShowEventModal(true);
                               } else if (event.source === 'booking') {
@@ -1320,7 +1331,7 @@ export default function Calendar() {
                             {event.time && (
                               <div className="text-xs opacity-90 mt-1">
                                 {event.time}
-                                {event.endTime && ` - ${event.endTime}`}
+                                {event.displayEndTime && ` - ${event.displayEndTime}`}
                               </div>
                             )}
                             {event.facilityName && event.height >= 60 && (
@@ -1459,7 +1470,17 @@ export default function Calendar() {
                                   if (isResizing) return;
                                   
                                   if (event.source === 'event') {
-                                    // FIX: Event bearbeiten - verwende die originalen Booking-Daten für Modal-Befüllung
+                                    // DEBUG: Event-Modal-Problem debuggen (Timeline View)
+                                    console.log('🔧 TIMELINE EVENT CLICK DEBUG:', {
+                                      event: event,
+                                      source: event.source,
+                                      hasId: !!event.id,
+                                      hasTitle: !!event.title,
+                                      hasStartTime: !!event.startTime,
+                                      hasEndTime: !!event.endTime,
+                                      location: event.location
+                                    });
+                                    
                                     // Event bearbeiten
                                     setEditingEvent(event);
                                     
@@ -1481,7 +1502,7 @@ export default function Calendar() {
                                       location: event.location || event.facilityName || '',
                                     };
                                     
-                                    // Formular mit Event-Daten befüllen
+                                    console.log('🔧 TIMELINE MODAL FORM DATA:', formData);
                                     
                                     eventForm.reset(formData);
                                     setShowEventModal(true);

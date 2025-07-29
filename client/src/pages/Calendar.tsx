@@ -795,7 +795,7 @@ export default function Calendar() {
         type: booking.type
       });
       
-      return {
+      const processedEvent = {
         ...booking,
         date: new Date(booking.startTime),
         time: format(new Date(booking.startTime), 'HH:mm'),
@@ -806,6 +806,20 @@ export default function Calendar() {
         typeLabel: getBookingTypeLabel(booking.type),
         facilityName: getFacilityName(booking.facilityId)
       };
+      
+      // Debug: Check time formatting
+      console.log('🕐 TIME PROCESSING DEBUG:', {
+        id: booking.id,
+        title: booking.title,
+        startTimeRaw: booking.startTime,
+        endTimeRaw: booking.endTime,
+        startTimeParsed: new Date(booking.startTime).toISOString(),
+        endTimeParsed: booking.endTime ? new Date(booking.endTime).toISOString() : 'null',
+        displayTime: processedEvent.time,
+        displayEndTime: processedEvent.endTime
+      });
+      
+      return processedEvent;
     })
   ];
 
@@ -1441,24 +1455,50 @@ export default function Calendar() {
                                   
                                   if (event.source === 'event') {
                                     // Event bearbeiten - verwende die Booking-Daten aber öffne Event-Modal
-                                    console.log('Opening event for editing:', event);
+                                    console.log('🔧 EVENT CLICK DEBUG - Opening event for editing:', event);
+                                    console.log('🔧 EVENT RAW DATA:', {
+                                      title: event.title,
+                                      startTime: event.startTime,
+                                      endTime: event.endTime,
+                                      time: event.time,
+                                      description: event.description,
+                                      location: event.location,
+                                      teamId: event.teamId
+                                    });
+                                    
                                     setEditingEvent(event);
                                     
-                                    // Korrigiere Datum-Formatierung für Event-Formular
-                                    const startDate = new Date(event.startTime);
-                                    const endDate = new Date(event.endTime);
+                                    try {
+                                      // Korrigiere Datum-Formatierung für Event-Formular
+                                      const startDate = new Date(event.startTime);
+                                      const endDate = new Date(event.endTime);
+                                      
+                                      console.log('🔧 PARSED DATES:', { 
+                                        startDate: startDate.toISOString(), 
+                                        endDate: endDate.toISOString(),
+                                        startValid: !isNaN(startDate.getTime()),
+                                        endValid: !isNaN(endDate.getTime())
+                                      });
+                                      
+                                      const formData = {
+                                        title: event.title || '',
+                                        description: event.description || '',
+                                        startDate: format(startDate, 'yyyy-MM-dd\'T\'HH:mm'),
+                                        endDate: format(endDate, 'yyyy-MM-dd\'T\'HH:mm'),
+                                        teamId: event.teamId ? String(event.teamId) : null,
+                                        location: event.location || '',
+                                      };
+                                      
+                                      console.log('🔧 FORM DATA TO SET:', formData);
+                                      
+                                      // Setze Formular-Werte für Event
+                                      eventForm.reset(formData);
+                                      
+                                      console.log('🔧 FORM RESET COMPLETE');
+                                    } catch (error) {
+                                      console.error('🚨 ERROR SETTING FORM DATA:', error);
+                                    }
                                     
-                                    console.log('Event dates:', { startDate, endDate });
-                                    
-                                    // Setze Formular-Werte für Event (verwende startTime/endTime statt startDate/endDate)
-                                    eventForm.reset({
-                                      title: event.title || '',
-                                      description: event.description || '',
-                                      startDate: format(startDate, 'yyyy-MM-dd\'T\'HH:mm'),
-                                      endDate: format(endDate, 'yyyy-MM-dd\'T\'HH:mm'),
-                                      teamId: event.teamId ? String(event.teamId) : null,
-                                      location: event.location || '',
-                                    });
                                     setShowEventModal(true);
                                   } else if (event.source === 'booking') {
                                     // Reset form with booking data - handle endTime correctly

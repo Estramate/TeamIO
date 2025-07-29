@@ -32,7 +32,10 @@ const eventFormSchema = z.object({
   description: z.string().optional(),
   startDate: z.string().min(1, "Startdatum ist erforderlich"),
   endDate: z.string().optional(),
-  teamId: z.union([z.string(), z.number()]).optional(),
+  teamId: z.union([z.string(), z.number(), z.null()]).optional().transform(val => {
+    if (val === "" || val === null || val === undefined) return null;
+    return Number(val);
+  }),
   location: z.string().optional(),
 });
 
@@ -173,7 +176,7 @@ export default function Calendar() {
       description: "",
       startDate: "",
       endDate: "",
-      teamId: "",
+      teamId: null, // Use null instead of empty string for optional team
       location: "",
     },
   });

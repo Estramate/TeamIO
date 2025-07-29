@@ -116,6 +116,7 @@ export const insertEventSchema = createInsertSchema(bookings, {
   endTime: z.string().min(1, "Endzeit ist erforderlich"),
   type: z.string().default("event"),
   location: z.string().optional().nullable(),
+  teamId: z.number().nullable().optional(), // Team is optional for events
 }).omit({
   id: true,
   clubId: true,

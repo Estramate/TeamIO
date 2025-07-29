@@ -20,9 +20,15 @@ export function useSmartNotifications() {
   const { showNotification } = useNotifications();
   const queryClient = useQueryClient();
   
-  // Track the previous club ID to detect actual club switches
-  const prevClubIdRef = useRef<number | null>(null);
-  const hasInitializedRef = useRef(false);
+  // Use localStorage to persist club switching state across page navigation
+  const getPreviousClubId = () => {
+    const stored = localStorage.getItem('clubflow-last-notified-club');
+    return stored ? parseInt(stored) : null;
+  };
+  
+  const setPreviousClubId = (clubId: number) => {
+    localStorage.setItem('clubflow-last-notified-club', clubId.toString());
+  };
 
   // Monitor new messages
   const { data: messages = [], dataUpdatedAt: messagesUpdatedAt } = useQuery<any[]>({
@@ -158,40 +164,33 @@ export function useSmartNotifications() {
     };
   }, [showNotification]);
 
-  // Club switching notifications - only trigger on actual club changes
+  // Club switching notifications - only trigger on manual user club switches
   useEffect(() => {
     if (!selectedClub?.id) return;
 
-    console.log('🔔 Club switch check:', {
-      currentClubId: selectedClub.id,
-      previousClubId: prevClubIdRef.current,
-      hasInitialized: hasInitializedRef.current,
-      clubName: selectedClub.name
-    });
-
-    // On first load, just store the current club ID without showing notification
-    if (!hasInitializedRef.current) {
-      prevClubIdRef.current = selectedClub.id;
-      hasInitializedRef.current = true;
-      console.log('🔔 First load - no notification');
-      return;
-    }
-
-    // Only show notification if the club ID actually changed
-    if (prevClubIdRef.current !== null && prevClubIdRef.current !== selectedClub.id) {
-      console.log('🔔 Club actually changed - showing notification');
-      showNotification({
-        title: `Verein gewechselt`,
-        message: `Sie haben zu "${selectedClub.name}" gewechselt`,
-        type: 'info',
-        priority: 'low'
-      });
+    const previousClubId = getPreviousClubId();
+    
+    // Only show notification if there was a previous club and it's different
+    // This prevents notifications on initial load and page navigation
+    if (previousClubId && previousClubId !== selectedClub.id) {
+      // Add a small delay to ensure this is not during app initialization
+      const timeoutId = setTimeout(() => {
+        showNotification({
+          title: `Verein gewechselt`,
+          message: `Sie haben zu "${selectedClub.name}" gewechselt`,
+          type: 'info',
+          priority: 'low'
+        });
+      }, 100);
+      
+      // Always update the stored club ID after checking
+      setPreviousClubId(selectedClub.id);
+      
+      return () => clearTimeout(timeoutId);
     } else {
-      console.log('🔔 Same club - no notification needed');
+      // Update stored club ID without notification
+      setPreviousClubId(selectedClub.id);
     }
-
-    // Update the previous club ID
-    prevClubIdRef.current = selectedClub.id;
   }, [selectedClub?.id, selectedClub?.name, showNotification]);
 
   return {

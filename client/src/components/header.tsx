@@ -172,10 +172,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   )}
                   
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/communication" className="text-center cursor-pointer">
-                      Alle Nachrichten anzeigen
-                    </Link>
+                  <DropdownMenuItem 
+                    className="text-center cursor-pointer"
+                    onClick={() => window.location.href = '/communication'}
+                  >
+                    Alle Nachrichten anzeigen
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

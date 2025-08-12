@@ -66,22 +66,60 @@ export function Landing() {
 
   const testimonials = [
     {
-      name: "Beta-Tester",
+      name: "Beta-Tester A",
       role: "Vereinsvorstand",
       content: "ClubFlow vereinfacht die digitale Vereinsverwaltung erheblich. Die intuitive Benutzeroberfläche und die umfassenden Funktionen machen die tägliche Vereinsarbeit deutlich effizienter.",
-      avatar: "BT"
+      avatar: "BT",
+      rating: 5
     },
     {
-      name: "Early Adopter", 
+      name: "Early Adopter B", 
       role: "Kassier",
       content: "Die Plattform bietet eine solide Grundlage für moderne Vereinsverwaltung. Besonders die Mitgliederverwaltung und Kommunikationsfunktionen sind sehr durchdacht konzipiert.",
-      avatar: "EA"
+      avatar: "EA",
+      rating: 4
     },
     {
-      name: "Test-Nutzer",
+      name: "Test-Nutzer C",
       role: "Trainer", 
       content: "Als Vereinsmanagement-Software zeigt ClubFlow großes Potenzial. Die Kalenderfunktionen und Platzbuchungen funktionieren bereits sehr gut in der aktuellen Version.",
-      avatar: "TN"
+      avatar: "TN",
+      rating: 5
+    },
+    {
+      name: "Beta-Tester D",
+      role: "Schriftführer",
+      content: "Die Kommunikationsfunktionen sind sehr hilfreich für unseren Verein. Protokolle und Ankündigungen kann ich jetzt zentral verwalten und alle Mitglieder erreichen effektiv.",
+      avatar: "BD",
+      rating: 4
+    },
+    {
+      name: "Pilot-Nutzer E",
+      role: "Jugendleiter",
+      content: "Besonders für die Jugendarbeit ist ClubFlow eine große Erleichterung. Eltern-Kommunikation und Terminplanung funktionieren endlich reibungslos und übersichtlich.",
+      avatar: "PE",
+      rating: 5
+    },
+    {
+      name: "Test-Verein F",
+      role: "Platzwart",
+      content: "Die Platzreservierung über ClubFlow hat unser Chaos beendet. Jetzt sehe ich auf einen Blick alle Buchungen und kann Konflikte vermeiden. Sehr praktisch!",
+      avatar: "TV",
+      rating: 4
+    },
+    {
+      name: "Alpha-Tester G",
+      role: "Mitgliederverwaltung",
+      content: "Endlich haben wir alle Mitgliederdaten zentral und DSGVO-konform. Die Beitragsverwaltung und Zahlungsübersicht spare mir Stunden an Arbeit jeden Monat.",
+      avatar: "AG",
+      rating: 5
+    },
+    {
+      name: "Feedback-Geber H",
+      role: "Vereinsobmann",
+      content: "ClubFlow wächst mit den Anforderungen unseres Vereins mit. Die regelmäßigen Updates und die responsive Entwicklung zeigen echtes Engagement für Benutzer.",
+      avatar: "FG",
+      rating: 4
     }
   ];
 
@@ -249,7 +287,7 @@ export function Landing() {
                 </div>
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">Sicher & Datenschutz</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  DSGVO-konform, deutsche Server, sichere Anmeldung - Ihre Daten bleiben in Deutschland
+                  DSGVO-konform, sichere Server, österreichische Standards - Ihre Daten sind bestens geschützt
                 </p>
               </div>
             </div>
@@ -272,33 +310,58 @@ export function Landing() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Testimonials Grid - Responsive 4-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 max-w-7xl mx-auto">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-8 shadow-sm">
+              <div key={index} className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 flex flex-col">
                 
-                {/* Quote */}
-                <p className="text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
+                {/* Rating Stars */}
+                <div className="flex items-center mb-4">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <svg
+                      key={i}
+                      className={`w-4 h-4 ${i < testimonial.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                  <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({testimonial.rating}/5)</span>
+                </div>
+
+                {/* Content */}
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-6 flex-grow">
                   "{testimonial.content}"
                 </p>
                 
                 {/* Author */}
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {testimonial.avatar}
-                    </span>
+                <div className="flex items-center mt-auto">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs shadow-sm">
+                    {testimonial.avatar}
                   </div>
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {testimonial.name}
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {testimonial.role}
-                    </div>
+                  <div className="ml-3">
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">{testimonial.name}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">{testimonial.role}</div>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Call to action below testimonials */}
+          <div className="mt-16 text-center">
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+              Werden auch Sie Teil unserer wachsenden Beta-Tester Community
+            </p>
+            <Button 
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium inline-flex items-center"
+              onClick={() => window.location.href = "/login"}
+            >
+              <span>Jetzt kostenlos testen</span>
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
           </div>
         </div>
       </section>

@@ -2420,6 +2420,9 @@ export class DatabaseStorage implements IStorage {
       authProvider: userData.authProvider,
       hasCompletedOnboarding: userData.hasCompletedOnboarding,
       isActive: userData.isActive,
+      isSuperAdmin: userData.isSuperAdmin || false, // INCLUDE Super Admin Status!
+      superAdminGrantedAt: userData.superAdminGrantedAt || null,
+      superAdminGrantedBy: userData.superAdminGrantedBy || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     }).returning();

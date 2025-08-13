@@ -220,6 +220,8 @@ router.post("/create-admin",
           superAdminGrantedAt: new Date(),
           superAdminGrantedBy: req.user?.claims?.sub || req.user?.id,
         });
+        
+        console.log(`🔧 Created NEW SUPER ADMIN via Super Admin panel: ${user.email} with isSuperAdmin = ${user.isSuperAdmin}`);
       }
       
       // Check if club exists

@@ -42,8 +42,13 @@ export function RegisterPage() {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const { toast } = useToast();
 
-  // Get token from URL params
-  const token = new URLSearchParams(window.location.search).get('token');
+  // Get token from URL params or path
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromParams = urlParams.get('token');
+  const tokenFromPath = window.location.pathname.startsWith('/invitation/') 
+    ? window.location.pathname.split('/invitation/')[1] 
+    : null;
+  const token = tokenFromParams || tokenFromPath;
 
   useEffect(() => {
     if (!token) {

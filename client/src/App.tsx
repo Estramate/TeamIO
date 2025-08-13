@@ -203,7 +203,7 @@ function Router() {
   }
 
   // Show register page regardless of authentication status (for invitation links)
-  if (window.location.pathname === '/register') {
+  if (window.location.pathname === '/register' || window.location.pathname.startsWith('/invitation/')) {
     return <RegisterPage />;
   }
 

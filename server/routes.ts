@@ -307,6 +307,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ==================== INVITATION ROUTES ====================
   
+
+  
   // GET /api/invitations/:token - Get invitation details for registration form
   app.get('/api/invitations/:token', asyncHandler(async (req: any, res: any) => {
     try {

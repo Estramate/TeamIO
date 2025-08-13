@@ -249,7 +249,7 @@ router.post("/create-admin",
 
       // Send invitation email with activation link
       const { sendEmail } = await import("../emailService");
-      const invitationUrl = `${req.protocol}://${req.hostname}/invitation/${invitationToken}`;
+      const invitationUrl = `https://clubflow.replit.app/invitation/${invitationToken}`;
       
       const emailSent = await sendEmail({
         to: validatedData.email,

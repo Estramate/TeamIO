@@ -129,7 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId = req.session.passport.user.claims.sub;
         userEmail = req.session.passport.user.email;
       }
-      // Direct session data
+      // Direct session data (Email-authenticated users)
       else if (!userId && req.session?.user) {
         userId = req.session.user.id;
         userEmail = req.session.user.email;

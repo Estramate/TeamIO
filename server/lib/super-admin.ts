@@ -71,10 +71,18 @@ export async function getAllSuperAdministrators(): Promise<any[]> {
  * Middleware to require super administrator access (async)
  */
 export function requiresSuperAdmin(req: any, res: any, next: any) {
-  const user = req.user;
+  let user = req.user;
   
-  if (!user) {
-    console.log('🔒 Super Admin Auth Failed: No user in request');
+  // For email-authenticated users, create user object from session if not present
+  if (!user && req.session?.user) {
+    user = { 
+      id: req.session.user.id, 
+      email: req.session.user.email 
+    };
+  }
+  
+  if (!user && !req.session?.user) {
+    console.log('🔒 Super Admin Auth Failed: No user in request or session');
     return res.status(401).json({ error: 'Authentication required' });
   }
   

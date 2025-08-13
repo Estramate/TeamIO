@@ -4,8 +4,9 @@ import { logger } from './logger';
 // Check for SendGrid API key
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 
-// Verified sender address for club.flow.2025 domain
+// Verified sender address - using Gmail for DMARC compliance
 const FROM_EMAIL = 'club.flow.2025@gmail.com';
+const FROM_NAME = 'ClubFlow Team Austria';
 
 let mailService: MailService | null = null;
 

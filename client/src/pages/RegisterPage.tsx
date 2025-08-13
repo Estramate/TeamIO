@@ -40,6 +40,8 @@ export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [invitationData, setInvitationData] = useState<any>(null);
+  const [loadingInvitation, setLoadingInvitation] = useState(true);
   const { toast } = useToast();
 
   // Get token from URL params or path
@@ -49,17 +51,6 @@ export function RegisterPage() {
     ? window.location.pathname.split('/invitation/')[1] 
     : null;
   const token = tokenFromParams || tokenFromPath;
-
-  useEffect(() => {
-    if (!token) {
-      toast({
-        title: '❌ Ungültiger Link',
-        description: 'Dieser Registrierungslink ist ungültig oder abgelaufen.',
-        variant: 'destructive',
-      });
-      setLocation('/login');
-    }
-  }, [token, setLocation, toast]);
 
   const form = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
@@ -71,6 +62,51 @@ export function RegisterPage() {
       lastName: '',
     },
   });
+
+  // Load invitation data when component mounts
+  useEffect(() => {
+    if (!token) {
+      toast({
+        title: '❌ Ungültiger Link',
+        description: 'Dieser Registrierungslink ist ungültig oder abgelaufen.',
+        variant: 'destructive',
+      });
+      setLocation('/login');
+      return;
+    }
+
+    // Fetch invitation details
+    fetch(`/api/invitations/${token}`, { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Invitation not found');
+        }
+        return res.json();
+      })
+      .then(data => {
+        setInvitationData(data);
+        setLoadingInvitation(false);
+        
+        // Pre-fill the form with invitation data
+        form.reset({
+          email: data.email,
+          password: '',
+          confirmPassword: '',
+          firstName: '',
+          lastName: '',
+        });
+      })
+      .catch(error => {
+        console.error('Error loading invitation:', error);
+        toast({
+          title: '❌ Ungültige Einladung',
+          description: 'Diese Einladung ist ungültig oder abgelaufen.',
+          variant: 'destructive',
+        });
+        setLoadingInvitation(false);
+        setLocation('/login');
+      });
+  }, [token, setLocation, toast, form]);
 
   const registrationMutation = useMutation({
     mutationFn: async (data: RegistrationFormData) => {
@@ -100,12 +136,14 @@ export function RegisterPage() {
     registrationMutation.mutate(data);
   };
 
-  if (!token) {
+  if (!token || loadingInvitation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Überprüfe Einladungslink...</p>
+          <p className="text-muted-foreground">
+            {!token ? 'Überprüfe Einladungslink...' : 'Lade Einladung...'}
+          </p>
         </div>
       </div>
     );
@@ -162,7 +200,13 @@ export function RegisterPage() {
           <CardHeader>
             <CardTitle>Registrierungsdetails</CardTitle>
             <CardDescription>
-              Füllen Sie alle Felder aus, um Ihr Konto zu erstellen
+              {invitationData ? (
+                <>
+                  Einladung für <strong>{invitationData.clubName}</strong> als {invitationData.roleName}
+                </>
+              ) : (
+                'Füllen Sie alle Felder aus, um Ihr Konto zu erstellen'
+              )}
             </CardDescription>
           </CardHeader>
           
@@ -214,11 +258,15 @@ export function RegisterPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="ihre@email.com"
-                    className="pl-9"
-                    {...form.register('email')}
+                    className="pl-9 bg-muted cursor-not-allowed"
+                    value={invitationData?.email || ''}
+                    readOnly
+                    disabled
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Diese E-Mail-Adresse wurde für die Einladung verwendet und kann nicht geändert werden.
+                </p>
                 {form.formState.errors.email && (
                   <p className="text-sm text-destructive">
                     {form.formState.errors.email.message}

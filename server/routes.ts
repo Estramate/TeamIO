@@ -305,6 +305,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // ==================== INVITATION ROUTES ====================
+  
+  // GET /api/invitations/:token - Get invitation details for registration form
+  app.get('/api/invitations/:token', asyncHandler(async (req: any, res: any) => {
+    try {
+      const token = req.params.token;
+      const storage = (await import("./storage")).default;
+      
+      const invitation = await storage.getInvitationByToken(token);
+      if (!invitation) {
+        return res.status(404).json({ 
+          error: 'Ungültiger oder abgelaufener Einladungslink' 
+        });
+      }
+      
+      if (invitation.status !== 'pending') {
+        return res.status(400).json({ 
+          error: 'Diese Einladung wurde bereits verwendet' 
+        });
+      }
+      
+      if (new Date() > invitation.expiresAt) {
+        return res.status(400).json({ 
+          error: 'Diese Einladung ist abgelaufen' 
+        });
+      }
+      
+      // Get club and role information
+      const club = await storage.getClub(invitation.clubId);
+      const role = await storage.getRoleById(invitation.roleId);
+      
+      res.json({
+        email: invitation.email,
+        clubId: invitation.clubId,
+        clubName: club?.name || 'Unbekannter Verein',
+        roleId: invitation.roleId,
+        roleName: role?.displayName || 'Mitglied',
+        expiresAt: invitation.expiresAt,
+        token: invitation.token
+      });
+    } catch (error) {
+      console.error('Error fetching invitation details:', error);
+      res.status(500).json({ error: 'Fehler beim Laden der Einladung' });
+    }
+  }));
+
+  // ==================== AUTH ROUTES ====================
+  
   // Auth routes (Multi-provider support) - NO MIDDLEWARE, handles auth internally
   app.get('/api/auth/user', async (req: any, res: any) => {
     try {

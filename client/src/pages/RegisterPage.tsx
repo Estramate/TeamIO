@@ -87,13 +87,13 @@ export function RegisterPage() {
         setInvitationData(data);
         setLoadingInvitation(false);
         
-        // Pre-fill the form with invitation data
+        // Pre-fill the form with invitation data including existing names if available
         form.reset({
           email: data.email,
           password: '',
           confirmPassword: '',
-          firstName: '',
-          lastName: '',
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
         });
       })
       .catch(error => {
@@ -220,10 +220,16 @@ export function RegisterPage() {
                   <Input
                     id="firstName"
                     placeholder="Ihr Vorname"
-                    className="pl-9"
+                    className={`pl-9 ${invitationData?.isExistingUser && invitationData?.firstName ? "bg-gray-50 dark:bg-gray-800" : ""}`}
+                    readOnly={invitationData?.isExistingUser && !!invitationData?.firstName}
                     {...form.register('firstName')}
                   />
                 </div>
+                {invitationData?.isExistingUser && invitationData?.firstName && (
+                  <p className="text-sm text-muted-foreground">
+                    Vorname wird aus Ihrem bestehenden Profil verwendet
+                  </p>
+                )}
                 {form.formState.errors.firstName && (
                   <p className="text-sm text-destructive">
                     {form.formState.errors.firstName.message}
@@ -239,10 +245,16 @@ export function RegisterPage() {
                   <Input
                     id="lastName"
                     placeholder="Ihr Nachname"
-                    className="pl-9"
+                    className={`pl-9 ${invitationData?.isExistingUser && invitationData?.lastName ? "bg-gray-50 dark:bg-gray-800" : ""}`}
+                    readOnly={invitationData?.isExistingUser && !!invitationData?.lastName}
                     {...form.register('lastName')}
                   />
                 </div>
+                {invitationData?.isExistingUser && invitationData?.lastName && (
+                  <p className="text-sm text-muted-foreground">
+                    Nachname wird aus Ihrem bestehenden Profil verwendet
+                  </p>
+                )}
                 {form.formState.errors.lastName && (
                   <p className="text-sm text-destructive">
                     {form.formState.errors.lastName.message}

@@ -155,76 +155,78 @@ export async function sendUserInvitation(invitationData: InvitationData): Promis
 }
 
 /**
- * Register new user from invitation
+ * Register user from invitation - activates existing user and sets password
  */
 export async function registerUserFromInvitation(registrationData: RegistrationData): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
     const { email, password, firstName, lastName, token } = registrationData;
 
+    console.log('🔑 Registration attempt with token:', token);
+    console.log('🔑 Registration data:', { email, firstName, lastName });
+
     // Validate invitation token
     const invitation = await storage.getInvitationByToken(token);
     if (!invitation) {
+      console.log('❌ Invalid invitation token:', token);
       return { success: false, error: 'Ungültiger oder abgelaufener Einladungslink' };
     }
 
+    console.log('✅ Found valid invitation:', invitation);
+
     if (invitation.status !== 'pending') {
+      console.log('❌ Invitation already used, status:', invitation.status);
       return { success: false, error: 'Diese Einladung wurde bereits verwendet' };
     }
 
     if (new Date() > invitation.expiresAt) {
+      console.log('❌ Invitation expired at:', invitation.expiresAt);
       return { success: false, error: 'Diese Einladung ist abgelaufen' };
     }
 
     if (invitation.email !== email) {
+      console.log('❌ Email mismatch - invitation:', invitation.email, 'provided:', email);
       return { success: false, error: 'E-Mail-Adresse stimmt nicht mit der Einladung überein' };
     }
 
-    // Check if user already exists
+    // Check if user already exists (should exist for admin invitations)
     const existingUser = await storage.getUserByEmail(email);
-    if (existingUser) {
-      return { success: false, error: 'Ein Benutzer mit dieser E-Mail-Adresse existiert bereits' };
+    if (!existingUser) {
+      console.log('❌ User does not exist for invitation:', email);
+      return { success: false, error: 'Benutzer wurde nicht gefunden. Kontaktieren Sie den Administrator.' };
     }
+
+    console.log('✅ Found existing user:', existingUser.id);
 
     // Hash password
     const passwordHash = await hashPassword(password);
 
-    // Create user
-    const userId = crypto.randomUUID();
-    const user = await storage.upsertUser({
-      id: userId,
-      email: email,
+    // Update existing user - set password and activate (using correct field names)
+    const user = await storage.updateUser(existingUser.id, {
       passwordHash: passwordHash,
       firstName: firstName,
       lastName: lastName,
-      authProvider: 'email',
       isActive: true,
       hasCompletedOnboarding: true,
-      profileImageUrl: undefined,
-      twoFactorSecret: undefined,
-      twoFactorEnabled: false,
-      twoFactorBackupCodes: undefined,
-      providerUserId: undefined,
-      providerData: undefined,
-      preferredLanguage: 'de',
-      isSuperAdmin: false,
-      superAdminGrantedAt: undefined,
-      superAdminGrantedBy: undefined,
-      lastLoginAt: undefined
     });
 
-    // Create club membership
-    await storage.createClubMembership({
-      userId: user.id,
-      clubId: invitation.clubId,
-      roleId: invitation.roleId,
-      status: 'active'
-    });
+    console.log('✅ User updated and activated:', user.id);
+
+    // Update club membership to active (if it exists and is pending)
+    const membership = await storage.getUserClubMembership(existingUser.id, invitation.clubId);
+    if (membership && membership.status === 'pending') {
+      await storage.updateClubMembership(existingUser.id, invitation.clubId, {
+        status: 'active'
+      });
+      console.log('✅ Club membership activated for club:', invitation.clubId);
+    }
 
     // Mark invitation as accepted
     await storage.updateEmailInvitation(invitation.id, {
       status: 'accepted',
       acceptedAt: new Date()
     });
+
+    console.log('✅ Invitation marked as accepted:', invitation.id);
 
     logger.info('User registered from invitation', { 
       userId: user.id, 
@@ -234,6 +236,7 @@ export async function registerUserFromInvitation(registrationData: RegistrationD
 
     return { success: true, user };
   } catch (error: any) {
+    console.error('❌ Registration error:', error);
     logger.error('Failed to register user from invitation', { error: error.message, email: registrationData.email });
     return { success: false, error: 'Fehler bei der Registrierung' };
   }

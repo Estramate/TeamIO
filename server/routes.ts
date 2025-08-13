@@ -338,14 +338,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const club = await storage.getClub(invitation.clubId);
       const role = await storage.getRoleById(invitation.roleId);
       
+      // Get existing user data if available
+      const existingUser = await storage.getUserByEmail(invitation.email);
+      
       res.json({
         email: invitation.email,
+        firstName: existingUser?.firstName || '',
+        lastName: existingUser?.lastName || '',
         clubId: invitation.clubId,
         clubName: club?.name || 'Unbekannter Verein',
         roleId: invitation.roleId,
         roleName: role?.displayName || 'Mitglied',
         expiresAt: invitation.expiresAt,
-        token: invitation.token
+        token: invitation.token,
+        isExistingUser: !!existingUser
       });
     } catch (error) {
       console.error('Error fetching invitation details:', error);
@@ -2785,9 +2791,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register user from invitation
   app.post('/api/auth/register', asyncHandler(async (req: any, res: any) => {
     try {
+      console.log('🚀 Registration request received:', req.body);
+      
       const validatedData = userRegistrationSchema.parse(req.body);
+      console.log('✅ Validation passed:', validatedData);
       
       const result = await registerUserFromInvitation(validatedData);
+      console.log('📝 Registration result:', result);
       
       if (result.success) {
         res.json({ message: 'Registrierung erfolgreich', user: result.user });
@@ -2795,6 +2805,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(400).json({ message: result.error });
       }
     } catch (error: any) {
+      console.error('❌ Registration route error:', error);
       logger.error('Failed to register user', { error: error.message });
       res.status(500).json({ message: 'Fehler bei der Registrierung' });
     }

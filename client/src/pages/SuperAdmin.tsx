@@ -4,6 +4,7 @@ import { useSuperAdminStatus } from '@/components/SuperAdminBadge';
 import { useRoles } from '@/hooks/useRoles';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { toastService } from '@/lib/toast-service';
+import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -488,33 +489,47 @@ export default function SuperAdminPage() {
           onClose={() => setShowEditUser(null)}
           onSave={async (data) => {
             try {
-
+              console.log('💾 Saving user data:', data);
               
-              // Use the new PATCH endpoint
+              // Use the new PATCH endpoint with proper credentials
               const response = await fetch(`/api/super-admin/users/${showEditUser.id}`, {
                 method: 'PATCH',
                 headers: {
                   'Content-Type': 'application/json',
                 },
+                credentials: 'include', // Include cookies for authentication
                 body: JSON.stringify(data),
               });
               
+              console.log('📡 Response status:', response.status);
+              
               if (!response.ok) {
                 const errorData = await response.json();
+                console.error('❌ Server error:', errorData);
                 throw new Error(errorData.error || 'Failed to update user');
               }
               
               const result = await response.json();
-              console.log('User update success:', result);
+              console.log('✅ User update success:', result);
+              
+              // Show success toast
+              toast({
+                title: "Benutzer aktualisiert",
+                description: "Die Änderungen wurden erfolgreich gespeichert.",
+              });
               
               // Invalidate queries to refresh data
               queryClient.invalidateQueries({ queryKey: ['/api/super-admin/users'] });
               queryClient.invalidateQueries({ queryKey: ['/api/super-admin/clubs'] });
               
               setShowEditUser(null);
-            } catch (error) {
-              console.error('Error updating user:', error);
-              // Add toast notification here in production
+            } catch (error: any) {
+              console.error('❌ Error updating user:', error);
+              toast({
+                title: "Fehler beim Speichern",
+                description: error.message || "Die Änderungen konnten nicht gespeichert werden.",
+                variant: "destructive",
+              });
             }
           }}
           isLoading={false}

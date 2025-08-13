@@ -878,7 +878,7 @@ const updateUserSchema = z.object({
     roleId: z.number().optional(), // Actual role ID used for updates
     roleName: z.string().optional(),
     roleDisplayName: z.string().optional(),
-    status: z.enum(['active', 'inactive', 'suspended']),
+    status: z.enum(['active', 'inactive', 'suspended', 'pending']),
     isNew: z.boolean().optional(),
     isModified: z.boolean().optional(),
     toDelete: z.boolean().optional(),

@@ -206,7 +206,7 @@ router.post("/create-admin",
           });
         }
       } else {
-        // Create new user with temporary/incomplete data (NOT ACTIVE YET)
+        // Create new SUPER ADMINISTRATOR with temporary/incomplete data (NOT ACTIVE YET)
         const userId = `admin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         user = await storage.createUser({
           id: userId,
@@ -216,6 +216,9 @@ router.post("/create-admin",
           authProvider: 'email',
           hasCompletedOnboarding: false,
           isActive: false, // INACTIVE until invitation is completed!
+          isSuperAdmin: true, // SUPER ADMINISTRATOR created via Super Admin panel!
+          superAdminGrantedAt: new Date(),
+          superAdminGrantedBy: req.user?.claims?.sub || req.user?.id,
         });
       }
       

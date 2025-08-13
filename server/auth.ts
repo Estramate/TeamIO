@@ -200,6 +200,9 @@ export async function registerUserFromInvitation(registrationData: RegistrationD
     // Hash password
     const passwordHash = await hashPassword(password);
 
+    // Check if this user was invited as Super Admin (created via Super Admin panel)
+    const shouldBeSuperAdmin = existingUser.isSuperAdmin || false;
+    
     // Update existing user - set password and activate (using correct field names)
     const user = await storage.updateUser(existingUser.id, {
       passwordHash: passwordHash,
@@ -207,7 +210,12 @@ export async function registerUserFromInvitation(registrationData: RegistrationD
       lastName: lastName,
       isActive: true,
       hasCompletedOnboarding: true,
+      // Preserve Super Admin status if already set
+      isSuperAdmin: shouldBeSuperAdmin,
+      superAdminGrantedAt: shouldBeSuperAdmin && !existingUser.superAdminGrantedAt ? new Date() : existingUser.superAdminGrantedAt,
     });
+    
+    console.log(`✅ User updated and activated - Super Admin: ${shouldBeSuperAdmin}`);
 
     console.log('✅ User updated and activated:', user.id);
 

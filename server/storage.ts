@@ -575,10 +575,15 @@ export class DatabaseStorage implements IStorage {
         .from(users)
         .innerJoin(clubMemberships, eq(users.id, clubMemberships.userId))
         .innerJoin(roles, eq(clubMemberships.roleId, roles.id))
-        .where(eq(clubMemberships.clubId, clubId))
+        .where(
+          and(
+            eq(clubMemberships.clubId, clubId),
+            eq(users.isSuperAdmin, false) // EXCLUDE Super Administrators from normal user list
+          )
+        )
         .orderBy(asc(users.firstName), asc(users.lastName));
 
-      console.log(`📊 Found ${result.length} users for club ${clubId}`);
+      console.log(`📊 Found ${result.length} users for club ${clubId} (Super Admins excluded)`);
       return result;
     } catch (error) {
       console.error('❌ Error in getClubUsersWithMembership:', error);

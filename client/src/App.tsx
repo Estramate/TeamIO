@@ -120,48 +120,58 @@ function Router() {
       fetch('/api/user/memberships/status', { credentials: 'include' })
         .then(res => res.ok ? res.json() : { hasMemberships: false })
         .then(membershipStatus => {
-
+          console.log('🔍 Membership Status Check:', membershipStatus);
           
           if (membershipStatus.hasMemberships) {
             // User has memberships, check for active ones
             if (membershipStatus.activeMemberships > 0) {
               // User has active memberships - skip onboarding entirely
-
+              console.log('✅ User has active memberships, proceeding to dashboard');
               setShowOnboarding(false);
               
-              // Wenn kein Club ausgewählt ist, lade verfügbare Clubs und wähle intelligente aus
-              if (!selectedClub) {
-                fetch('/api/clubs', { credentials: 'include' })
-                  .then(res => res.ok ? res.json() : [])
-                  .then(clubs => {
-                    if (clubs && clubs.length > 0) {
-                      // Versuche den zuletzt ausgewählten Club zu finden (falls localStorage nicht vollständig)
-                      const storedClubId = localStorage.getItem('clubflow-selected-club');
-                      let targetClub = clubs[0]; // Fallback zum ersten Club
-                      
-                      if (storedClubId) {
-                        try {
-                          const parsed = JSON.parse(storedClubId);
-                          const lastClubId = parsed?.state?.selectedClub?.id;
-                          const foundClub = clubs.find((club: any) => club.id === lastClubId);
-                          if (foundClub) {
-                            targetClub = foundClub;
-                            console.log('🎯 Restoring last selected club:', targetClub.name);
-                          } else {
-                            console.log('🎯 Last club not found, selecting first available:', targetClub.name);
-                          }
-                        } catch (e) {
-                          console.log('🎯 Could not parse stored club, selecting first available:', targetClub.name);
+              // Always load clubs and auto-select intelligently (even if club seems selected)
+              fetch('/api/clubs', { credentials: 'include' })
+                .then(res => res.ok ? res.json() : [])
+                .then(clubs => {
+                  console.log('📋 Available clubs:', clubs?.map((c: any) => ({ id: c.id, name: c.name })));
+                  
+                  if (clubs && clubs.length > 0) {
+                    // Smart club selection logic
+                    let targetClub = clubs[0]; // Fallback to first club
+                    
+                    // Try to restore last selected club from localStorage
+                    const storedClubId = localStorage.getItem('clubflow-selected-club');
+                    if (storedClubId) {
+                      try {
+                        const parsed = JSON.parse(storedClubId);
+                        const lastClubId = parsed?.state?.selectedClub?.id;
+                        const foundClub = clubs.find((club: any) => club.id === lastClubId);
+                        if (foundClub) {
+                          targetClub = foundClub;
+                          console.log('🎯 Restoring last selected club:', targetClub.name);
+                        } else {
+                          console.log('🎯 Last club not found, auto-selecting first available:', targetClub.name);
                         }
-                      } else {
-                        console.log('🎯 No stored club found, auto-selecting first club:', targetClub.name);
+                      } catch (e) {
+                        console.log('🎯 Could not parse stored club, auto-selecting first available:', targetClub.name);
                       }
-                      
-                      setSelectedClub(targetClub);
+                    } else {
+                      console.log('🎯 No stored club found, auto-selecting first club:', targetClub.name);
                     }
-                  })
-                  .catch(err => console.error('Error fetching clubs:', err));
-              }
+                    
+                    // Always set the club, even if one is already selected (ensures consistency)
+                    console.log('🏟️ Setting selected club:', targetClub.name, 'ID:', targetClub.id);
+                    setSelectedClub(targetClub);
+                  } else {
+                    console.log('⚠️ No clubs found - user might need onboarding');
+                    setShowOnboarding(true);
+                  }
+                })
+                .catch(err => {
+                  console.error('Error fetching clubs:', err);
+                  // If we can't fetch clubs, show onboarding as fallback
+                  setShowOnboarding(true);
+                });
             } else {
               // User has pending memberships but no active ones - show pending dashboard
               console.log('⏳ User has pending memberships, showing pending dashboard');

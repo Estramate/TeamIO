@@ -140,14 +140,35 @@ export async function setupAuth(app: Express) {
     if (process.env.NODE_ENV === 'development') {
       console.log('DEV MODE - Simple redirect after clearing cookies');
       
+      // Add client-side script to clear localStorage and force fresh reload
+      const clearStorageScript = `
+        <html>
+          <head><title>Abmeldung...</title></head>
+          <body>
+            <div style="text-align: center; padding: 50px; font-family: Arial;">
+              <h2>Erfolgreich abgemeldet</h2>
+              <p>Sie werden weitergeleitet...</p>
+            </div>
+            <script>
+              console.log('🧹 Clearing all localStorage on logout');
+              localStorage.removeItem('clubflow-selected-club');
+              localStorage.removeItem('clubflow-navigation');
+              localStorage.removeItem('clubflow-theme');
+              setTimeout(() => window.location.href = '/', 1000);
+            </script>
+          </body>
+        </html>
+      `;
+      
       // Anti-cache headers
       res.set({
         'Cache-Control': 'no-cache, no-store, must-revalidate, private',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'Content-Type': 'text/html'
       });
       
-      return res.redirect('/');
+      return res.send(clearStorageScript);
     }
 
     // Production mode - use proper Replit logout

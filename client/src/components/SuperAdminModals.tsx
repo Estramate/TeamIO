@@ -29,7 +29,8 @@ import {
   Crown, 
   AlertTriangle,
   Calendar,
-  Globe
+  Globe,
+  Plus
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { toast } from '@/hooks/use-toast';
@@ -547,159 +548,216 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: EditUs
 
           {/* Club Memberships */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Vereinszugehörigkeiten</h3>
+            <h3 className="text-lg font-medium flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Vereinszugehörigkeiten
+            </h3>
             
             {/* Existing Memberships */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {formData.clubMemberships.map((membership: any, index: number) => (
                 <div key={index} className={cn(
-                  "flex items-center gap-3 p-3 border rounded-lg",
-                  membership.toDelete ? "opacity-50 bg-red-50" : ""
+                  "p-4 border rounded-lg bg-gray-50/50 transition-all duration-200",
+                  membership.toDelete ? "opacity-50 bg-red-50 border-red-200" : "hover:bg-gray-50"
                 )}>
-                  <div className="flex-1 grid grid-cols-3 gap-3">
-                    <div>
-                      <Label className="text-xs">Verein</Label>
-                      <p className="text-sm font-medium">{membership.clubName}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Rolle</Label>
-                      <Select
-                        value={membership.roleId?.toString() || '3'}
-                        onValueChange={(value) => handleUpdateMembership(index, 'roleId', parseInt(value))}
-                        disabled={membership.toDelete}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-gray-900">{membership.clubName}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveMembership(index)}
+                        className={cn(
+                          "h-8 px-3 text-xs font-medium rounded-md transition-colors",
+                          membership.toDelete 
+                            ? "text-green-700 hover:text-green-800 hover:bg-green-100" 
+                            : "text-red-600 hover:text-red-700 hover:bg-red-100"
+                        )}
                       >
-                        <SelectTrigger className="h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {rolesLoading ? (
-                            <SelectItem value="loading" disabled>
-                              Lade Rollen...
-                            </SelectItem>
-                          ) : roles && roles.length > 0 ? (
-                            roles.map((role: any) => (
-                              <SelectItem key={role.id} value={role.id.toString()}>
-                                {role.displayName}
+                        {membership.toDelete ? "Wiederherstellen" : "Entfernen"}
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Rolle</Label>
+                        <Select
+                          value={membership.roleId?.toString() || '3'}
+                          onValueChange={(value) => handleUpdateMembership(index, 'roleId', parseInt(value))}
+                          disabled={membership.toDelete}
+                        >
+                          <SelectTrigger className="w-full h-10 bg-white border-gray-300 hover:border-blue-400 focus:border-blue-500 transition-colors">
+                            <SelectValue placeholder="Rolle wählen..." />
+                          </SelectTrigger>
+                          <SelectContent className="max-w-xs">
+                            {rolesLoading ? (
+                              <SelectItem value="loading" disabled>
+                                Lade Rollen...
                               </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="no-roles" disabled>
-                              Keine Rollen verfügbar
+                            ) : roles && roles.length > 0 ? (
+                              roles.map((role: any) => (
+                                <SelectItem key={role.id} value={role.id.toString()}>
+                                  {role.displayName}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="no-roles" disabled>
+                                Keine Rollen verfügbar
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Status</Label>
+                        <Select
+                          value={membership.status}
+                          onValueChange={(value) => handleUpdateMembership(index, 'status', value)}
+                          disabled={membership.toDelete}
+                        >
+                          <SelectTrigger className="w-full h-10 bg-white border-gray-300 hover:border-blue-400 focus:border-blue-500 transition-colors">
+                            <SelectValue placeholder="Status wählen..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                Aktiv
+                              </div>
                             </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Status</Label>
-                      <Select
-                        value={membership.status}
-                        onValueChange={(value) => handleUpdateMembership(index, 'status', value)}
-                        disabled={membership.toDelete}
-                      >
-                        <SelectTrigger className="h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Aktiv</SelectItem>
-                          <SelectItem value="inactive">Inaktiv</SelectItem>
-                          <SelectItem value="suspended">Gesperrt</SelectItem>
-                        </SelectContent>
-                      </Select>
+                            <SelectItem value="inactive">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                Inaktiv
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="suspended">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                Gesperrt
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveMembership(index)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    {membership.toDelete ? "Wiederherstellen" : "Entfernen"}
-                  </Button>
                 </div>
               ))}
             </div>
 
             {/* Add New Membership */}
-            <div className="border-2 border-dashed border-gray-200 rounded-lg p-4">
-              <Label className="text-sm font-medium mb-3 block">Neue Vereinszugehörigkeit hinzufügen (Debug: {allClubs.length} Vereine)</Label>
-              <div className="grid grid-cols-4 gap-3">
-                <div>
-                  <Select
-                    value={newMembership.clubId}
-                    onValueChange={(value) => setNewMembership({ ...newMembership, clubId: value })}
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue placeholder="Verein wählen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {allClubs.length === 0 ? (
-                        <SelectItem value="no-clubs" disabled>
-                          Lade Vereine...
-                        </SelectItem>
-                      ) : (
-                        allClubs
-                          .filter(club => !formData.clubMemberships.some((m: any) => m.clubId === club.id && !m.toDelete))
-                          .map((club) => (
-                            <SelectItem key={club.id} value={club.id.toString()}>
-                              {club.name} (ID: {club.id})
+            <div className="border-2 border-dashed border-blue-200 rounded-lg p-4 bg-blue-50/30 hover:bg-blue-50/50 transition-colors">
+              <div className="flex items-center gap-2 mb-4">
+                <Plus className="h-4 w-4 text-blue-600" />
+                <Label className="text-sm font-medium text-gray-800">Neue Vereinszugehörigkeit hinzufügen</Label>
+                <span className="text-xs text-gray-500">({allClubs.length} Vereine verfügbar)</span>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">Verein</Label>
+                    <Select
+                      value={newMembership.clubId}
+                      onValueChange={(value) => setNewMembership({ ...newMembership, clubId: value })}
+                    >
+                      <SelectTrigger className="h-10 bg-white border-gray-300 hover:border-blue-400 focus:border-blue-500 transition-colors">
+                        <SelectValue placeholder="Verein wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allClubs.length === 0 ? (
+                          <SelectItem value="no-clubs" disabled>
+                            Lade Vereine...
+                          </SelectItem>
+                        ) : (
+                          allClubs
+                            .filter(club => !formData.clubMemberships.some((m: any) => m.clubId === club.id && !m.toDelete))
+                            .map((club) => (
+                              <SelectItem key={club.id} value={club.id.toString()}>
+                                <div className="flex items-center gap-2">
+                                  <Building2 className="h-3 w-3" />
+                                  {club.name}
+                                </div>
+                              </SelectItem>
+                            ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">Rolle</Label>
+                    <Select
+                      value={newMembership.roleId?.toString()}
+                      onValueChange={(value) => setNewMembership({ ...newMembership, roleId: parseInt(value) })}
+                    >
+                      <SelectTrigger className="h-10 bg-white border-gray-300 hover:border-blue-400 focus:border-blue-500 transition-colors">
+                        <SelectValue placeholder="Rolle wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {rolesLoading ? (
+                          <SelectItem value="loading" disabled>
+                            Lade Rollen...
+                          </SelectItem>
+                        ) : roles && roles.length > 0 ? (
+                          roles.map((role: any) => (
+                            <SelectItem key={role.id} value={role.id.toString()}>
+                              {role.displayName}
                             </SelectItem>
                           ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Select
-                    value={newMembership.roleId?.toString()}
-                    onValueChange={(value) => setNewMembership({ ...newMembership, roleId: parseInt(value) })}
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rolesLoading ? (
-                        <SelectItem value="loading" disabled>
-                          Lade Rollen...
-                        </SelectItem>
-                      ) : roles && roles.length > 0 ? (
-                        roles.map((role: any) => (
-                          <SelectItem key={role.id} value={role.id.toString()}>
-                            {role.displayName}
+                        ) : (
+                          <SelectItem value="no-roles" disabled>
+                            Keine Rollen verfügbar
                           </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="no-roles" disabled>
-                          Keine Rollen verfügbar
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">Status</Label>
+                    <Select
+                      value={newMembership.status}
+                      onValueChange={(value) => setNewMembership({ ...newMembership, status: value })}
+                    >
+                      <SelectTrigger className="h-10 bg-white border-gray-300 hover:border-blue-400 focus:border-blue-500 transition-colors">
+                        <SelectValue placeholder="Status wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            Aktiv
+                          </div>
                         </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
+                        <SelectItem value="inactive">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                            Inaktiv
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div>
-                  <Select
-                    value={newMembership.status}
-                    onValueChange={(value) => setNewMembership({ ...newMembership, status: value })}
+                
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={handleAddMembership}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors flex items-center gap-2"
+                    disabled={!newMembership.clubId || !newMembership.roleId}
                   >
-                    <SelectTrigger className="h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Aktiv</SelectItem>
-                      <SelectItem value="inactive">Inaktiv</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <Plus className="h-4 w-4" />
+                    Hinzufügen
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleAddMembership}
-                  disabled={!newMembership.clubId}
-                  className="h-8"
-                >
-                  Hinzufügen
-                </Button>
               </div>
             </div>
           </div>

@@ -2420,12 +2420,15 @@ export class DatabaseStorage implements IStorage {
       authProvider: userData.authProvider,
       hasCompletedOnboarding: userData.hasCompletedOnboarding,
       isActive: userData.isActive,
-      isSuperAdmin: userData.isSuperAdmin || false, // INCLUDE Super Admin Status!
-      superAdminGrantedAt: userData.superAdminGrantedAt || null,
-      superAdminGrantedBy: userData.superAdminGrantedBy || null,
+      // ONLY SET SUPER ADMIN if explicitly passed (for Super Admin creation)
+      isSuperAdmin: userData.isSuperAdmin === true ? true : false,
+      superAdminGrantedAt: userData.isSuperAdmin === true ? (userData.superAdminGrantedAt || null) : null,
+      superAdminGrantedBy: userData.isSuperAdmin === true ? (userData.superAdminGrantedBy || null) : null,
       createdAt: new Date(),
       updatedAt: new Date(),
     }).returning();
+    
+    console.log(`👤 Created user ${newUser.email} - Super Admin: ${newUser.isSuperAdmin}`);
     return newUser;
   }
 

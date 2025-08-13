@@ -247,13 +247,71 @@ router.post("/create-admin",
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days expiry
       });
 
-      // DO NOT send welcome email - send invitation email instead!
+      // Send invitation email with activation link
+      const { sendEmail } = await import("../emailService");
+      const invitationUrl = `${req.protocol}://${req.hostname}/invitation/${invitationToken}`;
+      
+      const emailSent = await sendEmail({
+        to: validatedData.email,
+        from: 'club.flow.2025@gmail.com',
+        subject: `Einladung als Administrator für ${club.name} - ClubFlow`,
+        text: `Sie wurden als Administrator für ${club.name} eingeladen. Aktivieren Sie Ihr Konto: ${invitationUrl}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #3b82f6; color: white; padding: 20px; text-align: center;">
+              <h1 style="margin: 0;">🏆 ClubFlow</h1>
+              <p style="margin: 10px 0 0 0;">Administrator-Einladung</p>
+            </div>
+            
+            <div style="background: white; padding: 30px;">
+              <h2>Sie wurden als Administrator eingeladen!</h2>
+              <p>Hallo,</p>
+              <p>Sie wurden als <strong>Administrator</strong> für den Verein <strong>${club.name}</strong> in ClubFlow eingeladen.</p>
+              
+              <div style="background: #eff6ff; padding: 15px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+                <h3 style="margin: 0 0 10px 0; color: #1e40af;">🎯 Als Administrator können Sie:</h3>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <li>Mitglieder und Teams verwalten</li>
+                  <li>Termine und Buchungen organisieren</li>
+                  <li>Finanzübersicht und Reporting nutzen</li>
+                  <li>Vereinseinstellungen konfigurieren</li>
+                </ul>
+              </div>
+              
+              <div style="text-align: center; margin: 25px 0;">
+                <a href="${invitationUrl}" 
+                   style="background: #10b981; color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                  Einladung annehmen und Konto aktivieren
+                </a>
+              </div>
+              
+              <p style="font-size: 14px; color: #6b7280;">
+                <strong>Link zum Kopieren:</strong><br>
+                <a href="${invitationUrl}">${invitationUrl}</a>
+              </p>
+              
+              <p style="font-size: 12px; color: #9ca3af;">
+                Diese Einladung läuft in 7 Tagen ab. Falls Sie diese E-Mail irrtümlich erhalten haben, können Sie sie ignorieren.
+              </p>
+              
+              <hr style="margin: 25px 0;">
+              <p style="font-size: 12px; color: #9ca3af; text-align: center;">
+                ClubFlow - Vereinsverwaltung aus Österreich<br>
+                Bei Fragen antworten Sie auf diese E-Mail
+              </p>
+            </div>
+          </div>
+        `
+      });
+
+      console.log(`📧 EMAIL INVITATION CREATED: ${validatedData.email} invited to club ${club.id} with roleId 3`);
       console.log(`📧 ADMIN INVITATION: Invitation created for ${validatedData.email} to join club "${club.name}" as administrator`);
       console.log(`🔗 Invitation token: ${invitationToken} (expires in 7 days)`);
+      console.log(`📧 Invitation email sent: ${emailSent ? 'SUCCESS' : 'FAILED'}`);
       console.log(`📋 Next steps: User must complete registration with invitation token to activate account`);
 
       // Log the super admin action
-      console.log(`SUPER ADMIN ACTION: Administrator invitation sent to "${validatedData.email}" for club "${club.name}" by ${req.user.email}`);
+      console.log(`SUPER ADMIN ACTION: Administrator invitation sent to "${validatedData.email}" for club "${club.name}" by ${req.user?.email || 'unknown'}`);
       
       res.json({
         success: true,

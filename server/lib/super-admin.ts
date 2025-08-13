@@ -74,6 +74,7 @@ export function requiresSuperAdmin(req: any, res: any, next: any) {
   const user = req.user;
   
   if (!user) {
+    console.log('🔒 Super Admin Auth Failed: No user in request');
     return res.status(401).json({ error: 'Authentication required' });
   }
   
@@ -81,27 +82,44 @@ export function requiresSuperAdmin(req: any, res: any, next: any) {
   const userId = user.claims?.sub || user.id;
   const userEmail = user.email;
   
+  console.log('🔒 Super Admin Check Request:', { 
+    userId, 
+    userEmail, 
+    hasUser: !!user, 
+    hasClaims: !!user.claims,
+    userKeys: Object.keys(user)
+  });
+  
   // Check super admin status using database
   (async () => {
     try {
       let isSuper = false;
+      let debugInfo = '';
       
       if (userId) {
         isSuper = await isSuperAdministrator(userId);
+        debugInfo = `User ID: ${userId}, Super Admin: ${isSuper}`;
       } else if (userEmail) {
         isSuper = await isSuperAdministratorByEmail(userEmail);
+        debugInfo = `Email: ${userEmail}, Super Admin: ${isSuper}`;
+      } else {
+        debugInfo = 'No userId or userEmail found';
       }
       
+      console.log('🔒 Super Admin Database Check:', debugInfo);
+      
       if (!isSuper) {
+        console.log('🔒 Super Admin Access DENIED for:', userId || userEmail);
         return res.status(403).json({ 
           error: 'Super administrator access required',
           message: 'This action requires super administrator privileges' 
         });
       }
       
+      console.log('🔒 Super Admin Access GRANTED for:', userId || userEmail);
       next();
     } catch (error) {
-      console.error('Error in requiresSuperAdmin middleware:', error);
+      console.error('🔒 Error in requiresSuperAdmin middleware:', error);
       res.status(500).json({ error: 'Internal server error during authorization' });
     }
   })();

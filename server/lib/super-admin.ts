@@ -91,9 +91,9 @@ export function requiresSuperAdmin(req: any, res: any, next: any) {
     sessionUserEmail = req.session.user.email;
   }
   
-  // Final user identification
-  const finalUserId = userId || sessionUserId;
-  const finalUserEmail = userEmail || sessionUserEmail;
+  // Final user identification - prioritize session data for email auth
+  const finalUserId = sessionUserId || userId;
+  const finalUserEmail = sessionUserEmail || userEmail;
   
   console.log('🔒 Super Admin Check Request:', { 
     userId: finalUserId, 

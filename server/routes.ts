@@ -101,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/performance', handlePerformanceMetrics);
 
   // Super Admin Status Route (must be before auth middleware)
-  app.get('/api/subscriptions/super-admin/status', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/subscriptions/super-admin/status', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
     try {
       // Get user from various session sources (Replit Auth + other providers)
       let userId = null;
@@ -267,8 +267,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Enhanced isAuthenticated middleware for Replit auth only
-  const isAuthenticatedEnhanced = async (req: any, res: any, next: any) => {
+  // Enhanced isAuthenticated middleware for Replit auth only (specific for subscription plans)
+  const isAuthenticatedReplitOnly = async (req: any, res: any, next: any) => {
     const user = req.user as any;
 
     // Check Replit auth
@@ -295,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Subscription Plans Route (for club creation modal)
-  app.get('/api/subscription-plans', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/subscription-plans', isAuthenticatedReplitOnly, asyncHandler(async (req: any, res: any) => {
     try {
       const plans = await storage.getSubscriptionPlans();
       res.json(plans);
@@ -401,7 +401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check if user has ANY club membership (active or inactive) - for onboarding logic
-  app.get('/api/user/memberships/status', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/user/memberships/status', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
     const userId = req.user?.claims?.sub || req.user?.id;
     if (!userId) {
       throw new AuthorizationError('User ID not found in token');
@@ -418,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // User permission routes
-  app.get('/api/clubs/:clubId/user-membership', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/user-membership', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user?.claims?.sub || req.user?.id;
     
@@ -444,7 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }));
 
-  app.get('/api/clubs/:clubId/user-teams', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+  app.get('/api/clubs/:clubId/user-teams', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
     const clubId = parseInt(req.params.clubId);
     const userId = req.user?.claims?.sub || req.user?.id;
     

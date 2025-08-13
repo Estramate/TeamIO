@@ -802,8 +802,10 @@ router.get("/email-stats",
     }
   }));
 
-// Schema for updating user (REMOVED ROLE VALIDATION - roleId is used instead)
+// Schema for updating user (ALL FIELDS OPTIONAL EXCEPT EMAIL)
 const updateUserSchema = z.object({
+  firstName: z.string().min(1, "First name is required").optional(),
+  lastName: z.string().min(1, "Last name is required").optional(), 
   email: z.string().email("Valid email is required"),
   isActive: z.boolean().default(true),
   clubMemberships: z.array(z.object({
@@ -836,10 +838,20 @@ router.patch("/users/:userId",
       }
       
       // Update user basic information
-      await storage.updateUser(userId, {
+      const updateData: any = {
         email: validatedData.email,
         isActive: validatedData.isActive,
-      });
+      };
+      
+      // Only update names if provided
+      if (validatedData.firstName !== undefined) {
+        updateData.firstName = validatedData.firstName;
+      }
+      if (validatedData.lastName !== undefined) {
+        updateData.lastName = validatedData.lastName;
+      }
+      
+      await storage.updateUser(userId, updateData);
       
       // Handle club memberships
       const currentMemberships = await storage.getUserClubMemberships(userId);

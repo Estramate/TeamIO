@@ -136,6 +136,21 @@ export default function Teams() {
     retry: false,
   });
 
+  // Update selected trainers when teamMemberships change and we have a selected team
+  useEffect(() => {
+    if (selectedTeam && teamMemberships.length > 0 && teamModalOpen) {
+      console.log('🔄 Updating trainers for team:', selectedTeam.id, 'from memberships:', teamMemberships);
+      const currentTrainers = teamMemberships
+        .filter((tm: any) => 
+          tm.teamId === selectedTeam.id && 
+          ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.role)
+        )
+        .map((tm: any) => ({ id: tm.memberId, role: tm.role }));
+      console.log('✅ Setting selected trainers:', currentTrainers);
+      setSelectedTrainers(currentTrainers);
+    }
+  }, [selectedTeam, teamMemberships, teamModalOpen]);
+
   // Create team mutation
   const createTeamMutation = useMutation({
     mutationFn: async (teamData: TeamFormData) => {
@@ -352,12 +367,14 @@ export default function Teams() {
     });
     
     // Load current trainers/staff for this team with their roles
+    console.log('🔍 Loading trainers for team:', team.id, 'from teamMemberships:', teamMemberships);
     const currentTrainers = teamMemberships
       .filter((tm: any) => 
         tm.teamId === team.id && 
         ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.role)
       )
       .map((tm: any) => ({ id: tm.memberId, role: tm.role }));
+    console.log('✅ Found current trainers:', currentTrainers);
     setSelectedTrainers(currentTrainers);
     
     setTeamModalOpen(true);

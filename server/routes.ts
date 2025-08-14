@@ -1184,39 +1184,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(member);
   }));
 
-  app.put('/api/clubs/:clubId/members/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const clubId = parseInt(req.params.clubId);
-      const updates = { ...req.body };
-      
-      // Clean up empty date fields to prevent PostgreSQL errors
-      if (updates.birthDate === '') {
-        updates.birthDate = null;
-      }
-      if (updates.joinDate === '') {
-        updates.joinDate = null;
-      }
-      
-      const member = await storage.updateMember(id, updates);
-      res.json(member);
-    } catch (error) {
-      console.error("Error updating member:", error);
-      res.status(500).json({ message: "Failed to update member" });
+  app.put('/api/clubs/:clubId/members/:id', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const id = parseInt(req.params.id);
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!id || isNaN(id)) {
+      throw new ValidationError('Invalid member ID', 'memberId');
     }
-  });
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Check if user has admin access to this club
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Get role information to check admin permissions
+    const role = await storage.getRoleById(membership.roleId);
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!role || !adminRoles.includes(role.name)) {
+      throw new AuthorizationError('You must be a club administrator or club leader to update members');
+    }
+    
+    const updates = { ...req.body };
+    
+    // Clean up empty date fields to prevent PostgreSQL errors
+    if (updates.birthDate === '') {
+      updates.birthDate = null;
+    }
+    if (updates.joinDate === '') {
+      updates.joinDate = null;
+    }
+    
+    console.log('🔧 Member update:', { memberId: id, clubId, updates, userId });
+    
+    const member = await storage.updateMember(id, updates);
+    
+    logger.info('Member updated', { memberId: id, clubId, updatedBy: userId, requestId: req.id });
+    res.json(member);
+  }));
 
-  app.delete('/api/clubs/:clubId/members/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const clubId = parseInt(req.params.clubId);
-      await storage.deleteMember(id);
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting member:", error);
-      res.status(500).json({ message: "Failed to delete member" });
+  app.delete('/api/clubs/:clubId/members/:id', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const id = parseInt(req.params.id);
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!id || isNaN(id)) {
+      throw new ValidationError('Invalid member ID', 'memberId');
     }
-  });
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Check if user has admin access to this club
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Get role information to check admin permissions
+    const role = await storage.getRoleById(membership.roleId);
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!role || !adminRoles.includes(role.name)) {
+      throw new AuthorizationError('You must be a club administrator or club leader to delete members');
+    }
+    
+    console.log('🗑️ Member deletion:', { memberId: id, clubId, userId });
+    
+    await storage.deleteMember(id);
+    
+    logger.info('Member deleted', { memberId: id, clubId, deletedBy: userId, requestId: req.id });
+    res.json({ success: true });
+  }));
 
   // Team routes
   app.get('/api/clubs/:clubId/teams', isAuthenticated, async (req: any, res) => {

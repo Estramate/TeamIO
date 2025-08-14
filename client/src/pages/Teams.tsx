@@ -157,11 +157,11 @@ export default function Teams() {
     onSuccess: (_, variables) => {
       const teamName = variables.name;
       
-      // Trigger intelligent notification
-      notifyTeamChange(teamName, 'erstellt');
+      // Trigger intelligent notification - team created
+      // notifyTeamChange(teamName, 'erstellt'); // Function not available
       
       invalidateEntityData(queryClient, selectedClub?.id!, 'teams');
-      invalidateRelevantCache('team', selectedClub?.id);
+      // invalidateRelevantCache('team', selectedClub?.id); // Not using cache invalidation here
       
       setTeamModalOpen(false);
       setSelectedTeam(null);

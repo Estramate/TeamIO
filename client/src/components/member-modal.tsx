@@ -82,18 +82,50 @@ export default function MemberModal({ open, onClose, member }: MemberModalProps)
 
   // Initialize team memberships when modal opens
   useEffect(() => {
-    if (member && teamMemberships.length > 0) {
+    if (member && teamMemberships.length > 0 && open) {
+      console.log('🔍 Loading team memberships for member:', member.id, teamMemberships);
       const currentMemberships = teamMemberships
         .filter((tm: any) => 
           tm.memberId === member.id && 
           (tm.role === 'trainer' || tm.role === 'co-trainer')
         )
         .map((tm: any) => ({ teamId: tm.teamId, role: tm.role }));
+      console.log('✅ Found current memberships:', currentMemberships);
       setSelectedTeamMemberships(currentMemberships);
-    } else {
+    } else if (open) {
       setSelectedTeamMemberships([]);
     }
   }, [member, teamMemberships, open]);
+
+  // Reset form when member changes
+  useEffect(() => {
+    if (member && open) {
+      form.reset({
+        firstName: member.firstName || "",
+        lastName: member.lastName || "",
+        email: member.email || "",
+        phone: member.phone || "",
+        birthDate: member.birthDate || "",
+        address: member.address || "",
+        membershipNumber: member.membershipNumber || "",
+        status: member.status || "active",
+        notes: member.notes || "",
+      });
+    } else if (!member && open) {
+      form.reset({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        birthDate: "",
+        address: "",
+        membershipNumber: "",
+        status: "active",
+        notes: "",
+      });
+      setSelectedTeamMemberships([]);
+    }
+  }, [member, open, form]);
 
   const form = useForm<MemberFormData>({
     resolver: zodResolver(memberSchema),
@@ -441,12 +473,15 @@ export default function MemberModal({ open, onClose, member }: MemberModalProps)
                             <div className="flex items-center gap-3">
                               <Button
                                 type="button"
-                                variant="outline"
+                                variant={isAssigned ? "default" : "outline"}
                                 size="sm"
-                                onClick={() => handleTeamToggle(team.id, 'trainer')}
-                                className={currentAssignment?.role === 'trainer' ? 'bg-blue-100 border-blue-300' : ''}
+                                onClick={() => isAssigned 
+                                  ? handleTeamToggle(team.id, currentAssignment.role) 
+                                  : handleTeamToggle(team.id, 'trainer')
+                                }
+                                className={isAssigned ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''}
                               >
-                                {currentAssignment?.role === 'trainer' ? 'Zugeordnet' : 'Zuordnen'}
+                                {isAssigned ? 'Entfernen' : 'Zuordnen'}
                               </Button>
                               
                               <div>

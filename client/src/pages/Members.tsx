@@ -345,6 +345,9 @@ export default function Members() {
   };
 
   const handleEditMember = (member: any) => {
+    console.log('🎯 [MEMBER EDIT] Starting edit for member:', member.id, member.firstName, member.lastName);
+    console.log('📦 [MEMBER EDIT] All teamMemberships:', teamMemberships);
+    
     setSelectedMember(member);
     form.reset({
       firstName: member.firstName || "",
@@ -360,12 +363,20 @@ export default function Members() {
     });
     
     // Load current team memberships for this member (trainer/co-trainer roles only)
+    console.log('🔍 [MEMBER EDIT] Filtering memberships for member ID:', member.id);
+    const allMemberMemberships = teamMemberships.filter((tm: any) => tm.memberId === member.id);
+    console.log('👤 [MEMBER EDIT] All memberships for this member:', allMemberMemberships);
+    
     const currentMemberships = teamMemberships
       .filter((tm: any) => 
         tm.memberId === member.id && 
         (tm.role === 'trainer' || tm.role === 'co-trainer')
       )
       .map((tm: any) => ({ teamId: tm.teamId, role: tm.role }));
+    
+    console.log('✅ [MEMBER EDIT] Filtered trainer/co-trainer memberships:', currentMemberships);
+    console.log('🔧 [MEMBER EDIT] Setting selectedTeamMemberships to:', currentMemberships);
+    
     setSelectedTeamMemberships(currentMemberships);
     
     setMemberModalOpen(true);
@@ -1099,6 +1110,17 @@ export default function Members() {
                       const currentAssignment = selectedTeamMemberships.find(tm => tm.teamId === team.id);
                       const isAssigned = !!currentAssignment;
                       const currentRole = currentAssignment?.role || 'trainer';
+                      
+                      // Debug logging für Team-Zuordnungen
+                      if (team.id === 4) { // KM-FR Team ID
+                        console.log(`🏟️ [TEAM RENDER] Team KM-FR (ID: 4):`, {
+                          teamName: team.name,
+                          selectedTeamMemberships: selectedTeamMemberships,
+                          currentAssignment: currentAssignment,
+                          isAssigned: isAssigned,
+                          currentRole: currentRole
+                        });
+                      }
                       
                       return (
                         <div key={team.id} className="group relative">

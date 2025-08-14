@@ -7,8 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Users, Search, Plus, Edit, Trash2, LayoutGrid, List, Mail, Phone, Calendar, MapPin, User, AlertCircle, MoreHorizontal, Grid3X3, X, MoreVertical, Eye } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,47 +17,7 @@ import { useNotificationTriggers } from "@/utils/notificationTriggers";
 import { apiRequest } from "@/lib/queryClient";
 import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-
-// Form validation schema mit Datumsvalidierung
-const memberFormSchema = z.object({
-  firstName: z.string().min(1, "Vorname ist erforderlich"),
-  lastName: z.string().min(1, "Nachname ist erforderlich"),
-  email: z.string().email("Ungültige E-Mail-Adresse").optional().or(z.literal("")),
-  phone: z.string().optional(),
-  birthDate: z.string().optional(),
-  address: z.string().optional(),
-  membershipNumber: z.string().optional(),
-  status: z.enum(["active", "inactive", "suspended"]).default("active"),
-  joinDate: z.string().optional(),
-  notes: z.string().optional(),
-}).refine((data) => {
-  // Prüfe dass Geburtsdatum nicht in der Zukunft liegt
-  if (data.birthDate) {
-    const birthDate = new Date(data.birthDate);
-    const today = new Date();
-    return birthDate <= today;
-  }
-  return true;
-}, {
-  message: "Geburtsdatum darf nicht in der Zukunft liegen",
-  path: ["birthDate"]
-}).refine((data) => {
-  // Prüfe dass Beitrittsdatum nicht vor Geburtsdatum liegt
-  if (data.joinDate && data.birthDate) {
-    const birthDate = new Date(data.birthDate);
-    const joinDate = new Date(data.joinDate);
-    return joinDate >= birthDate;
-  }
-  return true;
-}, {
-  message: "Beitrittsdatum darf nicht vor dem Geburtsdatum liegen",
-  path: ["joinDate"]
-});
-
-type MemberFormData = z.infer<typeof memberFormSchema>;
+import MemberModal from "@/components/member-modal";
 
 export default function Members() {
   const { toast } = useToast();
@@ -99,22 +57,7 @@ export default function Members() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  // Form setup
-  const form = useForm<MemberFormData>({
-    resolver: zodResolver(memberFormSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      birthDate: "",
-      address: "",
-      membershipNumber: "",
-      status: "active",
-      joinDate: "",
-      notes: "",
-    },
-  });
+
 
   // Fetch members
   const { data: members = [], isLoading: isMembersLoading } = useQuery({
@@ -137,125 +80,9 @@ export default function Members() {
     retry: false,
   });
 
-  // Create member mutation
-  const createMemberMutation = useMutation({
-    mutationFn: async (memberData: MemberFormData) => {
-      await apiRequest("POST", `/api/clubs/${selectedClub?.id}/members`, memberData);
-    },
-    onSuccess: (_, variables) => {
-      const memberName = `${variables.firstName} ${variables.lastName}`;
-      
-      // Trigger intelligent notification
-      notifyNewMember(memberName);
-      
-      toast({
-        title: "Erfolg",
-        description: "Mitglied wurde erfolgreich erstellt",
-      });
-      
-      // Smart cache invalidation
-      invalidateRelevantCache('member', selectedClub?.id);
-      invalidateEntityData(queryClient, selectedClub?.id!, 'members');
-      
-      setMemberModalOpen(false);
-      form.reset();
-      setSelectedMember(null);
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Fehler",
-        description: "Fehler beim Erstellen des Mitglieds",
-        variant: "destructive",
-      });
-    },
-  });
 
-  // Update member mutation
-  const updateMemberMutation = useMutation({
-    mutationFn: async (memberData: MemberFormData) => {
-      await apiRequest("PUT", `/api/clubs/${selectedClub?.id}/members/${selectedMember.id}`, memberData);
-      
-      // Update team memberships if any are selected
-      if (selectedTeamMemberships.length >= 0) {
-        // Remove existing trainer/co-trainer memberships for this member
-        const existingMemberships = teamMemberships.filter((tm: any) => 
-          tm.memberId === selectedMember.id && 
-          (tm.role === 'trainer' || tm.role === 'co-trainer')
-        );
-        
-        for (const membership of existingMemberships) {
-          await fetch(`/api/teams/${membership.teamId}/memberships/${membership.id}`, {
-            method: 'DELETE',
-          });
-        }
 
-        // Add new team memberships
-        for (const teamMembership of selectedTeamMemberships) {
-          await fetch(`/api/teams/${teamMembership.teamId}/memberships`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              memberId: selectedMember.id,
-              role: teamMembership.role,
-              status: 'active',
-            }),
-          });
-        }
-      }
-    },
-    onSuccess: (_, variables) => {
-      const memberName = `${variables.firstName} ${variables.lastName}`;
-      
-      // Trigger notification for membership update
-      notifyNewMember(memberName, 'aktualisiert');
-      
-      toast({
-        title: "Erfolg",
-        description: "Mitglied wurde erfolgreich aktualisiert",
-      });
-      
-      // Smart cache invalidation
-      invalidateRelevantCache('member', selectedClub?.id);
-      invalidateEntityData(queryClient, selectedClub?.id!, 'members');
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'] });
-      
-      setMemberModalOpen(false);
-      form.reset();
-      setSelectedMember(null);
-      setSelectedTeamMemberships([]);
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Fehler",
-        description: "Fehler beim Aktualisieren des Mitglieds",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   // Status toggle mutation
   const toggleMemberStatusMutation = useMutation({
@@ -339,46 +166,11 @@ export default function Members() {
   // Handle member actions
   const handleAddMember = () => {
     setSelectedMember(null);
-    form.reset();
-    setSelectedTeamMemberships([]);
     setMemberModalOpen(true);
   };
 
   const handleEditMember = (member: any) => {
-    console.log('🎯 [MEMBER EDIT] Starting edit for member:', member.id, member.firstName, member.lastName);
-    console.log('📦 [MEMBER EDIT] All teamMemberships:', teamMemberships);
-    
     setSelectedMember(member);
-    form.reset({
-      firstName: member.firstName || "",
-      lastName: member.lastName || "",
-      email: member.email || "",
-      phone: member.phone || "",
-      birthDate: member.birthDate || "",
-      address: member.address || "",
-      membershipNumber: member.membershipNumber || "",
-      status: member.status || "active",
-      joinDate: member.joinDate || "",
-      notes: member.notes || "",
-    });
-    
-    // Load current team memberships for this member (trainer/co-trainer roles only)
-    console.log('🔍 [MEMBER EDIT] Filtering memberships for member ID:', member.id);
-    const allMemberMemberships = teamMemberships.filter((tm: any) => tm.memberId === member.id);
-    console.log('👤 [MEMBER EDIT] All memberships for this member:', allMemberMemberships);
-    
-    const currentMemberships = teamMemberships
-      .filter((tm: any) => 
-        tm.memberId === member.id && 
-        (tm.role === 'trainer' || tm.role === 'co-trainer')
-      )
-      .map((tm: any) => ({ teamId: tm.teamId, role: tm.role }));
-    
-    console.log('✅ [MEMBER EDIT] Filtered trainer/co-trainer memberships:', currentMemberships);
-    console.log('🔧 [MEMBER EDIT] Setting selectedTeamMemberships to:', currentMemberships);
-    
-    setSelectedTeamMemberships(currentMemberships);
-    
     setMemberModalOpen(true);
   };
 
@@ -406,13 +198,7 @@ export default function Members() {
     }
   };
 
-  const handleSubmit = (data: MemberFormData) => {
-    if (selectedMember) {
-      updateMemberMutation.mutate(data);
-    } else {
-      createMemberMutation.mutate(data);
-    }
-  };
+
 
   // Status badge function
   const getStatusBadge = (status: string) => {
@@ -891,399 +677,15 @@ export default function Members() {
       )}
 
       {/* Member Modal */}
-      <Dialog open={memberModalOpen} onOpenChange={setMemberModalOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-background border-border">
-          <DialogHeader className="pb-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-                <User className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <DialogTitle className="text-lg font-semibold text-foreground">
-                  {selectedMember ? 'Mitglied bearbeiten' : 'Neues Mitglied'}
-                </DialogTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {selectedMember ? 'Bearbeiten Sie die Mitgliederdaten und Team-Zuordnungen' : 'Erstellen Sie ein neues Mitglied und ordnen Sie es Teams zu'}
-                </p>
-              </div>
-            </div>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-              {/* Personal Information Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 flex items-center justify-center">
-                    <User className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground">Persönliche Daten</h4>
-                    <p className="text-xs text-muted-foreground">Grundlegende Informationen des Mitglieds</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-xl bg-gradient-to-br from-muted/30 to-muted/20">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground font-medium">Vorname *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Max" 
-                            {...field} 
-                            className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground font-medium">Nachname *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Mustermann" 
-                            {...field} 
-                            className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">E-Mail</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="max@example.com" {...field} className="bg-background border-border text-foreground" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">Telefon</FormLabel>
-                      <FormControl>
-                        <Input placeholder="+49 123 456789" {...field} className="bg-background border-border text-foreground" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="birthDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">Geburtsdatum</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} className="bg-background border-border text-foreground" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="joinDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">Beitrittsdatum</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} className="bg-background border-border text-foreground" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="membershipNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">Mitgliedsnummer</FormLabel>
-                      <FormControl>
-                        <Input placeholder="M001" {...field} className="bg-background border-border text-foreground" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="bg-background border-border text-foreground">
-                            <SelectValue placeholder="Status wählen" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="active">Aktiv</SelectItem>
-                          <SelectItem value="inactive">Inaktiv</SelectItem>
-                          <SelectItem value="suspended">Gesperrt</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-foreground">Adresse</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Musterstraße 123, 12345 Musterstadt" {...field} className="bg-background border-border text-foreground" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-foreground">Notizen</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Zusätzliche Informationen..." {...field} className="bg-background border-border text-foreground" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Team Assignments */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-                    <Users className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground">Team-Zuordnungen</h4>
-                    <p className="text-xs text-muted-foreground">Wählen Sie Teams und Funktionen aus</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-3 max-h-64 overflow-y-auto border rounded-xl p-4 bg-gradient-to-br from-muted/30 to-muted/20">
-                  {teams.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
-                        <Users className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <p className="text-sm text-muted-foreground">Keine Teams verfügbar</p>
-                    </div>
-                  ) : (
-                    teams.map((team: any) => {
-                      const currentAssignment = selectedTeamMemberships.find(tm => tm.teamId === team.id);
-                      const isAssigned = !!currentAssignment;
-                      const currentRole = currentAssignment?.role || 'trainer';
-                      
-                      // Debug logging für Team-Zuordnungen
-                      if (team.id === 4) { // KM-FR Team ID
-                        console.log(`🏟️ [TEAM RENDER] Team KM-FR (ID: 4):`, {
-                          teamName: team.name,
-                          selectedTeamMemberships: selectedTeamMemberships,
-                          currentAssignment: currentAssignment,
-                          isAssigned: isAssigned,
-                          currentRole: currentRole
-                        });
-                      }
-                      
-                      return (
-                        <div key={team.id} className="group relative">
-                          <div className={`
-                            flex items-center justify-between p-4 rounded-xl border transition-all duration-200
-                            ${isAssigned 
-                              ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 shadow-sm' 
-                              : 'bg-card border-border hover:border-muted-foreground/30 hover:shadow-sm'
-                            }
-                          `}>
-                            <div className="flex items-center gap-3">
-                              <Button
-                                type="button"
-                                variant={isAssigned ? "default" : "outline"}
-                                size="sm"
-                                className={`
-                                  h-8 px-3 rounded-lg transition-all duration-200
-                                  ${isAssigned 
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm' 
-                                    : 'hover:bg-muted'
-                                  }
-                                `}
-                                onClick={() => {
-                                  if (isAssigned) {
-                                    setSelectedTeamMemberships(prev => 
-                                      prev.filter(tm => tm.teamId !== team.id)
-                                    );
-                                  } else {
-                                    setSelectedTeamMemberships(prev => [
-                                      ...prev,
-                                      { teamId: team.id, role: 'trainer' }
-                                    ]);
-                                  }
-                                }}
-                              >
-                                {isAssigned ? 'Zugeordnet' : 'Zuordnen'}
-                              </Button>
-                              
-                              <div>
-                                <div className="font-medium text-sm text-foreground">{team.name}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {team.category && `${team.category} • `}
-                                  {team.ageGroup || 'Erwachsene'}
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {isAssigned && (
-                              <div className="flex items-center gap-2">
-                                <Select
-                                  value={currentRole}
-                                  onValueChange={(role) => {
-                                    setSelectedTeamMemberships(prev => 
-                                      prev.map(tm => 
-                                        tm.teamId === team.id ? { ...tm, role } : tm
-                                      )
-                                    );
-                                  }}
-                                >
-                                  <SelectTrigger className="w-36 h-8 text-xs bg-white dark:bg-background border-blue-200 dark:border-blue-800">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="trainer">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                        Trainer
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="co-trainer">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                        Co-Trainer
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="assistant">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                                        Assistenz
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="manager">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                                        Manager
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="physiotherapist">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                        Physiotherapeut
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="doctor">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-                                        Arzt
-                                      </div>
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                  
-                  {selectedTeamMemberships.length > 0 && (
-                    <div className="mt-4 pt-3 border-t border-border">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <div className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                          <span className="text-blue-600 font-semibold text-xs">{selectedTeamMemberships.length}</span>
-                        </div>
-                        Team{selectedTeamMemberships.length !== 1 ? 's' : ''} zugeordnet
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <DialogFooter className="flex gap-3 pt-6 border-t border-border">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setMemberModalOpen(false)}
-                  className="flex-1 h-11 rounded-xl border-border hover:bg-muted/50"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Abbrechen
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="flex-1 h-11 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-600/25"
-                  disabled={createMemberMutation.isPending || updateMemberMutation.isPending}
-                >
-                  {createMemberMutation.isPending || updateMemberMutation.isPending ? (
-                    <>
-                      <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Speichern...
-                    </>
-                  ) : (
-                    <>
-                      {selectedMember ? (
-                        <>
-                          <Edit className="w-4 h-4 mr-2" />
-                          Aktualisieren
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Erstellen
-                        </>
-                      )}
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      <MemberModal
+        open={memberModalOpen}
+        onClose={() => setMemberModalOpen(false)}
+        member={selectedMember}
+        onSuccess={() => {
+          setSelectedMember(null);
+          setSelectedTeamMemberships([]);
+        }}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

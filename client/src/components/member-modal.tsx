@@ -7,12 +7,13 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useClub } from "@/hooks/use-club";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Users } from "lucide-react";
+import { Users, User, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -32,7 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 
 const memberSchema = z.object({
   firstName: z.string().min(1, "Vorname ist erforderlich"),
@@ -52,86 +53,47 @@ interface MemberModalProps {
   open: boolean;
   onClose: () => void;
   member?: any;
+  onSuccess?: () => void;
 }
 
-export default function MemberModal({ open, onClose, member }: MemberModalProps) {
-  console.log('🏗️ [MEMBER MODAL] Component render - open:', open, 'member:', member?.id, 'selectedClub:', selectedClub?.id);
-  
+export default function MemberModal({ open, onClose, member, onSuccess }: MemberModalProps) {
   const { toast } = useToast();
   const { selectedClub } = useClub();
   const queryClient = useQueryClient();
   const [selectedTeamMemberships, setSelectedTeamMemberships] = useState<Array<{teamId: number, role: string}>>([]);
 
+  // Form setup
+  const form = useForm<MemberFormData>({
+    resolver: zodResolver(memberSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      birthDate: "",
+      address: "",
+      membershipNumber: "",
+      status: "active",
+      notes: "",
+    },
+  });
+
   // Load teams for this club
   const { data: teams = [] } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'teams'],
-    queryFn: async () => {
-      const response = await apiRequest("GET", `/api/clubs/${selectedClub?.id}/teams`);
-      return response.json();
-    },
     enabled: !!selectedClub?.id && open,
   });
 
   // Load current team memberships
   const { data: teamMemberships = [] } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'],
-    queryFn: async () => {
-      console.log('🚀 [MEMBER MODAL] Fetching team memberships for club:', selectedClub?.id);
-      const response = await apiRequest("GET", `/api/clubs/${selectedClub?.id}/team-memberships`);
-      const data = await response.json();
-      console.log('📦 [MEMBER MODAL] Raw team memberships data:', data);
-      return data;
-    },
     enabled: !!selectedClub?.id && open,
   });
 
-  // Initialize team memberships when modal opens
-  useEffect(() => {
-    console.log('🔄 [MEMBER MODAL] useEffect triggered - member:', member?.id, 'teamMemberships.length:', teamMemberships.length, 'open:', open);
-    
-    if (member && open) {
-      console.log('🔍 [MEMBER MODAL] Loading team memberships for member:', member.id, 'All teamMemberships:', teamMemberships);
-      
-      if (teamMemberships.length > 0) {
-        const memberSpecificMemberships = teamMemberships.filter((tm: any) => tm.memberId === member.id);
-        console.log('📋 [MEMBER MODAL] Member-specific memberships:', memberSpecificMemberships);
-        
-        const currentMemberships = teamMemberships
-          .filter((tm: any) => 
-            tm.memberId === member.id && 
-            (tm.membershipRole === 'trainer' || tm.membershipRole === 'co-trainer')
-          )
-          .map((tm: any) => ({ teamId: tm.teamId, role: tm.membershipRole }));
-        console.log('✅ [MEMBER MODAL] Found current memberships:', currentMemberships);
-        setSelectedTeamMemberships(currentMemberships);
-      } else {
-        console.log('⚠️ [MEMBER MODAL] No team memberships loaded yet');
-        setSelectedTeamMemberships([]);
-      }
-    } else if (open) {
-      console.log('🔄 [MEMBER MODAL] Resetting memberships - member:', !!member, 'open:', open);
-      setSelectedTeamMemberships([]);
-    }
-  }, [member, teamMemberships, open]);
-
-  const form = useForm<MemberFormData>({
-    resolver: zodResolver(memberSchema),
-    defaultValues: {
-      firstName: member?.firstName || "",
-      lastName: member?.lastName || "",
-      email: member?.email || "",
-      phone: member?.phone || "",
-      birthDate: member?.birthDate || "",
-      address: member?.address || "",
-      membershipNumber: member?.membershipNumber || "",
-      status: member?.status || "active",
-      notes: member?.notes || "",
-    },
-  });
-
-  // Reset form when member changes
+  // Initialize form and team memberships when modal opens
   useEffect(() => {
     if (member && open) {
+      // Reset form with member data
       form.reset({
         firstName: member.firstName || "",
         lastName: member.lastName || "",
@@ -143,413 +105,484 @@ export default function MemberModal({ open, onClose, member }: MemberModalProps)
         status: member.status || "active",
         notes: member.notes || "",
       });
+
+      // Load current team memberships (using correct field name)
+      if (teamMemberships.length > 0) {
+        const memberSpecificMemberships = teamMemberships.filter((tm: any) => tm.memberId === member.id);
+        const currentMemberships = memberSpecificMemberships
+          .filter((tm: any) => tm.membershipRole === 'trainer' || tm.membershipRole === 'co-trainer')
+          .map((tm: any) => ({ teamId: tm.teamId, role: tm.membershipRole }));
+        setSelectedTeamMemberships(currentMemberships);
+      }
     } else if (!member && open) {
-      form.reset({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        birthDate: "",
-        address: "",
-        membershipNumber: "",
-        status: "active",
-        notes: "",
-      });
+      // Reset for new member
+      form.reset();
       setSelectedTeamMemberships([]);
     }
-  }, [member, open, form]);
+  }, [member, open, teamMemberships, form]);
 
-  const createMutation = useMutation({
-    mutationFn: async (data: MemberFormData) => {
-      const response = await apiRequest(
-        "POST",
-        `/api/clubs/${selectedClub?.id}/members`,
-        {
-          ...data,
-          joinDate: new Date().toISOString().split('T')[0],
+  // Create member mutation
+  const createMemberMutation = useMutation({
+    mutationFn: async (memberData: MemberFormData) => {
+      const response = await apiRequest("POST", `/api/clubs/${selectedClub?.id}/members`, {
+        ...memberData,
+        teamMemberships: selectedTeamMemberships,
+      });
+      if (!response.ok) {
+        if (isUnauthorizedError(response)) {
+          throw new Error("Nicht autorisiert");
         }
-      );
+        throw new Error("Fehler beim Erstellen des Mitglieds");
+      }
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Erfolg",
-        description: "Mitglied wurde erfolgreich erstellt",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'members'] });
-      onClose();
-      form.reset();
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Fehler",
-        description: "Fehler beim Erstellen des Mitglieds",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async (data: MemberFormData) => {
-      // Update member data
-      const response = await apiRequest(
-        "PUT",
-        `/api/clubs/${selectedClub?.id}/members/${member.id}`,
-        data
-      );
-      
-      // Handle team memberships updates for existing member
-      if (member) {
-        const existingTrainerMemberships = teamMemberships.filter((tm: any) => 
-          tm.memberId === member.id && (tm.role === 'trainer' || tm.role === 'co-trainer')
-        );
-        
-        // Remove all existing trainer/co-trainer memberships first
-        for (const membership of existingTrainerMemberships) {
-          try {
-            await apiRequest("DELETE", `/api/teams/${membership.teamId}/trainers`);
-          } catch (error) {
-            console.log('Error removing old team trainers:', error);
-          }
-        }
-        
-        // Add new team memberships
-        for (const teamMembership of selectedTeamMemberships) {
-          try {
-            await apiRequest("POST", `/api/teams/${teamMembership.teamId}/memberships`, {
-              memberId: member.id,
-              role: teamMembership.role,
-              position: teamMembership.role,
-            });
-          } catch (error) {
-            console.log('Error adding team membership:', error);
-          }
-        }
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Erfolg",
-        description: "Mitglied wurde erfolgreich aktualisiert",
+        title: "Mitglied erstellt",
+        description: "Das neue Mitglied wurde erfolgreich erstellt.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'members'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'] });
       onClose();
+      form.reset();
+      setSelectedTeamMemberships([]);
+      onSuccess?.();
     },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 500);
-        return;
-      }
+    onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: "Fehler beim Aktualisieren des Mitglieds",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  const onSubmit = (data: MemberFormData) => {
-    if (!selectedClub) {
+  // Update member mutation
+  const updateMemberMutation = useMutation({
+    mutationFn: async (memberData: MemberFormData) => {
+      if (!member) throw new Error("Kein Mitglied ausgewählt");
+      
+      const response = await apiRequest("PUT", `/api/clubs/${selectedClub?.id}/members/${member.id}`, {
+        ...memberData,
+        teamMemberships: selectedTeamMemberships,
+      });
+      if (!response.ok) {
+        if (isUnauthorizedError(response)) {
+          throw new Error("Nicht autorisiert");
+        }
+        throw new Error("Fehler beim Aktualisieren des Mitglieds");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Mitglied aktualisiert",
+        description: "Die Mitgliederdaten wurden erfolgreich aktualisiert.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'members'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'] });
+      onClose();
+      form.reset();
+      setSelectedTeamMemberships([]);
+      onSuccess?.();
+    },
+    onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: "Bitte wählen Sie zuerst einen Verein aus",
+        description: error.message,
         variant: "destructive",
       });
-      return;
-    }
+    },
+  });
 
+  const handleSubmit = (data: MemberFormData) => {
     if (member) {
-      updateMutation.mutate(data);
+      updateMemberMutation.mutate(data);
     } else {
-      createMutation.mutate(data);
+      createMemberMutation.mutate(data);
     }
   };
 
-  const handleTeamToggle = (teamId: number, role: string) => {
-    const existingIndex = selectedTeamMemberships.findIndex(tm => tm.teamId === teamId);
+  const handleTeamToggle = (teamId: number) => {
+    const isCurrentlyAssigned = selectedTeamMemberships.some(tm => tm.teamId === teamId);
     
-    if (existingIndex >= 0) {
-      // Update role or remove if same role
-      const existing = selectedTeamMemberships[existingIndex];
-      if (existing.role === role) {
-        // Remove assignment
-        setSelectedTeamMemberships(prev => prev.filter(tm => tm.teamId !== teamId));
-      } else {
-        // Update role
-        setSelectedTeamMemberships(prev => prev.map(tm => 
-          tm.teamId === teamId ? { ...tm, role } : tm
-        ));
-      }
+    if (isCurrentlyAssigned) {
+      setSelectedTeamMemberships(prev => prev.filter(tm => tm.teamId !== teamId));
     } else {
-      // Add new assignment
-      setSelectedTeamMemberships(prev => [...prev, { teamId, role }]);
+      setSelectedTeamMemberships(prev => [...prev, { teamId, role: 'trainer' }]);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {member ? "Mitglied bearbeiten" : "Neues Mitglied hinzufügen"}
-          </DialogTitle>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-background border-border">
+        <DialogHeader className="pb-4 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
+              <User className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-semibold text-foreground">
+                {member ? 'Mitglied bearbeiten' : 'Neues Mitglied'}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {member ? 'Bearbeiten Sie die Mitgliederdaten und Team-Zuordnungen' : 'Erstellen Sie ein neues Mitglied und ordnen Sie es Teams zu'}
+              </p>
+            </div>
+          </div>
         </DialogHeader>
-
+        
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Vorname *</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nachname *</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>E-Mail</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Telefon</FormLabel>
-                    <FormControl>
-                      <Input type="tel" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="birthDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Geburtsdatum</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="membershipNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mitgliedsnummer</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+            {/* Personal Information Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 flex items-center justify-center">
+                  <User className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">Persönliche Daten</h4>
+                  <p className="text-xs text-muted-foreground">Grundlegende Informationen des Mitglieds</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-xl bg-gradient-to-br from-muted/30 to-muted/20">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-foreground font-medium">Vorname *</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <Input 
+                          placeholder="Max" 
+                          {...field} 
+                          className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Aktiv</SelectItem>
-                        <SelectItem value="inactive">Inaktiv</SelectItem>
-                        <SelectItem value="suspended">Gesperrt</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-foreground font-medium">Nachname *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Mustermann" 
+                          {...field} 
+                          className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-foreground font-medium">E-Mail</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="max@example.com" 
+                          type="email" 
+                          {...field} 
+                          className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-foreground font-medium">Telefon</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="+43 123 456 789" 
+                          {...field} 
+                          className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="birthDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-foreground font-medium">Geburtsdatum</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          {...field} 
+                          className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="membershipNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-foreground font-medium">Mitgliedsnummer</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="M001" 
+                          {...field} 
+                          className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-foreground font-medium">Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20">
+                            <SelectValue placeholder="Status auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="active">Aktiv</SelectItem>
+                          <SelectItem value="inactive">Inaktiv</SelectItem>
+                          <SelectItem value="suspended">Gesperrt</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel className="text-foreground font-medium">Adresse</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Musterstraße 123, 1234 Musterstadt" 
+                          {...field} 
+                          className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Adresse</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notizen</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Team Assignments - Only show when editing existing member */}
-            {member && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-                    <Users className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold">Team-Zuordnungen</h4>
-                    <p className="text-xs text-muted-foreground">Wählen Sie Teams und Funktionen aus</p>
-                  </div>
+            {/* Team Assignments */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
+                  <Users className="w-4 h-4 text-blue-600" />
                 </div>
-                
-                <div className="space-y-3 max-h-64 overflow-y-auto border rounded-xl p-4 bg-gradient-to-br from-muted/30 to-muted/20">
-                  {teams.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
-                        <Users className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <p className="text-sm text-muted-foreground">Keine Teams verfügbar</p>
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">Team-Zuordnungen</h4>
+                  <p className="text-xs text-muted-foreground">Wählen Sie Teams und Funktionen aus</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3 max-h-64 overflow-y-auto border rounded-xl p-4 bg-gradient-to-br from-muted/30 to-muted/20">
+                {teams.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
+                      <Users className="w-6 h-6 text-muted-foreground" />
                     </div>
-                  ) : (
-                    teams.map((team: any) => {
-                      const currentAssignment = selectedTeamMemberships.find(tm => tm.teamId === team.id);
-                      const isAssigned = !!currentAssignment;
-                      
-                      return (
-                        <div
-                          key={team.id}
-                          className="flex items-center justify-between p-4 rounded-xl border bg-card/50 hover:bg-card/80 transition-colors"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-3">
-                              <Button
-                                type="button"
-                                variant={isAssigned ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => isAssigned 
-                                  ? handleTeamToggle(team.id, currentAssignment.role) 
-                                  : handleTeamToggle(team.id, 'trainer')
+                    <p className="text-sm text-muted-foreground">Keine Teams verfügbar</p>
+                  </div>
+                ) : (
+                  teams.map((team: any) => {
+                    const currentAssignment = selectedTeamMemberships.find(tm => tm.teamId === team.id);
+                    const isAssigned = !!currentAssignment;
+                    const currentRole = currentAssignment?.role || 'trainer';
+                    
+                    return (
+                      <div key={team.id} className="group relative">
+                        <div className={`
+                          flex items-center justify-between p-4 rounded-xl border transition-all duration-200
+                          ${isAssigned 
+                            ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 shadow-sm' 
+                            : 'bg-card border-border hover:border-muted-foreground/30 hover:shadow-sm'
+                          }
+                        `}>
+                          <div className="flex items-center gap-3">
+                            <Button
+                              type="button"
+                              variant={isAssigned ? "default" : "outline"}
+                              size="sm"
+                              className={`
+                                h-8 px-3 rounded-lg transition-all duration-200
+                                ${isAssigned 
+                                  ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' 
+                                  : 'border-border hover:bg-muted/50 text-foreground'
                                 }
-                                className={isAssigned ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''}
-                              >
-                                {isAssigned ? 'Entfernen' : 'Zuordnen'}
-                              </Button>
-                              
-                              <div>
-                                <h4 className="font-medium text-sm">{team.name}</h4>
-                                <p className="text-xs text-muted-foreground">
-                                  {team.category} • {team.ageGroup}
-                                </p>
+                              `}
+                              onClick={() => handleTeamToggle(team.id)}
+                            >
+                              {isAssigned ? 'Zugeordnet' : 'Zuordnen'}
+                            </Button>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-foreground">{team.name}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {team.category === 'youth' ? 'Jugend' : 
+                                   team.category === 'amateur' ? 'Amateur' : 
+                                   team.category === 'professional' ? 'Profi' : 
+                                   'Erwachsene'}
+                                </Badge>
                               </div>
+                              {team.ageGroup && (
+                                <p className="text-xs text-muted-foreground mt-1">{team.ageGroup}</p>
+                              )}
                             </div>
                           </div>
                           
                           {isAssigned && (
                             <div className="flex items-center gap-2">
                               <Select
-                                value={currentAssignment.role}
-                                onValueChange={(role) => handleTeamToggle(team.id, role)}
+                                value={currentRole}
+                                onValueChange={(role) => {
+                                  setSelectedTeamMemberships(prev => 
+                                    prev.map(tm => 
+                                      tm.teamId === team.id ? { ...tm, role } : tm
+                                    )
+                                  );
+                                }}
                               >
-                                <SelectTrigger className="w-32">
+                                <SelectTrigger className="w-36 h-8 text-xs bg-white dark:bg-background border-blue-200 dark:border-blue-800">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="trainer">Trainer</SelectItem>
-                                  <SelectItem value="co-trainer">Co-Trainer</SelectItem>
+                                  <SelectItem value="trainer">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                      Trainer
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="co-trainer">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                      Co-Trainer
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="assistant">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                      Assistenz
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="manager">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                                      Manager
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="physiotherapist">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                      Physiotherapeut
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="doctor">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+                                      Arzt
+                                    </div>
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
                           )}
                         </div>
-                      );
-                    })
-                  )}
-                </div>
+                      </div>
+                    );
+                  })
+                )}
+                
+                {selectedTeamMemberships.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-border">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                        <span className="text-blue-600 font-semibold text-xs">{selectedTeamMemberships.length}</span>
+                      </div>
+                      Team{selectedTeamMemberships.length !== 1 ? 's' : ''} zugeordnet
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
-            <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-              <Button type="button" variant="outline" onClick={onClose}>
+            {/* Notes Section */}
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground font-medium">Notizen</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Zusätzliche Notizen zum Mitglied..." 
+                        {...field} 
+                        className="bg-background border-border text-foreground focus:border-green-500 focus:ring-green-500/20 min-h-[80px]" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <DialogFooter className="flex gap-3 pt-6 border-t border-border">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                className="flex-1 h-11 rounded-xl border-border hover:bg-muted/50"
+              >
+                <X className="w-4 h-4 mr-2" />
                 Abbrechen
               </Button>
-              <Button
-                type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
-                className="bg-blue-500 hover:bg-blue-600"
+              <Button 
+                type="submit" 
+                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-600/25"
+                disabled={createMemberMutation.isPending || updateMemberMutation.isPending}
               >
-                {createMutation.isPending || updateMutation.isPending
-                  ? "Speichern..."
-                  : member
-                  ? "Aktualisieren"
-                  : "Mitglied speichern"}
+                {createMemberMutation.isPending || updateMemberMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Speichern...
+                  </>
+                ) : (
+                  <>
+                    {member ? 'Aktualisieren' : 'Erstellen'}
+                  </>
+                )}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

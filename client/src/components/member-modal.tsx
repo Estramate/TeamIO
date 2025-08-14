@@ -74,29 +74,40 @@ export default function MemberModal({ open, onClose, member }: MemberModalProps)
   const { data: teamMemberships = [] } = useQuery({
     queryKey: ['/api/clubs', selectedClub?.id, 'team-memberships'],
     queryFn: async () => {
+      console.log('🚀 [MEMBER MODAL] Fetching team memberships for club:', selectedClub?.id);
       const response = await apiRequest("GET", `/api/clubs/${selectedClub?.id}/team-memberships`);
-      return response.json();
+      const data = await response.json();
+      console.log('📦 [MEMBER MODAL] Raw team memberships data:', data);
+      return data;
     },
     enabled: !!selectedClub?.id && open,
   });
 
   // Initialize team memberships when modal opens
   useEffect(() => {
-    if (member && teamMemberships.length > 0 && open) {
+    console.log('🔄 [MEMBER MODAL] useEffect triggered - member:', member?.id, 'teamMemberships.length:', teamMemberships.length, 'open:', open);
+    
+    if (member && open) {
       console.log('🔍 [MEMBER MODAL] Loading team memberships for member:', member.id, 'All teamMemberships:', teamMemberships);
-      const memberSpecificMemberships = teamMemberships.filter((tm: any) => tm.memberId === member.id);
-      console.log('📋 [MEMBER MODAL] Member-specific memberships:', memberSpecificMemberships);
       
-      const currentMemberships = teamMemberships
-        .filter((tm: any) => 
-          tm.memberId === member.id && 
-          (tm.membershipRole === 'trainer' || tm.membershipRole === 'co-trainer')
-        )
-        .map((tm: any) => ({ teamId: tm.teamId, role: tm.membershipRole }));
-      console.log('✅ [MEMBER MODAL] Found current memberships:', currentMemberships);
-      setSelectedTeamMemberships(currentMemberships);
+      if (teamMemberships.length > 0) {
+        const memberSpecificMemberships = teamMemberships.filter((tm: any) => tm.memberId === member.id);
+        console.log('📋 [MEMBER MODAL] Member-specific memberships:', memberSpecificMemberships);
+        
+        const currentMemberships = teamMemberships
+          .filter((tm: any) => 
+            tm.memberId === member.id && 
+            (tm.membershipRole === 'trainer' || tm.membershipRole === 'co-trainer')
+          )
+          .map((tm: any) => ({ teamId: tm.teamId, role: tm.membershipRole }));
+        console.log('✅ [MEMBER MODAL] Found current memberships:', currentMemberships);
+        setSelectedTeamMemberships(currentMemberships);
+      } else {
+        console.log('⚠️ [MEMBER MODAL] No team memberships loaded yet');
+        setSelectedTeamMemberships([]);
+      }
     } else if (open) {
-      console.log('🔄 [MEMBER MODAL] Resetting memberships - member:', !!member, 'teamMemberships.length:', teamMemberships.length, 'open:', open);
+      console.log('🔄 [MEMBER MODAL] Resetting memberships - member:', !!member, 'open:', open);
       setSelectedTeamMemberships([]);
     }
   }, [member, teamMemberships, open]);

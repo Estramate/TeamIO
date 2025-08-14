@@ -55,6 +55,8 @@ interface MemberModalProps {
 }
 
 export default function MemberModal({ open, onClose, member }: MemberModalProps) {
+  console.log('🏗️ [MEMBER MODAL] Component render - open:', open, 'member:', member?.id, 'selectedClub:', selectedClub?.id);
+  
   const { toast } = useToast();
   const { selectedClub } = useClub();
   const queryClient = useQueryClient();

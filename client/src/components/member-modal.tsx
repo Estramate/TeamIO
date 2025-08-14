@@ -107,8 +107,8 @@ export default function MemberModal({ open, onClose, member, onSuccess }: Member
       });
 
       // Load current team memberships (using correct field name)
-      if (teamMemberships.length > 0) {
-        const memberSpecificMemberships = teamMemberships.filter((tm: any) => tm.memberId === member.id);
+      if (teamMemberships && (teamMemberships as any[]).length > 0) {
+        const memberSpecificMemberships = (teamMemberships as any[]).filter((tm: any) => tm.memberId === member.id);
         const currentMemberships = memberSpecificMemberships
           .filter((tm: any) => tm.membershipRole === 'trainer' || tm.membershipRole === 'co-trainer')
           .map((tm: any) => ({ teamId: tm.teamId, role: tm.membershipRole }));
@@ -129,7 +129,8 @@ export default function MemberModal({ open, onClose, member, onSuccess }: Member
         teamMemberships: selectedTeamMemberships,
       });
       if (!response.ok) {
-        if (isUnauthorizedError(response)) {
+        const errorText = await response.text();
+        if (response.status === 401 || response.status === 403) {
           throw new Error("Nicht autorisiert");
         }
         throw new Error("Fehler beim Erstellen des Mitglieds");
@@ -167,7 +168,8 @@ export default function MemberModal({ open, onClose, member, onSuccess }: Member
         teamMemberships: selectedTeamMemberships,
       });
       if (!response.ok) {
-        if (isUnauthorizedError(response)) {
+        const errorText = await response.text();
+        if (response.status === 401 || response.status === 403) {
           throw new Error("Nicht autorisiert");
         }
         throw new Error("Fehler beim Aktualisieren des Mitglieds");
@@ -405,7 +407,7 @@ export default function MemberModal({ open, onClose, member, onSuccess }: Member
               </div>
               
               <div className="space-y-3 max-h-64 overflow-y-auto border rounded-xl p-4 bg-gradient-to-br from-muted/30 to-muted/20">
-                {teams.length === 0 ? (
+                {(teams as any[]).length === 0 ? (
                   <div className="text-center py-8">
                     <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
                       <Users className="w-6 h-6 text-muted-foreground" />
@@ -413,7 +415,7 @@ export default function MemberModal({ open, onClose, member, onSuccess }: Member
                     <p className="text-sm text-muted-foreground">Keine Teams verfügbar</p>
                   </div>
                 ) : (
-                  teams.map((team: any) => {
+                  (teams as any[]).map((team: any) => {
                     const currentAssignment = selectedTeamMemberships.find(tm => tm.teamId === team.id);
                     const isAssigned = !!currentAssignment;
                     const currentRole = currentAssignment?.role || 'trainer';
@@ -430,18 +432,18 @@ export default function MemberModal({ open, onClose, member, onSuccess }: Member
                           <div className="flex items-center gap-3">
                             <Button
                               type="button"
-                              variant={isAssigned ? "default" : "outline"}
+                              variant={isAssigned ? "destructive" : "outline"}
                               size="sm"
                               className={`
                                 h-8 px-3 rounded-lg transition-all duration-200
                                 ${isAssigned 
-                                  ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' 
+                                  ? 'bg-red-600 hover:bg-red-700 text-white border-red-600' 
                                   : 'border-border hover:bg-muted/50 text-foreground'
                                 }
                               `}
                               onClick={() => handleTeamToggle(team.id)}
                             >
-                              {isAssigned ? 'Zugeordnet' : 'Zuordnen'}
+                              {isAssigned ? 'Entfernen' : 'Zuordnen'}
                             </Button>
                             
                             <div className="flex-1">

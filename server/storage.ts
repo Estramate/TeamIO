@@ -891,6 +891,17 @@ export class DatabaseStorage implements IStorage {
       );
   }
 
+  async removeTeamMembership(teamId: number, memberId: number): Promise<void> {
+    await db
+      .delete(teamMemberships)
+      .where(
+        and(
+          eq(teamMemberships.teamId, teamId),
+          eq(teamMemberships.memberId, memberId)
+        )
+      );
+  }
+
   // Facility operations
   async getFacilities(clubId: number): Promise<Facility[]> {
     return await db

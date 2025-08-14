@@ -1360,6 +1360,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Remove specific member from team (for individual removals)
+  app.delete('/api/teams/:teamId/members/:memberId', isAuthenticated, async (req: any, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const memberId = parseInt(req.params.memberId);
+      
+      if (!teamId || !memberId || isNaN(teamId) || isNaN(memberId)) {
+        return res.status(400).json({ message: "Invalid team ID or member ID" });
+      }
+
+      // Remove the specific team membership
+      await storage.removeTeamMembership(teamId, memberId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing member from team:", error);
+      res.status(500).json({ message: "Failed to remove member from team" });
+    }
+  });
+
   // Facility routes
   app.get('/api/clubs/:clubId/facilities', isAuthenticated, async (req: any, res) => {
     try {

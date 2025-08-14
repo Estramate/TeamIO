@@ -61,7 +61,7 @@ export default function Teams() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
-  const { notifyTeamChange, invalidateRelevantCache } = useNotificationTriggers();
+  const { invalidateRelevantCache } = useNotificationTriggers();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
   const permissions = usePermissions();

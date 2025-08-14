@@ -726,6 +726,50 @@ export default function Teams() {
                           </p>
                         </div>
                       )}
+
+                      {/* Team Mitglieder */}
+                      {(() => {
+                        const teamStaff = teamMemberships
+                          .filter((tm: any) => tm.teamId === team.id && 
+                            ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole))
+                          .slice(0, 4); // Zeige maximal 4 Mitglieder
+                        
+                        if (teamStaff.length > 0) {
+                          return (
+                            <div className="pt-3 mt-3 border-t border-border">
+                              <div className="flex items-center gap-2 mb-2">
+                                <User className="h-3 w-3 text-muted-foreground" />
+                                <span className="text-xs font-medium text-muted-foreground">Betreuer</span>
+                              </div>
+                              <div className="space-y-1">
+                                {teamStaff.map((tm: any, index: number) => (
+                                  <div key={`${tm.memberId}-${tm.membershipRole}-${index}`} className="flex items-center justify-between text-xs">
+                                    <span className="font-medium text-foreground truncate mr-2">
+                                      {tm.memberFirstName} {tm.memberLastName}
+                                    </span>
+                                    <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                                      {tm.membershipRole === 'trainer' ? 'Trainer' :
+                                       tm.membershipRole === 'co-trainer' ? 'Co-Trainer' :
+                                       tm.membershipRole === 'assistant' ? 'Assistent' :
+                                       tm.membershipRole === 'manager' ? 'Manager' :
+                                       tm.membershipRole === 'physiotherapist' ? 'Physio' :
+                                       tm.membershipRole === 'doctor' ? 'Arzt' : tm.membershipRole}
+                                    </Badge>
+                                  </div>
+                                ))}
+                                {teamMemberships.filter((tm: any) => tm.teamId === team.id && 
+                                  ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole)).length > 4 && (
+                                  <div className="text-xs text-muted-foreground italic">
+                                    +{teamMemberships.filter((tm: any) => tm.teamId === team.id && 
+                                      ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole)).length - 4} weitere
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
@@ -819,26 +863,46 @@ export default function Teams() {
                                   </span>
                                 )}
                               </div>
-                              {team.description && (
-                                <div className="text-xs text-muted-foreground line-clamp-2 max-w-48">
-                                  {team.description}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Users className="h-4 w-4 text-primary" />
-                                <span className="font-medium">
-                                  {(players as any[]).filter(p => p.teams?.some((t: any) => t.id === team.id)).length} Spieler
-                                </span>
-                                {team.maxMembers && (
-                                  <span className="text-muted-foreground text-xs">
-                                    / {team.maxMembers} max
-                                  </span>
-                                )}
-                              </div>
+                              
+                              {/* Team Staff */}
+                              {(() => {
+                                const teamStaff = teamMemberships
+                                  .filter((tm: any) => tm.teamId === team.id && 
+                                    ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole))
+                                  .slice(0, 2); // Zeige maximal 2 in der Listenansicht
+                                
+                                if (teamStaff.length > 0) {
+                                  return (
+                                    <div className="space-y-1">
+                                      {teamStaff.map((tm: any, index: number) => (
+                                        <div key={`${tm.memberId}-${tm.membershipRole}-${index}`} className="flex items-center gap-2">
+                                          <User className="h-3 w-3 text-muted-foreground" />
+                                          <span className="text-xs font-medium truncate mr-1">
+                                            {tm.memberFirstName} {tm.memberLastName}
+                                          </span>
+                                          <Badge variant="outline" className="text-xs py-0 px-1 h-4">
+                                            {tm.membershipRole === 'trainer' ? 'T' :
+                                             tm.membershipRole === 'co-trainer' ? 'CT' :
+                                             tm.membershipRole === 'assistant' ? 'A' :
+                                             tm.membershipRole === 'manager' ? 'M' :
+                                             tm.membershipRole === 'physiotherapist' ? 'P' :
+                                             tm.membershipRole === 'doctor' ? 'D' : tm.membershipRole}
+                                          </Badge>
+                                        </div>
+                                      ))}
+                                      {teamMemberships.filter((tm: any) => tm.teamId === team.id && 
+                                        ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole)).length > 2 && (
+                                        <div className="text-xs text-muted-foreground">
+                                          +{teamMemberships.filter((tm: any) => tm.teamId === team.id && 
+                                            ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole)).length - 2} weitere
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              })()}
+                              
                               {team.description && (
                                 <div className="text-xs text-muted-foreground line-clamp-2 max-w-48">
                                   {team.description}

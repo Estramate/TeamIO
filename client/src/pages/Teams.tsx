@@ -143,9 +143,9 @@ export default function Teams() {
       const currentTrainers = teamMemberships
         .filter((tm: any) => 
           tm.teamId === selectedTeam.id && 
-          ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.role)
+          ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole)
         )
-        .map((tm: any) => ({ id: tm.memberId, role: tm.role }));
+        .map((tm: any) => ({ id: tm.memberId, role: tm.membershipRole }));
       console.log('✅ Setting selected trainers:', currentTrainers);
       setSelectedTrainers(currentTrainers);
     }
@@ -371,9 +371,9 @@ export default function Teams() {
     const currentTrainers = teamMemberships
       .filter((tm: any) => 
         tm.teamId === team.id && 
-        ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.role)
+        ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole)
       )
-      .map((tm: any) => ({ id: tm.memberId, role: tm.role }));
+      .map((tm: any) => ({ id: tm.memberId, role: tm.membershipRole }));
     console.log('✅ Found current trainers:', currentTrainers);
     setSelectedTrainers(currentTrainers);
     

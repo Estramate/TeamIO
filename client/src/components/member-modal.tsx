@@ -87,15 +87,30 @@ export default function MemberModal({ open, onClose, member }: MemberModalProps)
       const currentMemberships = teamMemberships
         .filter((tm: any) => 
           tm.memberId === member.id && 
-          (tm.role === 'trainer' || tm.role === 'co-trainer')
+          (tm.membershipRole === 'trainer' || tm.membershipRole === 'co-trainer')
         )
-        .map((tm: any) => ({ teamId: tm.teamId, role: tm.role }));
+        .map((tm: any) => ({ teamId: tm.teamId, role: tm.membershipRole }));
       console.log('✅ Found current memberships:', currentMemberships);
       setSelectedTeamMemberships(currentMemberships);
     } else if (open) {
       setSelectedTeamMemberships([]);
     }
   }, [member, teamMemberships, open]);
+
+  const form = useForm<MemberFormData>({
+    resolver: zodResolver(memberSchema),
+    defaultValues: {
+      firstName: member?.firstName || "",
+      lastName: member?.lastName || "",
+      email: member?.email || "",
+      phone: member?.phone || "",
+      birthDate: member?.birthDate || "",
+      address: member?.address || "",
+      membershipNumber: member?.membershipNumber || "",
+      status: member?.status || "active",
+      notes: member?.notes || "",
+    },
+  });
 
   // Reset form when member changes
   useEffect(() => {
@@ -126,21 +141,6 @@ export default function MemberModal({ open, onClose, member }: MemberModalProps)
       setSelectedTeamMemberships([]);
     }
   }, [member, open, form]);
-
-  const form = useForm<MemberFormData>({
-    resolver: zodResolver(memberSchema),
-    defaultValues: {
-      firstName: member?.firstName || "",
-      lastName: member?.lastName || "",
-      email: member?.email || "",
-      phone: member?.phone || "",
-      birthDate: member?.birthDate || "",
-      address: member?.address || "",
-      membershipNumber: member?.membershipNumber || "",
-      status: member?.status || "active",
-      notes: member?.notes || "",
-    },
-  });
 
   const createMutation = useMutation({
     mutationFn: async (data: MemberFormData) => {

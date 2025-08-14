@@ -1210,21 +1210,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('You must be a club administrator or club leader to update members');
     }
     
-    const updates = { ...req.body };
+    const { teamMemberships, ...memberUpdates } = req.body;
     
     // Clean up empty date fields to prevent PostgreSQL errors
-    if (updates.birthDate === '') {
-      updates.birthDate = null;
+    if (memberUpdates.birthDate === '') {
+      memberUpdates.birthDate = null;
     }
-    if (updates.joinDate === '') {
-      updates.joinDate = null;
+    if (memberUpdates.joinDate === '') {
+      memberUpdates.joinDate = null;
     }
     
-    console.log('🔧 Member update:', { memberId: id, clubId, updates, userId });
+    console.log('🔧 Member update:', { memberId: id, clubId, updates: memberUpdates, teamMemberships, userId });
     
-    const member = await storage.updateMember(id, updates);
+    // Update member data
+    const member = await storage.updateMember(id, memberUpdates);
     
-    logger.info('Member updated', { memberId: id, clubId, updatedBy: userId, requestId: req.id });
+    // Update team memberships if provided
+    if (teamMemberships && Array.isArray(teamMemberships)) {
+      // Remove existing team memberships for this member
+      await storage.removeAllMemberTeamMemberships(id);
+      
+      // Add new team memberships
+      for (const membership of teamMemberships) {
+        await storage.addMemberToTeam({
+          teamId: membership.teamId,
+          memberId: id,
+          role: membership.role,
+          status: 'active',
+        });
+      }
+    }
+    
+    logger.info('Member and team memberships updated', { memberId: id, clubId, updatedBy: userId, requestId: req.id });
     res.json(member);
   }));
 

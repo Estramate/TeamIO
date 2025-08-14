@@ -729,9 +729,26 @@ export default function Teams() {
 
                       {/* Team Mitglieder */}
                       {(() => {
+                        // Sortierung nach Rollenwichtigkeit
+                        const roleOrder = {
+                          'trainer': 1,
+                          'co-trainer': 2,
+                          'assistant': 3,
+                          'manager': 4,
+                          'physiotherapist': 5,
+                          'doctor': 6
+                        };
+                        
                         const teamStaff = teamMemberships
                           .filter((tm: any) => tm.teamId === team.id && 
                             ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole))
+                          .sort((a: any, b: any) => {
+                            const orderA = roleOrder[a.membershipRole as keyof typeof roleOrder] || 999;
+                            const orderB = roleOrder[b.membershipRole as keyof typeof roleOrder] || 999;
+                            if (orderA !== orderB) return orderA - orderB;
+                            // Bei gleicher Rolle: alphabetisch nach Namen sortieren
+                            return `${a.memberFirstName} ${a.memberLastName}`.localeCompare(`${b.memberFirstName} ${b.memberLastName}`);
+                          })
                           .slice(0, 4); // Zeige maximal 4 Mitglieder
                         
                         if (teamStaff.length > 0) {
@@ -866,9 +883,26 @@ export default function Teams() {
                               
                               {/* Team Staff */}
                               {(() => {
+                                // Sortierung nach Rollenwichtigkeit
+                                const roleOrder = {
+                                  'trainer': 1,
+                                  'co-trainer': 2,
+                                  'assistant': 3,
+                                  'manager': 4,
+                                  'physiotherapist': 5,
+                                  'doctor': 6
+                                };
+                                
                                 const teamStaff = teamMemberships
                                   .filter((tm: any) => tm.teamId === team.id && 
                                     ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole))
+                                  .sort((a: any, b: any) => {
+                                    const orderA = roleOrder[a.membershipRole as keyof typeof roleOrder] || 999;
+                                    const orderB = roleOrder[b.membershipRole as keyof typeof roleOrder] || 999;
+                                    if (orderA !== orderB) return orderA - orderB;
+                                    // Bei gleicher Rolle: alphabetisch nach Namen sortieren
+                                    return `${a.memberFirstName} ${a.memberLastName}`.localeCompare(`${b.memberFirstName} ${b.memberLastName}`);
+                                  })
                                   .slice(0, 2); // Zeige maximal 2 in der Listenansicht
                                 
                                 if (teamStaff.length > 0) {

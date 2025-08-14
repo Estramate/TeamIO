@@ -145,7 +145,11 @@ export default function Teams() {
           tm.teamId === selectedTeam.id && 
           ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole)
         )
-        .map((tm: any) => ({ id: tm.memberId, role: tm.membershipRole }));
+        .map((tm: any) => ({ id: tm.memberId, role: tm.membershipRole }))
+        // Remove duplicates based on id and role combination
+        .filter((trainer, index, self) => 
+          index === self.findIndex(t => t.id === trainer.id && t.role === trainer.role)
+        );
       console.log('✅ Setting selected trainers:', currentTrainers);
       setSelectedTrainers(currentTrainers);
     }
@@ -373,7 +377,11 @@ export default function Teams() {
         tm.teamId === team.id && 
         ['trainer', 'co-trainer', 'assistant', 'manager', 'physiotherapist', 'doctor'].includes(tm.membershipRole)
       )
-      .map((tm: any) => ({ id: tm.memberId, role: tm.membershipRole }));
+      .map((tm: any) => ({ id: tm.memberId, role: tm.membershipRole }))
+      // Remove duplicates based on id and role combination
+      .filter((trainer, index, self) => 
+        index === self.findIndex(t => t.id === trainer.id && t.role === trainer.role)
+      );
     console.log('✅ Found current trainers:', currentTrainers);
     setSelectedTrainers(currentTrainers);
     

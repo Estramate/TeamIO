@@ -1227,11 +1227,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Update team memberships if provided
     if (teamMemberships && Array.isArray(teamMemberships)) {
+      // Remove duplicate entries from the request
+      const uniqueMemberships = teamMemberships.filter((membership, index, self) => 
+        index === self.findIndex(m => 
+          m.teamId === membership.teamId && m.role === membership.role
+        )
+      );
+      
       // Remove existing team memberships for this member
       await storage.removeAllMemberTeamMemberships(id);
       
-      // Add new team memberships
-      for (const membership of teamMemberships) {
+      // Add new team memberships (now guaranteed to be unique)
+      for (const membership of uniqueMemberships) {
         await storage.addMemberToTeam({
           teamId: membership.teamId,
           memberId: id,

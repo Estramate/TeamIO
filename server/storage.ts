@@ -824,6 +824,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addMemberToTeam(membership: InsertTeamMembership): Promise<TeamMembership> {
+    // Check if this exact membership already exists
+    const existingMembership = await db
+      .select()
+      .from(teamMemberships)
+      .where(
+        and(
+          eq(teamMemberships.teamId, membership.teamId),
+          eq(teamMemberships.memberId, membership.memberId),
+          eq(teamMemberships.role, membership.role)
+        )
+      )
+      .limit(1);
+
+    if (existingMembership.length > 0) {
+      // Return existing membership instead of creating duplicate
+      return existingMembership[0];
+    }
+
     const [newMembership] = await db
       .insert(teamMemberships)
       .values(membership)

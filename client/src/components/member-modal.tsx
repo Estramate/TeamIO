@@ -83,16 +83,20 @@ export default function MemberModal({ open, onClose, member }: MemberModalProps)
   // Initialize team memberships when modal opens
   useEffect(() => {
     if (member && teamMemberships.length > 0 && open) {
-      console.log('🔍 Loading team memberships for member:', member.id, teamMemberships);
+      console.log('🔍 [MEMBER MODAL] Loading team memberships for member:', member.id, 'All teamMemberships:', teamMemberships);
+      const memberSpecificMemberships = teamMemberships.filter((tm: any) => tm.memberId === member.id);
+      console.log('📋 [MEMBER MODAL] Member-specific memberships:', memberSpecificMemberships);
+      
       const currentMemberships = teamMemberships
         .filter((tm: any) => 
           tm.memberId === member.id && 
           (tm.membershipRole === 'trainer' || tm.membershipRole === 'co-trainer')
         )
         .map((tm: any) => ({ teamId: tm.teamId, role: tm.membershipRole }));
-      console.log('✅ Found current memberships:', currentMemberships);
+      console.log('✅ [MEMBER MODAL] Found current memberships:', currentMemberships);
       setSelectedTeamMemberships(currentMemberships);
     } else if (open) {
+      console.log('🔄 [MEMBER MODAL] Resetting memberships - member:', !!member, 'teamMemberships.length:', teamMemberships.length, 'open:', open);
       setSelectedTeamMemberships([]);
     }
   }, [member, teamMemberships, open]);

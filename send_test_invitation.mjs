@@ -1,7 +1,7 @@
 import sgMail from '@sendgrid/mail';
 import pg from 'pg';
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || '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';
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 sgMail.setApiKey(SENDGRID_API_KEY);
 
 const token = 'invite_test_1755092740_new';

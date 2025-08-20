@@ -855,11 +855,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Check if user has admin permissions for this club
     const membership = await storage.getUserClubMembership(userId, clubId);
-    if (!membership || !['club-administrator', 'admin'].includes(role?.name || '')) {
+    if (!membership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    const adminRole = await storage.getRoleById(membership.roleId);
+    const adminRoles = ['club-administrator', 'obmann', 'admin'];
+    if (!adminRole || !adminRoles.includes(adminRole.name)) {
       throw new AuthorizationError('Only administrators can view activity logs');
     }
     
-    const logs = await storage.getClubActivityLogs(clubId);
+    const logs = await storage.getActivityLogs(clubId);
     logger.info('Activity logs retrieved', { userId, clubId, count: logs.length, requestId: req.id });
     res.json(logs);
   }));
@@ -966,25 +972,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }));
 
-  // Activity logs route (admin only)
-  app.get('/api/clubs/:clubId/activity-logs', isAuthenticatedEnhanced, asyncHandler(async (req: any, res: any) => {
-    const clubId = parseInt(req.params.clubId);
-    const userId = req.userId;
-    
-    if (!clubId || isNaN(clubId)) {
-      throw new ValidationError('Invalid club ID', 'clubId');
-    }
-    
-    // Check if user has admin permissions for this club
-    const membership = await storage.getUserClubMembership(userId, clubId);
-    if (!membership || !['club-administrator', 'admin'].includes(role?.name || '')) {
-      throw new AuthorizationError('Only administrators can view activity logs');
-    }
-    
-    const logs = await storage.getActivityLogs(clubId);
-    logger.info('Activity logs retrieved', { userId, clubId, count: logs.length, requestId: req.id });
-    res.json(logs);
-  }));
 
   // Users management route (admin only)
   app.get('/api/clubs/:clubId/users', isAuthenticated, asyncHandler(async (req: any, res: any) => {

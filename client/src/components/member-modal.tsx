@@ -110,8 +110,7 @@ export default function MemberModal({ open, onClose, member, onSuccess }: Member
       if (teamMemberships && (teamMemberships as any[]).length > 0) {
         const memberSpecificMemberships = (teamMemberships as any[]).filter((tm: any) => tm.memberId === member.id);
         const currentMemberships = memberSpecificMemberships
-          .filter((tm: any) => tm.membershipRole === 'trainer' || tm.membershipRole === 'co-trainer')
-          .map((tm: any) => ({ teamId: tm.teamId, role: tm.membershipRole }));
+          .map((tm: any) => ({ teamId: tm.teamId, role: tm.role || tm.membershipRole || 'trainer' }));
         setSelectedTeamMemberships(currentMemberships);
       }
     } else if (!member && open) {

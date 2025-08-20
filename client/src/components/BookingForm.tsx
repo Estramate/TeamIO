@@ -176,7 +176,10 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
   });
 
   const updateBookingMutation = useMutation({
-    mutationFn: (bookingData: any) => apiRequest('PUT', `/api/clubs/${selectedClubId}/bookings/${editingBooking.id}`, bookingData),
+    mutationFn: (bookingData: any) => {
+      console.log('CRITICAL: BookingForm using PATCH for update - ID:', editingBooking.id, 'Data:', bookingData);
+      return apiRequest('PATCH', `/api/clubs/${selectedClubId}/bookings/${editingBooking.id}`, bookingData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/bookings`] });
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/events`] });

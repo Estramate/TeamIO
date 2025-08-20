@@ -152,10 +152,9 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
         value: Math.abs(data?.currentMetrics?.utilizationChanges?.change || 0), 
         period: "vs. Vormonat" 
       },
-      status: data?.currentMetrics?.totalFacilities && data?.currentMetrics?.averageUtilization ? 
-        (data.currentMetrics.averageUtilization >= data.currentMetrics.totalFacilities * 15 ? "excellent" : 
-         data.currentMetrics.averageUtilization >= data.currentMetrics.totalFacilities * 10 ? "good" : 
-         data.currentMetrics.averageUtilization >= data.currentMetrics.totalFacilities * 5 ? "warning" : "critical") : "critical",
+      status: (data?.currentMetrics?.averageUtilization || 0) >= 80 ? "excellent" : 
+              (data?.currentMetrics?.averageUtilization || 0) >= 60 ? "good" : 
+              (data?.currentMetrics?.averageUtilization || 0) >= 40 ? "warning" : "critical",
       description: "Durchschnittliche Auslastung aller Anlagen",
       category: "efficiency",
       requiresPlan: ["professional", "enterprise"]

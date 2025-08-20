@@ -1493,16 +1493,23 @@ export class DatabaseStorage implements IStorage {
       return bookingDate >= monthStart;
     });
     
-    // Calculate utilization changes
-    const currentUtilization = facilityUsage.length > 0 ? 
-      Math.round(facilityUsage.reduce((sum, f) => sum + f.utilization, 0) / facilityUsage.length) : 0;
+    // CONSISTENT utilization calculation for both current and previous
+    const calculateUtilizationFromBookings = (bookings: any[], facilities: any[], days: number) => {
+      if (facilities.length === 0) return 0;
+      const totalBookingHours = bookings.reduce((sum, booking) => {
+        const duration = (new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60 * 60);
+        return sum + Math.max(duration, 0); // Ensure no negative durations
+      }, 0);
+      
+      // Max possible hours = facilities × operating hours per day × days  
+      const operatingHoursPerDay = 16; // Assume 6 AM to 10 PM = 16 hours
+      const maxPossibleHours = facilities.length * operatingHoursPerDay * days;
+      
+      return maxPossibleHours > 0 ? Math.min(Math.round((totalBookingHours / maxPossibleHours) * 100), 100) : 0;
+    };
     
-    // REAL previous month utilization based on actual facility usage
-    const previousMonthUtilization = allFacilities.length > 0 ? 
-      Math.round(previousMonthBookings.reduce((sum, booking) => {
-        const duration = (new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60 * 60); // hours
-        return sum + duration;
-      }, 0) / (allFacilities.length * 24 * 30)) : 0; // hours per facility per month"
+    const currentUtilization = calculateUtilizationFromBookings(currentMonthBookings, allFacilities, 30);
+    const previousMonthUtilization = calculateUtilizationFromBookings(previousMonthBookings, allFacilities, 30);
 
     return {
       // Basic stats (existing)
@@ -1551,7 +1558,7 @@ export class DatabaseStorage implements IStorage {
       utilizationChanges: {
         current: currentUtilization,
         previous: previousMonthUtilization,
-        change: currentUtilization - previousMonthUtilization
+        change: Math.max(-100, Math.min(100, currentUtilization - previousMonthUtilization)) // Ensure change is within reasonable bounds
       }
     };
     } catch (error) {

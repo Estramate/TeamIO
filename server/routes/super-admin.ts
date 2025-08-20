@@ -50,15 +50,14 @@ router.get("/clubs",
       const enhancedClubs = await Promise.all(
         clubs.map(async (club: any) => {
           const members = await storage.getClubMembers(club.id);
-          const clubUsers = await storage.getClubUsersWithMembership(club.id);
           
-          // Get Super Admins who also have memberships in this club
-          const superAdminsInClub = await storage.getSuperAdminsInClub(club.id);
+          // Get ALL users for this club (including Super Admins for super admin view)
+          const allClubUsers = await storage.getAllClubUsers(club.id);
           
           return {
             ...club,
             memberCount: members.length,
-            userCount: clubUsers.length + superAdminsInClub.length, // Include Super Admins in count
+            userCount: allClubUsers.length, // Total users including Super Admins
             subscriptionPlan: 'free', // Default subscription plan
             createdAt: club.createdAt || new Date(),
           };

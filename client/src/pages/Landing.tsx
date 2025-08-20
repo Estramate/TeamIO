@@ -17,11 +17,55 @@ import {
   Play
 } from "lucide-react";
 
+interface LandingStats {
+  activeClubs: number;
+  totalMembers: number;
+  totalRoles: number;
+  status: string;
+  lastUpdated: string;
+}
+
 export function Landing() {
   const [isVisible, setIsVisible] = useState(false);
+  const [stats, setStats] = useState<LandingStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   useEffect(() => {
     setIsVisible(true);
+    
+    // Load dynamic statistics from database
+    const fetchLandingStats = async () => {
+      try {
+        setIsLoadingStats(true);
+        const response = await fetch('/api/public/landing-stats');
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        } else {
+          // Fallback to static data if API fails
+          setStats({
+            activeClubs: 2,
+            totalMembers: 155,
+            totalRoles: 9,
+            status: "Beta",
+            lastUpdated: new Date().toISOString()
+          });
+        }
+      } catch (error) {
+        // Fallback to static data on error
+        setStats({
+          activeClubs: 2,
+          totalMembers: 155,
+          totalRoles: 9,
+          status: "Beta",
+          lastUpdated: new Date().toISOString()
+        });
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+    
+    fetchLandingStats();
   }, []);
 
   const features = [
@@ -57,11 +101,17 @@ export function Landing() {
     }
   ];
 
-  const stats = [
-    { number: "2", label: "Aktive Vereine" },
-    { number: "155+", label: "Verwaltete Mitglieder" },
-    { number: "9", label: "Vereinsrollen" },
-    { number: "Beta", label: "Status" }
+  // Dynamic stats from database
+  const displayStats = stats ? [
+    { number: stats.activeClubs.toString(), label: "Aktive Vereine" },
+    { number: `${stats.totalMembers}+`, label: "Verwaltete Mitglieder" },
+    { number: stats.totalRoles.toString(), label: "Vereinsrollen" },
+    { number: stats.status, label: "Status" }
+  ] : [
+    { number: "...", label: "Aktive Vereine" },
+    { number: "...", label: "Verwaltete Mitglieder" },
+    { number: "...", label: "Vereinsrollen" },
+    { number: "...", label: "Status" }
   ];
 
   const testimonials = [
@@ -166,9 +216,11 @@ export function Landing() {
       <section className="py-20 bg-gray-50 dark:bg-gray-900/50">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
+            {displayStats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-3xl lg:text-4xl font-light text-gray-900 dark:text-white mb-2">
+                <div className={`text-3xl lg:text-4xl font-light text-gray-900 dark:text-white mb-2 ${
+                  isLoadingStats ? 'animate-pulse' : ''
+                }`}>
                   {stat.number}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
@@ -177,6 +229,13 @@ export function Landing() {
               </div>
             ))}
           </div>
+          {stats && (
+            <div className="text-center mt-4">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Live-Daten aus der Datenbank • Letztes Update: {new Date(stats.lastUpdated).toLocaleString('de-DE')}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

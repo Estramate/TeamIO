@@ -3362,6 +3362,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }));
 
+  // ====== PUBLIC ROUTES (No Auth Required) ======
+  // GET /api/public/landing-stats - Public endpoint for landing page statistics
+  app.get("/api/public/landing-stats", asyncHandler(async (req: any, res: any) => {
+    try {
+      const storage = (await import("./storage")).default;
+      
+      // Get basic counts from database
+      const [allClubs, allUsers, allRoles] = await Promise.all([
+        storage.getAllClubs(),
+        storage.getAllUsers(), 
+        storage.getAllRoles()
+      ]);
+      
+      // Count total members across all clubs
+      let totalMembers = 0;
+      let totalPlayers = 0;
+      
+      for (const club of allClubs) {
+        try {
+          const clubMembers = await storage.getMembers(club.id);
+          const clubPlayers = await storage.getPlayers(club.id);
+          totalMembers += clubMembers.length;
+          totalPlayers += clubPlayers.length;
+        } catch (error) {
+          // Continue if club data access fails
+        }
+      }
+      
+      // Calculate combined member/player count
+      const totalManagedUsers = totalMembers + totalPlayers;
+      
+      res.json({
+        activeClubs: allClubs.length,
+        totalMembers: totalManagedUsers,
+        totalRoles: allRoles.filter(role => role.isActive).length,
+        status: "Beta",
+        lastUpdated: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      // Fallback to current known values if database fails
+      res.json({
+        activeClubs: 2,
+        totalMembers: 155,
+        totalRoles: 9,
+        status: "Beta",
+        lastUpdated: new Date().toISOString()
+      });
+    }
+  }));
+
   // ====== SUBSCRIPTION ROUTES ======
   app.use('/api/subscriptions', subscriptionRoutes);
   

@@ -51,15 +51,15 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { roles, isLoading: rolesLoading } = useRoles();
-  const { notifyUserInvitation, invalidateRelevantCache } = useNotificationTriggers();
+  const { invalidateRelevantCache } = useNotificationTriggers();
 
   // Load members and players for assignment
-  const { data: members = [], isLoading: membersLoading } = useQuery({
+  const { data: members = [], isLoading: membersLoading } = useQuery<any[]>({
     queryKey: [`/api/clubs/${clubId}/members`],
     enabled: open && assignmentType === 'member',
   });
 
-  const { data: players = [], isLoading: playersLoading } = useQuery({
+  const { data: players = [], isLoading: playersLoading } = useQuery<any[]>({
     queryKey: [`/api/clubs/${clubId}/players`],
     enabled: open && assignmentType === 'player',
   });
@@ -82,8 +82,7 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
     onSuccess: (_, variables) => {
       const roleDisplayName = roles?.find(r => r.id === variables.roleId)?.displayName || 'Mitglied';
       
-      // Trigger intelligent notification
-      notifyUserInvitation(variables.email, roleDisplayName);
+      // Note: User invitation notifications can be implemented later
       
       toast({
         title: '✅ Einladung gesendet',

@@ -334,6 +334,50 @@ export default function Users() {
     },
   });
 
+  // Update user details mutation
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, userData }: { 
+      userId: string; 
+      userData: {
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+        roleId?: number;
+        status?: string;
+      }
+    }) => {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(userData),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Fehler beim Aktualisieren der Benutzerdaten');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Benutzer aktualisiert",
+        description: "Die Benutzerdaten wurden erfolgreich aktualisiert.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
+      setShowEditDialog(false);
+      setSelectedUser(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Filter members based on search and filters
   const filteredMembers = (members as any[] || []).filter((member: any) => {
     const matchesSearch = searchQuery === '' || 
@@ -807,6 +851,48 @@ export default function Users() {
                 </div>
               </div>
 
+              {/* Basic User Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">Vorname</Label>
+                  <Input
+                    id="firstName"
+                    value={selectedUser.firstName || ''}
+                    onChange={(e) => setSelectedUser({ 
+                      ...selectedUser, 
+                      firstName: e.target.value 
+                    })}
+                    placeholder="Vorname"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Nachname</Label>
+                  <Input
+                    id="lastName"
+                    value={selectedUser.lastName || ''}
+                    onChange={(e) => setSelectedUser({ 
+                      ...selectedUser, 
+                      lastName: e.target.value 
+                    })}
+                    placeholder="Nachname"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">E-Mail</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={selectedUser.email || ''}
+                  onChange={(e) => setSelectedUser({ 
+                    ...selectedUser, 
+                    email: e.target.value 
+                  })}
+                  placeholder="user@example.com"
+                />
+              </div>
+
               {/* Role Selection */}
               <div className="space-y-2">
                 <Label htmlFor="role">Rolle</Label>
@@ -840,6 +926,26 @@ export default function Users() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Status Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={selectedUser.status || 'active'}
+                  onValueChange={(value) => setSelectedUser({ 
+                    ...selectedUser, 
+                    status: value 
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Aktiv</SelectItem>
+                    <SelectItem value="inactive">Inaktiv</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
               <div className="flex justify-end gap-2 pt-4">
                 <Button
@@ -850,17 +956,22 @@ export default function Users() {
                 </Button>
                 <Button
                   onClick={() => {
-                    if (selectedUser?.roleId && selectedUser?.id) {
-                      updateRoleMutation.mutate({
+                    if (selectedUser?.id) {
+                      updateUserMutation.mutate({
                         userId: selectedUser.id,
-                        roleId: selectedUser.roleId
+                        userData: {
+                          firstName: selectedUser.firstName,
+                          lastName: selectedUser.lastName,
+                          email: selectedUser.email,
+                          roleId: selectedUser.roleId,
+                          status: selectedUser.status
+                        }
                       });
-                      setShowEditDialog(false);
                     }
                   }}
-                  disabled={updateRoleMutation.isPending || !selectedUser?.roleId}
+                  disabled={updateUserMutation.isPending || !selectedUser?.id}
                 >
-                  {updateRoleMutation.isPending ? 'Speichere...' : 'Speichern'}
+                  {updateUserMutation.isPending ? 'Speichere...' : 'Speichern'}
                 </Button>
               </div>
             </div>

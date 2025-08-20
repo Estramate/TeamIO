@@ -3222,6 +3222,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }));
 
+  // Update user details in club context
+  app.patch('/api/clubs/:clubId/users/:userId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const targetUserId = req.params.userId;
+    const requestUserId = req.user?.claims?.sub || req.user?.id;
+    const { firstName, lastName, email, roleId, status } = req.body;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    if (!targetUserId) {
+      throw new ValidationError('User ID is required', 'userId');
+    }
+    
+    // Check if requesting user has access to this club
+    const requestMembership = await storage.getUserClubMembership(requestUserId, clubId);
+    if (!requestMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Check if requesting user has appropriate permissions
+    if (!canPerformAction(requestMembership.role, 'member_management')) {
+      throw new AuthorizationError('You do not have permission to manage users');
+    }
+    
+    // Check if target user exists and has membership in this club
+    const targetMembership = await storage.getUserClubMembership(targetUserId, clubId);
+    if (!targetMembership) {
+      throw new ValidationError('Target user is not a member of this club', 'userId');
+    }
+    
+    // Prepare update data for user table
+    const userUpdateData: any = {};
+    if (firstName !== undefined) userUpdateData.firstName = firstName;
+    if (lastName !== undefined) userUpdateData.lastName = lastName;
+    if (email !== undefined) userUpdateData.email = email;
+    
+    // Update user details if provided
+    let updatedUser = null;
+    if (Object.keys(userUpdateData).length > 0) {
+      updatedUser = await storage.updateUser(targetUserId, userUpdateData);
+    }
+    
+    // Update membership data (role, status)
+    const membershipUpdateData: any = {};
+    if (roleId !== undefined && !isNaN(parseInt(roleId))) {
+      membershipUpdateData.roleId = parseInt(roleId);
+    }
+    if (status !== undefined) {
+      membershipUpdateData.status = status;
+    }
+    
+    // Update membership if provided
+    let updatedMembership = targetMembership;
+    if (Object.keys(membershipUpdateData).length > 0) {
+      updatedMembership = await storage.updateClubMembership(targetUserId, clubId, membershipUpdateData);
+    }
+    
+    logger.info('User details updated', { 
+      targetUserId, 
+      clubId, 
+      userFields: Object.keys(userUpdateData),
+      membershipFields: Object.keys(membershipUpdateData),
+      updatedBy: requestUserId, 
+      requestId: req.id 
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'User details successfully updated',
+      user: updatedUser,
+      membership: updatedMembership 
+    });
+  }));
+
   // ====== SUBSCRIPTION ROUTES ======
   app.use('/api/subscriptions', subscriptionRoutes);
   

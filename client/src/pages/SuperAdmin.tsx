@@ -1046,11 +1046,15 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
   onDeactivate: (user: any) => void;
 }) {
   const { roles } = useRoles();
-  if (!users?.length) {
+  
+  // Filter: Only show Super Admins
+  const superAdminUsers = users?.filter(user => user.isSuperAdmin === true) || [];
+  
+  if (!superAdminUsers?.length) {
     return (
       <div className="text-center py-8">
         <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <p className="text-muted-foreground">Noch keine Benutzer registriert</p>
+        <p className="text-muted-foreground">Noch keine Super-Admin Benutzer registriert</p>
       </div>
     );
   }
@@ -1069,11 +1073,16 @@ function UsersTable({ users, onViewDetails, onEdit, onDeactivate }: {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {superAdminUsers.map((user) => (
             <tr key={user.id} className="border-b hover:bg-muted/50">
               <td className="p-3">
                 <div>
-                  <div className="font-medium">{user.firstName} {user.lastName}</div>
+                  <div className="font-medium flex items-center gap-2">
+                    {user.lastName}, {user.firstName}
+                    <Badge variant="default" className="text-xs bg-purple-600">
+                      Super Admin
+                    </Badge>
+                  </div>
                   <div className="text-sm text-muted-foreground">{user.email}</div>
                 </div>
               </td>

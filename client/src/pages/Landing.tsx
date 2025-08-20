@@ -58,68 +58,40 @@ export function Landing() {
   ];
 
   const stats = [
-    { number: "2025", label: "Entwickelt" },
-    { number: "24/7", label: "Verfügbar" },
-    { number: "DSGVO", label: "Konform" },
-    { number: "€0", label: "Startkosten" }
+    { number: "2", label: "Aktive Vereine" },
+    { number: "155+", label: "Verwaltete Mitglieder" },
+    { number: "9", label: "Vereinsrollen" },
+    { number: "Beta", label: "Status" }
   ];
 
   const testimonials = [
     {
-      name: "Beta-Tester A",
-      role: "Vereinsvorstand",
-      content: "ClubFlow vereinfacht die digitale Vereinsverwaltung erheblich. Die intuitive Benutzeroberfläche und die umfassenden Funktionen machen die tägliche Vereinsarbeit deutlich effizienter.",
-      avatar: "BT",
-      rating: 5
-    },
-    {
-      name: "Early Adopter B", 
-      role: "Kassier",
-      content: "Die Plattform bietet eine solide Grundlage für moderne Vereinsverwaltung. Besonders die Mitgliederverwaltung und Kommunikationsfunktionen sind sehr durchdacht konzipiert.",
-      avatar: "EA",
+      name: "SV Oberglan 1975",
+      role: "Testverein",
+      content: "Wir testen ClubFlow seit einigen Monaten mit über 31 Mitgliedern und 15 Teams. Die Grundfunktionen für Mitglieder- und Teamverwaltung funktionieren bereits solide.",
+      avatar: "SV",
       rating: 4
     },
     {
-      name: "Test-Nutzer C",
-      role: "Trainer", 
-      content: "Als Vereinsmanagement-Software zeigt ClubFlow großes Potenzial. Die Kalenderfunktionen und Platzbuchungen funktionieren bereits sehr gut in der aktuellen Version.",
-      avatar: "TN",
-      rating: 5
-    },
-    {
-      name: "Beta-Tester D",
-      role: "Schriftführer",
-      content: "Die Kommunikationsfunktionen sind sehr hilfreich für unseren Verein. Protokolle und Ankündigungen kann ich jetzt zentral verwalten und alle Mitglieder erreichen effektiv.",
-      avatar: "BD",
-      rating: 4
-    },
-    {
-      name: "Pilot-Nutzer E",
-      role: "Jugendleiter",
-      content: "Besonders für die Jugendarbeit ist ClubFlow eine große Erleichterung. Eltern-Kommunikation und Terminplanung funktionieren endlich reibungslos und übersichtlich.",
-      avatar: "PE",
-      rating: 5
-    },
-    {
-      name: "Test-Verein F",
-      role: "Platzwart",
-      content: "Die Platzreservierung über ClubFlow hat unser Chaos beendet. Jetzt sehe ich auf einen Blick alle Buchungen und kann Konflikte vermeiden. Sehr praktisch!",
+      name: "Testverein", 
+      role: "Beta-Tester",
+      content: "Als zweiter Testverein evaluieren wir die Multi-Vereins-Funktionalität. Die rollenbasierte Zugriffskontrolle mit 9 verschiedenen Rollen ist sehr durchdacht.",
       avatar: "TV",
       rating: 4
     },
     {
-      name: "Alpha-Tester G",
-      role: "Mitgliederverwaltung",
-      content: "Endlich haben wir alle Mitgliederdaten zentral und DSGVO-konform. Die Beitragsverwaltung und Zahlungsübersicht spare mir Stunden an Arbeit jeden Monat.",
-      avatar: "AG",
-      rating: 5
+      name: "Entwicklerteam",
+      role: "ClubFlow Development",
+      content: "Aktuell arbeiten wir intensiv an der Stabilisierung der Kernfunktionen. 155+ verwaltete Spieler und Mitglieder zeigen die Skalierbarkeit des Systems.",
+      avatar: "CF",
+      rating: 3
     },
     {
-      name: "Feedback-Geber H",
-      role: "Vereinsobmann",
-      content: "ClubFlow wächst mit den Anforderungen unseres Vereins mit. Die regelmäßigen Updates und die responsive Entwicklung zeigen echtes Engagement für Benutzer.",
-      avatar: "FG",
-      rating: 4
+      name: "Alpha-Version",
+      role: "Aktueller Status",
+      content: "Beta-Status: Grundfunktionen stabil, kontinuierliche Entwicklung. Mobile Optimierung, Subscription-System und Super-Admin-Funktionen implementiert.",
+      avatar: "αV",
+      rating: 3
     }
   ];
 
@@ -139,8 +111,8 @@ export function Landing() {
             
             {/* Premium badge */}
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Moderne Vereinsplattform aus Österreich • DSGVO-konform • Kostenlos starten</span>
+              <div className="w-2 h-2 bg-orange-500 rounded-full mr-3 animate-pulse" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Beta-Version • In aktiver Entwicklung • Aktuell 2 Testvereine • Reale Daten</span>
             </div>
             
             {/* Hero headline - Clean typography */}
@@ -154,9 +126,9 @@ export function Landing() {
             
             {/* Elegant subtitle */}
             <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-              Schluss mit Excel-Listen und Zettelwirtschaft! ClubFlow bringt Mitgliederverwaltung,
+              Beta-Version in aktiver Entwicklung! ClubFlow wird aktuell von 2 Testvereinen
               <br className="hidden sm:block" />
-              Platzbuchungen und Kommunikation ins digitale Zeitalter.
+              mit über 155 Mitgliedern erfolgreich getestet.
             </p>
 
             {/* Premium CTA */}
@@ -174,16 +146,16 @@ export function Landing() {
             {/* Trust indicators */}
             <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                Kostenlos starten
+                <CheckCircle className="w-4 h-4 mr-2 text-orange-500" />
+                Beta-Version
               </div>
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                Sofort einsatzbereit
+                2 aktive Testvereine
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                DSGVO-konform
+                <CheckCircle className="w-4 h-4 mr-2 text-blue-500" />
+                155+ verwaltete Mitglieder
               </div>
             </div>
           </div>
@@ -265,9 +237,9 @@ export function Landing() {
                 <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Sofort startklar</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Beta-Entwicklung</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Keine Einrichtungszeit, keine Schulungen - einfach anmelden und loslegen
+                  Aktive Entwicklung mit kontinuierlichen Updates und Verbesserungen
                 </p>
               </div>
               
@@ -275,9 +247,9 @@ export function Landing() {
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
-                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Faire Preise</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Echte Daten</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Kostenlos für kleine Vereine, faire Preise für größere - jeder zahlt nur was er braucht
+                  Getestet mit realen Vereinsdaten - 2 Vereine, 155+ Mitglieder, 15+ Teams
                 </p>
               </div>
               
@@ -301,12 +273,12 @@ export function Landing() {
           
           <div className="text-center mb-20">
             <h2 className="text-4xl lg:text-5xl font-light text-gray-900 dark:text-white mb-6">
-              Erste Erfahrungen
+              Aktueller Status
               <br />
-              <span className="font-medium">unserer Beta-Tester</span>
+              <span className="font-medium">der Beta-Version</span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto font-light">
-              Feedback von Vereinsvertretern die ClubFlow in der Entwicklungsphase testen.
+              Ehrliche Einblicke in den aktuellen Entwicklungsstand und echte Testerfahrungen.
             </p>
           </div>
 
@@ -352,14 +324,14 @@ export function Landing() {
           {/* Call to action below testimonials */}
           <div className="mt-16 text-center">
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-              Werden auch Sie Teil unserer wachsenden Beta-Tester Community
+              Interessiert an der Beta-Version? Kontaktieren Sie uns für einen Testverein-Zugang
             </p>
             <Button 
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium inline-flex items-center"
               onClick={() => window.location.href = "/login"}
             >
-              <span>Jetzt kostenlos testen</span>
+              <span>Beta-Zugang anfragen</span>
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
@@ -385,15 +357,15 @@ export function Landing() {
         
         <div className="relative container mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-4xl lg:text-5xl xl:text-6xl font-light text-white dark:text-gray-900 mb-8 leading-tight">
-            Starten Sie heute
+            Interesse an der
             <br />
-            <span className="font-medium">kostenlos durch!</span>
+            <span className="font-medium">Beta-Version?</span>
           </h2>
           
           <p className="text-xl text-gray-300 dark:text-gray-600 mb-12 max-w-3xl mx-auto font-light">
-            Schluss mit Excel-Listen und Zettelwirtschaft! Werden Sie Teil der digitalen Revolution
+            ClubFlow befindet sich in aktiver Entwicklung. Aktuell testen 2 Vereine
             <br className="hidden sm:block" />
-            und sparen Sie Zeit, Geld und Nerven bei der Vereinsverwaltung.
+            mit über 155 Mitgliedern die Plattform erfolgreich.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -402,16 +374,16 @@ export function Landing() {
               className="group bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 font-medium px-10 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={() => window.location.href = "/login"}
             >
-              Jetzt starten
+              Demo ansehen
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
             </Button>
           </div>
 
           {/* Final trust indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 mt-12 text-sm text-gray-400 dark:text-gray-600">
-            <span>✓ Kostenlos starten</span>
-            <span>✓ Sofort einsatzbereit</span>
-            <span>✓ DSGVO-konform</span>
+            <span>⚠ Beta-Version</span>
+            <span>✓ 2 aktive Testvereine</span>
+            <span>✓ Kontinuierliche Entwicklung</span>
           </div>
         </div>
       </section>

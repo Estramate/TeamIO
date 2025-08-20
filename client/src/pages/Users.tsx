@@ -325,13 +325,37 @@ export default function Users() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      const { playerId, relationshipType } = variables;
       toast({
         title: "Spieler hinzugefügt",
         description: "Der Spieler wurde erfolgreich zum Benutzeraccount hinzugefügt.",
       });
+      
+      // Update assignment member data immediately
+      if (assignmentMember && allPlayers) {
+        const addedPlayer = allPlayers.find((p: any) => p.id === playerId);
+        if (addedPlayer) {
+          const newAssignment = {
+            playerId: addedPlayer.id,
+            name: `${addedPlayer.lastName}, ${addedPlayer.firstName}`,
+            relationshipType: relationshipType || 'parent'
+          };
+          
+          setAssignmentMember({
+            ...assignmentMember,
+            multiplePlayerAssignments: [
+              ...(assignmentMember.multiplePlayerAssignments || []),
+              newAssignment
+            ]
+          });
+        }
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/users/${assignmentMember?.id}/player-assignments`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'players'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'available-players'] });
     },
     onError: (error: Error) => {
       toast({

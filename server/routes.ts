@@ -2994,6 +2994,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('You do not have permission to assign users to members');
     }
     
+    // Check if target user is Super Admin - Super Admins should not be assigned
+    const targetUser = await storage.getUser(userId);
+    if (targetUser?.isSuperAdmin) {
+      throw new ValidationError('Super Admin users cannot be assigned to members or players', 'userId');
+    }
+    
     // Assign user to member
     await storage.assignUserToMember(userId, memberId);
     
@@ -3027,6 +3033,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new AuthorizationError('You do not have permission to assign users to players');
     }
     
+    // Check if target user is Super Admin - Super Admins should not be assigned
+    const targetUser = await storage.getUser(userId);
+    if (targetUser?.isSuperAdmin) {
+      throw new ValidationError('Super Admin users cannot be assigned to members or players', 'userId');
+    }
+    
     // Assign user to player
     await storage.assignUserToPlayer(userId, playerId);
     
@@ -3053,6 +3065,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const adminRole = await storage.getRoleById(adminMembership.roleId);
     if (!adminRole?.permissions.includes('user_management')) {
       throw new AuthorizationError('You do not have permission to manage user assignments');
+    }
+    
+    // Check if target user is Super Admin - Super Admins should not have assignments removed
+    const targetUser = await storage.getUser(userId);
+    if (targetUser?.isSuperAdmin) {
+      throw new ValidationError('Super Admin users do not have member/player assignments', 'userId');
     }
     
     // Remove user assignment

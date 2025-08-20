@@ -647,7 +647,11 @@ export default function Users() {
                       <TableCell>{getRoleBadge(member.roleDisplayName || member.roleName)}</TableCell>
                       <TableCell>{getStatusBadge(member.status)}</TableCell>
                       <TableCell>
-                        {member.assignedTo ? (
+                        {member.isSuperAdmin ? (
+                          <Badge variant="default" className="text-xs bg-purple-100 text-purple-800">
+                            🛡️ Super Admin
+                          </Badge>
+                        ) : member.assignedTo ? (
                           <Badge variant="outline" className="text-xs">
                             {member.assignedType === 'member' ? '👤 Mitglied' : '⚽ Spieler'}: {member.assignedTo}
                           </Badge>
@@ -684,20 +688,22 @@ export default function Users() {
                             </>
                           )}
                           
-                          {/* User Assignment */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            onClick={() => {
-                              setAssignmentMember(member);
-                              setShowAssignmentDialog(true);
-                            }}
-                            title="Account zuweisen"
-                            data-testid={`button-assign-user-${member.id}`}
-                          >
-                            <User className="h-4 w-4" />
-                          </Button>
+                          {/* User Assignment - Hide for Super Admins */}
+                          {!member.isSuperAdmin && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              onClick={() => {
+                                setAssignmentMember(member);
+                                setShowAssignmentDialog(true);
+                              }}
+                              title="Account zuweisen"
+                              data-testid={`button-assign-user-${member.id}`}
+                            >
+                              <User className="h-4 w-4" />
+                            </Button>
+                          )}
                           
                           {/* Edit Role */}
                           <Button

@@ -46,16 +46,19 @@ router.get("/clubs",
       // Get all clubs with additional statistics
       const clubs = await storage.getAllClubs();
       
-      // Enhance clubs with user counts (all users associated with club)
+      // Enhance clubs with user counts (all users associated with club, including Super Admins)
       const enhancedClubs = await Promise.all(
         clubs.map(async (club: any) => {
           const members = await storage.getClubMembers(club.id);
           const clubUsers = await storage.getClubUsersWithMembership(club.id);
           
+          // Get Super Admins who also have memberships in this club
+          const superAdminsInClub = await storage.getSuperAdminsInClub(club.id);
+          
           return {
             ...club,
             memberCount: members.length,
-            userCount: clubUsers.length, // Total users for super admin view
+            userCount: clubUsers.length + superAdminsInClub.length, // Include Super Admins in count
             subscriptionPlan: 'free', // Default subscription plan
             createdAt: club.createdAt || new Date(),
           };

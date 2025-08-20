@@ -180,6 +180,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   updateUser(id: string, updates: Partial<User>): Promise<User>;
   getClubUsersWithMembership(clubId: number): Promise<any[]>;
+  getSuperAdminsInClub(clubId: number): Promise<any[]>;
 
   // Facility operations
   getFacilities(clubId: number): Promise<Facility[]>;
@@ -848,6 +849,32 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('❌ Error in getClubUsersWithMembership:', error);
       throw error;
+    }
+  }
+
+  async getSuperAdminsInClub(clubId: number): Promise<any[]> {
+    try {
+      const result = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          isSuperAdmin: users.isSuperAdmin,
+        })
+        .from(users)
+        .innerJoin(clubMemberships, eq(users.id, clubMemberships.userId))
+        .where(
+          and(
+            eq(clubMemberships.clubId, clubId),
+            eq(users.isSuperAdmin, true)
+          )
+        );
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error in getSuperAdminsInClub:', error);
+      return [];
     }
   }
 

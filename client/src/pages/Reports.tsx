@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Download, FileText, TrendingUp, Users, Euro, Settings, Play, CheckCircle, AlertCircle } from "lucide-react";
+import { FeatureGate } from "@/components/FeatureGate";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { useToast } from "@/hooks/use-toast";
@@ -741,7 +742,8 @@ export default function ReportsPage() {
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
   return (
-    <div className="flex flex-col h-full">
+    <FeatureGate feature="advancedReports">
+      <div className="flex flex-col h-full">
       <div className="flex-1 space-y-6 p-6">
         {/* Header Controls */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -894,6 +896,7 @@ export default function ReportsPage() {
           </Card>
         )}
       </div>
-    </div>
+      </div>
+    </FeatureGate>
   );
 }

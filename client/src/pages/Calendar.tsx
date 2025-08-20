@@ -388,6 +388,8 @@ export default function Calendar() {
     if (event.startTime) {
       const startTime = new Date(event.startTime);
       if (!isNaN(startTime.getTime())) {
+        // CRITICAL FIX: Database stores UTC, but we need to display in local timezone
+        // getHours() automatically converts to local timezone
         startHour = startTime.getHours() + startTime.getMinutes() / 60;
       }
     }
@@ -395,19 +397,27 @@ export default function Calendar() {
     if (event.endTime) {
       const endTime = new Date(event.endTime);
       if (!isNaN(endTime.getTime())) {
+        // CRITICAL FIX: Database stores UTC, but we need to display in local timezone
+        // getHours() automatically converts to local timezone
         endHour = endTime.getHours() + endTime.getMinutes() / 60;
       }
     }
     
     // Debug: Log when height calculation seems wrong
     if (event.title?.includes('Training') && event.id === 28) {
-      console.log('Timeline height calculation for Training:', {
+      const startTimeObj = new Date(event.startTime);
+      const endTimeObj = new Date(event.endTime);
+      console.log('Timeline height calculation for Training (DEBUGGING):', {
         title: event.title,
-        startTime: event.startTime,
-        endTime: event.endTime,
+        startTimeUTC: event.startTime,
+        endTimeUTC: event.endTime,
+        startTimeLocal: startTimeObj.toLocaleString(),
+        endTimeLocal: endTimeObj.toLocaleString(),
         startHour,
         endHour,
-        duration: (endHour - startHour) + ' hours'
+        duration: (endHour - startHour) + ' hours',
+        timezoneOffset: startTimeObj.getTimezoneOffset() + ' minutes',
+        serverTimezone: 'UTC+0'
       });
     }
     
@@ -594,15 +604,24 @@ export default function Calendar() {
         newEndTime = new Date(newStartTime.getTime() + minDuration);
       }
       
-
+      // CRITICAL FIX: Use the original startTime from the event, not resizeStartTime
+      const originalStartTime = new Date(resizingEvent.startTime);
+      
+      console.log('Resize operation:', {
+        originalStart: resizingEvent.startTime,
+        originalEnd: resizingEvent.endTime,
+        newStart: originalStartTime.toISOString(),
+        newEnd: newEndTime.toISOString(),
+        deltaHours: snappedHourDelta
+      });
       
       const updateData = {
         title: resizingEvent.title,
         description: resizingEvent.description || '',
         facilityId: resizingEvent.facilityId,
         teamId: resizingEvent.teamId,
-        startTime: newStartTime.toISOString(),
-        endTime: newEndTime.toISOString(),
+        startTime: originalStartTime.toISOString(), // Keep original start time
+        endTime: newEndTime.toISOString(), // Only change end time
         type: resizingEvent.type,
         status: resizingEvent.status || 'confirmed',
         participants: resizingEvent.participants || 0,

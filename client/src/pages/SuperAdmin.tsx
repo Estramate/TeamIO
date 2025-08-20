@@ -267,8 +267,10 @@ export default function SuperAdminPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Gesamt-Benutzer</p>
-                <p className="text-2xl font-bold">{(allUsers as any[])?.length || 0}</p>
+                <p className="text-sm font-medium text-muted-foreground">Super-Admin Benutzer</p>
+                <p className="text-2xl font-bold">
+                  {(allUsers as any[])?.filter((user: any) => user.isSuperAdmin === true).length || 0}
+                </p>
               </div>
               <Users className="h-8 w-8 text-green-500" />
             </div>

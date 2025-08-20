@@ -293,15 +293,24 @@ export default function Calendar() {
   const updateBookingMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest('PATCH', `/api/clubs/${selectedClub?.id}/bookings/${id}`, data),
     onSuccess: () => {
-      // Invalidate alle booking-relevanten Queries
+      // Invalidate alle booking-relevanten Queries mit force refresh
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'events'] });
+      // Force immediate refetch für sofortige Aktualisierung
+      queryClient.refetchQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
       setShowBookingModal(false);
       setEditingBooking(null);
       bookingForm.reset();
       toast({ title: "Buchung aktualisiert", description: "Die Buchung wurde erfolgreich aktualisiert." });
     },
+    onError: (error: any) => {
+      toast({ 
+        title: "Fehler", 
+        description: error.message || "Buchung konnte nicht aktualisiert werden.", 
+        variant: "destructive" 
+      });
+    }
   });
 
   const deleteBookingMutation = useMutation({
@@ -602,7 +611,17 @@ export default function Calendar() {
         recurringUntil: resizingEvent.recurringUntil || null
       };
       
-      updateBookingMutation.mutate({ id: resizingEvent.id, data: updateData });
+      updateBookingMutation.mutate({ 
+        id: resizingEvent.id, 
+        data: updateData 
+      }, {
+        onSuccess: () => {
+          // Force cache refresh after successful resize
+          queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+          queryClient.refetchQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+          toast({ title: "Termin aktualisiert", description: "Die Terminzeit wurde erfolgreich geändert." });
+        }
+      });
     }
     
     // Clean up event listeners
@@ -746,7 +765,17 @@ export default function Calendar() {
         recurringPattern: draggedEvent.recurringPattern || null,
         recurringUntil: draggedEvent.recurringUntil || null
       };
-      updateBookingMutation.mutate({ id: draggedEvent.id, data: updateData });
+      updateBookingMutation.mutate({ 
+        id: draggedEvent.id, 
+        data: updateData 
+      }, {
+        onSuccess: () => {
+          // Force cache refresh after successful drag & drop
+          queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+          queryClient.refetchQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+          toast({ title: "Termin verschoben", description: "Der Termin wurde erfolgreich verschoben." });
+        }
+      });
     } else {
       // Events sind jetzt auch Bookings mit type='event'
       const updateData = {
@@ -758,7 +787,17 @@ export default function Calendar() {
         type: 'event',
         status: 'confirmed'
       };
-      updateBookingMutation.mutate({ id: draggedEvent.id, data: updateData });
+      updateBookingMutation.mutate({ 
+        id: draggedEvent.id, 
+        data: updateData 
+      }, {
+        onSuccess: () => {
+          // Force cache refresh after successful drag & drop
+          queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+          queryClient.refetchQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+          toast({ title: "Event verschoben", description: "Das Event wurde erfolgreich verschoben." });
+        }
+      });
     }
 
     setDraggedEvent(null);

@@ -407,8 +407,9 @@ export default function Calendar() {
     if (event.title?.includes('Training') && event.id === 28) {
       const startTimeObj = new Date(event.startTime);
       const endTimeObj = new Date(event.endTime);
-      console.log('Timeline height calculation for Training (DEBUGGING):', {
+      console.log('Timeline height calculation for Training (CACHE PROBLEM CHECK):', {
         title: event.title,
+        id: event.id,
         startTimeUTC: event.startTime,
         endTimeUTC: event.endTime,
         startTimeLocal: startTimeObj.toLocaleString(),
@@ -417,7 +418,7 @@ export default function Calendar() {
         endHour,
         duration: (endHour - startHour) + ' hours',
         timezoneOffset: startTimeObj.getTimezoneOffset() + ' minutes',
-        serverTimezone: 'UTC+0'
+        cacheTimestamp: new Date().toISOString()
       });
     }
     

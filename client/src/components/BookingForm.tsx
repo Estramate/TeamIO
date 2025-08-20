@@ -181,8 +181,16 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       return apiRequest('PATCH', `/api/clubs/${selectedClubId}/bookings/${editingBooking.id}`, bookingData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/bookings`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClubId}/events`] });
+      // CRITICAL FIX: Force immediate cache refresh with correct query keys
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClubId, 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClubId, 'events'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClubId, 'dashboard'] });
+      
+      // Force immediate refetch to update timeline
+      queryClient.refetchQueries({ queryKey: ['/api/clubs', selectedClubId, 'bookings'] });
+      
+      console.log('CRITICAL: Cache invalidated and refetched after BookingForm update');
+      
       toast({
         title: "Buchung aktualisiert",
         description: "Die Buchung wurde erfolgreich aktualisiert.",

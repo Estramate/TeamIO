@@ -13,6 +13,7 @@ import {
   serial,
   integer,
   boolean,
+  unique,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
@@ -195,6 +196,18 @@ export const rolesRelations = relations(roles, ({ many }) => ({
   approvedRequests: many(clubJoinRequests, { relationName: 'approvedRole' }),
 }));
 
+// User Player Assignments Table (for multiple assignments - e.g., parents with multiple children)
+export const userPlayerAssignments = pgTable('user_player_assignments', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id').notNull(),
+  playerId: integer('player_id').notNull(),
+  relationshipType: varchar('relationship_type').default('parent'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => [
+  unique().on(table.userId, table.playerId),
+]);
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   clubMemberships: many(clubMemberships),
   joinRequests: many(clubJoinRequests),
@@ -202,6 +215,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
     relationName: "reviewer",
   }),
   emailInvitations: many(emailInvitations),
+  playerAssignments: many(userPlayerAssignments),
   // Person assignment relations (will be fully defined when imported members/players)
   // member: one(members, {
   //   fields: [users.memberId],
@@ -211,6 +225,14 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   //   fields: [users.playerId],
   //   references: [players.id],
   // }),
+}));
+
+// User Player Assignments Relations
+export const userPlayerAssignmentsRelations = relations(userPlayerAssignments, ({ one }) => ({
+  user: one(users, {
+    fields: [userPlayerAssignments.userId],
+    references: [users.id],
+  }),
 }));
 
 export const clubsRelations = relations(clubs, ({ many }) => ({

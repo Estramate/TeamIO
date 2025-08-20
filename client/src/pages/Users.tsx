@@ -127,6 +127,13 @@ export default function Users() {
     retry: false,
   });
 
+  // Get all players for multiple assignments (including already assigned ones)
+  const { data: allPlayers = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'players'],
+    enabled: !!selectedClub?.id && showAssignmentDialog,
+    retry: false,
+  });
+
 
 
   // Update user role mutation
@@ -291,6 +298,72 @@ export default function Users() {
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'available-players'] });
       setShowAssignmentDialog(false);
       setAssignmentMember(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // New mutation for adding multiple player assignments
+  const addPlayerAssignmentMutation = useMutation({
+    mutationFn: async ({ userId, playerId, relationshipType = 'parent' }: { userId: string; playerId: number; relationshipType?: string }) => {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/users/${userId}/add-player-assignment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ playerId, relationshipType }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Fehler beim Hinzufügen der Spieler-Zuweisung');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Spieler hinzugefügt",
+        description: "Der Spieler wurde erfolgreich zum Benutzeraccount hinzugefügt.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/users/${assignmentMember?.id}/player-assignments`] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // New mutation for removing specific player assignments
+  const removePlayerAssignmentMutation = useMutation({
+    mutationFn: async ({ userId, playerId }: { userId: string; playerId: number }) => {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/users/${userId}/player-assignment/${playerId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Fehler beim Entfernen der Spieler-Zuweisung');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Spieler entfernt",
+        description: "Die Spieler-Zuweisung wurde erfolgreich entfernt.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/users/${assignmentMember?.id}/player-assignments`] });
     },
     onError: (error: Error) => {
       toast({
@@ -958,7 +1031,18 @@ export default function Users() {
                     </div>
                     {selectedUser.assignedTo && (
                       <div className="text-xs text-muted-foreground mt-1">
-                        Typ: {selectedUser.assignedType === 'member' ? 'Mitglied' : 'Spieler'}
+                        Typ: {selectedUser.assignedType === 'member' ? 'Mitglied' : 
+                              selectedUser.assignedType === 'multiple_players' ? 'Mehrere Spieler' : 'Spieler'}
+                      </div>
+                    )}
+                    {selectedUser.multiplePlayerAssignments && selectedUser.multiplePlayerAssignments.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        <div className="text-xs font-medium">Spieler-Zuweisungen:</div>
+                        {selectedUser.multiplePlayerAssignments.map((assignment: any) => (
+                          <div key={assignment.playerId} className="text-xs text-muted-foreground">
+                            ⚽ {assignment.name} ({assignment.relationshipType})
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -1027,31 +1111,63 @@ export default function Users() {
             <div className="space-y-6 py-4">
               {/* Current Assignment Status */}
               <div className="p-4 bg-muted/50 rounded-lg">
-                <div className="text-sm font-semibold mb-2">Aktuelle Zuweisung:</div>
-                {assignmentMember.assignedTo ? (
-                  <div className="space-y-2">
-                    <div className="text-sm">
-                      <span className="inline-flex items-center gap-1">
-                        {assignmentMember.assignedType === 'member' ? '👤' : '⚽'} 
-                        <span className="font-medium">{assignmentMember.assignedType === 'member' ? 'Mitglied' : 'Spieler'}:</span>
-                        {assignmentMember.assignedTo}
-                      </span>
+                <div className="text-sm font-semibold mb-2">Aktuelle Zuweisungen:</div>
+                
+                {/* Member Assignment */}
+                {assignmentMember.memberId && (
+                  <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/30 rounded">
+                    <div className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                      👤 Mitglied-Zuweisung
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => {
-                        removeUserAssignmentMutation.mutate(assignmentMember.id);
-                        setShowAssignmentDialog(false);
-                      }}
-                      disabled={removeUserAssignmentMutation.isPending}
-                    >
-                      {removeUserAssignmentMutation.isPending ? 'Entferne...' : 'Zuweisung entfernen'}
-                    </Button>
+                    <div className="text-sm text-blue-700 dark:text-blue-300">
+                      {assignmentMember.assignedType === 'member' ? assignmentMember.assignedTo : 'Zugewiesen'}
+                    </div>
+                  </div>
+                )}
+
+                {/* Multiple Player Assignments */}
+                {assignmentMember.multiplePlayerAssignments && assignmentMember.multiplePlayerAssignments.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium">⚽ Spieler-Zuweisungen ({assignmentMember.multiplePlayerAssignments.length}):</div>
+                    {assignmentMember.multiplePlayerAssignments.map((assignment: any) => (
+                      <div key={assignment.playerId} className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/30 rounded">
+                        <div className="text-sm">
+                          <span className="font-medium">{assignment.name}</span>
+                          <span className="text-muted-foreground ml-2">({assignment.relationshipType})</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => removePlayerAssignmentMutation.mutate({
+                            userId: assignmentMember.id,
+                            playerId: assignment.playerId
+                          })}
+                          disabled={removePlayerAssignmentMutation.isPending}
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground">Nicht zugewiesen</div>
+                  <div className="text-sm text-muted-foreground">Keine Spieler-Zuweisungen</div>
+                )}
+
+                {/* Remove all assignments button */}
+                {(assignmentMember.assignedTo || (assignmentMember.multiplePlayerAssignments && assignmentMember.multiplePlayerAssignments.length > 0)) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => {
+                      removeUserAssignmentMutation.mutate(assignmentMember.id);
+                      setShowAssignmentDialog(false);
+                    }}
+                    disabled={removeUserAssignmentMutation.isPending}
+                  >
+                    {removeUserAssignmentMutation.isPending ? 'Entferne...' : 'Alle Zuweisungen entfernen'}
+                  </Button>
                 )}
               </div>
 
@@ -1091,10 +1207,10 @@ export default function Users() {
                 </div>
               </div>
 
-                {/* Assign to Player */}
+                {/* Assign to Player (Single) */}
                 <div className="space-y-3">
                   <h4 className="font-medium flex items-center gap-2">
-                    <span>⚽</span> Als Spieler zuweisen
+                    <span>⚽</span> Als Spieler zuweisen (ersetzt bestehende Spieler-Zuweisungen)
                   </h4>
                   <div className="max-h-40 overflow-y-auto space-y-1 border rounded-md p-2">
                     {availablePlayers && availablePlayers.length > 0 ? (
@@ -1124,6 +1240,45 @@ export default function Users() {
                       ))
                     ) : (
                       <p className="text-sm text-muted-foreground">Keine verfügbaren Spieler</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Add Multiple Player Assignments */}
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <span>➕</span> Spieler hinzufügen (für Eltern mit mehreren Kindern)
+                  </h4>
+                  <div className="max-h-40 overflow-y-auto space-y-1 border rounded-md p-2">
+                    {allPlayers && allPlayers.length > 0 ? (
+                      allPlayers
+                        .filter(player => !assignmentMember.multiplePlayerAssignments?.some((assignment: any) => assignment.playerId === player.id))
+                        .map((player: any) => (
+                        <Button
+                          key={player.id}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-left h-auto p-2"
+                          onClick={() => {
+                            addPlayerAssignmentMutation.mutate({ 
+                              userId: assignmentMember.id, 
+                              playerId: player.id,
+                              relationshipType: 'parent'
+                            });
+                          }}
+                          disabled={addPlayerAssignmentMutation.isPending}
+                          data-testid={`button-add-player-${player.id}`}
+                        >
+                          <div className="flex flex-col items-start">
+                            <span>➕ {player.lastName}, {player.firstName}</span>
+                            {player.teamName && (
+                              <span className="text-xs text-muted-foreground">Team: {player.teamName}</span>
+                            )}
+                          </div>
+                        </Button>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Alle Spieler bereits zugewiesen</p>
                     )}
                   </div>
                 </div>

@@ -17,6 +17,7 @@ import {
   // notifications entfernt - Live Chat System komplett entfernt
   announcements,
   roles,
+  userPlayerAssignments,
   type User,
   type UpsertUser,
   type Club,
@@ -430,16 +431,88 @@ export class DatabaseStorage implements IStorage {
   }
 
   async assignUserToPlayer(userId: string, playerId: number): Promise<User> {
+    // First check if assignment already exists (for backwards compatibility with single assignment)
+    const existingAssignment = await db
+      .select()
+      .from(userPlayerAssignments)
+      .where(and(
+        eq(userPlayerAssignments.userId, userId),
+        eq(userPlayerAssignments.playerId, playerId)
+      ))
+      .limit(1);
+
+    if (existingAssignment.length === 0) {
+      // Create new assignment in the assignment table
+      await db
+        .insert(userPlayerAssignments)
+        .values({
+          userId: userId,
+          playerId: playerId,
+          relationshipType: 'parent'
+        });
+    }
+
+    // Also update the legacy single player_id field for backwards compatibility (will be last assigned player)
     const [updatedUser] = await db
       .update(users)
       .set({ 
         playerId: playerId, 
-        memberId: null, // A user can only be assigned to either member OR player
         updatedAt: new Date() 
       })
       .where(eq(users.id, userId))
       .returning();
     return updatedUser;
+  }
+
+  // New function for multiple player assignments
+  async addUserPlayerAssignment(userId: string, playerId: number, relationshipType: string = 'parent'): Promise<void> {
+    // Check if assignment already exists
+    const existingAssignment = await db
+      .select()
+      .from(userPlayerAssignments)
+      .where(and(
+        eq(userPlayerAssignments.userId, userId),
+        eq(userPlayerAssignments.playerId, playerId)
+      ))
+      .limit(1);
+
+    if (existingAssignment.length === 0) {
+      await db
+        .insert(userPlayerAssignments)
+        .values({
+          userId: userId,
+          playerId: playerId,
+          relationshipType: relationshipType
+        });
+    }
+  }
+
+  async removeUserPlayerAssignment(userId: string, playerId: number): Promise<void> {
+    await db
+      .delete(userPlayerAssignments)
+      .where(and(
+        eq(userPlayerAssignments.userId, userId),
+        eq(userPlayerAssignments.playerId, playerId)
+      ));
+  }
+
+  async getUserPlayerAssignments(userId: string): Promise<any[]> {
+    const assignments = await db
+      .select({
+        id: userPlayerAssignments.id,
+        playerId: userPlayerAssignments.playerId,
+        relationshipType: userPlayerAssignments.relationshipType,
+        playerFirstName: players.firstName,
+        playerLastName: players.lastName,
+        teamName: teams.name
+      })
+      .from(userPlayerAssignments)
+      .innerJoin(players, eq(userPlayerAssignments.playerId, players.id))
+      .leftJoin(playerTeamAssignments, eq(players.id, playerTeamAssignments.playerId))
+      .leftJoin(teams, eq(playerTeamAssignments.teamId, teams.id))
+      .where(eq(userPlayerAssignments.userId, userId));
+
+    return assignments;
   }
 
   async unassignUserFromMemberOrPlayer(userId: string): Promise<User> {
@@ -707,11 +780,12 @@ export class DatabaseStorage implements IStorage {
         )
         .orderBy(asc(users.lastName), asc(users.firstName));
 
-      // Enhance with assignment details
+      // Enhance with assignment details (including multiple player assignments)
       const enhancedResult = await Promise.all(
         result.map(async (user) => {
           let assignedTo = null;
           let assignedType = null;
+          let multiplePlayerAssignments = [];
 
           // Check if user is assigned to a member
           if (user.memberId) {
@@ -729,26 +803,42 @@ export class DatabaseStorage implements IStorage {
             }
           }
           
-          // Check if user is assigned to a player
-          if (user.playerId) {
-            const [assignedPlayer] = await db
-              .select({
-                firstName: players.firstName,
-                lastName: players.lastName
-              })
-              .from(players)
-              .where(eq(players.id, user.playerId));
-            
-            if (assignedPlayer) {
-              assignedTo = `${assignedPlayer.lastName}, ${assignedPlayer.firstName}`;
-              assignedType = 'player';
+          // Check for multiple player assignments
+          const playerAssignments = await db
+            .select({
+              playerId: userPlayerAssignments.playerId,
+              firstName: players.firstName,
+              lastName: players.lastName,
+              relationshipType: userPlayerAssignments.relationshipType
+            })
+            .from(userPlayerAssignments)
+            .innerJoin(players, eq(userPlayerAssignments.playerId, players.id))
+            .where(eq(userPlayerAssignments.userId, user.id));
+
+          if (playerAssignments.length > 0) {
+            multiplePlayerAssignments = playerAssignments.map(assignment => ({
+              playerId: assignment.playerId,
+              name: `${assignment.lastName}, ${assignment.firstName}`,
+              relationshipType: assignment.relationshipType
+            }));
+
+            // If only assigned to players (not member), set primary assignment info
+            if (!user.memberId) {
+              if (playerAssignments.length === 1) {
+                assignedTo = `${playerAssignments[0].lastName}, ${playerAssignments[0].firstName}`;
+                assignedType = 'player';
+              } else {
+                assignedTo = `${playerAssignments.length} Spieler`;
+                assignedType = 'multiple_players';
+              }
             }
           }
 
           return {
             ...user,
             assignedTo,
-            assignedType
+            assignedType,
+            multiplePlayerAssignments
           };
         })
       );

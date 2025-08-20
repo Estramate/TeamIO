@@ -1098,18 +1098,17 @@ export default function Finance() {
 
             {/* Transaction Grid/List */}
             {isFinancesLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="space-y-2 sm:space-y-3">
-                        <div className="h-4 bg-muted rounded w-3/4"></div>
-                        <div className="h-6 bg-muted rounded w-1/2"></div>
-                        <div className="h-3 bg-muted rounded w-full"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="text-center py-12">
+                <Card className="animate-pulse max-w-md mx-auto">
+                  <CardContent className="p-6">
+                    <div className="space-y-3">
+                      <div className="h-4 bg-muted rounded w-3/4 mx-auto"></div>
+                      <div className="h-6 bg-muted rounded w-1/2 mx-auto"></div>
+                      <div className="h-3 bg-muted rounded w-full mx-auto"></div>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-4">Lade Finanztransaktionen...</p>
+                  </CardContent>
+                </Card>
               </div>
             ) : filteredFinances.length === 0 ? (
               <Card>

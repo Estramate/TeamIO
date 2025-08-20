@@ -24,14 +24,13 @@ interface StatsCardsProps {
 export default function StatsCards({ stats }: StatsCardsProps) {
   if (!stats) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-card rounded-xl shadow-sm p-4 sm:p-6 border border-border animate-pulse">
-            <div className="h-4 bg-muted rounded w-1/2 mb-3"></div>
-            <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
-            <div className="h-3 bg-muted rounded w-2/3"></div>
-          </div>
-        ))}
+      <div className="text-center py-8">
+        <div className="bg-card rounded-xl shadow-sm p-6 border border-border animate-pulse max-w-md mx-auto">
+          <div className="h-4 bg-muted rounded w-3/4 mb-3 mx-auto"></div>
+          <div className="h-6 bg-muted rounded w-1/2 mb-2 mx-auto"></div>
+          <div className="h-3 bg-muted rounded w-2/3 mx-auto"></div>
+          <p className="text-sm text-muted-foreground mt-4">Lade Dashboard-Statistiken...</p>
+        </div>
       </div>
     );
   }

@@ -630,12 +630,11 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
           <CardContent>
             <div className="space-y-3 max-h-48 overflow-y-auto">
               {memberFeesQuery.isLoading ? (
-                <div className="space-y-3">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="h-20 bg-muted rounded-lg"></div>
-                    </div>
-                  ))}
+                <div className="text-center py-8">
+                  <div className="animate-pulse">
+                    <div className="h-16 bg-muted rounded-lg max-w-sm mx-auto"></div>
+                    <p className="text-sm text-muted-foreground mt-3">Lade Mitgliedsbeiträge...</p>
+                  </div>
                 </div>
               ) : memberFees.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
@@ -947,12 +946,11 @@ export function FeesTabContent({ className }: FeesTabContentProps) {
           <CardContent>
             <div className="space-y-3 max-h-48 overflow-y-auto">
               {trainingFeesQuery.isLoading ? (
-                <div className="space-y-3">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="h-20 bg-muted rounded-lg"></div>
-                    </div>
-                  ))}
+                <div className="text-center py-8">
+                  <div className="animate-pulse">
+                    <div className="h-16 bg-muted rounded-lg max-w-sm mx-auto"></div>
+                    <p className="text-sm text-muted-foreground mt-3">Lade Trainingsbeiträge...</p>
+                  </div>
                 </div>
               ) : trainingFees.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">

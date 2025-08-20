@@ -565,18 +565,17 @@ export default function Teams() {
         {/* Content Area - Scrollable */}
         <div>
           {isTeamsLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
-              {[...Array(8)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="space-y-2 sm:space-y-3">
-                      <div className="h-4 bg-muted rounded w-3/4"></div>
-                      <div className="h-3 bg-muted rounded w-1/2"></div>
-                      <div className="h-3 bg-muted rounded w-2/3"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="text-center py-12">
+              <Card className="animate-pulse max-w-md mx-auto">
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    <div className="h-4 bg-muted rounded w-3/4 mx-auto"></div>
+                    <div className="h-3 bg-muted rounded w-1/2 mx-auto"></div>
+                    <div className="h-3 bg-muted rounded w-2/3 mx-auto"></div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-4">Lade Team-Daten...</p>
+                </CardContent>
+              </Card>
             </div>
           ) : filteredTeams.length === 0 ? (
             <div className="text-center py-12">

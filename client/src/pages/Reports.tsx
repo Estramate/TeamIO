@@ -434,11 +434,27 @@ export default function ReportsPage() {
   };
 
   const generateMembershipTrend = () => {
-    // Simplified trend - in real implementation, this would analyze historical data
-    return Array.from({ length: 12 }, (_, i) => ({
-      month: format(new Date(selectedYear, i, 1), 'MMM', { locale: de }),
-      members: ((members as any[])?.length || 0) + Math.floor(Math.random() * 5 - 2) // Mock trend
-    }));
+    // Real membership trend based on actual member join dates
+    const currentMemberCount = (members as any[])?.length || 0;
+    
+    return Array.from({ length: 12 }, (_, i) => {
+      const monthDate = new Date(selectedYear, i, 1);
+      const monthEnd = new Date(selectedYear, i + 1, 0);
+      
+      // Count members who were active in this month
+      const membersInMonth = (members as any[])?.filter((member: any) => {
+        const joinDate = new Date(member.joinDate || member.createdAt);
+        const leaveDate = member.leaveDate ? new Date(member.leaveDate) : null;
+        
+        // Member was active if they joined before month end and haven't left before month start
+        return joinDate <= monthEnd && (!leaveDate || leaveDate >= monthDate);
+      }).length || 0;
+      
+      return {
+        month: format(monthDate, 'MMM', { locale: de }),
+        members: membersInMonth
+      };
+    });
   };
 
   // Generate beautiful PDF reports with German content

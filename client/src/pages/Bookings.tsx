@@ -734,16 +734,15 @@ export default function Bookings() {
 
       {/* Bookings Content */}
       {isBookingsLoading ? (
-        <div className="space-y-3 sm:space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-4 sm:p-6">
-                <div className="h-4 bg-muted rounded w-1/2 mb-3"></div>
-                <div className="h-3 bg-muted rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-muted rounded w-1/4"></div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="text-center py-12">
+          <Card className="animate-pulse max-w-md mx-auto">
+            <CardContent className="p-6">
+              <div className="h-4 bg-muted rounded w-1/2 mb-3 mx-auto"></div>
+              <div className="h-3 bg-muted rounded w-3/4 mb-2 mx-auto"></div>
+              <div className="h-3 bg-muted rounded w-1/4 mx-auto"></div>
+              <p className="text-sm text-muted-foreground mt-4">Lade Buchungen...</p>
+            </CardContent>
+          </Card>
         </div>
       ) : filteredBookings.length === 0 ? (
         <div className="text-center py-8 sm:py-12">

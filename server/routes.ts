@@ -3168,6 +3168,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(availablePlayers);
   }));
 
+  // Update user role in club membership
+  app.patch('/api/clubs/:clubId/users/:userId/role', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const targetUserId = req.params.userId;
+    const requestUserId = req.user?.claims?.sub || req.user?.id;
+    const { roleId } = req.body;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    if (!targetUserId) {
+      throw new ValidationError('User ID is required', 'userId');
+    }
+    
+    if (!roleId || isNaN(parseInt(roleId))) {
+      throw new ValidationError('Valid role ID is required', 'roleId');
+    }
+    
+    // Check if requesting user has access to this club
+    const requestMembership = await storage.getUserClubMembership(requestUserId, clubId);
+    if (!requestMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Check if requesting user has appropriate permissions
+    if (!canPerformAction(requestMembership.role, 'member_management')) {
+      throw new AuthorizationError('You do not have permission to manage user roles');
+    }
+    
+    // Check if target user exists and has membership in this club
+    const targetMembership = await storage.getUserClubMembership(targetUserId, clubId);
+    if (!targetMembership) {
+      throw new ValidationError('Target user is not a member of this club', 'userId');
+    }
+    
+    // Update the user's role in club membership
+    const updatedMembership = await storage.updateUserClubRole(targetUserId, clubId, parseInt(roleId));
+    
+    logger.info('User role updated', { 
+      targetUserId, 
+      clubId, 
+      newRoleId: roleId, 
+      updatedBy: requestUserId, 
+      requestId: req.id 
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'User role successfully updated',
+      membership: updatedMembership 
+    });
+  }));
+
   // ====== SUBSCRIPTION ROUTES ======
   app.use('/api/subscriptions', subscriptionRoutes);
   

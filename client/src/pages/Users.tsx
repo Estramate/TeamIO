@@ -128,10 +128,10 @@ export default function Users() {
 
 
 
-  // Update member role mutation
+  // Update user role mutation
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ memberId, roleId }: { memberId: number; roleId: number }) => {
-      const response = await fetch(`/api/clubs/${selectedClub?.id}/members/${memberId}/role`, {
+    mutationFn: async ({ userId, roleId }: { userId: string; roleId: number }) => {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/users/${userId}/role`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -231,11 +231,19 @@ export default function Users() {
   // Assign user to member mutation
   const assignUserToMemberMutation = useMutation({
     mutationFn: async ({ userId, memberId }: { userId: string; memberId: number }) => {
-      const response = await apiRequest(`/api/clubs/${selectedClub?.id}/users/${userId}/assign-member`, {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/users/${userId}/assign-member`, {
         method: 'POST',
-        body: { memberId },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ memberId }),
       });
-      return response;
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Fehler beim Zuweisen des Accounts');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -259,11 +267,19 @@ export default function Users() {
   // Assign user to player mutation
   const assignUserToPlayerMutation = useMutation({
     mutationFn: async ({ userId, playerId }: { userId: string; playerId: number }) => {
-      const response = await apiRequest(`/api/clubs/${selectedClub?.id}/users/${userId}/assign-player`, {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/users/${userId}/assign-player`, {
         method: 'POST',
-        body: { playerId },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ playerId }),
       });
-      return response;
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Fehler beim Zuweisen des Accounts');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -287,10 +303,18 @@ export default function Users() {
   // Remove user assignment mutation
   const removeUserAssignmentMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await apiRequest(`/api/clubs/${selectedClub?.id}/users/${userId}/assignment`, {
+      const response = await fetch(`/api/clubs/${selectedClub?.id}/users/${userId}/assignment`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       });
-      return response;
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Fehler beim Entfernen der Zuweisung');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -755,16 +779,35 @@ export default function Users() {
 
       {/* Edit Role Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Rolle bearbeiten</DialogTitle>
+            <DialogTitle>Benutzer bearbeiten</DialogTitle>
             <DialogDescription>
-              Ändern Sie die Rolle von {selectedUser?.lastName}, {selectedUser?.firstName}
+              Bearbeiten Sie die Details von {selectedUser?.lastName}, {selectedUser?.firstName}
             </DialogDescription>
           </DialogHeader>
           
           {selectedUser && (
             <div className="space-y-4 py-4">
+              {/* User Info Section */}
+              <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    {selectedUser.assignedTo || 'Keine Zuweisung'}
+                  </Badge>
+                  {selectedUser.isSuperAdmin && (
+                    <Badge variant="default" className="text-xs bg-purple-600">
+                      Super Admin
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <div><strong>E-Mail:</strong> {selectedUser.email}</div>
+                  <div><strong>Status:</strong> {selectedUser.status === 'active' ? 'Aktiv' : 'Inaktiv'}</div>
+                </div>
+              </div>
+
+              {/* Role Selection */}
               <div className="space-y-2">
                 <Label htmlFor="role">Rolle</Label>
                 <Select
@@ -807,9 +850,9 @@ export default function Users() {
                 </Button>
                 <Button
                   onClick={() => {
-                    if (selectedUser?.roleId && selectedUser?.memberId) {
+                    if (selectedUser?.roleId && selectedUser?.id) {
                       updateRoleMutation.mutate({
-                        memberId: selectedUser.memberId,
+                        userId: selectedUser.id,
                         roleId: selectedUser.roleId
                       });
                       setShowEditDialog(false);

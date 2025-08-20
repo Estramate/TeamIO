@@ -283,6 +283,9 @@ export interface IStorage {
   
   // Club subscription operations  
   createClubSubscription(subscription: InsertClubSubscription): Promise<ClubSubscription>;
+  
+  // User club role operations
+  updateUserClubRole(userId: string, clubId: number, roleId: number): Promise<ClubMembership>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -612,7 +615,12 @@ export class DatabaseStorage implements IStorage {
       .returning();
       
     // Debug: Updated membership: ${JSON.stringify(updatedMembership)}
-    return updatedMembership;hip;
+    return updatedMembership;
+  }
+
+  // Update user role in specific club membership
+  async updateUserClubRole(userId: string, clubId: number, roleId: number): Promise<ClubMembership> {
+    return this.updateClubMembership(userId, clubId, { roleId });
   }
 
   async getUserClubMembership(userId: string, clubId: number): Promise<ClubMembership | undefined> {

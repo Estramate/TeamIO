@@ -320,7 +320,7 @@ export default function SuperAdminPage() {
                       Neuer Verein
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Neuen Verein erstellen</DialogTitle>
                       <DialogDescription>
@@ -365,7 +365,7 @@ export default function SuperAdminPage() {
                       Neuer Administrator
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Neuen Administrator erstellen</DialogTitle>
                       <DialogDescription>

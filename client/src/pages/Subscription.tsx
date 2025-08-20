@@ -619,7 +619,7 @@ export default function SubscriptionPage() {
 
         {/* Usage Statistics Dialog */}
         <Dialog open={showUsageStats} onOpenChange={setShowUsageStats}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-blue-500" />
@@ -726,7 +726,7 @@ export default function SubscriptionPage() {
 
         {/* Billing Dialog */}
         <Dialog open={showBilling} onOpenChange={setShowBilling}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-green-500" />

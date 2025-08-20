@@ -790,7 +790,7 @@ export default function Facilities() {
 
       {/* Create/Edit Facility Dialog */}
       <Dialog open={facilityModalOpen} onOpenChange={setFacilityModalOpen}>
-        <DialogContent className="sm:max-w-[500px]" aria-describedby="facility-dialog-description">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto" aria-describedby="facility-dialog-description">
           <DialogHeader>
             <DialogTitle>
               {selectedFacility ? 'Anlage bearbeiten' : 'Neue Anlage'}
@@ -972,7 +972,7 @@ export default function Facilities() {
 
       {/* Facility Detail Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <div className="flex items-center gap-3">

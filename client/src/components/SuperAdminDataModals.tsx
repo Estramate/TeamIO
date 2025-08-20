@@ -82,7 +82,7 @@ export function EmailSettingsModal({ open, onClose }: EmailSettingsModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
@@ -207,7 +207,7 @@ export function SubscriptionManagementModal({ open, onClose }: SubscriptionManag
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Crown className="h-5 w-5" />
@@ -406,7 +406,7 @@ function PriceAdjustmentModal({ open, onClose }: PriceAdjustmentModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Preise anpassen</DialogTitle>
           <DialogDescription>
@@ -591,7 +591,7 @@ function PlanLimitsModal({ open, onClose }: PlanLimitsModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Plan-Limits bearbeiten</DialogTitle>
           <DialogDescription>

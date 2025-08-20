@@ -14,7 +14,7 @@ export function ClubDetailsModal({ club, open, onClose }: { club: any; open: boo
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
@@ -95,7 +95,7 @@ export function EditClubModal({ club, open, onClose, onSave, isLoading }: {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Verein bearbeiten</DialogTitle>
         </DialogHeader>
@@ -187,7 +187,7 @@ export function UserDetailsModal({ user, open, onClose }: { user: any; open: boo
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
@@ -264,7 +264,7 @@ export function EditUserModal({ user, open, onClose, onSave, isLoading }: {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Benutzer bearbeiten</DialogTitle>
         </DialogHeader>

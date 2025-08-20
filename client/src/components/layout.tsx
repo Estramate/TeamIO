@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import Sidebar from "./sidebar";
 import Header from "./header";
 import { FloatingHelpAssistant, useFloatingHelp } from "@/components/ui/floating-help";
-import { getHelpByCategory } from "@/lib/help-content";
+import { shouldShowHelp } from "@/lib/help-content";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,13 +20,15 @@ export default function Layout({ children }: LayoutProps) {
     if (location.includes('/teams')) return 'teams';
     if (location.includes('/finance')) return 'finance';
     if (location.includes('/bookings')) return 'bookings';
+    if (location.includes('/facilities')) return 'bookings'; // facilities use booking help
     if (location.includes('/settings')) return 'settings';
-    return 'dashboard';
+    if (location.includes('/events')) return 'events';
+    if (location === '/' || location === '') return 'dashboard';
+    return null; // No help for other pages
   };
 
-  // Check if current page has help content
   const currentPage = getCurrentPage();
-  const hasHelpContent = getHelpByCategory(currentPage).length > 0;
+  const showHelp = currentPage && shouldShowHelp(currentPage);
 
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -39,8 +41,8 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </div>
       
-      {/* Floating Help Assistant - only show if page has help content */}
-      {hasHelpContent && (
+      {/* Floating Help Assistant - only show on specific pages */}
+      {showHelp && currentPage && (
         <FloatingHelpAssistant
           isOpen={helpSystem.isOpen}
           onToggle={helpSystem.toggle}

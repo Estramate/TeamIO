@@ -132,6 +132,50 @@ export const helpContent: Record<string, HelpContent> = {
     category: "settings"
   },
 
+  // Page-specific welcome help
+  "dashboard-welcome": {
+    id: "dashboard-welcome",
+    title: "Willkommen zum Dashboard",
+    content: "Hier finden Sie alle wichtigen Vereinsstatistiken auf einen Blick. Nutzen Sie die Tabs für detaillierte Analysen.",
+    type: "info",
+    category: "dashboard"
+  },
+  "members-welcome": {
+    id: "members-welcome", 
+    title: "Willkommen zur Mitgliederverwaltung",
+    content: "Verwalten Sie hier alle Vereinsmitglieder. Nutzen Sie die Suchfunktion und Filter für bessere Übersicht.",
+    type: "info",
+    category: "members"
+  },
+  "teams-welcome": {
+    id: "teams-welcome",
+    title: "Willkommen zum Team-Management", 
+    content: "Organisieren Sie Ihre Mannschaften und weisen Sie Spieler zu. Jedes Team kann individuelle Trainingszeiten haben.",
+    type: "info",
+    category: "teams"
+  },
+  "bookings-welcome": {
+    id: "bookings-welcome",
+    title: "Willkommen zum Buchungssystem",
+    content: "Verwalten Sie Anlagenbuchungen für Training, Spiele und Events. Das System verhindert automatisch Doppelbuchungen.",
+    type: "info", 
+    category: "bookings"
+  },
+  "finance-welcome": {
+    id: "finance-welcome",
+    title: "Willkommen zur Finanzverwaltung",
+    content: "Behalten Sie die Vereinsfinanzen im Blick. Verfolgen Sie Einnahmen und Ausgaben mit automatischen Kategorisierungen.",
+    type: "info",
+    category: "finance"
+  },
+  "settings-welcome": {
+    id: "settings-welcome",
+    title: "Willkommen zu den Einstellungen",
+    content: "Passen Sie ClubFlow an Ihre Bedürfnisse an. Konfigurieren Sie Design, Benutzer und erweiterte Funktionen.",
+    type: "info",
+    category: "settings"
+  },
+
   // Keyboard Shortcuts
   "shortcut-search": {
     id: "shortcut-search",
@@ -157,6 +201,21 @@ export function getHelpContent(id: string): HelpContent | null {
 // Helper function to get help content by category
 export function getHelpByCategory(category: string): HelpContent[] {
   return Object.values(helpContent).filter(help => help.category === category)
+}
+
+// Define which pages should show help
+export const pagesWithHelp = new Set([
+  'dashboard',
+  'members', 
+  'teams',
+  'bookings',
+  'finance',
+  'settings'
+]);
+
+// Check if a page should show help
+export function shouldShowHelp(page: string): boolean {
+  return pagesWithHelp.has(page);
 }
 
 // Contextual help for specific UI patterns

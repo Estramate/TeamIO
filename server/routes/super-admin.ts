@@ -68,6 +68,8 @@ router.get("/clubs",
         })
       );
       
+      // Disable caching for debugging
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.json(enhancedClubs);
     } catch (error) {
       console.error("Error fetching clubs:", error);

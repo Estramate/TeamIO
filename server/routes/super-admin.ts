@@ -51,13 +51,13 @@ router.get("/clubs",
         clubs.map(async (club: any) => {
           const members = await storage.getClubMembers(club.id);
           
-          // Get ALL users for this club (including Super Admins for super admin view)
-          const allClubUsers = await storage.getAllClubUsers(club.id);
+          // Get Super Admins for this club only (for super admin overview)
+          const superAdminsInClub = await storage.getSuperAdminsInClub(club.id);
           
           return {
             ...club,
             memberCount: members.length,
-            userCount: allClubUsers.length, // Total users including Super Admins
+            userCount: superAdminsInClub.length, // Only Super Admins count in super admin view
             subscriptionPlan: 'free', // Default subscription plan
             createdAt: club.createdAt || new Date(),
           };

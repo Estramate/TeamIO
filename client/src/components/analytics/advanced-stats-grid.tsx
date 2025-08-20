@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { useClub } from "@/hooks/use-club";
 import { useSubscription } from "@/hooks/use-subscription";
 import { 
@@ -77,7 +78,13 @@ interface StatCard {
 export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
   const { selectedClub } = useClub();
   const { subscriptionManager } = useSubscription();
+  const [, setLocation] = useLocation();
   const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d">("30d");
+
+  // Handle upgrade button click
+  const handleUpgrade = () => {
+    setLocation('/subscription');
+  };
 
   // Feature availability checks
   const hasAdvancedReports = subscriptionManager?.hasFeature('advancedReports') ?? false;
@@ -440,6 +447,7 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
                 ))}
               </div>
               <button 
+                onClick={handleUpgrade}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
                 data-testid="upgrade-analytics-button"
               >

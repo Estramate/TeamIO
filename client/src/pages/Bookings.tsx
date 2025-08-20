@@ -310,6 +310,7 @@ export default function Bookings() {
         recurringUntil: bookingData.recurringUntil || undefined,
       };
       
+      console.log('CRITICAL: Using PATCH for booking update - ID:', id, 'Data:', cleanedData);
       return apiRequest("PATCH", `/api/clubs/${selectedClub?.id}/bookings/${id}`, cleanedData);
     },
     onSuccess: () => {
@@ -539,10 +540,31 @@ export default function Bookings() {
       endTime: new Date(data.endTime).toISOString(),
     };
     
-    console.log('Form submission - processed data:', processedData);
+    console.log('Form submission - processed data (FIXED BOOKING FORM):', processedData);
+    console.log('Booking ID being updated:', selectedBooking?.id);
     
     if (selectedBooking) {
-      updateBookingMutation.mutate({ ...processedData, id: selectedBooking.id });
+      // CRITICAL FIX: Match the mutation function signature
+      updateBookingMutation.mutate({ 
+        id: selectedBooking.id, 
+        ...processedData // Spread the data directly, not as nested object
+      }, {
+        onSuccess: () => {
+          // Force cache refresh after successful form update
+          queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+          queryClient.refetchQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'bookings'] });
+          toast({ title: "Buchung aktualisiert", description: "Die Buchung wurde erfolgreich aktualisiert." });
+          setBookingModalOpen(false);
+        },
+        onError: (error) => {
+          console.error('Booking update failed:', error);
+          toast({ 
+            title: "Fehler", 
+            description: "Die Buchung konnte nicht aktualisiert werden.",
+            variant: "destructive"
+          });
+        }
+      });
     } else {
       createBookingMutation.mutate(processedData);
     }

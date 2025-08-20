@@ -274,11 +274,13 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
                               Lade Mitglieder...
                             </SelectItem>
                           ) : members.length > 0 ? (
-                            members.map((member: any) => (
-                              <SelectItem key={member.id} value={member.id.toString()}>
-                                {member.firstName} {member.lastName}
-                              </SelectItem>
-                            ))
+                            members
+                              .sort((a: any, b: any) => a.lastName.localeCompare(b.lastName))
+                              .map((member: any) => (
+                                <SelectItem key={member.id} value={member.id.toString()}>
+                                  {member.lastName}, {member.firstName}
+                                </SelectItem>
+                              ))
                           ) : (
                             <SelectItem value="no-members" disabled>
                               Keine Mitglieder verfügbar
@@ -318,11 +320,13 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
                               Lade Spieler...
                             </SelectItem>
                           ) : players.length > 0 ? (
-                            players.map((player: any) => (
-                              <SelectItem key={player.id} value={player.id.toString()}>
-                                {player.firstName} {player.lastName}
-                              </SelectItem>
-                            ))
+                            players
+                              .sort((a: any, b: any) => a.lastName.localeCompare(b.lastName))
+                              .map((player: any) => (
+                                <SelectItem key={player.id} value={player.id.toString()}>
+                                  {player.lastName}, {player.firstName}
+                                </SelectItem>
+                              ))
                           ) : (
                             <SelectItem value="no-players" disabled>
                               Keine Spieler verfügbar

@@ -117,7 +117,8 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
-    console.log('=== COMPLETE LOGOUT PROCESS ===');
+    // Debug: Uncomment for logout process debugging
+    // console.log('=== COMPLETE LOGOUT PROCESS ===');
     
     // Clear ALL auth cookies with different options
     const cookiesToClear = ['connect.sid', 'session', '__session'];

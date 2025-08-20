@@ -177,7 +177,8 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
 
   const updateBookingMutation = useMutation({
     mutationFn: (bookingData: any) => {
-      console.log('CRITICAL: BookingForm using PATCH for update - ID:', editingBooking.id, 'Data:', bookingData);
+      // API request debugging (use debugConfig.ts to enable)
+      // logApiRequest('PATCH', `/api/clubs/${selectedClubId}/bookings/${editingBooking.id}`, bookingData);
       return apiRequest('PATCH', `/api/clubs/${selectedClubId}/bookings/${editingBooking.id}`, bookingData);
     },
     onSuccess: () => {
@@ -189,7 +190,8 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       // Force immediate refetch to update timeline
       queryClient.refetchQueries({ queryKey: ['/api/clubs', selectedClubId, 'bookings'] });
       
-      console.log('CRITICAL: Cache invalidated and refetched after BookingForm update');
+      // Cache operation debugging (use debugConfig.ts to enable)
+      // logCacheOperation('invalidate+refetch', ['/api/clubs', selectedClubId, 'bookings'], 'after BookingForm update');
       
       toast({
         title: "Buchung aktualisiert",

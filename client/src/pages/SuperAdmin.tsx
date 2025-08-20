@@ -489,7 +489,7 @@ export default function SuperAdminPage() {
           onClose={() => setShowEditUser(null)}
           onSave={async (data) => {
             try {
-              console.log('💾 Saving user data:', data);
+              // Debug: logFormOperation('SuperAdmin', 'saving user data', data);
               
               // Use the new PATCH endpoint with proper credentials
               const response = await fetch(`/api/super-admin/users/${showEditUser.id}`, {
@@ -501,7 +501,7 @@ export default function SuperAdminPage() {
                 body: JSON.stringify(data),
               });
               
-              console.log('📡 Response status:', response.status);
+              // Debug: logApiRequest('PATCH', `/api/super-admin/users/${data.id}`, { status: response.status });
               
               if (!response.ok) {
                 const errorData = await response.json();
@@ -510,7 +510,7 @@ export default function SuperAdminPage() {
               }
               
               const result = await response.json();
-              console.log('✅ User update success:', result);
+              // Debug: logFormOperation('SuperAdmin', 'user update success', result);
               
               // Show success toast
               toast({
@@ -542,7 +542,7 @@ export default function SuperAdminPage() {
           open={!!showDeactivateUser} 
           onClose={() => setShowDeactivateUser(null)}
           onConfirm={() => {
-            console.log('Deactivate user:', showDeactivateUser.id);
+            // Debug: logFormOperation('SuperAdmin', 'deactivate user', showDeactivateUser.id);
             setShowDeactivateUser(null);
           }}
         />

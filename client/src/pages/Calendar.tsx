@@ -403,24 +403,8 @@ export default function Calendar() {
       }
     }
     
-    // Debug: Log when height calculation seems wrong
-    if (event.title?.includes('Training') && event.id === 28) {
-      const startTimeObj = new Date(event.startTime);
-      const endTimeObj = new Date(event.endTime);
-      console.log('Timeline height calculation for Training (CACHE PROBLEM CHECK):', {
-        title: event.title,
-        id: event.id,
-        startTimeUTC: event.startTime,
-        endTimeUTC: event.endTime,
-        startTimeLocal: startTimeObj.toLocaleString(),
-        endTimeLocal: endTimeObj.toLocaleString(),
-        startHour,
-        endHour,
-        duration: (endHour - startHour) + ' hours',
-        timezoneOffset: startTimeObj.getTimezoneOffset() + ' minutes',
-        cacheTimestamp: new Date().toISOString()
-      });
-    }
+    // Timeline height debugging (use debugConfig.ts to enable)
+    // logTimelineCalculation(event.title, { id: event.id, startHour, endHour, duration: (endHour - startHour) });
     
     // Clamp to 6:00-24:00 range
     const clampedStart = Math.max(6, Math.min(24, startHour));
@@ -608,13 +592,10 @@ export default function Calendar() {
       // CRITICAL FIX: Use the original startTime from the event, not resizeStartTime
       const originalStartTime = new Date(resizingEvent.startTime);
       
-      console.log('Resize operation:', {
-        originalStart: resizingEvent.startTime,
-        originalEnd: resizingEvent.endTime,
-        newStart: originalStartTime.toISOString(),
-        newEnd: newEndTime.toISOString(),
-        deltaHours: snappedHourDelta
-      });
+      // Debug: logFormOperation('Calendar', 'resize operation', {
+      //   originalStart: resizingEvent.startTime, originalEnd: resizingEvent.endTime,
+      //   newStart: originalStartTime.toISOString(), newEnd: newEndTime.toISOString(), deltaHours: snappedHourDelta
+      // });
       
       const updateData = {
         title: resizingEvent.title,

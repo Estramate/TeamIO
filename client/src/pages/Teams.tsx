@@ -139,7 +139,7 @@ export default function Teams() {
   // Update selected trainers when teamMemberships change and we have a selected team
   useEffect(() => {
     if (selectedTeam && teamMemberships.length > 0 && teamModalOpen) {
-      console.log('🔄 Updating trainers for team:', selectedTeam.id, 'from memberships:', teamMemberships);
+      // Debug: logFormOperation('Teams', 'updating trainers', { teamId: selectedTeam.id, memberships: teamMemberships });
       const currentTrainers = teamMemberships
         .filter((tm: any) => 
           tm.teamId === selectedTeam.id && 
@@ -150,7 +150,7 @@ export default function Teams() {
         .filter((trainer, index, self) => 
           index === self.findIndex(t => t.id === trainer.id && t.role === trainer.role)
         );
-      console.log('✅ Setting selected trainers:', currentTrainers);
+      // Debug: logFormOperation('Teams', 'setting trainers', currentTrainers);
       setSelectedTrainers(currentTrainers);
     }
   }, [selectedTeam, teamMemberships, teamModalOpen]);
@@ -371,7 +371,7 @@ export default function Teams() {
     });
     
     // Load current trainers/staff for this team with their roles
-    console.log('🔍 Loading trainers for team:', team.id, 'from teamMemberships:', teamMemberships);
+    // Debug: logFormOperation('Teams', 'loading trainers', { teamId: team.id, teamMemberships });
     const currentTrainers = teamMemberships
       .filter((tm: any) => 
         tm.teamId === team.id && 
@@ -382,7 +382,7 @@ export default function Teams() {
       .filter((trainer, index, self) => 
         index === self.findIndex(t => t.id === trainer.id && t.role === trainer.role)
       );
-    console.log('✅ Found current trainers:', currentTrainers);
+    // Debug: logFormOperation('Teams', 'found trainers', currentTrainers);
     setSelectedTrainers(currentTrainers);
     
     setTeamModalOpen(true);

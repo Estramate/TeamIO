@@ -310,7 +310,7 @@ export default function Bookings() {
         recurringUntil: bookingData.recurringUntil || undefined,
       };
       
-      console.log('CRITICAL: Using PATCH for booking update - ID:', id, 'Data:', cleanedData);
+      // Debug: logApiRequest('PATCH', `/api/clubs/${selectedClubId}/bookings/${id}`, cleanedData);
       return apiRequest("PATCH", `/api/clubs/${selectedClub?.id}/bookings/${id}`, cleanedData);
     },
     onSuccess: () => {
@@ -449,7 +449,7 @@ export default function Bookings() {
     const endTime = form.getValues("endTime");
     
     if (facilityId && startTime && endTime) {
-      console.log("DEBUG: Checking availability for:", { facilityId, startTime, endTime });
+      // Debug: logFormOperation('Bookings', 'availability check', { facilityId, startTime, endTime });
       setIsCheckingAvailability(true);
       checkAvailabilityMutation.mutate({ 
         facilityId: parseInt(facilityId), 
@@ -480,11 +480,10 @@ export default function Bookings() {
 
   const handleEditBooking = (booking: Booking) => {
     setSelectedBooking(booking);
-    console.log('Editing booking with times:', { startTime: booking.startTime, endTime: booking.endTime });
-    console.log('Formatted for form:', { 
-      startTime: formatForDateTimeLocal(String(booking.startTime)), 
-      endTime: formatForDateTimeLocal(String(booking.endTime)) 
-    });
+    // Debug: logFormOperation('Bookings', 'edit setup', { 
+    //   originalTimes: { startTime: booking.startTime, endTime: booking.endTime },
+    //   formattedTimes: { startTime: formatForDateTimeLocal(String(booking.startTime)), endTime: formatForDateTimeLocal(String(booking.endTime)) }
+    // });
     
     form.reset({
       title: booking.title,
@@ -531,7 +530,7 @@ export default function Bookings() {
   };
 
   const onSubmit = (data: BookingFormData) => {
-    console.log('Form submission - original data:', data);
+    // Debug: logFormOperation('Bookings', 'form submission', { original: data, bookingId: selectedBooking?.id });
     
     // Convert datetime-local to proper ISO strings preserving local time
     const processedData = {
@@ -540,8 +539,7 @@ export default function Bookings() {
       endTime: new Date(data.endTime).toISOString(),
     };
     
-    console.log('Form submission - processed data (FIXED BOOKING FORM):', processedData);
-    console.log('Booking ID being updated:', selectedBooking?.id);
+    // Debug: logFormOperation('Bookings', 'processed data', processedData);
     
     if (selectedBooking) {
       // CRITICAL FIX: Match the mutation function signature

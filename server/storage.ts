@@ -684,13 +684,17 @@ export class DatabaseStorage implements IStorage {
           profileImageUrl: users.profileImageUrl,
           authProvider: users.authProvider,
           createdAt: users.createdAt,
+          isSuperAdmin: users.isSuperAdmin,
+          // User assignments
+          memberId: users.memberId,
+          playerId: users.playerId,
           // Membership fields with correct column names
           membershipId: clubMemberships.id,
           roleId: clubMemberships.roleId,
           roleName: roles.name,
           roleDisplayName: roles.displayName,
           status: clubMemberships.status,
-          joinedAt: clubMemberships.joinedAt, // Use the actual DB column name
+          joinedAt: clubMemberships.joinedAt,
         })
         .from(users)
         .innerJoin(clubMemberships, eq(users.id, clubMemberships.userId))
@@ -701,10 +705,56 @@ export class DatabaseStorage implements IStorage {
             eq(users.isSuperAdmin, false) // EXCLUDE Super Administrators from normal user list
           )
         )
-        .orderBy(asc(users.firstName), asc(users.lastName));
+        .orderBy(asc(users.lastName), asc(users.firstName));
 
-      // Debug: Found ${result.length} users for club ${clubId} (Super Admins excluded)
-      return result;
+      // Enhance with assignment details
+      const enhancedResult = await Promise.all(
+        result.map(async (user) => {
+          let assignedTo = null;
+          let assignedType = null;
+
+          // Check if user is assigned to a member
+          if (user.memberId) {
+            const [assignedMember] = await db
+              .select({
+                firstName: members.firstName,
+                lastName: members.lastName
+              })
+              .from(members)
+              .where(eq(members.id, user.memberId));
+            
+            if (assignedMember) {
+              assignedTo = `${assignedMember.lastName}, ${assignedMember.firstName}`;
+              assignedType = 'member';
+            }
+          }
+          
+          // Check if user is assigned to a player
+          if (user.playerId) {
+            const [assignedPlayer] = await db
+              .select({
+                firstName: players.firstName,
+                lastName: players.lastName
+              })
+              .from(players)
+              .where(eq(players.id, user.playerId));
+            
+            if (assignedPlayer) {
+              assignedTo = `${assignedPlayer.lastName}, ${assignedPlayer.firstName}`;
+              assignedType = 'player';
+            }
+          }
+
+          return {
+            ...user,
+            assignedTo,
+            assignedType
+          };
+        })
+      );
+
+      // Debug: Found ${enhancedResult.length} users for club ${clubId} (Super Admins excluded)
+      return enhancedResult;
     } catch (error) {
       console.error('❌ Error in getClubUsersWithMembership:', error);
       throw error;

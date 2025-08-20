@@ -3194,7 +3194,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Check if requesting user has appropriate permissions
-    if (!canPerformAction(requestMembership.role, 'member_management')) {
+    const adminRole = await storage.getRoleById(requestMembership.roleId);
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!adminRole || !adminRoles.includes(adminRole.name)) {
       throw new AuthorizationError('You do not have permission to manage user roles');
     }
     
@@ -3244,7 +3246,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Check if requesting user has appropriate permissions
-    if (!canPerformAction(requestMembership.role, 'member_management')) {
+    const adminRole = await storage.getRoleById(requestMembership.roleId);
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!adminRole || !adminRoles.includes(adminRole.name)) {
       throw new AuthorizationError('You do not have permission to manage users');
     }
     

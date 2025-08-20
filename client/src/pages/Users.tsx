@@ -43,6 +43,7 @@ import {
   Activity,
   AlertCircle,
   LayoutGrid,
+  X,
   List,
   MoreHorizontal,
   Calendar
@@ -946,6 +947,53 @@ export default function Users() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* User Assignment Section */}
+              {!selectedUser.isSuperAdmin && (
+                <div className="space-y-3">
+                  <Label>Account-Zuweisung</Label>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-sm">
+                      <strong>Aktuell:</strong> {selectedUser.assignedTo || 'Nicht zugewiesen'}
+                    </div>
+                    {selectedUser.assignedTo && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Typ: {selectedUser.assignedType === 'member' ? 'Mitglied' : 'Spieler'}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setAssignmentMember(selectedUser);
+                        setShowAssignmentDialog(true);
+                        setShowEditDialog(false);
+                      }}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Zuweisung ändern
+                    </Button>
+                    {selectedUser.assignedTo && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          removeUserAssignmentMutation.mutate(selectedUser.id);
+                        }}
+                        disabled={removeUserAssignmentMutation.isPending}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Entfernen
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
               
               <div className="flex justify-end gap-2 pt-4">
                 <Button

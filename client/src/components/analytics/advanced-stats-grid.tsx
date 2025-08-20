@@ -57,8 +57,8 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
   const hasFinancialReports = subscriptionManager?.hasFeature('financialReports') ?? false;
   const hasBasicManagement = subscriptionManager?.hasFeature('basicManagement') ?? false;
 
-  const currentPlan = subscriptionManager?.getCurrentPlan() || { planType: 'free' };
-  const planType = currentPlan.planType || 'free';
+  const currentPlan = subscriptionManager?.getCurrentPlan() || 'free';
+  const planType = currentPlan;
 
   // Calculate advanced metrics from real data
   const calculateGrowthRate = (current: number, previous: number) => {
@@ -187,7 +187,8 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
   };
 
   // Advanced stats for higher tier plans (ALL DATA FROM DATABASE)
-  const advancedStats: StatCard[] = hasAdvancedReports ? [
+  // Enterprise plan gets all advanced stats, no restrictions
+  const advancedStats: StatCard[] = (planType === 'enterprise' || hasAdvancedReports) ? [
     {
       id: "utilization",
       title: "Anlagenauslastung",
@@ -247,7 +248,8 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
   };
 
   // Financial stats for plans with financial reports (ALL DATA FROM DATABASE)
-  const financialStats: StatCard[] = hasFinancialReports ? [
+  // Enterprise plan gets all financial stats, no restrictions  
+  const financialStats: StatCard[] = (planType === 'enterprise' || hasFinancialReports) ? [
     {
       id: "revenue",
       title: "Monatserlös",

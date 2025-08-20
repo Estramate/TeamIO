@@ -33,7 +33,7 @@ interface ChartConfig {
   iconColor: string;
   requiresPlan: string[];
   chartType: "bar" | "line" | "pie" | "area";
-  mockData: any[];
+  realData: any[];
 }
 
 export default function ChartsSection({ data }: ChartsSectionProps) {
@@ -120,6 +120,8 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
   const selectedChartConfig = chartConfigs.find(c => c.id === selectedChart);
 
   const renderChart = (config: ChartConfig, isLocked: boolean = false) => {
+    const chartData = config.realData || [];
+    
     if (isLocked) {
       return (
         <div className="flex items-center justify-center h-64 bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
@@ -142,7 +144,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       case "bar":
         return (
           <div className="h-64 flex items-end justify-center space-x-3 px-4">
-            {config.mockData.map((item, idx) => {
+            {chartData.map((item, idx) => {
               const height = Math.max((item.bookings / 70) * 100, 10);
               return (
                 <div key={idx} className="flex flex-col items-center space-y-2">
@@ -162,7 +164,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
         return (
           <div className="h-64 flex items-center justify-center">
             <div className="grid grid-cols-2 gap-4 w-full max-w-md">
-              {config.mockData.map((item, idx) => (
+              {chartData.map((item, idx) => (
                 <div key={idx} className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
                   <div 
                     className="w-4 h-4 rounded-full"
@@ -181,14 +183,14 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       case "line":
         return (
           <div className="h-64 flex items-end justify-center space-x-6 px-4">
-            {config.mockData.map((item, idx) => (
+            {chartData.map((item, idx) => (
               <div key={idx} className="flex flex-col items-center space-y-2">
                 <div className="relative">
                   <div 
                     className="bg-purple-500/80 rounded-full w-3 h-3"
                     style={{ marginBottom: `${(item.members / 250) * 100}px` }}
                   ></div>
-                  {idx < config.mockData.length - 1 && (
+                  {idx < chartData.length - 1 && (
                     <div className="absolute top-1.5 left-6 w-6 h-0.5 bg-purple-500/40"></div>
                   )}
                 </div>
@@ -201,7 +203,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       case "area":
         return (
           <div className="h-64 flex items-end justify-center space-x-4 px-4">
-            {config.mockData.map((item, idx) => (
+            {chartData.map((item, idx) => (
               <div key={idx} className="flex flex-col items-center space-y-1">
                 <div className="relative w-8">
                   <div 

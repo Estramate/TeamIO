@@ -606,6 +606,24 @@ export default function Bookings() {
     }
   };
 
+  const renderParticipants = (participants: unknown): string => {
+    if (!participants) return '';
+    
+    if (typeof participants === 'object' && participants !== null) {
+      const participantsObj = participants as any;
+      if (typeof participantsObj.count === 'number') {
+        return String(participantsObj.count);
+      }
+      try {
+        return JSON.stringify(participants);
+      } catch {
+        return 'Unbekannt';
+      }
+    }
+    
+    return String(participants);
+  };
+
   if (!selectedClub) {
     return (
       <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
@@ -857,7 +875,7 @@ export default function Bookings() {
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Users className="w-4 h-4 mr-2 text-primary" />
                         <span className="font-medium">
-                          {typeof booking.participants === 'object' ? JSON.stringify(booking.participants) : (booking.participants || 0)} Teilnehmer
+                          {renderParticipants(booking.participants)} Teilnehmer
                         </span>
                       </div>
                     )}
@@ -1145,7 +1163,7 @@ export default function Bookings() {
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Teilnehmer:</span>
                         <span className="text-sm font-medium">
-                          {typeof viewingBooking.participants === 'object' ? JSON.stringify(viewingBooking.participants) : String(viewingBooking.participants)}
+                          {renderParticipants(viewingBooking.participants)}
                         </span>
                       </div>
                     )}

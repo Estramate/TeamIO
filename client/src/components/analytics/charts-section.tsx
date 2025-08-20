@@ -139,13 +139,26 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       );
     }
 
-    // Simple mock chart visualization
+    // Real data visualization from database
+    if (chartData.length === 0) {
+      return (
+        <div className="h-64 flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">Keine Daten verfügbar</p>
+            <p className="text-xs opacity-75">Daten werden geladen...</p>
+          </div>
+        </div>
+      );
+    }
+
     switch (config.chartType) {
       case "bar":
         return (
           <div className="h-64 flex items-end justify-center space-x-3 px-4">
             {chartData.map((item, idx) => {
-              const height = Math.max((item.bookings / 70) * 100, 10);
+              const maxBookings = Math.max(...chartData.map(d => d.bookings || 0), 1);
+              const height = Math.max((item.bookings / maxBookings) * 100, 10);
               return (
                 <div key={idx} className="flex flex-col items-center space-y-2">
                   <div 
@@ -188,7 +201,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
                 <div className="relative">
                   <div 
                     className="bg-purple-500/80 rounded-full w-3 h-3"
-                    style={{ marginBottom: `${(item.members / 250) * 100}px` }}
+                    style={{ marginBottom: `${Math.max(item.members || 0, 0) * 2}px` }}
                   ></div>
                   {idx < chartData.length - 1 && (
                     <div className="absolute top-1.5 left-6 w-6 h-0.5 bg-purple-500/40"></div>

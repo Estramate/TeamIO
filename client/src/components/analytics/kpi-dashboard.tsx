@@ -104,41 +104,36 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
     {
       id: "revenue-growth",
       title: "Umsatzwachstum",
-      value: data?.currentMetrics?.monthlyBudget && data?.currentMetrics?.totalRevenue 
-        ? Math.round((data.currentMetrics.monthlyBudget / Math.max(data.currentMetrics.totalRevenue, 1)) * 100)
+      value: data?.currentMetrics?.totalRevenue 
+        ? Math.round(((data.currentMetrics.totalRevenue - (data.currentMetrics.totalExpenses || 0)) / Math.max(data.currentMetrics.totalRevenue, 1)) * 100)
         : 0,
       target: 10,
       unit: "%",
       trend: { 
-        direction: (data?.currentMetrics?.monthlyBudget || 0) > 0 ? "up" : 
-                  (data?.currentMetrics?.monthlyBudget || 0) < 0 ? "down" : "stable", 
-        value: Math.abs(data?.currentMetrics?.monthlyBudget || 0), 
-        period: "Monatlich" 
+        direction: (data?.currentMetrics?.totalRevenue || 0) > (data?.currentMetrics?.totalExpenses || 0) ? "up" : "down", 
+        value: Math.abs((data?.currentMetrics?.totalRevenue || 0) - (data?.currentMetrics?.totalExpenses || 0)), 
+        period: "vs. Ausgaben" 
       },
-      status: (data?.currentMetrics?.monthlyBudget || 0) >= 0 ? "excellent" : "critical",
-      description: "Monatliches Umsatzwachstum basierend auf Budget",
+      status: (data?.currentMetrics?.totalRevenue || 0) > (data?.currentMetrics?.totalExpenses || 0) ? "excellent" : "critical",
+      description: "Gewinn-Verlust-Verhältnis basierend auf echten Finanzdaten",
       category: "financial"
     },
     {
       id: "cost-efficiency",
       title: "Kosteneffizienz", 
-      value: data?.currentMetrics?.totalRevenue && data?.currentMetrics?.totalExpenses
-        ? Math.round((data.currentMetrics.totalRevenue / (data.currentMetrics.totalRevenue + Math.abs(data.currentMetrics.totalExpenses))) * 100)
+      value: data?.currentMetrics?.averageBookingValue 
+        ? Math.round(data.currentMetrics.averageBookingValue * 10) // Effizienz basierend auf Buchungswert
         : 0,
       target: 80,
       unit: "%",
       trend: { 
-        direction: data?.currentMetrics?.totalRevenue && data?.currentMetrics?.totalExpenses &&
-                  (data.currentMetrics.totalRevenue > Math.abs(data.currentMetrics.totalExpenses)) ? "up" : "down", 
-        value: data?.currentMetrics?.totalRevenue && data?.currentMetrics?.totalExpenses 
-          ? Math.abs(data.currentMetrics.totalRevenue - Math.abs(data.currentMetrics.totalExpenses))
-          : 0, 
-        period: "vs. Kosten" 
+        direction: (data?.currentMetrics?.weeklyBookings || 0) > (data?.currentMetrics?.monthlyBookings || 0) / 4 ? "up" : "down", 
+        value: Math.abs((data?.currentMetrics?.weeklyBookings || 0) - ((data?.currentMetrics?.monthlyBookings || 0) / 4)), 
+        period: "Wöchentlicher Trend" 
       },
-      status: data?.currentMetrics?.totalRevenue && data?.currentMetrics?.totalExpenses
-        ? (data.currentMetrics.totalRevenue > Math.abs(data.currentMetrics.totalExpenses) ? "excellent" : "warning")
-        : "critical",
-      description: "Verhältnis von Einnahmen zu Betriebskosten",
+      status: (data?.currentMetrics?.averageBookingValue || 0) > 50 ? "excellent" : 
+              (data?.currentMetrics?.averageBookingValue || 0) > 25 ? "good" : "warning",
+      description: "Effizienz basierend auf durchschnittlichem Buchungswert",
       category: "financial"
     },
 

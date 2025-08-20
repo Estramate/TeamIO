@@ -26,6 +26,33 @@ interface AdvancedStatsGridProps {
     todayBookingsCount?: number;
     pendingBookingsCount?: number;
     monthlyBudget?: number;
+    totalRevenue?: number;
+    totalExpenses?: number;
+    averageBookingValue?: number;
+    averageUtilization?: number;
+    bookingSuccessRate?: number;
+    memberEngagement?: number;
+    weeklyBookings?: number;
+    monthlyBookings?: number;
+    memberChanges?: {
+      thisWeek: number;
+      previousWeek: number;
+      weeklyChange: number;
+    };
+    teamChanges?: {
+      thisWeek: number;
+      previousWeek: number;
+      weeklyChange: number;
+    };
+    bookingChanges?: {
+      thisWeek: number;
+      previousWeek: number;
+      weeklyChange: number;
+    };
+    utilizationChanges?: {
+      change: number;
+      period: string;
+    };
     bookingTrends?: any[];
     membershipTrends?: any[];
     facilityUtilization?: any[];
@@ -282,13 +309,12 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
   if (!stats) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {[...Array(allStats.length)].map((_, i) => (
-          <div key={i} className="bg-card rounded-xl shadow-sm p-4 sm:p-6 border border-border animate-pulse">
-            <div className="h-4 bg-muted rounded w-1/2 mb-3"></div>
-            <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
-            <div className="h-3 bg-muted rounded w-2/3"></div>
+        <div className="bg-card rounded-xl shadow-sm p-4 sm:p-6 border border-border">
+          <div className="text-center text-muted-foreground">
+            <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">Lade Dashboard-Daten...</p>
           </div>
-        ))}
+        </div>
       </div>
     );
   }

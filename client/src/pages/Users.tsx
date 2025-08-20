@@ -325,34 +325,47 @@ export default function Users() {
       
       return response.json();
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       const { playerId, relationshipType } = variables;
       toast({
         title: "Spieler hinzugefügt",
         description: "Der Spieler wurde erfolgreich zum Benutzeraccount hinzugefügt.",
       });
       
-      // Update assignment member data immediately
-      if (assignmentMember && allPlayers) {
-        const addedPlayer = allPlayers.find((p: any) => p.id === playerId);
-        if (addedPlayer) {
-          const newAssignment = {
-            playerId: addedPlayer.id,
-            name: `${addedPlayer.lastName}, ${addedPlayer.firstName}`,
-            relationshipType: relationshipType || 'parent'
-          };
-          
-          setAssignmentMember({
-            ...assignmentMember,
-            multiplePlayerAssignments: [
-              ...(assignmentMember.multiplePlayerAssignments || []),
-              newAssignment
-            ]
-          });
-        }
+      // Find the added player from allPlayers array
+      let addedPlayer = null;
+      if (allPlayers) {
+        addedPlayer = allPlayers.find((p: any) => p.id === playerId);
       }
       
-      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
+      // If not found in allPlayers, try to find in available players
+      if (!addedPlayer && availablePlayers) {
+        addedPlayer = availablePlayers.find((p: any) => p.id === playerId);
+      }
+      
+      // Update assignment member data immediately if we found the player
+      if (assignmentMember && addedPlayer) {
+        const newAssignment = {
+          playerId: addedPlayer.id,
+          name: `${addedPlayer.lastName}, ${addedPlayer.firstName}`,
+          relationshipType: relationshipType || 'parent'
+        };
+        
+        const updatedAssignments = [
+          ...(assignmentMember.multiplePlayerAssignments || []),
+          newAssignment
+        ];
+        
+        setAssignmentMember({
+          ...assignmentMember,
+          multiplePlayerAssignments: updatedAssignments,
+          assignedTo: updatedAssignments.length > 1 ? `${updatedAssignments.length} Spieler` : newAssignment.name,
+          assignedType: updatedAssignments.length > 1 ? 'multiple_players' : 'player'
+        });
+      }
+      
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/users/${assignmentMember?.id}/player-assignments`] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'players'] });
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'available-players'] });

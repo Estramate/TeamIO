@@ -52,11 +52,19 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"cards" | "compact">("cards");
 
-  // Feature availability
+  // Feature availability - Use subscription manager directly for better accuracy
   const hasAdvancedReports = subscriptionManager?.hasFeature('advancedReports') ?? false;
   const hasFinancialReports = subscriptionManager?.hasFeature('financialReports') ?? false;
-  const currentPlan = subscriptionManager?.getCurrentPlan() || { planType: 'free' };
-  const planType = currentPlan.planType || 'free';
+  const currentPlan = subscriptionManager?.getCurrentPlan() || 'free';
+  const planType = currentPlan;
+  
+  console.log('🔍 KPI Dashboard Debug:', {
+    hasAdvancedReports,
+    hasFinancialReports,
+    currentPlan,
+    planType,
+    subscriptionManager: !!subscriptionManager
+  });
 
   // Real KPI data from database
   const allKPIs: KPICard[] = [
@@ -172,22 +180,54 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
     },
   ];
 
-  // Filter KPIs based on subscription and category
+  // Filter KPIs based on FEATURES rather than plan names for better accuracy
   const availableKPIs = useMemo(() => {
     return allKPIs.filter(kpi => {
-      const hasAccess = !kpi.requiresPlan || kpi.requiresPlan.includes(planType);
+      let hasAccess = true;
+      
+      // Check feature access based on KPI category and requirements
+      if (kpi.category === "financial" && kpi.requiresPlan?.includes("professional")) {
+        hasAccess = hasFinancialReports;
+      } else if (kpi.category === "efficiency" && kpi.requiresPlan?.includes("professional")) {
+        hasAccess = hasAdvancedReports;
+      } else if (kpi.requiresPlan) {
+        // Fallback to plan type check for other KPIs
+        hasAccess = kpi.requiresPlan.includes(planType);
+      }
+      
       const matchesCategory = selectedCategory === "all" || kpi.category === selectedCategory;
+      
+      console.log(`🔍 KPI ${kpi.id}:`, {
+        category: kpi.category,
+        requiresPlan: kpi.requiresPlan,
+        hasAccess,
+        planType,
+        hasAdvancedReports,
+        hasFinancialReports
+      });
+      
       return hasAccess && matchesCategory;
     });
-  }, [planType, selectedCategory]);
+  }, [planType, selectedCategory, hasAdvancedReports, hasFinancialReports]);
 
   const lockedKPIs = useMemo(() => {
     return allKPIs.filter(kpi => {
-      const hasAccess = !kpi.requiresPlan || kpi.requiresPlan.includes(planType);
+      let hasAccess = true;
+      
+      // Check feature access based on KPI category and requirements
+      if (kpi.category === "financial" && kpi.requiresPlan?.includes("professional")) {
+        hasAccess = hasFinancialReports;
+      } else if (kpi.category === "efficiency" && kpi.requiresPlan?.includes("professional")) {
+        hasAccess = hasAdvancedReports;
+      } else if (kpi.requiresPlan) {
+        // Fallback to plan type check for other KPIs
+        hasAccess = kpi.requiresPlan.includes(planType);
+      }
+      
       const matchesCategory = selectedCategory === "all" || kpi.category === selectedCategory;
       return !hasAccess && matchesCategory;
     });
-  }, [planType, selectedCategory]);
+  }, [planType, selectedCategory, hasAdvancedReports, hasFinancialReports]);
 
   // Category definitions
   const categories = [

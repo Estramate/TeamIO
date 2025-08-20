@@ -88,14 +88,14 @@ export default function Calendar() {
   const { setPage } = usePage();
   const queryClient = useQueryClient();
   // Load subscription data properly
-  const { data: subscriptionData } = useQuery({
+  const { data: subscriptionData = {} } = useQuery({
     queryKey: ['/api/subscriptions/club', selectedClub?.id],
     enabled: !!selectedClub?.id,
     retry: false,
   });
   
-  const subscription = subscriptionData?.subscription;
-  const plan = subscriptionData?.plan;
+  const subscription = (subscriptionData as any)?.subscription;
+  const plan = (subscriptionData as any)?.plan;
 
   // Set page title
   useEffect(() => {
@@ -1827,7 +1827,7 @@ export default function Calendar() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Team</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                      <Select onValueChange={field.onChange} value={field.value ? String(field.value) : undefined}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Team auswählen" />

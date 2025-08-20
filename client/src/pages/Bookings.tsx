@@ -606,7 +606,7 @@ export default function Bookings() {
     }
   };
 
-  const renderParticipants = (participants: unknown): string => {
+  const renderParticipants = (participants: unknown): React.ReactNode => {
     if (!participants) return '';
     
     if (typeof participants === 'object' && participants !== null) {
@@ -1163,7 +1163,14 @@ export default function Bookings() {
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Teilnehmer:</span>
                         <span className="text-sm font-medium">
-                          {renderParticipants(viewingBooking.participants)}
+                          {(() => {
+                            const participants = viewingBooking.participants;
+                            if (typeof participants === 'object' && participants !== null) {
+                              const participantsObj = participants as any;
+                              return String(participantsObj.count || JSON.stringify(participants));
+                            }
+                            return String(participants);
+                          })()}
                         </span>
                       </div>
                     )}

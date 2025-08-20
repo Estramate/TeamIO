@@ -126,7 +126,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
   });
 
   // Data queries
-  const { data: facilities = [], isLoading: facilitiesLoading } = useQuery({
+  const { data: facilities = [], isLoading: facilitiesLoading } = useQuery<any[]>({
     queryKey: [`/api/clubs/${selectedClubId}/facilities`],
     enabled: !!selectedClubId,
   });
@@ -141,7 +141,6 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
     mutationFn: (bookingData: any) => apiRequest('POST', `/api/clubs/${selectedClubId}/bookings`, bookingData),
     onSuccess: (data, variables) => {
       const bookingTitle = variables.title;
-      const facilityName = variables.facilityId; // This would need facility name lookup
       const isRecurring = (data as any).createdCount && (data as any).createdCount > 1;
       
       // Trigger intelligent notification
@@ -152,7 +151,7 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       
       // Invalidate alle booking-relevanten Queries
       invalidateEntityData(queryClient, selectedClubId, 'bookings');
-      invalidateRelevantCache('booking', selectedClubId);
+      invalidateRelevantCache([`/api/clubs/${selectedClubId}/bookings`]);
       
       if (isRecurring) {
         toast({

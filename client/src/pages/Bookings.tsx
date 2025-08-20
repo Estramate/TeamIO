@@ -1170,7 +1170,7 @@ export default function Bookings() {
                               return String(participantsObj.count || JSON.stringify(participants));
                             }
                             return String(participants);
-                          })()}
+                          })() as string}
                         </span>
                       </div>
                     )}

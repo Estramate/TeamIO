@@ -376,14 +376,14 @@ export default function Calendar() {
     let endHour = 9;   // Default end hour (1 hour duration)
     
     if (event.source === 'booking') {
-      // For bookings, parse the time strings
-      if (event.time) {
-        const [hours, minutes] = event.time.split(':').map(Number);
-        startHour = hours + minutes / 60;
+      // For bookings, use the original startTime and endTime datetime objects
+      if (event.startTime) {
+        const startTime = new Date(event.startTime);
+        startHour = startTime.getHours() + startTime.getMinutes() / 60;
       }
       if (event.endTime) {
-        const [hours, minutes] = event.endTime.split(':').map(Number);
-        endHour = hours + minutes / 60;
+        const endTime = new Date(event.endTime);
+        endHour = endTime.getHours() + endTime.getMinutes() / 60;
       }
     } else if (event.source === 'event') {
       // FIX: Events haben startTime und endTime als vollständige Datetime-Strings

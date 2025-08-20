@@ -37,7 +37,7 @@ export function FloatingHelpAssistant({ isOpen, onToggle, currentPage = "dashboa
           "fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg",
           "bg-blue-600 hover:bg-blue-700 text-white",
           "transition-all duration-300 hover:scale-110 active:scale-95",
-          "animate-pulse"
+          "hover:shadow-xl"
         )}
         data-testid="floating-help-trigger"
       >

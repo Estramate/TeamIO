@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Mail, Send, Loader2 } from 'lucide-react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { Plus, Mail, Send, Loader2, User, Users } from 'lucide-react';
 import { emailInvitationFormSchema } from '@shared/schemas/core';
 import type { z } from 'zod';
 import { useRoles } from '@/hooks/useRoles';
@@ -47,10 +47,22 @@ interface InviteUserDialogProps {
 
 export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
   const [open, setOpen] = useState(false);
+  const [assignmentType, setAssignmentType] = useState<'none' | 'member' | 'player'>('none');
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { roles, isLoading: rolesLoading } = useRoles();
   const { notifyUserInvitation, invalidateRelevantCache } = useNotificationTriggers();
+
+  // Load members and players for assignment
+  const { data: members = [], isLoading: membersLoading } = useQuery({
+    queryKey: [`/api/clubs/${clubId}/members`],
+    enabled: open && assignmentType === 'member',
+  });
+
+  const { data: players = [], isLoading: playersLoading } = useQuery({
+    queryKey: [`/api/clubs/${clubId}/players`],
+    enabled: open && assignmentType === 'player',
+  });
 
   const form = useForm<InviteFormData>({
     resolver: zodResolver(emailInvitationFormSchema),
@@ -58,6 +70,8 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
       email: '',
       roleId: 1, // Member role ID
       personalMessage: '',
+      memberId: undefined,
+      playerId: undefined,
     },
   });
 
@@ -76,6 +90,7 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
         description: 'Die E-Mail-Einladung wurde erfolgreich verschickt.',
       });
       form.reset();
+      setAssignmentType('none');
       setOpen(false);
       
       // Smart cache invalidation
@@ -93,7 +108,13 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
   });
 
   const handleSubmit = (data: InviteFormData) => {
-    inviteUserMutation.mutate(data);
+    // Clear assignment fields based on assignment type
+    const submitData = {
+      ...data,
+      memberId: assignmentType === 'member' ? data.memberId : undefined,
+      playerId: assignmentType === 'player' ? data.playerId : undefined,
+    };
+    inviteUserMutation.mutate(submitData);
   };
 
   // Use roles from database instead of hardcoded options
@@ -179,6 +200,145 @@ export function InviteUserDialog({ clubId, trigger }: InviteUserDialogProps) {
                 </FormItem>
               )}
             />
+
+            {/* User Assignment Section */}
+            <div className="space-y-4 border-t pt-4">
+              <div>
+                <label className="text-sm font-medium">Account-Zuweisung</label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Weisen Sie den eingeladenen Benutzer direkt einem Mitglied oder Spieler zu
+                </p>
+                
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={assignmentType === 'none' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                      setAssignmentType('none');
+                      form.setValue('memberId', undefined);
+                      form.setValue('playerId', undefined);
+                    }}
+                  >
+                    Keine Zuweisung
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={assignmentType === 'member' ? 'default' : 'outline'}
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => {
+                      setAssignmentType('member');
+                      form.setValue('playerId', undefined);
+                    }}
+                  >
+                    <User className="h-4 w-4" />
+                    Mitglied
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={assignmentType === 'player' ? 'default' : 'outline'}
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => {
+                      setAssignmentType('player');
+                      form.setValue('memberId', undefined);
+                    }}
+                  >
+                    <Users className="h-4 w-4" />
+                    Spieler
+                  </Button>
+                </div>
+              </div>
+
+              {/* Member Selection */}
+              {assignmentType === 'member' && (
+                <FormField
+                  control={form.control}
+                  name="memberId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mitglied auswählen</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} 
+                        value={field.value?.toString() || ''}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Mitglied auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {membersLoading ? (
+                            <SelectItem value="loading" disabled>
+                              Lade Mitglieder...
+                            </SelectItem>
+                          ) : members.length > 0 ? (
+                            members.map((member: any) => (
+                              <SelectItem key={member.id} value={member.id.toString()}>
+                                {member.firstName} {member.lastName}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-members" disabled>
+                              Keine Mitglieder verfügbar
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Das Mitglied, dem dieser Benutzer-Account zugewiesen wird
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {/* Player Selection */}
+              {assignmentType === 'player' && (
+                <FormField
+                  control={form.control}
+                  name="playerId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Spieler auswählen</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} 
+                        value={field.value?.toString() || ''}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Spieler auswählen" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {playersLoading ? (
+                            <SelectItem value="loading" disabled>
+                              Lade Spieler...
+                            </SelectItem>
+                          ) : players.length > 0 ? (
+                            players.map((player: any) => (
+                              <SelectItem key={player.id} value={player.id.toString()}>
+                                {player.firstName} {player.lastName}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-players" disabled>
+                              Keine Spieler verfügbar
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Der Spieler, dem dieser Benutzer-Account zugewiesen wird
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
 
             <FormField
               control={form.control}

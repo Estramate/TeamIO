@@ -2710,7 +2710,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Simple validation (bypass Zod for now to get system working)
-    const { email, roleId, personalMessage } = req.body;
+    const { email, roleId, personalMessage, memberId, playerId } = req.body;
     
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       console.log('📧 ERROR: Invalid email format');
@@ -2722,7 +2722,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Valid role ID is required', 'roleId');
     }
     
-    console.log('📧 Simple validation successful:', { email, roleId, personalMessage });
+    console.log('📧 Simple validation successful:', { email, roleId, personalMessage, memberId, playerId });
     
     // Check if user is club admin
     console.log('📧 Checking admin permissions for user:', userId, 'club:', clubId);
@@ -2760,6 +2760,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       throw new ValidationError('Invitation already sent to this email', 'email');
     }
     
+    // Validate assignment if provided
+    if (memberId && playerId) {
+      throw new ValidationError('Cannot assign to both member and player', 'assignment');
+    }
+    
+    if (memberId) {
+      const member = await storage.getMemberById(memberId);
+      if (!member || member.clubId !== clubId) {
+        throw new ValidationError('Invalid member ID or member not in this club', 'memberId');
+      }
+    }
+    
+    if (playerId) {
+      const players = await storage.getPlayers(clubId);
+      const player = players.find(p => p.id === playerId);
+      if (!player) {
+        throw new ValidationError('Invalid player ID or player not in this club', 'playerId');
+      }
+    }
+    
     // Generate invitation token
     const crypto = await import('crypto');
     const token = crypto.randomBytes(32).toString('hex');
@@ -2770,6 +2790,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       invitedBy: userId,
       email,
       roleId,
+      memberId: memberId || null,
+      playerId: playerId || null,
       token,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });

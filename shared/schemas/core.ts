@@ -72,6 +72,9 @@ export const emailInvitations = pgTable("email_invitations", {
   invitedBy: varchar("invited_by").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   roleId: integer("role_id").references(() => roles.id).notNull(), // Foreign key to roles table
+  // Assignment fields - user will be assigned to either a member OR a player upon accepting
+  memberId: integer("member_id"), // Will be assigned to this member when accepted
+  playerId: integer("player_id"), // Will be assigned to this player when accepted
   token: varchar("token", { length: 255 }).notNull().unique(),
   status: varchar("status", { length: 20 }).default('pending').notNull(), // 'pending', 'accepted', 'expired'
   expiresAt: timestamp("expires_at").notNull(),
@@ -339,6 +342,9 @@ export const emailInvitationFormSchema = z.object({
   email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein"),
   roleId: z.number().min(1, "Bitte wählen Sie eine Rolle aus"),
   personalMessage: z.string().optional(),
+  // User assignment fields - either member OR player can be assigned
+  memberId: z.number().optional(),
+  playerId: z.number().optional(),
 });
 
 // User Registration Form Schema (for invited users)

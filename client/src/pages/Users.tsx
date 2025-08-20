@@ -357,7 +357,8 @@ export default function Users() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      const { playerId } = variables;
       toast({
         title: "Spieler entfernt",
         description: "Die Spieler-Zuweisung wurde erfolgreich entfernt.",

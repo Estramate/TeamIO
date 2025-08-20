@@ -102,11 +102,27 @@ export default function Users() {
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'member' | 'coach' | 'club-administrator'>('all');
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [assignmentMember, setAssignmentMember] = useState<any | null>(null);
+  const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
 
   // Fetch club members with user details
   const { data: members = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/clubs', selectedClub?.id, 'users'],
     enabled: !!selectedClub?.id,
+    retry: false,
+  });
+
+  // Fetch available members for assignment
+  const { data: availableMembers = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'available-members'],
+    enabled: !!selectedClub?.id && showAssignmentDialog,
+    retry: false,
+  });
+
+  // Fetch available players for assignment  
+  const { data: availablePlayers = [] } = useQuery<any[]>({
+    queryKey: ['/api/clubs', selectedClub?.id, 'available-players'],
+    enabled: !!selectedClub?.id && showAssignmentDialog,
     retry: false,
   });
 
@@ -212,7 +228,87 @@ export default function Users() {
     },
   });
 
+  // Assign user to member mutation
+  const assignUserToMemberMutation = useMutation({
+    mutationFn: async ({ userId, memberId }: { userId: string; memberId: number }) => {
+      const response = await apiRequest(`/api/clubs/${selectedClub?.id}/users/${userId}/assign-member`, {
+        method: 'POST',
+        body: { memberId },
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Account zugewiesen",
+        description: "Der Benutzeraccount wurde erfolgreich dem Mitglied zugewiesen.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'available-members'] });
+      setShowAssignmentDialog(false);
+      setAssignmentMember(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
+  // Assign user to player mutation
+  const assignUserToPlayerMutation = useMutation({
+    mutationFn: async ({ userId, playerId }: { userId: string; playerId: number }) => {
+      const response = await apiRequest(`/api/clubs/${selectedClub?.id}/users/${userId}/assign-player`, {
+        method: 'POST',
+        body: { playerId },
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Account zugewiesen",
+        description: "Der Benutzeraccount wurde erfolgreich dem Spieler zugewiesen.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'available-players'] });
+      setShowAssignmentDialog(false);
+      setAssignmentMember(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Remove user assignment mutation
+  const removeUserAssignmentMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await apiRequest(`/api/clubs/${selectedClub?.id}/users/${userId}/assignment`, {
+        method: 'DELETE',
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Zuweisung entfernt",
+        description: "Die Account-Zuweisung wurde erfolgreich entfernt.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'available-members'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'available-players'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Filter members based on search and filters
   const filteredMembers = (members as any[] || []).filter((member: any) => {
@@ -533,6 +629,7 @@ export default function Users() {
                     <TableHead>E-Mail</TableHead>
                     <TableHead>Rolle</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Zugewiesener Account</TableHead>
                     <TableHead>Beigetreten</TableHead>
                     <TableHead className="text-right">Aktionen</TableHead>
                   </TableRow>
@@ -549,6 +646,15 @@ export default function Users() {
                       <TableCell>{member.email}</TableCell>
                       <TableCell>{getRoleBadge(member.roleDisplayName || member.roleName)}</TableCell>
                       <TableCell>{getStatusBadge(member.status)}</TableCell>
+                      <TableCell>
+                        {member.assignedTo ? (
+                          <Badge variant="outline" className="text-xs">
+                            {member.assignedType === 'member' ? '👤 Mitglied' : '⚽ Spieler'}: {member.assignedTo}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">Nicht zugewiesen</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
                         {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('de-DE') : '-'}
                       </TableCell>
@@ -577,6 +683,21 @@ export default function Users() {
                               </Button>
                             </>
                           )}
+                          
+                          {/* User Assignment */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            onClick={() => {
+                              setAssignmentMember(member);
+                              setShowAssignmentDialog(true);
+                            }}
+                            title="Account zuweisen"
+                            data-testid={`button-assign-user-${member.id}`}
+                          >
+                            <User className="h-4 w-4" />
+                          </Button>
                           
                           {/* Edit Role */}
                           <Button
@@ -691,6 +812,111 @@ export default function Users() {
                   disabled={updateRoleMutation.isPending || !selectedUser?.roleId}
                 >
                   {updateRoleMutation.isPending ? 'Speichere...' : 'Speichern'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* User Assignment Dialog */}
+      <Dialog open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Account zuweisen</DialogTitle>
+            <DialogDescription>
+              Weisen Sie den Account von {assignmentMember?.firstName} {assignmentMember?.lastName} einem Mitglied oder Spieler zu.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {assignmentMember && (
+            <div className="space-y-6 py-4">
+              {/* Current Assignment */}
+              {assignmentMember.assignedTo && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                  <div className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                    Aktuell zugewiesen zu:
+                  </div>
+                  <div className="text-blue-700 dark:text-blue-300">
+                    {assignmentMember.assignedType === 'member' ? '👤 Mitglied' : '⚽ Spieler'}: {assignmentMember.assignedTo}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => removeUserAssignmentMutation.mutate(assignmentMember.id)}
+                    disabled={removeUserAssignmentMutation.isPending}
+                  >
+                    Zuweisung entfernen
+                  </Button>
+                </div>
+              )}
+
+              {/* Assign to Member */}
+              <div className="space-y-3">
+                <h4 className="font-medium">Als Mitglied zuweisen</h4>
+                <div className="max-h-32 overflow-y-auto space-y-1">
+                  {availableMembers.length > 0 ? (
+                    availableMembers.map((member: any) => (
+                      <Button
+                        key={member.id}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start text-left"
+                        onClick={() => assignUserToMemberMutation.mutate({ 
+                          userId: assignmentMember.id, 
+                          memberId: member.id 
+                        })}
+                        disabled={assignUserToMemberMutation.isPending}
+                        data-testid={`button-assign-member-${member.id}`}
+                      >
+                        👤 {member.firstName} {member.lastName}
+                      </Button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Keine verfügbaren Mitglieder</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Assign to Player */}
+              <div className="space-y-3">
+                <h4 className="font-medium">Als Spieler zuweisen</h4>
+                <div className="max-h-32 overflow-y-auto space-y-1">
+                  {availablePlayers.length > 0 ? (
+                    availablePlayers.map((player: any) => (
+                      <Button
+                        key={player.id}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start text-left"
+                        onClick={() => assignUserToPlayerMutation.mutate({ 
+                          userId: assignmentMember.id, 
+                          playerId: player.id 
+                        })}
+                        disabled={assignUserToPlayerMutation.isPending}
+                        data-testid={`button-assign-player-${player.id}`}
+                      >
+                        ⚽ {player.firstName} {player.lastName}
+                        {player.teamName && <span className="text-muted-foreground ml-2">({player.teamName})</span>}
+                      </Button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Keine verfügbaren Spieler</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAssignmentDialog(false);
+                    setAssignmentMember(null);
+                  }}
+                  data-testid="button-close-assignment-dialog"
+                >
+                  Schließen
                 </Button>
               </div>
             </div>

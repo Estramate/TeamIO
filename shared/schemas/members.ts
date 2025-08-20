@@ -17,7 +17,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
-import { clubs } from "./core";
+import { clubs, users } from "./core";
 
 // Members table - actual club members (can be different from system users)
 export const members = pgTable("members", {
@@ -61,6 +61,11 @@ export const membersRelations = relations(members, ({ one, many }) => ({
     references: [clubs.id],
   }),
   teamMemberships: many(teamMemberships),
+  // User who is assigned to this member
+  user: one(users, {
+    fields: [members.id],
+    references: [users.memberId],
+  }),
 }));
 
 export const teamMembershipsRelations = relations(teamMemberships, ({ one }) => ({

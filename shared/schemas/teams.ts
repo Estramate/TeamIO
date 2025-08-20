@@ -17,7 +17,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
-import { clubs } from "./core";
+import { clubs, users } from "./core";
 import { teamMemberships } from "./members";
 
 // Teams table
@@ -95,6 +95,11 @@ export const playersRelations = relations(players, ({ one, many }) => ({
     references: [clubs.id],
   }),
   teamAssignments: many(playerTeamAssignments),
+  // User who is assigned to this player
+  user: one(users, {
+    fields: [players.id],
+    references: [users.playerId],
+  }),
   // stats removed - playerStats table deleted
 }));
 

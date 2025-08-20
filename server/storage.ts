@@ -98,6 +98,15 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserLastLogin(id: string): Promise<void>;
+  updateUser(id: string, updates: Partial<User>): Promise<User>;
+  
+  // User-Member/Player Assignment operations
+  assignUserToMember(userId: string, memberId: number): Promise<User>;
+  assignUserToPlayer(userId: string, playerId: number): Promise<User>;
+  unassignUserFromMemberOrPlayer(userId: string): Promise<User>;
+  getUserWithMemberOrPlayer(userId: string): Promise<User & { member?: Member; player?: Player } | undefined>;
+  getAvailableMembersForAssignment(clubId: number): Promise<Member[]>;
+  getAvailablePlayersForAssignment(clubId: number): Promise<Player[]>;
 
   // Club operations
   getClubs(): Promise<Club[]>;
@@ -401,6 +410,110 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return updatedUser;
+  }
+
+  // User-Member/Player Assignment operations
+  async assignUserToMember(userId: string, memberId: number): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        memberId: memberId, 
+        playerId: null, // A user can only be assigned to either member OR player
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
+  }
+
+  async assignUserToPlayer(userId: string, playerId: number): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        playerId: playerId, 
+        memberId: null, // A user can only be assigned to either member OR player
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
+  }
+
+  async unassignUserFromMemberOrPlayer(userId: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        memberId: null, 
+        playerId: null,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
+  }
+
+  async getUserWithMemberOrPlayer(userId: string): Promise<User & { member?: Member; player?: Player } | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) return undefined;
+
+    let member = undefined;
+    let player = undefined;
+
+    if (user.memberId) {
+      const [memberResult] = await db.select().from(members).where(eq(members.id, user.memberId));
+      member = memberResult;
+    }
+
+    if (user.playerId) {
+      const [playerResult] = await db.select().from(players).where(eq(players.id, user.playerId));
+      player = playerResult;
+    }
+
+    return { ...user, member, player };
+  }
+
+  async getAvailableMembersForAssignment(clubId: number): Promise<Member[]> {
+    // Get members that are not yet assigned to any user
+    const assignedMemberIds = await db
+      .select({ memberId: users.memberId })
+      .from(users)
+      .where(isNull(users.memberId).not());
+    
+    const assignedIds = assignedMemberIds.map(row => row.memberId).filter(Boolean);
+    
+    if (assignedIds.length === 0) {
+      return await db.select().from(members).where(eq(members.clubId, clubId));
+    }
+    
+    return await db
+      .select()
+      .from(members)
+      .where(and(
+        eq(members.clubId, clubId),
+        assignedIds.length > 0 ? ne(members.id, assignedIds[0]) : sql`true`
+      ));
+  }
+
+  async getAvailablePlayersForAssignment(clubId: number): Promise<Player[]> {
+    // Get players that are not yet assigned to any user
+    const assignedPlayerIds = await db
+      .select({ playerId: users.playerId })
+      .from(users)
+      .where(isNull(users.playerId).not());
+    
+    const assignedIds = assignedPlayerIds.map(row => row.playerId).filter(Boolean);
+    
+    if (assignedIds.length === 0) {
+      return await db.select().from(players).where(eq(players.clubId, clubId));
+    }
+    
+    return await db
+      .select()
+      .from(players)
+      .where(and(
+        eq(players.clubId, clubId),
+        assignedIds.length > 0 ? ne(players.id, assignedIds[0]) : sql`true`
+      ));
   }
 
   // Club operations

@@ -109,6 +109,9 @@ export const users: any = pgTable("users", {
   isSuperAdmin: boolean("is_super_admin").default(false),
   superAdminGrantedAt: timestamp("super_admin_granted_at"),
   superAdminGrantedBy: varchar("super_admin_granted_by"),
+  // Person assignment - a user can be assigned to either a member OR a player
+  memberId: integer("member_id"), // Reference to members.id (will be added as foreign key later)
+  playerId: integer("player_id"), // Reference to players.id (will be added as foreign key later)
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -189,13 +192,22 @@ export const rolesRelations = relations(roles, ({ many }) => ({
   approvedRequests: many(clubJoinRequests, { relationName: 'approvedRole' }),
 }));
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   clubMemberships: many(clubMemberships),
   joinRequests: many(clubJoinRequests),
   reviewedRequests: many(clubJoinRequests, {
     relationName: "reviewer",
   }),
   emailInvitations: many(emailInvitations),
+  // Person assignment relations (will be fully defined when imported members/players)
+  // member: one(members, {
+  //   fields: [users.memberId],
+  //   references: [members.id],
+  // }),
+  // player: one(players, {
+  //   fields: [users.playerId],
+  //   references: [players.id],
+  // }),
 }));
 
 export const clubsRelations = relations(clubs, ({ many }) => ({

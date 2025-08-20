@@ -670,18 +670,20 @@ router.put("/users/:id",
   asyncHandler(async (req: any, res: any) => {
     try {
       const userId = req.params.id;
-      const { firstName, lastName, email, isActive, clubMemberships } = req.body;
+      const { firstName, lastName, email, isActive, clubMemberships, memberId, playerId } = req.body;
       const storage = (await import("../storage")).default;
       
       console.log(`🔧 SUPER ADMIN DEBUG: Updating user ${userId}`);
       console.log(`🔧 SUPER ADMIN DEBUG: Request data:`, JSON.stringify(req.body, null, 2));
       
-      // Update user basic information
+      // Update user basic information including member/player assignment
       const user = await storage.updateUser(userId, {
         firstName,
         lastName,
         email, 
         isActive,
+        memberId: memberId || null,
+        playerId: playerId || null,
       });
       
       // Handle club memberships if provided

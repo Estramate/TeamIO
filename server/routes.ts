@@ -2979,6 +2979,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // ====== USER ASSIGNMENT ROUTES ======
+  
+  // Assign user to a club member
+  app.post('/api/clubs/:clubId/users/:userId/assign-member', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.params.userId;
+    const { memberId } = req.body;
+    const requestUserId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    if (!memberId) {
+      throw new ValidationError('Member ID is required', 'memberId');
+    }
+    
+    // Check if requesting user has admin rights
+    const adminMembership = await storage.getUserClubMembership(requestUserId, clubId);
+    if (!adminMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    const adminRole = await storage.getRoleById(adminMembership.roleId);
+    if (!adminRole?.permissions.includes('user_management')) {
+      throw new AuthorizationError('You do not have permission to assign users to members');
+    }
+    
+    // Assign user to member
+    await storage.assignUserToMember(userId, memberId);
+    
+    logger.info('User assigned to member', { userId, memberId, clubId, assignedBy: requestUserId, requestId: req.id });
+    res.json({ success: true, message: 'User successfully assigned to member' });
+  }));
+  
+  // Assign user to a club player
+  app.post('/api/clubs/:clubId/users/:userId/assign-player', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.params.userId;
+    const { playerId } = req.body;
+    const requestUserId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    if (!playerId) {
+      throw new ValidationError('Player ID is required', 'playerId');
+    }
+    
+    // Check if requesting user has admin rights
+    const adminMembership = await storage.getUserClubMembership(requestUserId, clubId);
+    if (!adminMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    const adminRole = await storage.getRoleById(adminMembership.roleId);
+    if (!adminRole?.permissions.includes('user_management')) {
+      throw new AuthorizationError('You do not have permission to assign users to players');
+    }
+    
+    // Assign user to player
+    await storage.assignUserToPlayer(userId, playerId);
+    
+    logger.info('User assigned to player', { userId, playerId, clubId, assignedBy: requestUserId, requestId: req.id });
+    res.json({ success: true, message: 'User successfully assigned to player' });
+  }));
+  
+  // Remove user assignment (from member or player)
+  app.delete('/api/clubs/:clubId/users/:userId/assignment', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.params.userId;
+    const requestUserId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Check if requesting user has admin rights
+    const adminMembership = await storage.getUserClubMembership(requestUserId, clubId);
+    if (!adminMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    const adminRole = await storage.getRoleById(adminMembership.roleId);
+    if (!adminRole?.permissions.includes('user_management')) {
+      throw new AuthorizationError('You do not have permission to manage user assignments');
+    }
+    
+    // Remove user assignment
+    await storage.removeUserAssignment(userId);
+    
+    logger.info('User assignment removed', { userId, clubId, removedBy: requestUserId, requestId: req.id });
+    res.json({ success: true, message: 'User assignment successfully removed' });
+  }));
+  
+  // Get available members for assignment (members not yet assigned to users)
+  app.get('/api/clubs/:clubId/available-members', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Check if user has access to this club
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Get all members of the club
+    const allMembers = await storage.getClubMembers(clubId);
+    
+    // Get all users with member assignments
+    const assignedUsers = await storage.getAllUsers();
+    const assignedMemberIds = assignedUsers
+      .filter(user => user.memberId)
+      .map(user => user.memberId);
+    
+    // Filter out already assigned members
+    const availableMembers = allMembers.filter(member => 
+      !assignedMemberIds.includes(member.id)
+    );
+    
+    logger.info('Available members retrieved', { clubId, count: availableMembers.length, requestId: req.id });
+    res.json(availableMembers);
+  }));
+  
+  // Get available players for assignment (players not yet assigned to users)
+  app.get('/api/clubs/:clubId/available-players', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const userId = req.user?.claims?.sub || req.user?.id;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    // Check if user has access to this club
+    const membership = await storage.getUserClubMembership(userId, clubId);
+    if (!membership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Get all players of the club
+    const allPlayers = await storage.getClubPlayers(clubId);
+    
+    // Get all users with player assignments
+    const assignedUsers = await storage.getAllUsers();
+    const assignedPlayerIds = assignedUsers
+      .filter(user => user.playerId)
+      .map(user => user.playerId);
+    
+    // Filter out already assigned players
+    const availablePlayers = allPlayers.filter(player => 
+      !assignedPlayerIds.includes(player.id)
+    );
+    
+    logger.info('Available players retrieved', { clubId, count: availablePlayers.length, requestId: req.id });
+    res.json(availablePlayers);
+  }));
+
   // ====== SUBSCRIPTION ROUTES ======
   app.use('/api/subscriptions', subscriptionRoutes);
   

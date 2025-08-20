@@ -60,20 +60,17 @@ function AuthenticatedApp() {
     }
   }, [location, setLastVisitedPage]);
 
-  // Navigate to last visited page only on fresh app entry, not on page reloads
+  // Only navigate for true dashboard visits, never override current URL
   useEffect(() => {
     if (!hasNavigatedToInitial) {
-      const isPageReload = sessionStorage.getItem('app-loaded') === 'true';
-      
-      if (!isPageReload && location === '/') {
-        // First visit to app - use saved route
+      // Only navigate to last visited page if user explicitly goes to root "/"
+      // Never redirect when user loads a specific URL like "/members" or "/settings"
+      if (location === '/' && window.location.pathname === '/') {
         const initialRoute = getInitialRoute();
         if (initialRoute !== '/') {
           setLocation(initialRoute);
         }
       }
-      // Mark app as loaded for this session
-      sessionStorage.setItem('app-loaded', 'true');
       setHasNavigatedToInitial(true);
     }
   }, [location, hasNavigatedToInitial, getInitialRoute, setLocation]);

@@ -963,7 +963,7 @@ export default function Users() {
                     )}
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -975,22 +975,8 @@ export default function Users() {
                       }}
                     >
                       <User className="h-4 w-4 mr-2" />
-                      Zuweisung ändern
+                      {selectedUser.assignedTo ? 'Zuweisung ändern' : 'Zuweisung hinzufügen'}
                     </Button>
-                    {selectedUser.assignedTo && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          removeUserAssignmentMutation.mutate(selectedUser.id);
-                        }}
-                        disabled={removeUserAssignmentMutation.isPending}
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Entfernen
-                      </Button>
-                    )}
                   </div>
                 </div>
               )}
@@ -1029,7 +1015,7 @@ export default function Users() {
 
       {/* User Assignment Dialog */}
       <Dialog open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Account zuweisen</DialogTitle>
             <DialogDescription>
@@ -1039,43 +1025,61 @@ export default function Users() {
           
           {assignmentMember && (
             <div className="space-y-6 py-4">
-              {/* Current Assignment */}
-              {assignmentMember.assignedTo && (
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                  <div className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                    Aktuell zugewiesen zu:
+              {/* Current Assignment Status */}
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="text-sm font-semibold mb-2">Aktuelle Zuweisung:</div>
+                {assignmentMember.assignedTo ? (
+                  <div className="space-y-2">
+                    <div className="text-sm">
+                      <span className="inline-flex items-center gap-1">
+                        {assignmentMember.assignedType === 'member' ? '👤' : '⚽'} 
+                        <span className="font-medium">{assignmentMember.assignedType === 'member' ? 'Mitglied' : 'Spieler'}:</span>
+                        {assignmentMember.assignedTo}
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => {
+                        removeUserAssignmentMutation.mutate(assignmentMember.id);
+                        setShowAssignmentDialog(false);
+                      }}
+                      disabled={removeUserAssignmentMutation.isPending}
+                    >
+                      {removeUserAssignmentMutation.isPending ? 'Entferne...' : 'Zuweisung entfernen'}
+                    </Button>
                   </div>
-                  <div className="text-blue-700 dark:text-blue-300">
-                    {assignmentMember.assignedType === 'member' ? '👤 Mitglied' : '⚽ Spieler'}: {assignmentMember.assignedTo}
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => removeUserAssignmentMutation.mutate(assignmentMember.id)}
-                    disabled={removeUserAssignmentMutation.isPending}
-                  >
-                    Zuweisung entfernen
-                  </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="text-sm text-muted-foreground">Nicht zugewiesen</div>
+                )}
+              </div>
 
-              {/* Assign to Member */}
-              <div className="space-y-3">
-                <h4 className="font-medium">Als Mitglied zuweisen</h4>
-                <div className="max-h-32 overflow-y-auto space-y-1">
-                  {availableMembers.length > 0 ? (
-                    availableMembers.map((member: any) => (
-                      <Button
-                        key={member.id}
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start text-left"
-                        onClick={() => assignUserToMemberMutation.mutate({ 
-                          userId: assignmentMember.id, 
-                          memberId: member.id 
-                        })}
-                        disabled={assignUserToMemberMutation.isPending}
+              {/* New Assignment Section */}
+              <div className="space-y-4">
+                <div className="text-sm font-medium">Neue Zuweisung erstellen:</div>
+                
+                {/* Assign to Member */}
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <span>👤</span> Als Mitglied zuweisen
+                  </h4>
+                  <div className="max-h-40 overflow-y-auto space-y-1 border rounded-md p-2">
+                    {availableMembers && availableMembers.length > 0 ? (
+                      availableMembers.map((member: any) => (
+                        <Button
+                          key={member.id}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-left h-auto p-2"
+                          onClick={() => {
+                            assignUserToMemberMutation.mutate({ 
+                              userId: assignmentMember.id, 
+                              memberId: member.id 
+                            });
+                            setShowAssignmentDialog(false);
+                          }}
+                          disabled={assignUserToMemberMutation.isPending}
                         data-testid={`button-assign-member-${member.id}`}
                       >
                         👤 {member.lastName}, {member.firstName}
@@ -1087,31 +1091,41 @@ export default function Users() {
                 </div>
               </div>
 
-              {/* Assign to Player */}
-              <div className="space-y-3">
-                <h4 className="font-medium">Als Spieler zuweisen</h4>
-                <div className="max-h-32 overflow-y-auto space-y-1">
-                  {availablePlayers.length > 0 ? (
-                    availablePlayers.map((player: any) => (
-                      <Button
-                        key={player.id}
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start text-left"
-                        onClick={() => assignUserToPlayerMutation.mutate({ 
-                          userId: assignmentMember.id, 
-                          playerId: player.id 
-                        })}
-                        disabled={assignUserToPlayerMutation.isPending}
-                        data-testid={`button-assign-player-${player.id}`}
-                      >
-                        ⚽ {player.lastName}, {player.firstName}
-                        {player.teamName && <span className="text-muted-foreground ml-2">({player.teamName})</span>}
-                      </Button>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Keine verfügbaren Spieler</p>
-                  )}
+                {/* Assign to Player */}
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <span>⚽</span> Als Spieler zuweisen
+                  </h4>
+                  <div className="max-h-40 overflow-y-auto space-y-1 border rounded-md p-2">
+                    {availablePlayers && availablePlayers.length > 0 ? (
+                      availablePlayers.map((player: any) => (
+                        <Button
+                          key={player.id}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-left h-auto p-2"
+                          onClick={() => {
+                            assignUserToPlayerMutation.mutate({ 
+                              userId: assignmentMember.id, 
+                              playerId: player.id 
+                            });
+                            setShowAssignmentDialog(false);
+                          }}
+                          disabled={assignUserToPlayerMutation.isPending}
+                          data-testid={`button-assign-player-${player.id}`}
+                        >
+                          <div className="flex flex-col items-start">
+                            <span>⚽ {player.lastName}, {player.firstName}</span>
+                            {player.teamName && (
+                              <span className="text-xs text-muted-foreground">Team: {player.teamName}</span>
+                            )}
+                          </div>
+                        </Button>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Keine verfügbaren Spieler</p>
+                    )}
+                  </div>
                 </div>
               </div>
 

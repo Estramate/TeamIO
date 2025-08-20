@@ -3096,7 +3096,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Remove user assignment
-    await storage.removeUserAssignment(userId);
+    await storage.unassignUserFromMemberOrPlayer(userId);
     
     logger.info('User assignment removed', { userId, clubId, removedBy: requestUserId, requestId: req.id });
     res.json({ success: true, message: 'User assignment successfully removed' });
@@ -3118,7 +3118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Get all members of the club
-    const allMembers = await storage.getClubMembers(clubId);
+    const allMembers = await storage.getMembers(clubId);
     
     // Get all users with member assignments
     const assignedUsers = await storage.getAllUsers();
@@ -3151,7 +3151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Get all players of the club
-    const allPlayers = await storage.getClubPlayers(clubId);
+    const allPlayers = await storage.getPlayers(clubId);
     
     // Get all users with player assignments
     const assignedUsers = await storage.getAllUsers();
@@ -3166,6 +3166,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     logger.info('Available players retrieved', { clubId, count: availablePlayers.length, requestId: req.id });
     res.json(availablePlayers);
+  }));
+
+  // Update user details (general user data update)
+  app.patch('/api/clubs/:clubId/users/:userId', isAuthenticated, asyncHandler(async (req: any, res: any) => {
+    const clubId = parseInt(req.params.clubId);
+    const targetUserId = req.params.userId;
+    const requestUserId = req.user?.claims?.sub || req.user?.id;
+    const { firstName, lastName, email, roleId, status } = req.body;
+    
+    if (!clubId || isNaN(clubId)) {
+      throw new ValidationError('Invalid club ID', 'clubId');
+    }
+    
+    if (!targetUserId) {
+      throw new ValidationError('User ID is required', 'userId');
+    }
+    
+    // Check if requesting user has access to this club
+    const requestMembership = await storage.getUserClubMembership(requestUserId, clubId);
+    if (!requestMembership) {
+      throw new AuthorizationError('You are not a member of this club');
+    }
+    
+    // Check if requesting user has appropriate permissions
+    const adminRole = await storage.getRoleById(requestMembership.roleId);
+    const adminRoles = ['club-administrator', 'obmann'];
+    if (!adminRole || !adminRoles.includes(adminRole.name)) {
+      throw new AuthorizationError('You do not have permission to manage user details');
+    }
+    
+    // Check if target user exists and has membership in this club
+    const targetMembership = await storage.getUserClubMembership(targetUserId, clubId);
+    if (!targetMembership) {
+      throw new ValidationError('User is not a member of this club', 'userId');
+    }
+    
+    // Update user's basic information
+    const userUpdates: Partial<User> = {};
+    if (firstName !== undefined) userUpdates.firstName = firstName;
+    if (lastName !== undefined) userUpdates.lastName = lastName;
+    if (email !== undefined) userUpdates.email = email;
+    
+    let updatedUser;
+    if (Object.keys(userUpdates).length > 0) {
+      updatedUser = await storage.updateUser(targetUserId, userUpdates);
+    } else {
+      updatedUser = await storage.getUser(targetUserId);
+    }
+    
+    // Update club membership (role and status)
+    const membershipUpdates: Partial<InsertClubMembership> = {};
+    if (roleId !== undefined) membershipUpdates.roleId = roleId;
+    if (status !== undefined) membershipUpdates.status = status;
+    
+    let updatedMembership;
+    if (Object.keys(membershipUpdates).length > 0) {
+      updatedMembership = await storage.updateClubMembershipById(targetMembership.id, membershipUpdates);
+    } else {
+      updatedMembership = targetMembership;
+    }
+    
+    logger.info('User details updated', { 
+      targetUserId, 
+      clubId, 
+      updatedBy: requestUserId, 
+      userUpdates, 
+      membershipUpdates, 
+      requestId: req.id 
+    });
+    
+    res.json({ 
+      user: updatedUser, 
+      membership: updatedMembership,
+      message: 'User details successfully updated'
+    });
   }));
 
   // Update user role in club membership

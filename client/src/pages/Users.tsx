@@ -616,7 +616,7 @@ export default function Users() {
                             setShowEditDialog(true);
                           }}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Rolle bearbeiten
+                            Benutzer bearbeiten
                           </DropdownMenuItem>
                           {(member.status === 'pending' || member.status === 'inactive') && (
                             <>

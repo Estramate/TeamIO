@@ -47,7 +47,7 @@ interface BookingFormProps {
 export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubId }: BookingFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { notifyBookingChange, invalidateRelevantCache } = useNotificationTriggers();
+  const { notifyBookingCreated, invalidateRelevantCache } = useNotificationTriggers();
 
   // Helper function to safely format date for datetime-local input
   const formatDateForInput = (dateValue: any, baseDate?: any): string => {
@@ -145,7 +145,10 @@ export function BookingForm({ editingBooking, onSuccess, onCancel, selectedClubI
       const isRecurring = (data as any).createdCount && (data as any).createdCount > 1;
       
       // Trigger intelligent notification
-      notifyNewBooking(facilityName, new Date().toLocaleDateString(), bookingTitle);
+      const facility = facilities.find(f => f.id === parseInt(variables.facilityId));
+      const facilityName = facility?.name || 'Anlage';
+      const date = new Date(variables.startTime).toLocaleDateString('de-DE');
+      notifyBookingCreated(facilityName, date);
       
       // Invalidate alle booking-relevanten Queries
       invalidateEntityData(queryClient, selectedClubId, 'bookings');

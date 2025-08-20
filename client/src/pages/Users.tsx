@@ -757,6 +757,26 @@ export default function Users() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Assignment Info */}
+                      {member.assignedTo && (
+                        <div className="flex items-start gap-2 text-sm">
+                          <User className="w-4 h-4 text-green-600 mt-0.5" />
+                          <div>
+                            <div className="text-muted-foreground text-xs">Zuweisung</div>
+                            <div className="font-medium text-xs flex items-center gap-1">
+                              {member.assignedType === 'member' ? '👤' : 
+                               member.assignedType === 'multiple_players' ? '⚽ 👥' : '⚽'} 
+                              {member.assignedTo}
+                            </div>
+                            {member.multiplePlayerAssignments && member.multiplePlayerAssignments.length > 1 && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                📋 {member.multiplePlayerAssignments.length} Spieler-Zuweisungen
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -794,9 +814,17 @@ export default function Users() {
                             🛡️ Super Admin
                           </Badge>
                         ) : member.assignedTo ? (
-                          <Badge variant="outline" className="text-xs">
-                            {member.assignedType === 'member' ? '👤 Mitglied' : '⚽ Spieler'}: {member.assignedTo}
-                          </Badge>
+                          <div className="space-y-1">
+                            <Badge variant="outline" className="text-xs">
+                              {member.assignedType === 'member' ? '👤 Mitglied' : 
+                               member.assignedType === 'multiple_players' ? '⚽ Mehrere' : '⚽ Spieler'}: {member.assignedTo}
+                            </Badge>
+                            {member.multiplePlayerAssignments && member.multiplePlayerAssignments.length > 1 && (
+                              <div className="text-xs text-muted-foreground">
+                                📋 {member.multiplePlayerAssignments.length} Spieler-Zuweisungen
+                              </div>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-muted-foreground text-sm">Nicht zugewiesen</span>
                         )}

@@ -383,14 +383,14 @@ export function Landing() {
           {/* Call to action below testimonials */}
           <div className="mt-16 text-center">
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-              Interessiert an der Beta-Version? Kontaktieren Sie uns für einen Testverein-Zugang
+              Interessiert an der Beta-Version? Direkt anmelden und ausprobieren
             </p>
             <Button 
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium inline-flex items-center"
               onClick={() => window.location.href = "/login"}
             >
-              <span>Beta-Zugang anfragen</span>
+              <span>Zur Anmeldung</span>
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
@@ -446,6 +446,68 @@ export function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Footer with Impressum */}
+      <footer className="py-12 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* ClubFlow Info */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">ClubFlow</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                Moderne Vereinsverwaltung für Sportvereine.<br />
+                Aktuell in der Beta-Phase mit 2 aktiven Testvereinen.
+              </p>
+            </div>
+            
+            {/* Status */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Status</h3>
+              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                  Beta-Version
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  Aktive Entwicklung
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                  {stats ? stats.totalMembers : '155'}+ verwaltete Nutzer
+                </div>
+              </div>
+            </div>
+            
+            {/* Impressum */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Impressum</h3>
+              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">ClubFlow</p>
+                  <p>Vereinsverwaltungssoftware</p>
+                </div>
+                <div className="pt-2">
+                  <p className="font-medium text-gray-900 dark:text-white">Kontakt:</p>
+                  <a 
+                    href="mailto:koglerf@gmail.com" 
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    koglerf@gmail.com
+                  </a>
+                </div>
+                <div className="pt-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    © 2025 ClubFlow • Beta-Version • Österreich
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

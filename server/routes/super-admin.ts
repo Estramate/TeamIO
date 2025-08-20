@@ -53,6 +53,10 @@ router.get("/clubs",
           
           // Get Super Admins for this club only (for super admin overview)
           const superAdminsInClub = await storage.getSuperAdminsInClub(club.id);
+          console.log(`🔍 SUPER ADMIN COUNT DEBUG for Club ${club.name} (ID: ${club.id}):`, {
+            superAdminCount: superAdminsInClub.length,
+            superAdmins: superAdminsInClub.map((sa: any) => ({ id: sa.id, email: sa.email }))
+          });
           
           return {
             ...club,

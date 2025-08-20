@@ -1343,12 +1343,12 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Facility utilization
-    const facilities = await db
+    const allFacilities = await db
       .select()
       .from(facilities)
       .where(eq(facilities.clubId, clubId));
 
-    const facilityUsage = facilities.map(facility => {
+    const facilityUsage = allFacilities.map(facility => {
       const facilityBookings = allBookings.filter(b => b.facilityId === facility.id);
       const totalHours = facilityBookings.reduce((sum, booking) => {
         const start = new Date(booking.startTime);
@@ -1418,6 +1418,38 @@ export class DatabaseStorage implements IStorage {
       });
     }
 
+    // Real-time change calculations (no mock data!)
+    const previousWeekStart = new Date(today.getTime() - (14 * 24 * 60 * 60 * 1000));
+    const previousWeekEnd = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
+    
+    // Members added this week vs previous week
+    const thisWeekMembers = memberCount.filter(member => {
+      const memberDate = new Date(member.createdAt);
+      return memberDate >= last7Days;
+    });
+    
+    const previousWeekMembers = memberCount.filter(member => {
+      const memberDate = new Date(member.createdAt);
+      return memberDate >= previousWeekStart && memberDate < previousWeekEnd;
+    });
+    
+    // Teams added this week vs previous week
+    const thisWeekTeams = teamCount.filter(team => {
+      const teamDate = new Date(team.createdAt);
+      return teamDate >= last7Days;
+    });
+    
+    const previousWeekTeams = teamCount.filter(team => {
+      const teamDate = new Date(team.createdAt);
+      return teamDate >= previousWeekStart && teamDate < previousWeekEnd;
+    });
+    
+    // Bookings comparison (this week vs previous week)
+    const previousWeekBookings = allBookings.filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= previousWeekStart && bookingDate < previousWeekEnd;
+    });
+    
     // Enhanced metrics for advanced analytics
     const bookingSuccessRate = allBookings.length > 0 ? 
       Math.round((allBookings.filter(b => b.status === 'confirmed').length / allBookings.length) * 100) : 0;
@@ -1427,6 +1459,28 @@ export class DatabaseStorage implements IStorage {
 
     const averageBookingValue = last30DaysBookings.length > 0 ?
       last30DaysBookings.reduce((sum, b) => sum + (Number(b.cost) || 0), 0) / last30DaysBookings.length : 0;
+      
+    // Calculate real facility utilization change
+    const previousMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const previousMonthEnd = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    const previousMonthBookings = allBookings.filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= previousMonthStart && bookingDate < previousMonthEnd;
+    });
+    
+    const currentMonthBookings = allBookings.filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= monthStart;
+    });
+    
+    // Calculate utilization changes
+    const currentUtilization = facilityUsage.length > 0 ? 
+      Math.round(facilityUsage.reduce((sum, f) => sum + f.utilization, 0) / facilityUsage.length) : 0;
+    
+    // Simplified previous month utilization (would need more complex calculation for accuracy)
+    const previousUtilizationEstimate = previousMonthBookings.length > 0 && currentMonthBookings.length > 0 ?
+      Math.round((previousMonthBookings.length / currentMonthBookings.length) * currentUtilization) : currentUtilization;
 
     return {
       // Basic stats (existing)
@@ -1453,9 +1507,30 @@ export class DatabaseStorage implements IStorage {
       totalExpenses,
       
       // Facility metrics
-      totalFacilities: facilities.length,
-      averageUtilization: facilityUsage.length > 0 ? 
-        Math.round(facilityUsage.reduce((sum, f) => sum + f.utilization, 0) / facilityUsage.length) : 0
+      totalFacilities: allFacilities.length,
+      averageUtilization: currentUtilization,
+      
+      // REAL CHANGE CALCULATIONS (NO MOCK DATA!)
+      memberChanges: {
+        thisWeek: thisWeekMembers.length,
+        previousWeek: previousWeekMembers.length,
+        weeklyChange: thisWeekMembers.length - previousWeekMembers.length
+      },
+      teamChanges: {
+        thisWeek: thisWeekTeams.length,
+        previousWeek: previousWeekTeams.length,
+        weeklyChange: thisWeekTeams.length - previousWeekTeams.length
+      },
+      bookingChanges: {
+        thisWeek: last7DaysBookings.length,
+        previousWeek: previousWeekBookings.length,
+        weeklyChange: last7DaysBookings.length - previousWeekBookings.length
+      },
+      utilizationChanges: {
+        current: currentUtilization,
+        previous: previousUtilizationEstimate,
+        change: currentUtilization - previousUtilizationEstimate
+      }
     };
     } catch (error) {
       console.error('Error in getDashboardStats:', error);

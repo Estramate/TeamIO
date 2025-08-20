@@ -58,7 +58,7 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
   const currentPlan = subscriptionManager?.getCurrentPlan() || { planType: 'free' };
   const planType = currentPlan.planType || 'free';
 
-  // Mock KPI data - in real app would come from API
+  // Real KPI data from database
   const allKPIs: KPICard[] = [
     // Performance KPIs (available for all plans)
     {

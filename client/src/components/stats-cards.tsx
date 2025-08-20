@@ -7,6 +7,17 @@ interface StatsCardsProps {
     todayBookingsCount?: number;
     pendingBookingsCount?: number;
     monthlyBudget?: number;
+    memberChanges?: {
+      thisWeek: number;
+      previousWeek: number;
+      weeklyChange: number;
+    };
+    teamChanges?: {
+      thisWeek: number;
+      previousWeek: number;
+      weeklyChange: number;
+    };
+    totalRevenue?: number;
   };
 }
 
@@ -25,12 +36,36 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     );
   }
 
+  // Real change calculations from database data
+  const getMemberChangeText = () => {
+    const change = stats?.memberChanges?.weeklyChange || 0;
+    if (change === 0) return "Keine Änderung diese Woche";
+    const sign = change > 0 ? "+" : "";
+    return `${sign}${change} diese Woche`;
+  };
+
+  const getTeamChangeText = () => {
+    const change = stats?.teamChanges?.weeklyChange || 0;
+    if (change === 0) return "Keine Änderung diese Woche";
+    const sign = change > 0 ? "+" : "";
+    return `${sign}${change} diese Woche`;
+  };
+
+  const getBudgetChangeText = () => {
+    const currentRevenue = stats?.totalRevenue || 0;
+    const monthlyBudget = stats?.monthlyBudget || 0;
+    
+    if (currentRevenue === 0) return "Noch keine Erlöse";
+    if (monthlyBudget >= 0) return `+€${Math.abs(monthlyBudget)} Gewinn`;
+    return `€${Math.abs(monthlyBudget)} Defizit`;
+  };
+
   const cards = [
     {
       title: "Mitglieder",
       value: typeof stats.memberCount === 'number' ? stats.memberCount : 0,
-      change: "+3 diese Woche",
-      changeType: "positive" as const,
+      change: getMemberChangeText(),
+      changeType: (stats?.memberChanges?.weeklyChange || 0) >= 0 ? "positive" : "negative" as const,
       icon: Users,
       iconBg: "bg-blue-100",
       iconColor: "text-blue-500",
@@ -38,8 +73,8 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     {
       title: "Teams",
       value: typeof stats.teamCount === 'number' ? stats.teamCount : 0,
-      change: "+1 diese Woche",
-      changeType: "positive" as const,
+      change: getTeamChangeText(),
+      changeType: (stats?.teamChanges?.weeklyChange || 0) >= 0 ? "positive" : "negative" as const,
       icon: UsersRound,
       iconBg: "bg-green-100",
       iconColor: "text-green-500",
@@ -56,7 +91,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     {
       title: "Monatsbudget",
       value: `€${(typeof stats.monthlyBudget === 'number' ? stats.monthlyBudget : 0).toLocaleString()}`,
-      change: (typeof stats.monthlyBudget === 'number' ? stats.monthlyBudget : 0) >= 0 ? "+€180 vs. Vormonat" : "-€180 vs. Vormonat",
+      change: getBudgetChangeText(),
       changeType: (typeof stats.monthlyBudget === 'number' ? stats.monthlyBudget : 0) >= 0 ? "positive" : "negative" as const,
       icon: Euro,
       iconBg: "bg-emerald-100",

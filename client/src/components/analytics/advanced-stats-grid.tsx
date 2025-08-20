@@ -78,14 +78,46 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
     return stats?.memberEngagement || 0;
   };
 
-  // Generate basic stats for all plans
+  // Generate change text from real data
+  const getMemberChangeText = () => {
+    const change = stats?.memberChanges?.weeklyChange || 0;
+    if (change === 0) return "Keine Änderung diese Woche";
+    const sign = change > 0 ? "+" : "";
+    return `${sign}${change} diese Woche`;
+  };
+
+  const getTeamChangeText = () => {
+    const change = stats?.teamChanges?.weeklyChange || 0;
+    if (change === 0) return "Keine Änderung diese Woche";
+    const sign = change > 0 ? "+" : "";
+    return `${sign}${change} diese Woche`;
+  };
+
+  const getBookingChangeText = () => {
+    const change = stats?.bookingChanges?.weeklyChange || 0;
+    if (change === 0) return "Gleich wie letzte Woche";
+    const sign = change > 0 ? "+" : "";
+    return `${sign}${change} vs. Vorwoche`;
+  };
+
+  const getActivityLevel = () => {
+    const weeklyBookings = stats?.weeklyBookings || 0;
+    const monthlyBookings = stats?.monthlyBookings || 0;
+    if (monthlyBookings >= 50) return "Sehr hoch";
+    if (monthlyBookings >= 30) return "Hoch";
+    if (monthlyBookings >= 15) return "Mittel";
+    if (monthlyBookings >= 5) return "Niedrig";
+    return "Sehr niedrig";
+  };
+
+  // Generate basic stats for all plans (ALL DATA FROM DATABASE)
   const basicStats: StatCard[] = [
     {
       id: "members",
       title: "Aktive Mitglieder",
       value: stats?.memberCount || 0,
-      change: "+3 diese Woche",
-      changeType: "positive",
+      change: getMemberChangeText(),
+      changeType: (stats?.memberChanges?.weeklyChange || 0) >= 0 ? "positive" : "negative",
       icon: Users,
       iconBg: "bg-blue-100 dark:bg-blue-900/30",
       iconColor: "text-blue-600 dark:text-blue-400",
@@ -95,8 +127,8 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
       id: "teams",
       title: "Teams",
       value: stats?.teamCount || 0,
-      change: "+1 diese Woche",
-      changeType: "positive", 
+      change: getTeamChangeText(),
+      changeType: (stats?.teamChanges?.weeklyChange || 0) >= 0 ? "positive" : "negative",
       icon: Award,
       iconBg: "bg-green-100 dark:bg-green-900/30",
       iconColor: "text-green-600 dark:text-green-400",
@@ -116,9 +148,9 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
     {
       id: "activity",
       title: "Aktivität",
-      value: "Hoch",
-      change: "+12% vs. Vorwoche",
-      changeType: "positive",
+      value: getActivityLevel(),
+      change: getBookingChangeText(),
+      changeType: (stats?.bookingChanges?.weeklyChange || 0) >= 0 ? "positive" : "negative",
       icon: Activity,
       iconBg: "bg-purple-100 dark:bg-purple-900/30",
       iconColor: "text-purple-600 dark:text-purple-400",
@@ -126,14 +158,42 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
     }
   ];
 
-  // Advanced stats for higher tier plans
+  // Real calculation functions for advanced stats
+  const getUtilizationChangeText = () => {
+    const change = stats?.utilizationChanges?.change || 0;
+    if (change === 0) return "Unverändert vs. Vormonat";
+    const sign = change > 0 ? "+" : "";
+    return `${sign}${change}% vs. Vormonat`;
+  };
+
+  const getBookingSuccessChangeText = () => {
+    // Calculate based on recent trend - simplified for now
+    const currentRate = stats?.bookingSuccessRate || 0;
+    if (currentRate >= 90) return "Stabil auf hohem Niveau";
+    if (currentRate >= 75) return "Gute Performance";
+    if (currentRate >= 50) return "Durchschnittliche Rate";
+    return "Verbesserung nötig";
+  };
+
+  const getEngagementChangeText = () => {
+    const currentEngagement = stats?.memberEngagement || 0;
+    const weeklyBookings = stats?.weeklyBookings || 0;
+    const monthlyBookings = stats?.monthlyBookings || 0;
+    
+    // Simple trend calculation
+    if (weeklyBookings * 4 > monthlyBookings) return "Steigender Trend";
+    if (weeklyBookings * 4 < monthlyBookings * 0.8) return "Sinkender Trend";
+    return "Stabiler Trend";
+  };
+
+  // Advanced stats for higher tier plans (ALL DATA FROM DATABASE)
   const advancedStats: StatCard[] = hasAdvancedReports ? [
     {
       id: "utilization",
       title: "Anlagenauslastung",
       value: `${getUtilizationRate()}%`,
-      change: "+5% vs. Vormonat",
-      changeType: "positive",
+      change: getUtilizationChangeText(),
+      changeType: (stats?.utilizationChanges?.change || 0) >= 0 ? "positive" : "negative",
       icon: Target,
       iconBg: "bg-cyan-100 dark:bg-cyan-900/30",
       iconColor: "text-cyan-600 dark:text-cyan-400",
@@ -144,8 +204,8 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
       id: "booking-success",
       title: "Buchungserfolg",
       value: `${getBookingSuccessRate()}%`,
-      change: "+3% vs. Vormonat",
-      changeType: "positive",
+      change: getBookingSuccessChangeText(),
+      changeType: (stats?.bookingSuccessRate || 0) >= 75 ? "positive" : "neutral",
       icon: BarChart3,
       iconBg: "bg-indigo-100 dark:bg-indigo-900/30",
       iconColor: "text-indigo-600 dark:text-indigo-400",
@@ -156,8 +216,8 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
       id: "engagement",
       title: "Mitglieder-Engagement",
       value: `${getMemberEngagement()}%`,
-      change: "+7% vs. Vormonat",
-      changeType: "positive",
+      change: getEngagementChangeText(),
+      changeType: stats?.weeklyBookings && stats?.monthlyBookings && (stats.weeklyBookings * 4 > stats.monthlyBookings) ? "positive" : "neutral",
       icon: Activity,
       iconBg: "bg-green-100 dark:bg-green-900/30",
       iconColor: "text-green-600 dark:text-green-400",
@@ -166,13 +226,33 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
     }
   ] : [];
 
-  // Financial stats for plans with financial reports
+  // Real financial change calculations
+  const getRevenueChangeText = () => {
+    const currentRevenue = stats?.totalRevenue || 0;
+    const monthlyBudget = stats?.monthlyBudget || 0;
+    
+    if (currentRevenue === 0) return "Noch keine Erlöse";
+    if (monthlyBudget >= 0) return `+€${Math.abs(monthlyBudget)} Gewinn`;
+    return `€${Math.abs(monthlyBudget)} Defizit`;
+  };
+
+  const getBookingValueChangeText = () => {
+    const avgValue = stats?.averageBookingValue || 0;
+    const weeklyBookings = stats?.weeklyBookings || 0;
+    const monthlyBookings = stats?.monthlyBookings || 0;
+    
+    if (avgValue === 0) return "Keine kostenpflichtigen Buchungen";
+    if (weeklyBookings > monthlyBookings / 4) return "Steigender Trend";
+    return "Stabiler Wert";
+  };
+
+  // Financial stats for plans with financial reports (ALL DATA FROM DATABASE)
   const financialStats: StatCard[] = hasFinancialReports ? [
     {
       id: "revenue",
       title: "Monatserlös",
       value: `€${(stats?.totalRevenue || 0).toLocaleString()}`,
-      change: (stats?.monthlyBudget || 0) >= 0 ? "+€180 vs. Vormonat" : "-€180 vs. Vormonat",
+      change: getRevenueChangeText(),
       changeType: (stats?.monthlyBudget || 0) >= 0 ? "positive" : "negative",
       icon: Euro,
       iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
@@ -184,8 +264,8 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
       id: "avg-revenue",
       title: "Ø Buchungswert",
       value: `€${(stats?.averageBookingValue || 0).toFixed(2)}`,
-      change: "+€2,30 vs. Vormonat",
-      changeType: "positive",
+      change: getBookingValueChangeText(),
+      changeType: stats?.weeklyBookings && stats?.monthlyBookings && (stats.weeklyBookings > stats.monthlyBookings / 4) ? "positive" : "neutral",
       icon: TrendingUp,
       iconBg: "bg-green-100 dark:bg-green-900/30",
       iconColor: "text-green-600 dark:text-green-400",

@@ -925,7 +925,7 @@ export default function Users() {
 
       {/* Edit Role Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Benutzer bearbeiten</DialogTitle>
             <DialogDescription>
@@ -1127,7 +1127,7 @@ export default function Users() {
 
       {/* User Assignment Dialog */}
       <Dialog open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Account zuweisen</DialogTitle>
             <DialogDescription>

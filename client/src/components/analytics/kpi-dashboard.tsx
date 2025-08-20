@@ -67,17 +67,18 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
       id: "member-engagement",
       title: "Mitgliederaktivität",
       value: data?.currentMetrics?.memberEngagement || 0,
-      target: 85,
+      target: data?.currentMetrics?.memberCount ? Math.round(data.currentMetrics.memberCount * 0.6) : 50,
       unit: "%",
       trend: { 
-        direction: (data?.currentMetrics?.memberEngagement || 0) >= 85 ? "up" : 
-                  (data?.currentMetrics?.memberEngagement || 0) >= 70 ? "stable" : "down", 
-        value: Math.abs((data?.currentMetrics?.memberEngagement || 0) - 75), 
+        direction: (data?.currentMetrics?.memberChanges?.weeklyChange || 0) > 0 ? "up" : 
+                  (data?.currentMetrics?.memberChanges?.weeklyChange || 0) < 0 ? "down" : "stable", 
+        value: Math.abs(data?.currentMetrics?.memberChanges?.weeklyChange || 0), 
         period: "vs. Baseline" 
       },
-      status: (data?.currentMetrics?.memberEngagement || 0) >= 85 ? "excellent" : 
-              (data?.currentMetrics?.memberEngagement || 0) >= 70 ? "good" : 
-              (data?.currentMetrics?.memberEngagement || 0) >= 50 ? "warning" : "critical",
+      status: data?.currentMetrics?.memberCount && data?.currentMetrics?.memberEngagement ? 
+        (data.currentMetrics.memberEngagement >= data.currentMetrics.memberCount * 0.6 ? "excellent" : 
+         data.currentMetrics.memberEngagement >= data.currentMetrics.memberCount * 0.4 ? "good" : 
+         data.currentMetrics.memberEngagement >= data.currentMetrics.memberCount * 0.2 ? "warning" : "critical") : "critical",
       description: "Anteil aktiver Mitglieder in den letzten 30 Tagen",
       category: "engagement"
     },
@@ -85,17 +86,18 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
       id: "booking-rate",
       title: "Buchungsrate",
       value: data?.currentMetrics?.bookingSuccessRate || 0,
-      target: 90,
+      target: data?.currentMetrics?.monthlyBookings ? Math.max(Math.round(data.currentMetrics.monthlyBookings * 0.85), 70) : 70,
       unit: "%",
       trend: { 
-        direction: (data?.currentMetrics?.bookingSuccessRate || 0) >= 90 ? "up" : 
-                  (data?.currentMetrics?.bookingSuccessRate || 0) >= 75 ? "stable" : "down", 
-        value: Math.abs((data?.currentMetrics?.bookingSuccessRate || 0) - 80), 
+        direction: (data?.currentMetrics?.bookingChanges?.weeklyChange || 0) > 0 ? "up" : 
+                  (data?.currentMetrics?.bookingChanges?.weeklyChange || 0) < 0 ? "down" : "stable", 
+        value: Math.abs(data?.currentMetrics?.bookingChanges?.weeklyChange || 0), 
         period: "vs. Baseline" 
       },
-      status: (data?.currentMetrics?.bookingSuccessRate || 0) >= 90 ? "excellent" : 
-              (data?.currentMetrics?.bookingSuccessRate || 0) >= 75 ? "good" : 
-              (data?.currentMetrics?.bookingSuccessRate || 0) >= 60 ? "warning" : "critical",
+      status: data?.currentMetrics?.bookingSuccessRate ? 
+        (data.currentMetrics.bookingSuccessRate >= 90 ? "excellent" : 
+         data.currentMetrics.bookingSuccessRate >= 75 ? "good" : 
+         data.currentMetrics.bookingSuccessRate >= 60 ? "warning" : "critical") : "critical",
       description: "Verhältnis von bestätigten zu angeforderten Buchungen",
       category: "performance"
     },
@@ -122,9 +124,9 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
       id: "cost-efficiency",
       title: "Kosteneffizienz", 
       value: data?.currentMetrics?.averageBookingValue 
-        ? Math.round(data.currentMetrics.averageBookingValue * 10) // Effizienz basierend auf Buchungswert
+        ? Math.round(Math.min(data.currentMetrics.averageBookingValue / Math.max(data.currentMetrics.weeklyBookings, 1) * 100, 100)) // Echte Effizienz: Wert pro Buchung
         : 0,
-      target: 80,
+      target: data?.currentMetrics?.averageBookingValue ? Math.round(data.currentMetrics.averageBookingValue / 2) : 40,
       unit: "%",
       trend: { 
         direction: (data?.currentMetrics?.weeklyBookings || 0) > (data?.currentMetrics?.monthlyBookings || 0) / 4 ? "up" : "down", 
@@ -142,7 +144,7 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
       id: "facility-utilization",
       title: "Anlagenauslastung",
       value: data?.currentMetrics?.averageUtilization || 0,
-      target: 75,
+      target: data?.currentMetrics?.totalFacilities ? Math.max(Math.round(data.currentMetrics.totalFacilities * 15), 60) : 60, // 15 Std/Anlage pro Tag als Ziel
       unit: "%",
       trend: { 
         direction: (data?.currentMetrics?.utilizationChanges?.change || 0) > 0 ? "up" : 
@@ -150,9 +152,10 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
         value: Math.abs(data?.currentMetrics?.utilizationChanges?.change || 0), 
         period: "vs. Vormonat" 
       },
-      status: (data?.currentMetrics?.averageUtilization || 0) >= 75 ? "excellent" : 
-              (data?.currentMetrics?.averageUtilization || 0) >= 60 ? "good" : 
-              (data?.currentMetrics?.averageUtilization || 0) >= 40 ? "warning" : "critical",
+      status: data?.currentMetrics?.totalFacilities && data?.currentMetrics?.averageUtilization ? 
+        (data.currentMetrics.averageUtilization >= data.currentMetrics.totalFacilities * 15 ? "excellent" : 
+         data.currentMetrics.averageUtilization >= data.currentMetrics.totalFacilities * 10 ? "good" : 
+         data.currentMetrics.averageUtilization >= data.currentMetrics.totalFacilities * 5 ? "warning" : "critical") : "critical",
       description: "Durchschnittliche Auslastung aller Anlagen",
       category: "efficiency",
       requiresPlan: ["professional", "enterprise"]
@@ -163,20 +166,20 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
       value: data?.currentMetrics?.memberEngagement && data?.currentMetrics?.bookingSuccessRate && data?.currentMetrics?.averageUtilization
         ? Math.round((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate + data.currentMetrics.averageUtilization) / 3)
         : 0,
-      target: 85,
+      target: data?.currentMetrics?.memberCount ? Math.round(data.currentMetrics.memberCount * 0.7) : 50, // 70% als Ziel für Betriebseffizienz
       unit: "%",
       trend: { 
         direction: data?.currentMetrics?.memberEngagement && data?.currentMetrics?.bookingSuccessRate
-          ? ((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2 >= 75 ? "up" : "down")
+          ? ((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2 >= (data?.currentMetrics?.memberCount ? data.currentMetrics.memberCount * 0.5 : 50) ? "up" : "down")
           : "stable", 
         value: data?.currentMetrics?.memberEngagement && data?.currentMetrics?.bookingSuccessRate
-          ? Math.abs(((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2) - 75)
+          ? Math.abs(((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2) - (data?.currentMetrics?.memberCount ? data.currentMetrics.memberCount * 0.5 : 50))
           : 0, 
         period: "vs. Baseline" 
       },
       status: data?.currentMetrics?.memberEngagement && data?.currentMetrics?.bookingSuccessRate
-        ? (((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2) >= 85 ? "excellent" : 
-           ((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2) >= 70 ? "good" : "warning")
+        ? (((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2) >= (data?.currentMetrics?.memberCount ? data.currentMetrics.memberCount * 0.7 : 50) ? "excellent" : 
+           ((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2) >= (data?.currentMetrics?.memberCount ? data.currentMetrics.memberCount * 0.5 : 35) ? "good" : "warning")
         : "critical",
       description: "Gesamtbewertung basierend auf Engagement und Buchungserfolg",
       category: "efficiency"

@@ -377,7 +377,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     key={item.name}
                     onClick={() => {
                       if (hasAccess) {
-                        navigate(item.href);
+                        // Force navigation to dashboard even if already there
+                        if (item.href === '/' && location === '/') {
+                          // Force re-render by replacing route
+                          navigate(item.href, { replace: true });
+                        } else {
+                          navigate(item.href);
+                        }
                         onClose();
                       } else {
                         navigate('/subscription');
@@ -481,7 +487,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         key={item.name}
                         onClick={() => {
                           if (hasAccess) {
-                            navigate(item.href);
+                            // Force navigation to dashboard even if already there
+                            if (item.href === '/' && location === '/') {
+                              // Force re-render by replacing route
+                              navigate(item.href, { replace: true });
+                            } else {
+                              navigate(item.href);
+                            }
                             onClose();
                           } else {
                             navigate('/subscription');

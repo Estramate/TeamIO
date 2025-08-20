@@ -362,8 +362,17 @@ export default function Users() {
         title: "Spieler entfernt",
         description: "Die Spieler-Zuweisung wurde erfolgreich entfernt.",
       });
+      // Update assignment member data immediately
+      if (assignmentMember) {
+        setAssignmentMember({
+          ...assignmentMember,
+          multiplePlayerAssignments: assignmentMember.multiplePlayerAssignments?.filter((a: any) => a.playerId !== playerId) || []
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
       queryClient.invalidateQueries({ queryKey: [`/api/clubs/${selectedClub?.id}/users/${assignmentMember?.id}/player-assignments`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'players'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'available-players'] });
     },
     onError: (error: Error) => {
       toast({
@@ -1235,47 +1244,10 @@ export default function Users() {
                 </div>
               </div>
 
-                {/* Assign to Player (Single) */}
+                {/* Add Player Assignments */}
                 <div className="space-y-3">
                   <h4 className="font-medium flex items-center gap-2">
-                    <span>⚽</span> Als Spieler zuweisen (ersetzt bestehende Spieler-Zuweisungen)
-                  </h4>
-                  <div className="max-h-40 overflow-y-auto space-y-1 border rounded-md p-2">
-                    {availablePlayers && availablePlayers.length > 0 ? (
-                      availablePlayers.map((player: any) => (
-                        <Button
-                          key={player.id}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-left h-auto p-2"
-                          onClick={() => {
-                            assignUserToPlayerMutation.mutate({ 
-                              userId: assignmentMember.id, 
-                              playerId: player.id 
-                            });
-                            setShowAssignmentDialog(false);
-                          }}
-                          disabled={assignUserToPlayerMutation.isPending}
-                          data-testid={`button-assign-player-${player.id}`}
-                        >
-                          <div className="flex flex-col items-start">
-                            <span>⚽ {player.lastName}, {player.firstName}</span>
-                            {player.teamName && (
-                              <span className="text-xs text-muted-foreground">Team: {player.teamName}</span>
-                            )}
-                          </div>
-                        </Button>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Keine verfügbaren Spieler</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Add Multiple Player Assignments */}
-                <div className="space-y-3">
-                  <h4 className="font-medium flex items-center gap-2">
-                    <span>➕</span> Spieler hinzufügen (für Eltern mit mehreren Kindern)
+                    <span>⚽</span> Spieler zuweisen
                   </h4>
                   <div className="max-h-40 overflow-y-auto space-y-1 border rounded-md p-2">
                     {allPlayers && allPlayers.length > 0 ? (

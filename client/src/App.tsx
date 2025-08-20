@@ -60,14 +60,20 @@ function AuthenticatedApp() {
     }
   }, [location, setLastVisitedPage]);
 
-  // Navigate to last visited page on initial load
+  // Navigate to last visited page only on fresh app entry, not on page reloads
   useEffect(() => {
-    if (!hasNavigatedToInitial && location === '/') {
-      const initialRoute = getInitialRoute();
-
-      if (initialRoute !== '/') {
-        setLocation(initialRoute);
+    if (!hasNavigatedToInitial) {
+      const isPageReload = sessionStorage.getItem('app-loaded') === 'true';
+      
+      if (!isPageReload && location === '/') {
+        // First visit to app - use saved route
+        const initialRoute = getInitialRoute();
+        if (initialRoute !== '/') {
+          setLocation(initialRoute);
+        }
       }
+      // Mark app as loaded for this session
+      sessionStorage.setItem('app-loaded', 'true');
       setHasNavigatedToInitial(true);
     }
   }, [location, hasNavigatedToInitial, getInitialRoute, setLocation]);

@@ -58,13 +58,7 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
   const currentPlan = subscriptionManager?.getCurrentPlan() || 'free';
   const planType = currentPlan;
   
-  console.log('🔍 KPI Dashboard Debug:', {
-    hasAdvancedReports,
-    hasFinancialReports,
-    currentPlan,
-    planType,
-    subscriptionManager: !!subscriptionManager
-  });
+  // Remove debug logs for production
 
   // Real KPI data from database
   const allKPIs: KPICard[] = [
@@ -106,30 +100,46 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
       category: "performance"
     },
 
-    // Financial KPIs (require financial reports feature)
+    // Financial KPIs (real data from database - available for Enterprise plan)
     {
       id: "revenue-growth",
       title: "Umsatzwachstum",
-      value: 12.5,
+      value: data?.currentMetrics?.monthlyBudget && data?.currentMetrics?.totalRevenue 
+        ? Math.round((data.currentMetrics.monthlyBudget / Math.max(data.currentMetrics.totalRevenue, 1)) * 100)
+        : 0,
       target: 10,
       unit: "%",
-      trend: { direction: "up", value: 2.3, period: "vs. Vorquartal" },
-      status: "excellent",
-      description: "Monatliches Umsatzwachstum",
-      category: "financial",
-      requiresPlan: ["starter", "professional", "enterprise"]
+      trend: { 
+        direction: (data?.currentMetrics?.monthlyBudget || 0) > 0 ? "up" : 
+                  (data?.currentMetrics?.monthlyBudget || 0) < 0 ? "down" : "stable", 
+        value: Math.abs(data?.currentMetrics?.monthlyBudget || 0), 
+        period: "Monatlich" 
+      },
+      status: (data?.currentMetrics?.monthlyBudget || 0) >= 0 ? "excellent" : "critical",
+      description: "Monatliches Umsatzwachstum basierend auf Budget",
+      category: "financial"
     },
     {
       id: "cost-efficiency",
-      title: "Kosteneffizienz",
-      value: 85,
+      title: "Kosteneffizienz", 
+      value: data?.currentMetrics?.totalRevenue && data?.currentMetrics?.totalExpenses
+        ? Math.round((data.currentMetrics.totalRevenue / (data.currentMetrics.totalRevenue + Math.abs(data.currentMetrics.totalExpenses))) * 100)
+        : 0,
       target: 80,
       unit: "%",
-      trend: { direction: "up", value: 7.8, period: "vs. Vormonat" },
-      status: "excellent",
+      trend: { 
+        direction: data?.currentMetrics?.totalRevenue && data?.currentMetrics?.totalExpenses &&
+                  (data.currentMetrics.totalRevenue > Math.abs(data.currentMetrics.totalExpenses)) ? "up" : "down", 
+        value: data?.currentMetrics?.totalRevenue && data?.currentMetrics?.totalExpenses 
+          ? Math.abs(data.currentMetrics.totalRevenue - Math.abs(data.currentMetrics.totalExpenses))
+          : 0, 
+        period: "vs. Kosten" 
+      },
+      status: data?.currentMetrics?.totalRevenue && data?.currentMetrics?.totalExpenses
+        ? (data.currentMetrics.totalRevenue > Math.abs(data.currentMetrics.totalExpenses) ? "excellent" : "warning")
+        : "critical",
       description: "Verhältnis von Einnahmen zu Betriebskosten",
-      category: "financial",
-      requiresPlan: ["professional", "enterprise"]
+      category: "financial"
     },
 
     // Advanced KPIs (require advanced reports)
@@ -155,73 +165,75 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
     {
       id: "operational-efficiency",
       title: "Betriebseffizienz",
-      value: 89,
+      value: data?.currentMetrics?.memberEngagement && data?.currentMetrics?.bookingSuccessRate && data?.currentMetrics?.averageUtilization
+        ? Math.round((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate + data.currentMetrics.averageUtilization) / 3)
+        : 0,
       target: 85,
       unit: "%",
-      trend: { direction: "up", value: 4.5, period: "vs. Vormonat" },
-      status: "excellent",
-      description: "Gesamtbewertung der Betriebsabläufe",
-      category: "efficiency",
-      requiresPlan: ["professional", "enterprise"]
-    },
-
-    // Member engagement (starter+)
-    {
-      id: "retention-rate",
-      title: "Mitgliederbindung",
-      value: 94,
-      target: 90,
-      unit: "%",
-      trend: { direction: "stable", value: 0.3, period: "vs. Vormonat" },
-      status: "excellent",
-      description: "Anteil der Mitglieder, die länger als 12 Monate aktiv sind",
-      category: "engagement",
-      requiresPlan: ["starter", "professional", "enterprise"]
+      trend: { 
+        direction: data?.currentMetrics?.memberEngagement && data?.currentMetrics?.bookingSuccessRate
+          ? ((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2 >= 75 ? "up" : "down")
+          : "stable", 
+        value: data?.currentMetrics?.memberEngagement && data?.currentMetrics?.bookingSuccessRate
+          ? Math.abs(((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2) - 75)
+          : 0, 
+        period: "vs. Baseline" 
+      },
+      status: data?.currentMetrics?.memberEngagement && data?.currentMetrics?.bookingSuccessRate
+        ? (((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2) >= 85 ? "excellent" : 
+           ((data.currentMetrics.memberEngagement + data.currentMetrics.bookingSuccessRate) / 2) >= 70 ? "good" : "warning")
+        : "critical",
+      description: "Gesamtbewertung basierend auf Engagement und Buchungserfolg",
+      category: "efficiency"
     },
   ];
 
-  // Filter KPIs based on FEATURES rather than plan names for better accuracy
+  // Enterprise plan gets ALL KPIs - no filtering needed for highest tier
   const availableKPIs = useMemo(() => {
+    // Enterprise plan (highest tier) gets everything
+    if (planType === 'enterprise' || hasAdvancedReports && hasFinancialReports) {
+      const filtered = allKPIs.filter(kpi => {
+        const matchesCategory = selectedCategory === "all" || kpi.category === selectedCategory;
+        return matchesCategory;
+      });
+      
+      // Enterprise plan - all features available
+      
+      return filtered;
+    }
+    
+    // For other plans, use feature-based filtering
     return allKPIs.filter(kpi => {
       let hasAccess = true;
       
       // Check feature access based on KPI category and requirements
-      if (kpi.category === "financial" && kpi.requiresPlan?.includes("professional")) {
+      if (kpi.category === "financial") {
         hasAccess = hasFinancialReports;
-      } else if (kpi.category === "efficiency" && kpi.requiresPlan?.includes("professional")) {
+      } else if (kpi.category === "efficiency") {
         hasAccess = hasAdvancedReports;
-      } else if (kpi.requiresPlan) {
-        // Fallback to plan type check for other KPIs
-        hasAccess = kpi.requiresPlan.includes(planType);
       }
       
       const matchesCategory = selectedCategory === "all" || kpi.category === selectedCategory;
       
-      console.log(`🔍 KPI ${kpi.id}:`, {
-        category: kpi.category,
-        requiresPlan: kpi.requiresPlan,
-        hasAccess,
-        planType,
-        hasAdvancedReports,
-        hasFinancialReports
-      });
+      // Feature-based access control
       
       return hasAccess && matchesCategory;
     });
   }, [planType, selectedCategory, hasAdvancedReports, hasFinancialReports]);
 
+  // For Enterprise plan, no locked KPIs
   const lockedKPIs = useMemo(() => {
+    if (planType === 'enterprise' || hasAdvancedReports && hasFinancialReports) {
+      return []; // No locked KPIs for Enterprise plan
+    }
+    
     return allKPIs.filter(kpi => {
       let hasAccess = true;
       
-      // Check feature access based on KPI category and requirements
-      if (kpi.category === "financial" && kpi.requiresPlan?.includes("professional")) {
+      if (kpi.category === "financial") {
         hasAccess = hasFinancialReports;
-      } else if (kpi.category === "efficiency" && kpi.requiresPlan?.includes("professional")) {
+      } else if (kpi.category === "efficiency") {
         hasAccess = hasAdvancedReports;
-      } else if (kpi.requiresPlan) {
-        // Fallback to plan type check for other KPIs
-        hasAccess = kpi.requiresPlan.includes(planType);
       }
       
       const matchesCategory = selectedCategory === "all" || kpi.category === selectedCategory;

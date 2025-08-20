@@ -64,8 +64,8 @@ export default function Dashboard() {
   // Get subscription features
   const hasAdvancedReports = subscriptionManager?.hasFeature('advancedReports') ?? false;
   const hasFinancialReports = subscriptionManager?.hasFeature('financialReports') ?? false;
-  const currentPlan = subscriptionManager?.getCurrentPlan() || { planType: 'free' };
-  const planType = currentPlan.planType || 'free';
+  const currentPlan = subscriptionManager?.getCurrentPlan() || 'free';
+  const planType = typeof currentPlan === 'string' ? currentPlan : currentPlan;
 
   // Prepare analytics data
   const analyticsData = {

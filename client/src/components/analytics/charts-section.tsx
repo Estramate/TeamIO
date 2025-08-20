@@ -44,8 +44,8 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
   // Feature checks
   const hasAdvancedReports = subscriptionManager?.hasFeature('advancedReports') ?? false;
   const hasFinancialReports = subscriptionManager?.hasFeature('financialReports') ?? false;
-  const currentPlan = subscriptionManager?.getCurrentPlan() || { planType: 'free' };
-  const planType = currentPlan.planType || 'free';
+  const currentPlan = subscriptionManager?.getCurrentPlan() || 'free';
+  const planType = currentPlan;
 
   // Chart configurations with subscription requirements
   const chartConfigs: ChartConfig[] = [
@@ -58,14 +58,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       iconColor: "text-blue-600 dark:text-blue-400",
       requiresPlan: ["free", "starter", "professional", "enterprise"], // Available for all
       chartType: "bar",
-      mockData: data?.bookingTrends || [
-        { week: "KW 1", bookings: 45, revenue: 675 },
-        { week: "KW 2", bookings: 52, revenue: 780 },
-        { week: "KW 3", bookings: 48, revenue: 720 },
-        { week: "KW 4", bookings: 61, revenue: 915 },
-        { week: "KW 5", bookings: 58, revenue: 870 },
-        { week: "KW 6", bookings: 65, revenue: 975 },
-      ]
+      realData: data?.bookingTrends || []
     },
     {
       id: "utilization",
@@ -76,12 +69,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       iconColor: "text-green-600 dark:text-green-400",
       requiresPlan: ["professional", "enterprise"],
       chartType: "pie",
-      mockData: data?.facilityUsage || [
-        { facility: "Hauptplatz", utilization: 85, hours: 42 },
-        { facility: "Trainingsplatz 1", utilization: 72, hours: 36 },
-        { facility: "Trainingsplatz 2", utilization: 68, hours: 34 },
-        { facility: "Halle", utilization: 91, hours: 48 },
-      ]
+      realData: data?.facilityUsage || []
     },
     {
       id: "membership",
@@ -92,14 +80,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       iconColor: "text-purple-600 dark:text-purple-400",
       requiresPlan: ["starter", "professional", "enterprise"],
       chartType: "line",
-      mockData: data?.membershipGrowth || [
-        { month: "Okt", members: 180, new: 8, leaving: 3 },
-        { month: "Nov", members: 185, new: 12, leaving: 7 },
-        { month: "Dez", members: 190, new: 15, leaving: 10 },
-        { month: "Jan", members: 195, new: 18, leaving: 13 },
-        { month: "Feb", members: 200, new: 14, leaving: 9 },
-        { month: "Mär", members: 205, new: 11, leaving: 6 },
-      ]
+      realData: data?.membershipGrowth || []
     },
     {
       id: "financial",
@@ -110,25 +91,31 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       iconColor: "text-emerald-600 dark:text-emerald-400",
       requiresPlan: ["professional", "enterprise"],
       chartType: "area",
-      mockData: data?.financialData || [
-        { month: "Jan", income: 2800, expenses: 2200, profit: 600 },
-        { month: "Feb", income: 3200, expenses: 2400, profit: 800 },
-        { month: "Mär", income: 3600, expenses: 2600, profit: 1000 },
-        { month: "Apr", income: 3100, expenses: 2500, profit: 600 },
-        { month: "Mai", income: 3800, expenses: 2700, profit: 1100 },
-        { month: "Jun", income: 4200, expenses: 2900, profit: 1300 },
-      ]
+      realData: data?.financialData || []
     }
   ];
 
-  // Filter charts based on subscription
-  const availableCharts = chartConfigs.filter(chart => 
-    chart.requiresPlan.includes(planType)
-  );
+  // Enterprise plan gets ALL charts - no restrictions
+  const availableCharts = planType === 'enterprise' || (hasAdvancedReports && hasFinancialReports)
+    ? chartConfigs // All charts for Enterprise
+    : chartConfigs.filter(chart => {
+        // Basic filtering for lower plans
+        if (chart.id === 'bookings') return true; // Always available
+        if (chart.id === 'membership') return hasAdvancedReports || hasFinancialReports;
+        if (chart.id === 'utilization') return hasAdvancedReports;
+        if (chart.id === 'financial') return hasFinancialReports;
+        return chart.requiresPlan.includes(planType);
+      });
   
-  const lockedCharts = chartConfigs.filter(chart => 
-    !chart.requiresPlan.includes(planType)
-  );
+  const lockedCharts = planType === 'enterprise' || (hasAdvancedReports && hasFinancialReports)
+    ? [] // No locked charts for Enterprise
+    : chartConfigs.filter(chart => {
+        if (chart.id === 'bookings') return false; // Always available
+        if (chart.id === 'membership') return !(hasAdvancedReports || hasFinancialReports);
+        if (chart.id === 'utilization') return !hasAdvancedReports;
+        if (chart.id === 'financial') return !hasFinancialReports;
+        return !chart.requiresPlan.includes(planType);
+      });
 
   const selectedChartConfig = chartConfigs.find(c => c.id === selectedChart);
 

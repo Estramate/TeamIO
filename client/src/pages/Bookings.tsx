@@ -5,6 +5,7 @@ import { useNotificationTriggers } from "@/utils/notificationTriggers";
 import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
+import { useSubscription } from "@/hooks/use-subscription";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { invalidateEntityData } from "@/lib/cache-invalidation";
@@ -133,11 +134,27 @@ export default function Bookings() {
   const { notifyBookingCreated, invalidateRelevantCache } = useNotificationTriggers();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
+  const { hasFeature } = useSubscription();
 
   // Set page title
   useEffect(() => {
     setPage("Buchungen", "Verwalten Sie Ihre Anlagenbuchungen und Termine");
   }, [setPage]);
+
+  // Check if user has booking feature access
+  useEffect(() => {
+    if (!hasFeature('facilityBooking')) {
+      toast({
+        title: "Feature nicht verfügbar",
+        description: "Ihr aktueller Plan unterstützt keine Anlagenbuchungen. Bitte upgraden Sie Ihr Abonnement.",
+        variant: "destructive",
+      });
+      // Redirect to subscription page after a short delay
+      setTimeout(() => {
+        window.location.href = '/subscription';
+      }, 2000);
+    }
+  }, [hasFeature, toast]);
   
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [searchTerm, setSearchTerm] = useState('');
@@ -150,7 +167,12 @@ export default function Bookings() {
   const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [viewingBooking, setViewingBooking] = useState<Booking | null>(null);
-  const [availabilityStatus, setAvailabilityStatus] = useState<{ available: boolean; message?: string; maxConcurrent?: number; currentBookings?: number } | null>(null);
+  const [availabilityStatus, setAvailabilityStatus] = useState<{ 
+    available: boolean; 
+    message?: string; 
+    maxConcurrent?: number; 
+    currentBookings?: number 
+  } | null>(null);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
 
   const form = useForm<BookingFormData>({
@@ -413,11 +435,11 @@ export default function Bookings() {
       setIsCheckingAvailability(false);
       setAvailabilityStatus({
         available: data.available || false,
-        maxConcurrent: data.maxConcurrent || 1,
-        currentBookings: data.currentBookings || 0,
+        maxConcurrent: typeof data.maxConcurrent === 'number' ? data.maxConcurrent : 1,
+        currentBookings: typeof data.currentBookings === 'number' ? data.currentBookings : 0,
         message: data.available 
-          ? `Verfügbar (${data.currentBookings || 0}/${data.maxConcurrent || 1} Buchungen)`
-          : `Nicht verfügbar (${data.currentBookings || 0}/${data.maxConcurrent || 1} Buchungen)`
+          ? `Verfügbar (${typeof data.currentBookings === 'number' ? data.currentBookings : 0}/${typeof data.maxConcurrent === 'number' ? data.maxConcurrent : 1} Buchungen)`
+          : `Nicht verfügbar (${typeof data.currentBookings === 'number' ? data.currentBookings : 0}/${typeof data.maxConcurrent === 'number' ? data.maxConcurrent : 1} Buchungen)`
       });
     },
     onError: (error: any) => {
@@ -845,7 +867,9 @@ export default function Bookings() {
                     {booking.participants && (
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Users className="w-4 h-4 mr-2 text-primary" />
-                        <span className="font-medium">{booking.participants} Teilnehmer</span>
+                        <span className="font-medium">
+                          {typeof booking.participants === 'object' ? JSON.stringify(booking.participants) : (booking.participants || 0)} Teilnehmer
+                        </span>
                       </div>
                     )}
                   </div>

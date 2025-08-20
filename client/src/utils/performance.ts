@@ -78,20 +78,7 @@ export class PerformanceMonitor {
   }
 
   reportMetrics() {
-
-    if (this.metrics.firstContentfulPaint) {
-      console.log('First Contentful Paint:', `${this.metrics.firstContentfulPaint}ms`);
-    }
-    if (this.metrics.largestContentfulPaint) {
-      console.log('Largest Contentful Paint:', `${this.metrics.largestContentfulPaint}ms`);
-    }
-    if (this.metrics.firstInputDelay) {
-      console.log('First Input Delay:', `${this.metrics.firstInputDelay}ms`);
-    }
-    if (this.metrics.cumulativeLayoutShift) {
-      console.log('Cumulative Layout Shift:', this.metrics.cumulativeLayoutShift);
-    }
-    console.groupEnd();
+    // Performance metrics reporting disabled
   }
 }
 
@@ -111,6 +98,5 @@ export const optimizeImageSrc = (src: string, width?: number, quality?: number):
 // Bundle analyzer helper
 export const analyzeBundle = () => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('Bundle analysis would be available if webpack-bundle-analyzer was installed');
   }
 };

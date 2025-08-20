@@ -118,7 +118,6 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/logout", (req, res) => {
     // Debug: Uncomment for logout process debugging
-    // console.log('=== COMPLETE LOGOUT PROCESS ===');
     
     // Clear ALL auth cookies with different options
     const cookiesToClear = ['connect.sid', 'session', '__session'];
@@ -133,13 +132,11 @@ export async function setupAuth(app: Express) {
     // Destroy session completely
     if (req.session) {
       req.session.destroy((err) => {
-        if (err) console.error('Session destruction error:', err);
       });
     }
 
     // Development mode - simple redirect after cookie clearing
     if (process.env.NODE_ENV === 'development') {
-      console.log('DEV MODE - Simple redirect after clearing cookies');
       
       // Add client-side script to clear localStorage and force fresh reload
       const clearStorageScript = `
@@ -151,7 +148,6 @@ export async function setupAuth(app: Express) {
               <p>Sie werden weitergeleitet...</p>
             </div>
             <script>
-              console.log('🧹 Clearing all localStorage on logout');
               localStorage.removeItem('clubflow-selected-club');
               localStorage.removeItem('clubflow-navigation');
               localStorage.removeItem('clubflow-theme');
@@ -223,11 +219,9 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
             name: `${sessionUser.firstName} ${sessionUser.lastName}`
           }
         };
-        console.log('✅ Email auth successful for user:', sessionUser.email);
         return next();
       }
     } catch (error) {
-      console.error('Email auth check failed:', error);
     }
   }
 

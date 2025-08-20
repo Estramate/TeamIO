@@ -132,8 +132,8 @@ export const { success, error, warning, info, loading, log, logError, logWarning
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   // Store original console methods
   const originalConsole = {
-    log: () => {},
-    error: () => {},
+    log: console.log,
+    error: console.error,
     warn: console.warn,
   };
 
@@ -141,19 +141,5 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   const ENABLE_TOAST_CONSOLE = false; // Set to true to redirect console to toasts
 
   if (ENABLE_TOAST_CONSOLE) {
-    console.log = (...args) => {
-      originalConsole.log(...args);
-      toastService.log(args.join(' '));
-    };
-
-    console.error = (...args) => {
-      originalConsole.error(...args);
-      toastService.logError(args.join(' '));
-    };
-
-    console.warn = (...args) => {
-      originalConsole.warn(...args);
-      toastService.logWarning(args.join(' '));
-    };
   }
 }

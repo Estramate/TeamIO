@@ -38,19 +38,11 @@ export interface InvitationEmailData {
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
   if (!mailService) {
-    console.log('📧 Email would be sent to:', params.to);
-    console.log('📧 Subject:', params.subject);
-    console.log('📧 Content:', params.text || params.html);
-    console.log('📧 SendGrid API Key Status:', SENDGRID_API_KEY ? 'CONFIGURED' : 'NOT CONFIGURED');
     logger.warn('Email not sent - SendGrid not configured');
     return false;
   }
 
   try {
-    console.log('📧 Attempting to send email via SendGrid...');
-    console.log('📧 To:', params.to);
-    console.log('📧 From:', params.from);
-    console.log('📧 Subject:', params.subject);
     
     await mailService.send({
       to: params.to,
@@ -60,14 +52,12 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
       html: params.html || '',
     });
     
-    console.log('📧 ✅ Email sent successfully via SendGrid!');
     logger.info('Email sent successfully', { 
       to: params.to, 
       subject: params.subject 
     });
     return true;
   } catch (error) {
-    console.log('📧 ❌ SendGrid email error:', error);
     logger.error('SendGrid email error:', error);
     return false;
   }
@@ -168,8 +158,6 @@ Diese Einladung läuft am ${expiresAt.toLocaleDateString('de-DE')} ab.
 Falls Sie diese E-Mail irrtümlich erhalten haben, können Sie sie einfach ignorieren.
   `;
 
-  console.log('📧 Sending invitation email to:', to);
-  console.log('📧 From email:', FROM_EMAIL);
   
   return await sendEmail({
     to,

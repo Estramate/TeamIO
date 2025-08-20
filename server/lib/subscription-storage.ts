@@ -221,7 +221,6 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
     const registeredUsersExcludingSuperAdmins = Number(clubUsersResult[0]?.count) || 0;
     const totalManagedUsers = memberCount + playerCount; // Only count managed entities, not admin users
     
-    console.log(`📊 Usage stats for club ${clubId}: Members=${memberCount}, Players=${playerCount}, RegisteredUsers=${registeredUsersExcludingSuperAdmins}, Total=${totalManagedUsers} (Super Admins excluded)`);
     
     return {
       id: clubId, // Use clubId as unique identifier
@@ -268,7 +267,6 @@ export class PostgreSQLSubscriptionStorage implements ISubscriptionStorage {
     storageUsed?: number;
   }): Promise<void> {
     // Mock implementation since subscription_usage table doesn't exist yet
-    console.log(`Usage metrics updated for club ${clubId}:`, metrics);
   }
 
   // Feature Access Logging

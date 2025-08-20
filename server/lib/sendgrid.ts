@@ -29,7 +29,6 @@ export async function sendEmail(
     });
     return true;
   } catch (error) {
-    console.error('SendGrid email error:', error);
     return false;
   }
 }

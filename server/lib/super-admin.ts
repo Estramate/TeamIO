@@ -13,7 +13,6 @@ export async function isSuperAdministrator(userId: string): Promise<boolean> {
     const user = await storage.getUser(userId);
     return user?.isSuperAdmin || false;
   } catch (error) {
-    console.error('Error checking super admin status:', error);
     return false;
   }
 }
@@ -26,7 +25,6 @@ export async function isSuperAdministratorByEmail(email: string): Promise<boolea
     const user = await storage.getUserByEmail(email);
     return user?.isSuperAdmin || false;
   } catch (error) {
-    console.error('Error checking super admin status by email:', error);
     return false;
   }
 }
@@ -38,7 +36,6 @@ export async function grantSuperAdminAccess(userId: string, grantedByUserId: str
   try {
     return await storage.setSuperAdminStatus(userId, true, grantedByUserId);
   } catch (error) {
-    console.error('Error granting super admin access:', error);
     return false;
   }
 }
@@ -50,7 +47,6 @@ export async function revokeSuperAdminAccess(userId: string): Promise<boolean> {
   try {
     return await storage.setSuperAdminStatus(userId, false);
   } catch (error) {
-    console.error('Error revoking super admin access:', error);
     return false;
   }
 }
@@ -62,7 +58,6 @@ export async function getAllSuperAdministrators(): Promise<any[]> {
   try {
     return await storage.getAllSuperAdmins();
   } catch (error) {
-    console.error('Error fetching super administrators:', error);
     return [];
   }
 }
@@ -82,7 +77,6 @@ export function requiresSuperAdmin(req: any, res: any, next: any) {
   }
   
   if (!user && !req.session?.user) {
-    console.log('🔒 Super Admin Auth Failed: No user in request or session');
     return res.status(401).json({ error: 'Authentication required' });
   }
   
@@ -103,17 +97,6 @@ export function requiresSuperAdmin(req: any, res: any, next: any) {
   const finalUserId = sessionUserId || userId;
   const finalUserEmail = sessionUserEmail || userEmail;
   
-  console.log('🔒 Super Admin Check Request:', { 
-    userId: finalUserId, 
-    userEmail: finalUserEmail,
-    sessionUserId,
-    sessionUserEmail,
-    hasUser: !!user, 
-    hasClaims: !!user.claims,
-    hasSession: !!req.session?.user,
-    userKeys: Object.keys(user),
-    sessionKeys: req.session ? Object.keys(req.session) : []
-  });
   
   // Check super admin status using database
   (async () => {
@@ -131,20 +114,16 @@ export function requiresSuperAdmin(req: any, res: any, next: any) {
         debugInfo = 'No userId or userEmail found';
       }
       
-      console.log('🔒 Super Admin Database Check:', debugInfo);
       
       if (!isSuper) {
-        console.log('🔒 Super Admin Access DENIED for:', finalUserId || finalUserEmail);
         return res.status(403).json({ 
           error: 'Super administrator access required',
           message: 'This action requires super administrator privileges' 
         });
       }
       
-      console.log('🔒 Super Admin Access GRANTED for:', finalUserId || finalUserEmail);
       next();
     } catch (error) {
-      console.error('🔒 Error in requiresSuperAdmin middleware:', error);
       res.status(500).json({ error: 'Internal server error during authorization' });
     }
   })();
@@ -167,7 +146,6 @@ export async function hasSuperAdminAccess(user: any): Promise<boolean> {
     }
     return false;
   } catch (error) {
-    console.error('Error checking super admin access:', error);
     return false;
   }
 }

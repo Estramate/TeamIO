@@ -42,14 +42,11 @@ const requiresClubAdmin = async (req: any, res: any, next: any) => {
     const role = await storage.getRoleById(adminMembership.roleId);
     const adminRoles = ['club-administrator', 'obmann'];
     if (!role || !adminRoles.includes(role.name)) {
-      console.log(`❌ User ${userId} has role ${role?.name || 'unknown'} but needs admin role (club-administrator or obmann) for club ${clubId}`);
       return res.status(403).json({ error: 'You must be a club administrator or club leader to access subscription management' });
     }
     
-    console.log(`✅ Club admin access granted for user ${userId} to club ${clubId}`);
     next();
   } catch (error) {
-    console.error("Error checking admin permissions:", error);
     return res.status(500).json({ error: "Failed to verify permissions" });
   }
 };
@@ -73,7 +70,6 @@ router.get("/plans", asyncHandler(async (req: any, res: any) => {
     const plans = await subscriptionStorage.getSubscriptionPlans();
     res.json(plans);
   } catch (error) {
-    console.error("Error fetching subscription plans:", error);
     res.status(500).json({ error: "Failed to fetch subscription plans" });
   }
 }));
@@ -96,7 +92,6 @@ router.get("/plans/comparison", asyncHandler(async (req: any, res: any) => {
 
     res.json(comparison);
   } catch (error) {
-    console.error("Error fetching plan comparison:", error);
     res.status(500).json({ error: "Failed to fetch plan comparison" });
   }
 }));
@@ -110,13 +105,10 @@ router.get("/club/:clubId", requiresClubAdmin, asyncHandler(async (req: any, res
       return res.status(400).json({ error: "Invalid club ID" });
     }
 
-    console.log(`Fetching subscription for club ${clubId}`);
     const subscriptionData = await subscriptionStorage.getClubSubscription(clubId);
-    console.log('Subscription data:', subscriptionData);
     
     res.json(subscriptionData);
   } catch (error) {
-    console.error('Error in /api/subscriptions/club/:clubId:', error);
     res.status(500).json({ 
       error: "Failed to fetch club subscription", 
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -297,7 +289,6 @@ router.post("/club/:clubId",
         });
       }
     } catch (error) {
-      console.error("Error creating/updating subscription:", error);
       res.status(500).json({ error: "Failed to create/update subscription" });
     }
   }));
@@ -332,7 +323,6 @@ router.put("/club/:clubId/cancel",
       
       res.json(canceledSubscription);
     } catch (error) {
-      console.error("Error canceling subscription:", error);
       res.status(500).json({ error: "Failed to cancel subscription" });
     }
   }));
@@ -486,7 +476,6 @@ router.put("/super-admin/force-plan/:clubId",
       const storage = (await import("../storage")).default;
       const club = await storage.getClub(clubId);
       
-      console.log(`SUPER ADMIN ACTION: Plan force-changed by ${req.user.email} for club ${club?.name} (${oldPlan} → ${planType}). Reason: ${reason || 'No reason provided'}`);
 
       res.json({
         success: true,
@@ -498,7 +487,6 @@ router.put("/super-admin/force-plan/:clubId",
         reason: reason || 'No reason provided'
       });
     } catch (error) {
-      console.error("Error force-changing plan:", error);
       res.status(500).json({ error: "Failed to force-change plan" });
     }
   }));

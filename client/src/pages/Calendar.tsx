@@ -1300,7 +1300,6 @@ export default function Calendar() {
                                 
                                 // Handle endTime - if it's just time string, combine with startTime date
                                 let endTimeFormatted = '';
-                                console.log('Day view processing endTime:', event.endTime, 'startTime:', event.startTime);
                                 
                                 if (event.endTime) {
                                   if (event.endTime.includes('T') || event.endTime.includes('-')) {
@@ -1314,15 +1313,12 @@ export default function Calendar() {
                                       const endDate = new Date(startDate);
                                       endDate.setHours(hours, minutes || 0, 0, 0);
                                       endTimeFormatted = format(endDate, 'yyyy-MM-dd\'T\'HH:mm');
-                                      console.log('Day view formatted endTime:', endTimeFormatted);
                                     } catch (error) {
-                                      console.error('Day view error formatting endTime:', error);
                                       endTimeFormatted = '';
                                     }
                                   }
                                 }
                                 
-                                console.log('Day view final endTimeFormatted:', endTimeFormatted);
                                 
                                 bookingForm.reset({
                                   title: event.title || '',

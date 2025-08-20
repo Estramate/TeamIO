@@ -348,7 +348,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    console.log('UpsertUser called with:', userData);
     
     try {
       // For legacy compatibility, check if ID is provided directly
@@ -368,7 +367,6 @@ export class DatabaseStorage implements IStorage {
             })
             .where(eq(users.id, userData.id))
             .returning();
-          console.log('User updated:', updatedUser);
           return updatedUser;
         }
       }
@@ -384,15 +382,12 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
       
-      console.log('New user created:', user);
       return user;
     } catch (error: any) {
-      console.error('UpsertUser error:', error);
       // If unique constraint violation and it's about email, try to find by email+provider
       if (error.code === '23505' && userData.email && userData.authProvider) {
         const existingUser = await this.getUserByEmailAndProvider(userData.email, userData.authProvider);
         if (existingUser) {
-          console.log('Found existing user by email+provider:', existingUser);
           return existingUser;
         }
       }
@@ -848,7 +843,6 @@ export class DatabaseStorage implements IStorage {
       // Debug: Found ${enhancedResult.length} users for club ${clubId} (Super Admins excluded)
       return enhancedResult;
     } catch (error) {
-      console.error('❌ Error in getClubUsersWithMembership:', error);
       throw error;
     }
   }
@@ -874,7 +868,6 @@ export class DatabaseStorage implements IStorage {
 
       return result;
     } catch (error) {
-      console.error('❌ Error in getSuperAdminsInClub:', error);
       return [];
     }
   }
@@ -892,7 +885,6 @@ export class DatabaseStorage implements IStorage {
 
       return result;
     } catch (error) {
-      console.error('❌ Error in getAllClubUsers:', error);
       return [];
     }
   }
@@ -932,7 +924,6 @@ export class DatabaseStorage implements IStorage {
 
       return result;
     } catch (error) {
-      console.error('❌ Error in getClubTeamMemberships:', error);
       throw error;
     }
   }
@@ -1108,7 +1099,6 @@ export class DatabaseStorage implements IStorage {
       // Finally, delete the team
       await db.delete(teams).where(eq(teams.id, id));
     } catch (error) {
-      console.error(`Error deleting team ${id}:`, error);
       throw new Error(`Failed to delete team: ${error}`);
     }
   }
@@ -1335,7 +1325,7 @@ export class DatabaseStorage implements IStorage {
     const maxConcurrent = facility.maxConcurrentBookings || 1;
     const available = currentBookings < maxConcurrent;
 
-    console.log('Availability check:', {
+    const availabilityInfo = {
       facilityId,
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
@@ -1344,7 +1334,7 @@ export class DatabaseStorage implements IStorage {
       afterExclusion: currentBookings,
       maxConcurrent,
       available
-    });
+    };
 
     // For display purposes, show total conflicting bookings (including current booking being edited)
     // But for availability calculation, use the filtered count (excluding current booking)
@@ -1869,7 +1859,6 @@ export class DatabaseStorage implements IStorage {
       }
     };
     } catch (error) {
-      console.error('Error in getDashboardStats:', error);
       // Return basic fallback data
       return {
         memberCount: 0,
@@ -1941,7 +1930,6 @@ export class DatabaseStorage implements IStorage {
         })
         .slice(0, 10);
     } catch (error) {
-      console.error('Recent Activity Error:', error);
       return [];
     }
   }
@@ -2119,7 +2107,6 @@ export class DatabaseStorage implements IStorage {
 
       return assignments;
     } catch (error) {
-      console.error('Error getting user team assignments:', error);
       throw error;
     }
   }
@@ -2164,7 +2151,6 @@ export class DatabaseStorage implements IStorage {
 
       return messagesWithRecipients;
     } catch (error) {
-      console.error('Error getting messages:', error);
       return [];
     }
   }
@@ -2199,7 +2185,6 @@ export class DatabaseStorage implements IStorage {
         sender: messageData[0].sender,
       };
     } catch (error) {
-      console.error('Error getting message:', error);
       return undefined;
     }
   }
@@ -2289,7 +2274,6 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Log the operation for debugging
-    console.log(`Message ${messageId} marked as read for user ${userId}`);
   }
 
   // Message recipient operations
@@ -2342,7 +2326,6 @@ export class DatabaseStorage implements IStorage {
 
   // Create a reply to an existing message
   async createMessageReply(parentMessageId: number, messageData: InsertMessage): Promise<Message> {
-    console.log('Creating reply with parentMessageId:', parentMessageId, 'messageData:', messageData);
     
     const replyData = {
       ...messageData,
@@ -2350,11 +2333,9 @@ export class DatabaseStorage implements IStorage {
       messageType: 'reply' as const
     };
     
-    console.log('Reply data to insert:', replyData);
     
     try {
       const [reply] = await db.insert(messages).values(replyData).returning();
-      console.log('Reply created successfully:', reply);
       
       // Create simple recipient - get original message sender
       try {
@@ -2372,18 +2353,14 @@ export class DatabaseStorage implements IStorage {
             recipientId: originalMessage.senderId,
             status: 'sent'
           });
-          console.log('Reply recipient created for original sender:', originalMessage.senderId);
         } else {
-          console.warn('Could not find original message to create recipient');
         }
       } catch (recipientError) {
-        console.error('Error creating reply recipient:', recipientError);
         // Continue anyway - reply was created
       }
       
       return reply;
     } catch (error) {
-      console.error('Error in createMessageReply:', error);
       throw error;
     }
   }
@@ -2405,7 +2382,6 @@ export class DatabaseStorage implements IStorage {
   // Announcement operations
   async getAnnouncements(clubId: number): Promise<any[]> {
     try {
-      console.log(`🔍 Getting announcements for club ${clubId}...`);
       
       const result = await db
         .select()
@@ -2417,10 +2393,8 @@ export class DatabaseStorage implements IStorage {
         ))
         .orderBy(desc(announcements.isPinned), desc(announcements.publishedAt));
       
-      console.log(`📢 Found ${result.length} published announcements for club ${clubId}:`, result.map(a => ({ id: a.id, title: a.title, published: a.isPublished, deleted: a.deletedAt })));
       return result || [];
     } catch (error) {
-      console.error('❌ Error getting announcements:', error);
       throw error;
     }
   }
@@ -2529,7 +2503,6 @@ export class DatabaseStorage implements IStorage {
       // Return empty array for now - notifications not properly implemented
       return [];
     } catch (error) {
-      console.error('Error getting notifications:', error);
       return [];
     }
   }
@@ -2609,7 +2582,6 @@ export class DatabaseStorage implements IStorage {
         ));
 
       const totalAnnouncements = announcementCount[0]?.count || 0;
-      console.log(`📊 Communication Stats for club ${clubId}: Announcements=${totalAnnouncements}`);
 
       return {
         totalMessages: 0,
@@ -2619,7 +2591,6 @@ export class DatabaseStorage implements IStorage {
         recentActivity: 0
       };
     } catch (error) {
-      console.error('❌ Error getting communication stats:', error);
       return {
         totalMessages: 0,
         unreadMessages: 0,
@@ -2838,7 +2809,6 @@ export class DatabaseStorage implements IStorage {
         userAgent: params.userAgent || null,
       });
     } catch (error) {
-      console.error('Failed to log activity:', error);
       // Don't throw - logging failures shouldn't break the main operation
     }
   }
@@ -2931,7 +2901,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createClub(clubData: any): Promise<Club> {
-    console.log("Creating club with data:", clubData);
     
     try {
       // Extract subscription data from clubData
@@ -2957,7 +2926,6 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       }).returning();
 
-      console.log("Club created successfully:", newClub);
 
       // Calculate subscription dates
       const startDate = subscriptionStartDate ? new Date(subscriptionStartDate) : new Date();
@@ -2983,9 +2951,7 @@ export class DatabaseStorage implements IStorage {
           currentPeriodStart: startDate,
           currentPeriodEnd: endDate,
         });
-        console.log(`Subscription created for club ${newClub.id} with plan ${planId}, billing: ${billingInterval}, period: ${startDate.toISOString()} - ${endDate.toISOString()}`);
       } catch (subscriptionError) {
-        console.error("Error creating subscription for new club:", subscriptionError);
         // Don't fail club creation if subscription creation fails
       }
       

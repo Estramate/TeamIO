@@ -831,7 +831,10 @@ export default function Calendar() {
       default:
         const monthStart = startOfMonth(currentDate);
         const monthEnd = endOfMonth(currentDate);
-        return eachDayOfInterval({ start: monthStart, end: monthEnd });
+        // For month view, we need to show the full calendar grid (6 weeks)
+        const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+        const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+        return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
     }
   };
 

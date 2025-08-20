@@ -384,26 +384,31 @@ export default function Calendar() {
     let startHour = 8; // Default start hour
     let endHour = 9;   // Default end hour (1 hour duration)
     
-    if (event.source === 'booking') {
-      // For bookings, use the original startTime and endTime datetime objects
-      if (event.startTime) {
-        const startTime = new Date(event.startTime);
+    // Always use startTime and endTime datetime objects (both bookings and events have these)
+    if (event.startTime) {
+      const startTime = new Date(event.startTime);
+      if (!isNaN(startTime.getTime())) {
         startHour = startTime.getHours() + startTime.getMinutes() / 60;
       }
-      if (event.endTime) {
-        const endTime = new Date(event.endTime);
+    }
+    
+    if (event.endTime) {
+      const endTime = new Date(event.endTime);
+      if (!isNaN(endTime.getTime())) {
         endHour = endTime.getHours() + endTime.getMinutes() / 60;
       }
-    } else if (event.source === 'event') {
-      // FIX: Events haben startTime und endTime als vollständige Datetime-Strings
-      const startTime = new Date(event.startTime || event.startDate || event.date);
-      const endTime = new Date(event.endTime || event.endDate || event.date);
-      
-      // Event-Höhen funktionieren jetzt korrekt
-      
-      // Verwende lokale Zeit für Kalender
-      startHour = startTime.getHours() + startTime.getMinutes() / 60;
-      endHour = endTime.getHours() + endTime.getMinutes() / 60;
+    }
+    
+    // Debug: Log when height calculation seems wrong
+    if (event.title?.includes('Training') && event.id === 28) {
+      console.log('Timeline height calculation for Training:', {
+        title: event.title,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        startHour,
+        endHour,
+        duration: (endHour - startHour) + ' hours'
+      });
     }
     
     // Clamp to 6:00-24:00 range
@@ -838,8 +843,9 @@ export default function Calendar() {
         ...booking,
         date: startDate,
         time: displayTime,
-        // FIX: Behalte originale DateTime für Event-Höhen-Berechnung und verwende displayEndTime für UI
-        endTime: booking.endTime, // Vollständige DateTime für Berechnungen
+        // CRITICAL: Preserve original datetime objects for timeline calculations
+        startTime: booking.startTime, // Keep original ISO string for calculations
+        endTime: booking.endTime, // Keep original ISO string for calculations
         displayEndTime: displayEndTime, // Zeit-String für UI-Anzeige
         source: booking.type === 'event' ? 'event' : 'booking', // Events bekommen 'event' als source
         color: getBookingTypeColor(booking.type),

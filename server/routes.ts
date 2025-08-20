@@ -147,15 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      console.log('🔍 Super Admin Check:', {
-        sessionExists: !!req.session,
-        hasPassport: !!req.session?.passport,
-        hasUser: !!req.session?.passport?.user,
-        userId,
-        userEmail,
-        sessionKeys: req.session ? Object.keys(req.session) : [],
-        passportKeys: req.session?.passport ? Object.keys(req.session.passport) : []
-      });
+      // Debug: Super Admin Check - sessionExists: ${!!req.session}, hasPassport: ${!!req.session?.passport}, userId: ${userId}
       
       if (!userId && !userEmail) {
         return res.json({
@@ -181,13 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isSuperAdmin = await isSuperAdministratorByEmail(userEmail);
       }
       
-      console.log('🔍 Super Admin Result:', {
-        userId,
-        userEmail,
-        isSuperAdmin,
-        checkedByUserId: !!userId,
-        checkedByEmail: !!userEmail
-      });
+      // Debug: Super Admin Result - userId: ${userId}, userEmail: ${userEmail}, isSuperAdmin: ${isSuperAdmin}
       
       res.json({
         isSuperAdmin,
@@ -1729,7 +1715,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let validatedData;
     try {
       validatedData = eventSchema.parse(req.body);
-      console.log('✅ Validation successful:', JSON.stringify(validatedData, null, 2));
+      // Debug: Validation successful: ${JSON.stringify(validatedData, null, 2)}
     } catch (validationError: any) {
       console.error('❌ Validation error:', validationError.errors);
       return res.status(400).json({ message: 'Validation error', errors: validationError.errors });
@@ -1757,13 +1743,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       updatedAt: new Date()
     };
 
-    console.log('📊 Creating event with data:', JSON.stringify(eventData, null, 2));
+    // Debug: Creating event with data: ${JSON.stringify(eventData, null, 2)}
     
     let event;
     try {
       console.log('🔄 Calling storage.createEvent...');
       event = await storage.createEvent(eventData);
-      console.log('✅ Event created successfully:', JSON.stringify(event, null, 2));
+      // Debug: Event created successfully: ${JSON.stringify(event, null, 2)}
     } catch (storageError: any) {
       console.error('💥 Storage error:', storageError.message);
       console.error('📚 Storage stack:', storageError.stack);

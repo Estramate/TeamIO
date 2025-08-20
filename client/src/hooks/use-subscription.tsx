@@ -50,10 +50,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         subscriptionData.subscription,
         subscriptionData.plan,
         subscriptionData.usage ? {
-          members: subscriptionData.usage.memberCount,
-          teams: subscriptionData.usage.teamCount,
-          facilities: subscriptionData.usage.facilityCount,
-          storage: subscriptionData.usage.storageUsed,
+          members: typeof subscriptionData.usage.memberCount === 'number' ? subscriptionData.usage.memberCount : 0,
+          teams: typeof subscriptionData.usage.teamCount === 'number' ? subscriptionData.usage.teamCount : 0,
+          facilities: typeof subscriptionData.usage.facilityCount === 'number' ? subscriptionData.usage.facilityCount : 0,
+          storage: typeof subscriptionData.usage.storageUsed === 'number' ? subscriptionData.usage.storageUsed : 0,
         } : undefined
       );
       setSubscriptionManager(manager);

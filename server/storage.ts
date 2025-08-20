@@ -485,8 +485,7 @@ export class DatabaseStorage implements IStorage {
     clubId: number,
     updates: Partial<InsertClubMembership>
   ): Promise<ClubMembership> {
-    console.log(`🔍 STORAGE DEBUG: updateClubMembership called for user ${userId}, club ${clubId}`);
-    console.log(`🔍 STORAGE DEBUG: Updates:`, updates);
+    // Debug: updateClubMembership called for user ${userId}, club ${clubId}
     
     const [updatedMembership] = await db
       .update(clubMemberships)
@@ -499,7 +498,7 @@ export class DatabaseStorage implements IStorage {
       )
       .returning();
       
-    console.log(`✅ STORAGE DEBUG: Updated membership:`, updatedMembership);
+    // Debug: Updated membership: ${JSON.stringify(updatedMembership)}
     return updatedMembership;hip;
   }
 
@@ -552,7 +551,7 @@ export class DatabaseStorage implements IStorage {
 
   async getClubUsersWithMembership(clubId: number): Promise<any[]> {
     try {
-      console.log(`📊 Getting club users for club ${clubId}`);
+      // Debug: Getting club users for club ${clubId}
       
       const result = await db
         .select({
@@ -583,7 +582,7 @@ export class DatabaseStorage implements IStorage {
         )
         .orderBy(asc(users.firstName), asc(users.lastName));
 
-      console.log(`📊 Found ${result.length} users for club ${clubId} (Super Admins excluded)`);
+      // Debug: Found ${result.length} users for club ${clubId} (Super Admins excluded)
       return result;
     } catch (error) {
       console.error('❌ Error in getClubUsersWithMembership:', error);

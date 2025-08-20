@@ -1131,7 +1131,9 @@ export default function Bookings() {
                     {viewingBooking.participants && (
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Teilnehmer:</span>
-                        <span className="text-sm font-medium">{String(viewingBooking.participants)}</span>
+                        <span className="text-sm font-medium">
+                          {typeof viewingBooking.participants === 'object' ? JSON.stringify(viewingBooking.participants) : String(viewingBooking.participants)}
+                        </span>
                       </div>
                     )}
                     {viewingBooking.cost && (

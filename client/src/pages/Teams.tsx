@@ -746,7 +746,7 @@ export default function Teams() {
                             const orderB = roleOrder[b.membershipRole as keyof typeof roleOrder] || 999;
                             if (orderA !== orderB) return orderA - orderB;
                             // Bei gleicher Rolle: alphabetisch nach Namen sortieren
-                            return `${a.memberFirstName} ${a.memberLastName}`.localeCompare(`${b.memberFirstName} ${b.memberLastName}`);
+                            return `${a.memberLastName}, ${a.memberFirstName}`.localeCompare(`${b.memberLastName}, ${b.memberFirstName}`);
                           })
                           .slice(0, 4); // Zeige maximal 4 Mitglieder
                         
@@ -761,7 +761,7 @@ export default function Teams() {
                                 {teamStaff.map((tm: any, index: number) => (
                                   <div key={`${tm.memberId}-${tm.membershipRole}-${index}`} className="flex items-center justify-between text-xs">
                                     <span className="font-medium text-foreground truncate mr-2">
-                                      {tm.memberFirstName} {tm.memberLastName}
+                                      {tm.memberLastName}, {tm.memberFirstName}
                                     </span>
                                     <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
                                       {tm.membershipRole === 'trainer' ? 'Trainer' :
@@ -900,7 +900,7 @@ export default function Teams() {
                                     const orderB = roleOrder[b.membershipRole as keyof typeof roleOrder] || 999;
                                     if (orderA !== orderB) return orderA - orderB;
                                     // Bei gleicher Rolle: alphabetisch nach Namen sortieren
-                                    return `${a.memberFirstName} ${a.memberLastName}`.localeCompare(`${b.memberFirstName} ${b.memberLastName}`);
+                                    return `${a.memberLastName}, ${a.memberFirstName}`.localeCompare(`${b.memberLastName}, ${b.memberFirstName}`);
                                   })
                                   .slice(0, 2); // Zeige maximal 2 in der Listenansicht
                                 
@@ -911,7 +911,7 @@ export default function Teams() {
                                         <div key={`${tm.memberId}-${tm.membershipRole}-${index}`} className="flex items-center gap-2">
                                           <User className="h-3 w-3 text-muted-foreground" />
                                           <span className="text-xs font-medium truncate mr-1">
-                                            {tm.memberFirstName} {tm.memberLastName}
+                                            {tm.memberLastName}, {tm.memberFirstName}
                                           </span>
                                           <Badge variant="outline" className="text-xs py-0 px-1 h-4">
                                             {tm.membershipRole === 'trainer' ? 'T' :

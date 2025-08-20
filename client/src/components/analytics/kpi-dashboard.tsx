@@ -64,22 +64,36 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
     {
       id: "member-engagement",
       title: "Mitgliederaktivität",
-      value: 78,
+      value: data?.currentMetrics?.memberEngagement || 0,
       target: 85,
       unit: "%",
-      trend: { direction: "up", value: 5.2, period: "vs. Vormonat" },
-      status: "good",
+      trend: { 
+        direction: (data?.currentMetrics?.memberEngagement || 0) >= 85 ? "up" : 
+                  (data?.currentMetrics?.memberEngagement || 0) >= 70 ? "stable" : "down", 
+        value: Math.abs((data?.currentMetrics?.memberEngagement || 0) - 75), 
+        period: "vs. Baseline" 
+      },
+      status: (data?.currentMetrics?.memberEngagement || 0) >= 85 ? "excellent" : 
+              (data?.currentMetrics?.memberEngagement || 0) >= 70 ? "good" : 
+              (data?.currentMetrics?.memberEngagement || 0) >= 50 ? "warning" : "critical",
       description: "Anteil aktiver Mitglieder in den letzten 30 Tagen",
       category: "engagement"
     },
     {
       id: "booking-rate",
       title: "Buchungsrate",
-      value: 92,
+      value: data?.currentMetrics?.bookingSuccessRate || 0,
       target: 90,
       unit: "%",
-      trend: { direction: "up", value: 3.1, period: "vs. Vorwoche" },
-      status: "excellent",
+      trend: { 
+        direction: (data?.currentMetrics?.bookingSuccessRate || 0) >= 90 ? "up" : 
+                  (data?.currentMetrics?.bookingSuccessRate || 0) >= 75 ? "stable" : "down", 
+        value: Math.abs((data?.currentMetrics?.bookingSuccessRate || 0) - 80), 
+        period: "vs. Baseline" 
+      },
+      status: (data?.currentMetrics?.bookingSuccessRate || 0) >= 90 ? "excellent" : 
+              (data?.currentMetrics?.bookingSuccessRate || 0) >= 75 ? "good" : 
+              (data?.currentMetrics?.bookingSuccessRate || 0) >= 60 ? "warning" : "critical",
       description: "Verhältnis von bestätigten zu angeforderten Buchungen",
       category: "performance"
     },
@@ -114,11 +128,18 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
     {
       id: "facility-utilization",
       title: "Anlagenauslastung",
-      value: 73,
+      value: data?.currentMetrics?.averageUtilization || 0,
       target: 75,
       unit: "%",
-      trend: { direction: "down", value: -2.1, period: "vs. Vormonat" },
-      status: "warning",
+      trend: { 
+        direction: (data?.currentMetrics?.utilizationChanges?.change || 0) > 0 ? "up" : 
+                  (data?.currentMetrics?.utilizationChanges?.change || 0) < 0 ? "down" : "stable", 
+        value: Math.abs(data?.currentMetrics?.utilizationChanges?.change || 0), 
+        period: "vs. Vormonat" 
+      },
+      status: (data?.currentMetrics?.averageUtilization || 0) >= 75 ? "excellent" : 
+              (data?.currentMetrics?.averageUtilization || 0) >= 60 ? "good" : 
+              (data?.currentMetrics?.averageUtilization || 0) >= 40 ? "warning" : "critical",
       description: "Durchschnittliche Auslastung aller Anlagen",
       category: "efficiency",
       requiresPlan: ["professional", "enterprise"]

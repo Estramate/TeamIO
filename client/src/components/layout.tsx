@@ -14,21 +14,25 @@ export default function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const helpSystem = useFloatingHelp();
   
-  // Determine current page for contextual help
+  // Determine current page for contextual help - only return page name if help exists
   const getCurrentPage = () => {
+    // Dashboard (root/home page)
+    if (location === '/' || location === '') return 'dashboard';
+    
+    // Specific pages with help content
     if (location.includes('/members')) return 'members';
     if (location.includes('/teams')) return 'teams';
     if (location.includes('/finance')) return 'finance';
     if (location.includes('/bookings')) return 'bookings';
     if (location.includes('/facilities')) return 'bookings'; // facilities use booking help
     if (location.includes('/settings')) return 'settings';
-    if (location.includes('/events')) return 'events';
-    if (location === '/' || location === '') return 'dashboard';
-    return null; // No help for other pages
+    
+    // For all other pages: no help available
+    return null;
   };
 
   const currentPage = getCurrentPage();
-  const showHelp = currentPage && shouldShowHelp(currentPage);
+  const showHelp = currentPage !== null;
 
   return (
     <div className="flex h-screen bg-background text-foreground">

@@ -120,20 +120,20 @@ function Router() {
       fetch('/api/user/memberships/status', { credentials: 'include' })
         .then(res => res.ok ? res.json() : { hasMemberships: false })
         .then(membershipStatus => {
-          console.log('🔍 Membership Status Check:', membershipStatus);
+          // Debug: logFormOperation('App', 'membership status check', membershipStatus);
           
           if (membershipStatus.hasMemberships) {
             // User has memberships, check for active ones
             if (membershipStatus.activeMemberships > 0) {
               // User has active memberships - skip onboarding entirely
-              console.log('✅ User has active memberships, proceeding to dashboard');
+              // Debug: logFormOperation('App', 'user has active memberships', 'proceeding to dashboard');
               setShowOnboarding(false);
               
               // Always load clubs and auto-select intelligently (even if club seems selected)
               fetch('/api/clubs', { credentials: 'include' })
                 .then(res => res.ok ? res.json() : [])
                 .then(clubs => {
-                  console.log('📋 Available clubs:', clubs?.map((c: any) => ({ id: c.id, name: c.name })));
+                  // Debug: logFormOperation('App', 'available clubs', clubs?.map((c: any) => ({ id: c.id, name: c.name })));
                   
                   if (clubs && clubs.length > 0) {
                     // Smart club selection logic
@@ -148,22 +148,22 @@ function Router() {
                         const foundClub = clubs.find((club: any) => club.id === lastClubId);
                         if (foundClub) {
                           targetClub = foundClub;
-                          console.log('🎯 Restoring last selected club:', targetClub.name);
+                          // Debug: logFormOperation('App', 'restoring last selected club', targetClub.name);
                         } else {
-                          console.log('🎯 Last club not found, auto-selecting first available:', targetClub.name);
+                          // Debug: logFormOperation('App', 'last club not found, auto-selecting first', targetClub.name);
                         }
                       } catch (e) {
-                        console.log('🎯 Could not parse stored club, auto-selecting first available:', targetClub.name);
+                        // Debug: logFormOperation('App', 'could not parse stored club, auto-selecting first', targetClub.name);
                       }
                     } else {
-                      console.log('🎯 No stored club found, auto-selecting first club:', targetClub.name);
+                      // Debug: logFormOperation('App', 'no stored club found, auto-selecting first', targetClub.name);
                     }
                     
                     // Always set the club, even if one is already selected (ensures consistency)
-                    console.log('🏟️ Setting selected club:', targetClub.name, 'ID:', targetClub.id);
+                    // Debug: logFormOperation('App', 'setting selected club', { name: targetClub.name, id: targetClub.id });
                     setSelectedClub(targetClub);
                   } else {
-                    console.log('⚠️ No clubs found - user might need onboarding');
+                    // Debug: logFormOperation('App', 'no clubs found', 'user might need onboarding');
                     setShowOnboarding(true);
                   }
                 })
@@ -174,12 +174,12 @@ function Router() {
                 });
             } else {
               // User has pending memberships but no active ones - show pending dashboard
-              console.log('⏳ User has pending memberships, showing pending dashboard');
+              // Debug: logFormOperation('App', 'user has pending memberships', 'showing pending dashboard');
               setShowOnboarding('pending');
             }
           } else {
             // No memberships at all - show onboarding
-            console.log('🆕 User has no memberships, showing onboarding');
+            // Debug: logFormOperation('App', 'user has no memberships', 'showing onboarding');
             setShowOnboarding(true);
           }
         })

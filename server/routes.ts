@@ -1690,12 +1690,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/clubs/:clubId/events', async (req: any, res: any) => {
     try {
       // TEMPORÄRE AUTHENTICATION-BYPASS FÜR DEBUG
-      console.log('🚨 GET EVENTS - AUTHENTICATION TEMPORARILY BYPASSED FOR DEBUG');
+      // Debug: GET EVENTS - Authentication temporarily bypassed
       req.user = { id: '45190315', email: 'koglerf@gmail.com' };
       const clubId = parseInt(req.params.clubId);
-      console.log('📅 GET events for club:', clubId, 'user:', req.user?.id);
+      // Debug: GET events for club: ${clubId} user: ${req.user?.id}
       const events = await storage.getEvents(clubId);
-      console.log('📅 Returning', events.length, 'events');
+      // Debug: Returning ${events.length} events
       res.json(events);
     } catch (error: any) {
       console.error('💥 GET events error:', error.message);
@@ -1705,17 +1705,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/clubs/:clubId/events', async (req: any, res: any) => {
     // TEMPORÄRE AUTHENTICATION-BYPASS FÜR DEBUG
-    console.log('🚨 AUTHENTICATION TEMPORARILY BYPASSED FOR DEBUG');
+    // Debug: Authentication temporarily bypassed
     
     // Simulate authenticated user for testing
     req.user = { id: '45190315', email: 'koglerf@gmail.com' };
     try {
     const clubId = parseInt(req.params.clubId);
     
-    console.log('🔥 EVENT CREATION START');
-    console.log('📝 Request body:', JSON.stringify(req.body, null, 2));
-    console.log('🏢 Club ID:', clubId);
-    console.log('👤 User:', req.user?.id, req.user?.email);
+    // Debug: Event creation start - Club: ${clubId}, User: ${req.user?.id}
     
     // Validate event data - Team is optional for events
     const eventSchema = z.object({

@@ -28,7 +28,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
   const cards = [
     {
       title: "Mitglieder",
-      value: stats.memberCount || 0,
+      value: typeof stats.memberCount === 'number' ? stats.memberCount : 0,
       change: "+3 diese Woche",
       changeType: "positive" as const,
       icon: Users,
@@ -37,7 +37,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: "Teams",
-      value: stats.teamCount || 0,
+      value: typeof stats.teamCount === 'number' ? stats.teamCount : 0,
       change: "+1 diese Woche",
       changeType: "positive" as const,
       icon: UsersRound,
@@ -46,8 +46,8 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: "Buchungen heute",
-      value: stats.todayBookingsCount || 0,
-      change: `${stats.pendingBookingsCount || 0} ausstehend`,
+      value: typeof stats.todayBookingsCount === 'number' ? stats.todayBookingsCount : 0,
+      change: `${typeof stats.pendingBookingsCount === 'number' ? stats.pendingBookingsCount : 0} ausstehend`,
       changeType: "neutral" as const,
       icon: Calendar,
       iconBg: "bg-orange-100",
@@ -55,9 +55,9 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: "Monatsbudget",
-      value: `€${(stats.monthlyBudget || 0).toLocaleString()}`,
-      change: (stats.monthlyBudget || 0) >= 0 ? "+€180 vs. Vormonat" : "-€180 vs. Vormonat",
-      changeType: (stats.monthlyBudget || 0) >= 0 ? "positive" : "negative" as const,
+      value: `€${(typeof stats.monthlyBudget === 'number' ? stats.monthlyBudget : 0).toLocaleString()}`,
+      change: (typeof stats.monthlyBudget === 'number' ? stats.monthlyBudget : 0) >= 0 ? "+€180 vs. Vormonat" : "-€180 vs. Vormonat",
+      changeType: (typeof stats.monthlyBudget === 'number' ? stats.monthlyBudget : 0) >= 0 ? "positive" : "negative" as const,
       icon: Euro,
       iconBg: "bg-emerald-100",
       iconColor: "text-emerald-500",

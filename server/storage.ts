@@ -2630,7 +2630,7 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
       
-      console.log(`📧 EMAIL INVITATION CREATED: ${invitation.email} invited to club ${invitation.clubId} with roleId ${invitation.roleId}`);
+      // Debug: Email invitation created for ${invitation.email} to club ${invitation.clubId} with roleId ${invitation.roleId}
       return newInvitation;
     } catch (error) {
       console.error('Error creating email invitation:', error);
@@ -2643,13 +2643,13 @@ export class DatabaseStorage implements IStorage {
   // Event management methods (uses bookings table with facilityId = null)
   async getEvents(clubId: number): Promise<any[]> {
     try {
-      console.log('📅 Getting events for club:', clubId);
+      // Debug: Getting events for club: ${clubId}
       const events = await db
         .select()
         .from(bookings)
         .where(and(eq(bookings.clubId, clubId), isNull(bookings.facilityId)))
         .orderBy(desc(bookings.startTime));
-      console.log('📅 Found', events.length, 'events for club', clubId);
+      // Debug: Found ${events.length} events for club ${clubId}
       return events;
     } catch (error: any) {
       console.error('💥 Error in getEvents:', error.message);
@@ -2659,7 +2659,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createEvent(eventData: any): Promise<any> {
-    console.log('🏗️ Storage createEvent called with:', JSON.stringify(eventData, null, 2));
+    // Debug: Storage createEvent called with: ${JSON.stringify(eventData, null, 2)}
     
     try {
       const [event] = await db

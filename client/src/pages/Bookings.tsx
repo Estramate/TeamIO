@@ -130,7 +130,7 @@ export default function Bookings() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedClub } = useClub();
-  const { notifyBookingChange, invalidateRelevantCache } = useNotificationTriggers();
+  const { notifyBookingCreated, invalidateRelevantCache } = useNotificationTriggers();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
 
@@ -260,7 +260,7 @@ export default function Bookings() {
       
       return apiRequest("POST", `/api/clubs/${selectedClub?.id}/bookings`, cleanedData);
     },
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       // Unterschiedliche Toast-Nachrichten für normale vs. wiederkehrende Buchungen
       if (response.count && response.count > 1) {
         toast({
@@ -268,10 +268,9 @@ export default function Bookings() {
           description: `${response.count} wiederkehrende Buchungen wurden erfolgreich erstellt`,
         });
       } else {
-        toast({
-          title: "Erfolg",
-          description: "Buchung wurde erfolgreich erstellt",
-        });
+        const facilityName = facilities.find(f => f.id === Number(form.getValues().facilityId))?.name || 'Anlage';
+        const date = new Date(form.getValues().startTime).toLocaleDateString('de-DE');
+        notifyBookingCreated(facilityName, date);
       }
       // Invalidate alle booking-relevanten Queries
       invalidateEntityData(queryClient, selectedClub?.id!, 'bookings');
@@ -1112,7 +1111,7 @@ export default function Bookings() {
                     {viewingBooking.participants && (
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Teilnehmer:</span>
-                        <span className="text-sm font-medium">{viewingBooking.participants}</span>
+                        <span className="text-sm font-medium">{String(viewingBooking.participants)}</span>
                       </div>
                     )}
                     {viewingBooking.cost && (

@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useClub } from "@/hooks/use-club";
 import { usePage } from "@/contexts/PageContext";
 import { useSubscription } from "@/hooks/use-subscription";
+import { FeatureGate } from "@/components/FeatureGate";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { invalidateEntityData } from "@/lib/cache-invalidation";
@@ -141,20 +142,7 @@ export default function Bookings() {
     setPage("Buchungen", "Verwalten Sie Ihre Anlagenbuchungen und Termine");
   }, [setPage]);
 
-  // Check if user has booking feature access
-  useEffect(() => {
-    if (!hasFeature('facilityBooking')) {
-      toast({
-        title: "Feature nicht verfügbar",
-        description: "Ihr aktueller Plan unterstützt keine Anlagenbuchungen. Bitte upgraden Sie Ihr Abonnement.",
-        variant: "destructive",
-      });
-      // Redirect to subscription page after a short delay
-      setTimeout(() => {
-        window.location.href = '/subscription';
-      }, 2000);
-    }
-  }, [hasFeature, toast]);
+  // Remove the useEffect redirect - FeatureGate will handle it
   
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [searchTerm, setSearchTerm] = useState('');
@@ -633,7 +621,8 @@ export default function Bookings() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
+    <FeatureGate feature="facilityBooking">
+      <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
 
       {/* Header Section with Search, Filters and Add Button */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
@@ -1218,6 +1207,7 @@ export default function Bookings() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </FeatureGate>
   );
 }

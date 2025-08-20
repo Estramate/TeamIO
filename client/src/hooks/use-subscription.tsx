@@ -110,8 +110,8 @@ export function useFeatureGate(feature: FeatureName) {
     hasAccess: !selectedClub || hasFeature(feature), // Allow all features if no club selected
     planType: subscriptionManager.getCurrentPlan(),
     upgrade: () => {
-      // Navigate to upgrade page
-      window.location.href = '/subscription/upgrade';
+      // Navigate to subscription page
+      window.location.href = '/subscription';
     }
   };
 }

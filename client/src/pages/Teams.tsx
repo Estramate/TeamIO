@@ -1187,7 +1187,7 @@ export default function Teams() {
                                 htmlFor={`trainer-${member.id}`}
                                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer block"
                               >
-                                {member.firstName} {member.lastName}
+                                {member.lastName}, {member.firstName}
                                 {member.email && (
                                   <span className="text-muted-foreground text-xs block">({member.email})</span>
                                 )}

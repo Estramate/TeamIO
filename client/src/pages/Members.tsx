@@ -394,9 +394,9 @@ export default function Members() {
                         <h3 
                           className="text-lg font-semibold text-foreground truncate cursor-pointer hover:underline"
                           onClick={() => handleViewMember(member)}
-                          title={`${member.firstName} ${member.lastName}`}
+                          title={`${member.lastName}, ${member.firstName}`}
                         >
-                          {member.firstName} {member.lastName}
+                          {member.lastName}, {member.firstName}
                         </h3>
                       </div>
                       
@@ -586,7 +586,7 @@ export default function Members() {
                                 onClick={() => handleViewMember(member)}
                                 title="Details anzeigen"
                               >
-                                {member.firstName} {member.lastName}
+                                {member.lastName}, {member.firstName}
                               </div>
                               {member.membershipNumber && (
                                 <div className="text-xs text-muted-foreground font-medium">

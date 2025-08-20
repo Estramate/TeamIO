@@ -313,7 +313,7 @@ export default function Users() {
   // Filter members based on search and filters
   const filteredMembers = (members as any[] || []).filter((member: any) => {
     const matchesSearch = searchQuery === '' || 
-      `${member.firstName} ${member.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      `${member.lastName}, ${member.firstName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || 
@@ -526,7 +526,7 @@ export default function Users() {
                         </div>
                         <div>
                           <h3 className="font-semibold text-base">
-                            {member.firstName} {member.lastName}
+                            {member.lastName}, {member.firstName}
                           </h3>
                         </div>
                       </div>
@@ -564,7 +564,7 @@ export default function Users() {
                           <DropdownMenuItem 
                             className="text-red-600"
                             onClick={() => {
-                              if (confirm(`${member.firstName} ${member.lastName} wirklich aus dem Verein entfernen?`)) {
+                              if (confirm(`${member.lastName}, ${member.firstName} wirklich aus dem Verein entfernen?`)) {
                                 removeMemberMutation.mutate(member.membershipId);
                               }
                             }}
@@ -640,7 +640,7 @@ export default function Users() {
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           {getRoleIcon(member.roleDisplayName || member.roleName)}
-                          {member.firstName} {member.lastName}
+                          {member.lastName}, {member.firstName}
                         </div>
                       </TableCell>
                       <TableCell>{member.email}</TableCell>
@@ -728,7 +728,7 @@ export default function Users() {
                             variant="outline"
                             className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={() => {
-                              if (confirm(`${member.firstName} ${member.lastName} wirklich aus dem Verein entfernen?`)) {
+                              if (confirm(`${member.lastName}, ${member.firstName} wirklich aus dem Verein entfernen?`)) {
                                 removeMemberMutation.mutate(member.membershipId);
                               }
                             }}
@@ -759,7 +759,7 @@ export default function Users() {
           <DialogHeader>
             <DialogTitle>Rolle bearbeiten</DialogTitle>
             <DialogDescription>
-              Ändern Sie die Rolle von {selectedUser?.firstName} {selectedUser?.lastName}
+              Ändern Sie die Rolle von {selectedUser?.lastName}, {selectedUser?.firstName}
             </DialogDescription>
           </DialogHeader>
           
@@ -831,7 +831,7 @@ export default function Users() {
           <DialogHeader>
             <DialogTitle>Account zuweisen</DialogTitle>
             <DialogDescription>
-              Weisen Sie den Account von {assignmentMember?.firstName} {assignmentMember?.lastName} einem Mitglied oder Spieler zu.
+              Weisen Sie den Account von {assignmentMember?.lastName}, {assignmentMember?.firstName} einem Mitglied oder Spieler zu.
             </DialogDescription>
           </DialogHeader>
           
@@ -876,7 +876,7 @@ export default function Users() {
                         disabled={assignUserToMemberMutation.isPending}
                         data-testid={`button-assign-member-${member.id}`}
                       >
-                        👤 {member.firstName} {member.lastName}
+                        👤 {member.lastName}, {member.firstName}
                       </Button>
                     ))
                   ) : (
@@ -903,7 +903,7 @@ export default function Users() {
                         disabled={assignUserToPlayerMutation.isPending}
                         data-testid={`button-assign-player-${player.id}`}
                       >
-                        ⚽ {player.firstName} {player.lastName}
+                        ⚽ {player.lastName}, {player.firstName}
                         {player.teamName && <span className="text-muted-foreground ml-2">({player.teamName})</span>}
                       </Button>
                     ))

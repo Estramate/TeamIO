@@ -623,7 +623,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <div>
                     <p className="font-medium">
                       {(currentUser as any)?.firstName && (currentUser as any)?.lastName ? 
-                        `${(currentUser as any).firstName} ${(currentUser as any).lastName}` : 
+                        `${(currentUser as any).lastName}, ${(currentUser as any).firstName}` : 
                         (currentUser as any)?.email || 'Benutzer'}
                     </p>
                     <p className="text-xs text-muted-foreground">

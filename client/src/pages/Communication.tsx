@@ -217,7 +217,7 @@ export default function Communication() {
     const filteredMessages = displayMessages.filter(msg => 
       (msg.subject?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       msg.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (msg.sender?.firstName + ' ' + msg.sender?.lastName).toLowerCase().includes(searchTerm.toLowerCase())
+      (msg.sender?.lastName + ', ' + msg.sender?.firstName).toLowerCase().includes(searchTerm.toLowerCase())
     );
     
     toast({
@@ -380,7 +380,7 @@ export default function Communication() {
                       <div className="space-y-1">
                         <CardTitle className="text-lg">{message.subject || "Kein Betreff"}</CardTitle>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span>Von: {message.sender?.firstName} {message.sender?.lastName}</span>
+                          <span>Von: {message.sender?.lastName}, {message.sender?.firstName}</span>
                           <span>•</span>
                           <span>{formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: de })}</span>
                         </div>
@@ -930,7 +930,7 @@ export default function Communication() {
                               htmlFor={`member_${member.id}`}
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              {member.firstName} {member.lastName}
+                              {member.lastName}, {member.firstName}
                               {member.email && (
                                 <span className="text-xs text-gray-500 ml-2">
                                   ({member.email})
@@ -957,7 +957,7 @@ export default function Communication() {
                               htmlFor={`player_${player.id}`}
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              {player.firstName} {player.lastName}
+                              {player.lastName}, {player.firstName}
                               {player.email && (
                                 <span className="text-xs text-gray-500 ml-2">
                                   ({player.email})
@@ -1195,7 +1195,7 @@ export default function Communication() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="font-medium text-sm">
-                          {reply.sender?.firstName} {reply.sender?.lastName}
+                          {reply.sender?.lastName}, {reply.sender?.firstName}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true, locale: de })}

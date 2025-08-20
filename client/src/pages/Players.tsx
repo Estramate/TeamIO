@@ -572,7 +572,7 @@ export default function Players() {
                               {player.profileImageUrl ? (
                                 <img
                                   src={player.profileImageUrl}
-                                  alt={`${player.firstName} ${player.lastName}`}
+                                  alt={`${player.lastName}, ${player.firstName}`}
                                   className="w-12 h-12 rounded-full object-cover border-2 border-muted/20"
                                   onError={(e) => {
                                     const img = e.target as HTMLImageElement;
@@ -596,9 +596,9 @@ export default function Players() {
                               <h3 
                                 className="text-lg font-semibold text-foreground truncate cursor-pointer hover:underline"
                                 onClick={() => handleViewPlayer(player)}
-                                title={`${player.firstName} ${player.lastName}`}
+                                title={`${player.lastName}, ${player.firstName}`}
                               >
-                                {player.firstName} {player.lastName}
+                                {player.lastName}, {player.firstName}
                               </h3>
                               <div className="flex items-center gap-2">
                                 {player.position && (
@@ -800,7 +800,7 @@ export default function Players() {
                               {player.profileImageUrl ? (
                                 <img
                                   src={player.profileImageUrl}
-                                  alt={`${player.firstName} ${player.lastName}`}
+                                  alt={`${player.lastName}, ${player.firstName}`}
                                   className="w-12 h-12 rounded-full object-cover border-2 border-primary/20 shadow-sm"
                                   onError={(e) => {
                                     const img = e.target as HTMLImageElement;
@@ -823,7 +823,7 @@ export default function Players() {
                                 className="font-semibold text-base cursor-pointer hover:text-primary hover:underline transition-colors"
                                 onClick={() => handleViewPlayer(player)}
                               >
-                                {player.firstName} {player.lastName}
+                                {player.lastName}, {player.firstName}
                               </div>
                               <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
                                 {player.nationality && `${player.nationality}`}

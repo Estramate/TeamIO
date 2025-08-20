@@ -95,7 +95,7 @@ export function VirtualizedMemberList({
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-medium truncate">
-              {member.firstName} {member.lastName}
+              {member.lastName}, {member.firstName}
             </div>
             <div className="text-sm text-muted-foreground truncate">
               {member.email || 'Keine E-Mail'}

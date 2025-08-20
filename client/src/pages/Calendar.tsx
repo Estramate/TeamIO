@@ -335,7 +335,7 @@ export default function Calendar() {
         const birthDate = new Date(person.birthDate);
         if (getMonth(birthDate) === getMonth(date) && getDate(birthDate) === getDate(date)) {
           birthdays.push({
-            name: `${person.firstName} ${person.lastName}`,
+            name: `${person.lastName}, ${person.firstName}`,
             type: 'birthday',
             isPlayer: !!(person as any).position
           });

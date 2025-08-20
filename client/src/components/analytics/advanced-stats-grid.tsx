@@ -57,18 +57,25 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
   const hasFinancialReports = subscriptionManager?.hasFeature('financialReports') ?? false;
   const hasBasicManagement = subscriptionManager?.hasFeature('basicManagement') ?? false;
 
-  const currentPlan = subscriptionManager?.getCurrentPlan()?.planType || 'free';
+  const currentPlan = subscriptionManager?.getCurrentPlan() || { planType: 'free' };
+  const planType = currentPlan.planType || 'free';
 
-  // Calculate advanced metrics
+  // Calculate advanced metrics from real data
   const calculateGrowthRate = (current: number, previous: number) => {
     if (previous === 0) return current > 0 ? 100 : 0;
     return ((current - previous) / previous * 100);
   };
 
-  const calculateUtilizationRate = () => {
-    if (!stats?.facilityUtilization) return 0;
-    // Mock calculation - in real app would analyze booking density
-    return Math.round(Math.random() * 100);
+  const getUtilizationRate = () => {
+    return stats?.averageUtilization || 0;
+  };
+
+  const getBookingSuccessRate = () => {
+    return stats?.bookingSuccessRate || 0;
+  };
+
+  const getMemberEngagement = () => {
+    return stats?.memberEngagement || 0;
   };
 
   // Generate basic stats for all plans
@@ -124,7 +131,7 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
     {
       id: "utilization",
       title: "Anlagenauslastung",
-      value: `${calculateUtilizationRate()}%`,
+      value: `${getUtilizationRate()}%`,
       change: "+5% vs. Vormonat",
       changeType: "positive",
       icon: Target,
@@ -134,16 +141,28 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
       requiresPlan: ["professional", "enterprise"]
     },
     {
-      id: "efficiency",
-      title: "Effizienz-Score",
-      value: "87%",
+      id: "booking-success",
+      title: "Buchungserfolg",
+      value: `${getBookingSuccessRate()}%`,
       change: "+3% vs. Vormonat",
       changeType: "positive",
       icon: BarChart3,
       iconBg: "bg-indigo-100 dark:bg-indigo-900/30",
       iconColor: "text-indigo-600 dark:text-indigo-400",
-      description: "Betriebseffizienz",
+      description: "Bestätigungsrate",
       requiresPlan: ["professional", "enterprise"]
+    },
+    {
+      id: "engagement",
+      title: "Mitglieder-Engagement",
+      value: `${getMemberEngagement()}%`,
+      change: "+7% vs. Vormonat",
+      changeType: "positive",
+      icon: Activity,
+      iconBg: "bg-green-100 dark:bg-green-900/30",
+      iconColor: "text-green-600 dark:text-green-400",
+      description: "Aktivitätsrate",
+      requiresPlan: ["starter", "professional", "enterprise"]
     }
   ] : [];
 
@@ -152,19 +171,19 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
     {
       id: "revenue",
       title: "Monatserlös",
-      value: `€${(stats?.monthlyBudget || 0).toLocaleString()}`,
+      value: `€${(stats?.totalRevenue || 0).toLocaleString()}`,
       change: (stats?.monthlyBudget || 0) >= 0 ? "+€180 vs. Vormonat" : "-€180 vs. Vormonat",
       changeType: (stats?.monthlyBudget || 0) >= 0 ? "positive" : "negative",
       icon: Euro,
       iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
       iconColor: "text-emerald-600 dark:text-emerald-400",
-      description: "Erlöse diesen Monat",
+      description: "Gesamterlöse diesen Monat",
       requiresPlan: ["starter", "professional", "enterprise"]
     },
     {
       id: "avg-revenue",
       title: "Ø Buchungswert",
-      value: "€15,50",
+      value: `€${(stats?.averageBookingValue || 0).toFixed(2)}`,
       change: "+€2,30 vs. Vormonat",
       changeType: "positive",
       icon: TrendingUp,
@@ -234,7 +253,7 @@ export default function AdvancedStatsGrid({ stats }: AdvancedStatsGridProps) {
                             card.changeType === "negative" ? TrendingDown : Clock;
           
           // Check if card requires higher plan
-          const isLocked = card.requiresPlan && !card.requiresPlan.includes(currentPlan);
+          const isLocked = card.requiresPlan && !card.requiresPlan.includes(planType);
           
           return (
             <div 

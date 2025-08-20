@@ -44,7 +44,8 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
   // Feature checks
   const hasAdvancedReports = subscriptionManager?.hasFeature('advancedReports') ?? false;
   const hasFinancialReports = subscriptionManager?.hasFeature('financialReports') ?? false;
-  const currentPlan = subscriptionManager?.getCurrentPlan()?.planType || 'free';
+  const currentPlan = subscriptionManager?.getCurrentPlan() || { planType: 'free' };
+  const planType = currentPlan.planType || 'free';
 
   // Chart configurations with subscription requirements
   const chartConfigs: ChartConfig[] = [
@@ -57,7 +58,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       iconColor: "text-blue-600 dark:text-blue-400",
       requiresPlan: ["free", "starter", "professional", "enterprise"], // Available for all
       chartType: "bar",
-      mockData: [
+      mockData: data?.bookingTrends || [
         { week: "KW 1", bookings: 45, revenue: 675 },
         { week: "KW 2", bookings: 52, revenue: 780 },
         { week: "KW 3", bookings: 48, revenue: 720 },
@@ -75,7 +76,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       iconColor: "text-green-600 dark:text-green-400",
       requiresPlan: ["professional", "enterprise"],
       chartType: "pie",
-      mockData: [
+      mockData: data?.facilityUsage || [
         { facility: "Hauptplatz", utilization: 85, hours: 42 },
         { facility: "Trainingsplatz 1", utilization: 72, hours: 36 },
         { facility: "Trainingsplatz 2", utilization: 68, hours: 34 },
@@ -91,7 +92,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       iconColor: "text-purple-600 dark:text-purple-400",
       requiresPlan: ["starter", "professional", "enterprise"],
       chartType: "line",
-      mockData: [
+      mockData: data?.membershipGrowth || [
         { month: "Okt", members: 180, new: 8, leaving: 3 },
         { month: "Nov", members: 185, new: 12, leaving: 7 },
         { month: "Dez", members: 190, new: 15, leaving: 10 },
@@ -109,7 +110,7 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
       iconColor: "text-emerald-600 dark:text-emerald-400",
       requiresPlan: ["professional", "enterprise"],
       chartType: "area",
-      mockData: [
+      mockData: data?.financialData || [
         { month: "Jan", income: 2800, expenses: 2200, profit: 600 },
         { month: "Feb", income: 3200, expenses: 2400, profit: 800 },
         { month: "Mär", income: 3600, expenses: 2600, profit: 1000 },
@@ -122,11 +123,11 @@ export default function ChartsSection({ data }: ChartsSectionProps) {
 
   // Filter charts based on subscription
   const availableCharts = chartConfigs.filter(chart => 
-    chart.requiresPlan.includes(currentPlan)
+    chart.requiresPlan.includes(planType)
   );
   
   const lockedCharts = chartConfigs.filter(chart => 
-    !chart.requiresPlan.includes(currentPlan)
+    !chart.requiresPlan.includes(planType)
   );
 
   const selectedChartConfig = chartConfigs.find(c => c.id === selectedChart);

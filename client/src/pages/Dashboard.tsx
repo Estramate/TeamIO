@@ -64,7 +64,8 @@ export default function Dashboard() {
   // Get subscription features
   const hasAdvancedReports = subscriptionManager?.hasFeature('advancedReports') ?? false;
   const hasFinancialReports = subscriptionManager?.hasFeature('financialReports') ?? false;
-  const currentPlan = subscriptionManager?.getCurrentPlan()?.planType || 'free';
+  const currentPlan = subscriptionManager?.getCurrentPlan() || { planType: 'free' };
+  const planType = currentPlan.planType || 'free';
 
   // Prepare analytics data
   const analyticsData = {
@@ -183,7 +184,7 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="kpis" className="space-y-6" data-testid="kpis-content">
-            <KPIDashboard data={analyticsData} />
+            <KPIDashboard data={{ currentMetrics: analyticsData.stats, historicalData: [], benchmarks: {} }} />
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-6" data-testid="performance-content">

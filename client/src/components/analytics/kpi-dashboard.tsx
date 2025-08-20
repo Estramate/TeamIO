@@ -55,7 +55,8 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
   // Feature availability
   const hasAdvancedReports = subscriptionManager?.hasFeature('advancedReports') ?? false;
   const hasFinancialReports = subscriptionManager?.hasFeature('financialReports') ?? false;
-  const currentPlan = subscriptionManager?.getCurrentPlan()?.planType || 'free';
+  const currentPlan = subscriptionManager?.getCurrentPlan() || { planType: 'free' };
+  const planType = currentPlan.planType || 'free';
 
   // Mock KPI data - in real app would come from API
   const allKPIs: KPICard[] = [
@@ -153,19 +154,19 @@ export default function KPIDashboard({ data }: KPIDashboardProps) {
   // Filter KPIs based on subscription and category
   const availableKPIs = useMemo(() => {
     return allKPIs.filter(kpi => {
-      const hasAccess = !kpi.requiresPlan || kpi.requiresPlan.includes(currentPlan);
+      const hasAccess = !kpi.requiresPlan || kpi.requiresPlan.includes(planType);
       const matchesCategory = selectedCategory === "all" || kpi.category === selectedCategory;
       return hasAccess && matchesCategory;
     });
-  }, [currentPlan, selectedCategory]);
+  }, [planType, selectedCategory]);
 
   const lockedKPIs = useMemo(() => {
     return allKPIs.filter(kpi => {
-      const hasAccess = !kpi.requiresPlan || kpi.requiresPlan.includes(currentPlan);
+      const hasAccess = !kpi.requiresPlan || kpi.requiresPlan.includes(planType);
       const matchesCategory = selectedCategory === "all" || kpi.category === selectedCategory;
       return !hasAccess && matchesCategory;
     });
-  }, [currentPlan, selectedCategory]);
+  }, [planType, selectedCategory]);
 
   // Category definitions
   const categories = [

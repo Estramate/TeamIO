@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import Sidebar from "./sidebar";
 import Header from "./header";
-// ENTFERNT - LiveChatWidget komplett aus System entfernt
+import { FloatingHelpAssistant, useFloatingHelp } from "@/components/ui/floating-help";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,6 +10,18 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [location] = useLocation();
+  const helpSystem = useFloatingHelp();
+  
+  // Determine current page for contextual help
+  const getCurrentPage = () => {
+    if (location.includes('/members')) return 'members';
+    if (location.includes('/teams')) return 'teams';
+    if (location.includes('/finance')) return 'finance';
+    if (location.includes('/bookings')) return 'bookings';
+    if (location.includes('/settings')) return 'settings';
+    return 'dashboard';
+  };
 
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -21,7 +34,12 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </div>
       
-      {/* LIVE CHAT WIDGET ENTFERNT - Vollständige System-Bereinigung */}
+      {/* Floating Help Assistant */}
+      <FloatingHelpAssistant
+        isOpen={helpSystem.isOpen}
+        onToggle={helpSystem.toggle}
+        currentPage={getCurrentPage()}
+      />
     </div>
   );
 }

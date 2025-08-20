@@ -18,6 +18,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { invalidateEntityData } from "@/lib/cache-invalidation";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import MemberModal from "@/components/member-modal";
+import { ContextualHelp, HelpIcon } from "@/components/ui/contextual-help";
+import { FloatingHelpAssistant, useFloatingHelp } from "@/components/ui/floating-help";
 
 export default function Members() {
   const { toast } = useToast();
@@ -26,6 +28,7 @@ export default function Members() {
   const { notifyNewMember, invalidateRelevantCache } = useNotificationTriggers();
   const { setPage } = usePage();
   const queryClient = useQueryClient();
+  const helpSystem = useFloatingHelp();
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
@@ -246,28 +249,54 @@ export default function Members() {
     <div className="flex-1 overflow-y-auto bg-background p-6">
       {/* Header Section with Search, Filters and Add Button */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <h1 className="text-2xl font-bold text-foreground">Mitgliederverwaltung</h1>
+            <HelpIcon 
+              content="Verwalten Sie alle Vereinsmitglieder zentral. Fügen Sie neue Mitglieder hinzu, bearbeiten Sie Profile und verfolgen Sie Mitgliedsstatus in Echtzeit."
+              type="info"
+            />
+          </div>
+          <Badge variant="outline" className="px-3 py-1">
+            {filteredMembers.length} {filteredMembers.length === 1 ? 'Mitglied' : 'Mitglieder'}
+          </Badge>
+        </div>
+        
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Mitglieder suchen..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 rounded-xl border bg-background"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-40 h-10 rounded-xl border bg-background">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Status</SelectItem>
-                <SelectItem value="active">Aktiv</SelectItem>
-                <SelectItem value="inactive">Inaktiv</SelectItem>
-                <SelectItem value="suspended">Gesperrt</SelectItem>
-              </SelectContent>
-            </Select>
+            <ContextualHelp
+              content="Durchsuchen Sie Mitglieder nach Namen, E-Mail oder anderen Informationen. Die Suche erfolgt in Echtzeit."
+              type="tip"
+              title="Mitgliedersuche"
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Mitglieder suchen..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-10 rounded-xl border bg-background"
+                />
+              </div>
+            </ContextualHelp>
+            
+            <ContextualHelp
+              content="Filtern Sie Mitglieder nach Status: Aktiv = zahlendes Mitglied, Inaktiv = pausiert, Gesperrt = temporär deaktiviert"
+              type="tip"
+              title="Status-Filter"
+            >
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-40 h-10 rounded-xl border bg-background">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle Status</SelectItem>
+                  <SelectItem value="active">Aktiv</SelectItem>
+                  <SelectItem value="inactive">Inaktiv</SelectItem>
+                  <SelectItem value="suspended">Gesperrt</SelectItem>
+                </SelectContent>
+              </Select>
+            </ContextualHelp>
           </div>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -292,13 +321,19 @@ export default function Members() {
             </div>
 
             {/* Add Button */}
-            <Button 
-              onClick={handleAddMember}
-              className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+            <ContextualHelp
+              content="Fügen Sie neue Mitglieder zum Verein hinzu. Alle Pflichtfelder werden automatisch validiert und das System prüft auf Duplikate."
+              type="feature"
+              title="Neues Mitglied"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Mitglied hinzufügen
-            </Button>
+              <Button 
+                onClick={handleAddMember}
+                className="w-full sm:w-auto sm:ml-auto h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Mitglied hinzufügen
+              </Button>
+            </ContextualHelp>
           </div>
         </div>
       </div>

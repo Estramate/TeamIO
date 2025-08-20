@@ -15,6 +15,8 @@ import ChartsSection from "@/components/analytics/charts-section";
 import KPIDashboard from "@/components/analytics/kpi-dashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, TrendingUp, Target, Activity } from "lucide-react";
+import { ContextualHelp, HelpIcon } from "@/components/ui/contextual-help";
+import { getHelpContent } from "@/lib/help-content";
 
 
 export default function Dashboard() {
@@ -91,38 +93,75 @@ export default function Dashboard() {
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6" data-testid="dashboard-tabs">
-            <TabsTrigger value="overview" className="flex items-center space-x-2" data-testid="tab-overview">
-              <BarChart3 className="w-4 h-4" />
-              <span>Übersicht</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="analytics" 
-              className="flex items-center space-x-2" 
-              disabled={!hasAdvancedReports}
-              data-testid="tab-analytics"
+            <ContextualHelp
+              content="Übersicht über die wichtigsten Vereinsstatistiken und Aktivitäten. Alle Daten werden in Echtzeit aus der Datenbank geladen."
+              type="info"
             >
-              <TrendingUp className="w-4 h-4" />
-              <span>Analytics {!hasAdvancedReports && "🔒"}</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="kpis" 
-              className="flex items-center space-x-2"
-              data-testid="tab-kpis"
+              <TabsTrigger value="overview" className="flex items-center space-x-2" data-testid="tab-overview">
+                <BarChart3 className="w-4 h-4" />
+                <span>Übersicht</span>
+              </TabsTrigger>
+            </ContextualHelp>
+            
+            <ContextualHelp
+              content={hasAdvancedReports ? 
+                "Erweiterte Analysen und Trends für professionelle Vereinsführung mit detaillierten Insights." :
+                "Erweiterte Analytics sind im Professional+ Plan verfügbar. Upgrade für detaillierte Analysen und Trends."
+              }
+              type={hasAdvancedReports ? "feature" : "warning"}
             >
-              <Target className="w-4 h-4" />
-              <span>KPIs</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="performance" 
-              className="flex items-center space-x-2"
-              data-testid="tab-performance"
+              <TabsTrigger 
+                value="analytics" 
+                className="flex items-center space-x-2" 
+                disabled={!hasAdvancedReports}
+                data-testid="tab-analytics"
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Analytics {!hasAdvancedReports && "🔒"}</span>
+              </TabsTrigger>
+            </ContextualHelp>
+            
+            <ContextualHelp
+              content="Key Performance Indikatoren helfen Ihnen, die Leistung Ihres Vereins zu messen. Grün bedeutet über dem Ziel, Orange unter dem Ziel."
+              type="tip"
+              title="KPI Dashboard"
             >
-              <Activity className="w-4 h-4" />
-              <span>Leistung</span>
-            </TabsTrigger>
+              <TabsTrigger 
+                value="kpis" 
+                className="flex items-center space-x-2"
+                data-testid="tab-kpis"
+              >
+                <Target className="w-4 h-4" />
+                <span>KPIs</span>
+              </TabsTrigger>
+            </ContextualHelp>
+            
+            <ContextualHelp
+              content="Detaillierte Leistungsanalysen mit Benchmarks und Vergleichsdaten für optimierte Vereinsführung."
+              type="info"
+              title="Leistungsanalyse"
+            >
+              <TabsTrigger 
+                value="performance" 
+                className="flex items-center space-x-2"
+                data-testid="tab-performance"
+              >
+                <Activity className="w-4 h-4" />
+                <span>Leistung</span>
+              </TabsTrigger>
+            </ContextualHelp>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6" data-testid="overview-content">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-xl font-semibold">Vereinsstatistiken</h2>
+                <HelpIcon 
+                  content="Diese Übersicht zeigt die wichtigsten Kennzahlen Ihres Vereins in Echtzeit. Alle Daten werden direkt aus der Datenbank berechnet und automatisch aktualisiert."
+                  type="info"
+                />
+              </div>
+            </div>
             <AdvancedStatsGrid stats={analyticsData.stats} />
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">

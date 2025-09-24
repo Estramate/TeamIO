@@ -132,7 +132,10 @@ export default function SubscriptionPage() {
         title: "Plan aktualisiert",
         description: "Ihr Subscription-Plan wurde erfolgreich geändert.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/subscriptions/club'] });
+      // Invalidate all subscription-related queries for the current club
+      queryClient.invalidateQueries({ queryKey: ['/api/subscriptions/club', selectedClub?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/subscriptions/usage', selectedClub?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clubs', selectedClub?.id, 'users'] });
     },
     onError: (error: any) => {
       toast({

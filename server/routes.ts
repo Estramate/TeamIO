@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import storage from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { requiresFeature } from "./middleware/featureGate";
 import { requiresClubMembership } from "./middleware/auth";
 // ClubFlow authentication system - Replit integration only
 import { logger, ValidationError, NotFoundError, DatabaseError, AuthorizationError } from "./logger";
@@ -1340,7 +1341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Facility routes
-  app.get('/api/clubs/:clubId/facilities', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/facilities', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const facilities = await storage.getFacilities(clubId);
@@ -1350,7 +1351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/facilities', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/facilities', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const facilityData = insertFacilitySchema.parse({ ...req.body, clubId });
@@ -1361,7 +1362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/facilities/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/facilities/:id', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -1374,7 +1375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/facilities/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/facilities/:id', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const clubId = parseInt(req.params.clubId);
@@ -1387,7 +1388,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Booking routes
-  app.get('/api/clubs/:clubId/bookings', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/bookings', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const bookings = await storage.getBookings(clubId);
@@ -1397,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/bookings', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/bookings', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const bookingData = bookingFormSchema.parse({ ...req.body, clubId });
@@ -1503,7 +1504,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/bookings/:id', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const booking = await storage.getBooking(id);
@@ -1516,7 +1517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/bookings/:id', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = { ...req.body };
@@ -1571,7 +1572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/bookings/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/bookings/:id', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteBooking(id);
@@ -1582,7 +1583,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check booking availability route
-  app.post('/api/clubs/:clubId/bookings/check-availability', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/bookings/check-availability', isAuthenticated, requiresFeature('facilityBooking'), async (req: any, res) => {
     try {
       const { facilityId, startTime, endTime, excludeBookingId } = req.body;
       
@@ -1746,7 +1747,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Finance routes
-  app.get('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/finances', isAuthenticated, requiresFeature('financialReports'), async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const finances = await storage.getFinances(clubId);
@@ -1756,7 +1757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/clubs/:clubId/finances/:id', isAuthenticated, requiresFeature('financialReports'), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const finance = await storage.getFinance(id);
@@ -1769,7 +1770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/clubs/:clubId/finances', isAuthenticated, async (req: any, res) => {
+  app.post('/api/clubs/:clubId/finances', isAuthenticated, requiresFeature('financialReports'), async (req: any, res) => {
     try {
       const clubId = parseInt(req.params.clubId);
       const financeData = insertFinanceSchema.parse({ ...req.body, clubId });
@@ -1780,7 +1781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/clubs/:clubId/finances/:id', isAuthenticated, requiresFeature('financialReports'), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -1793,7 +1794,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/clubs/:clubId/finances/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/clubs/:clubId/finances/:id', isAuthenticated, requiresFeature('financialReports'), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteFinance(id);

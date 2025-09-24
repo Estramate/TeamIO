@@ -22,12 +22,12 @@ export function LoginPage() {
   useEffect(() => {
     // Redirect if already authenticated
     if (isAuthenticated && !isLoading) {
-      setLocation('/');
+      setLocation('/dashboard');
     }
   }, [isAuthenticated, isLoading, setLocation]);
 
   const handleLoginSuccess = () => {
-    setLocation('/');
+    setLocation('/dashboard');
   };
 
   if (isLoading) {

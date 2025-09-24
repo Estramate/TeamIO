@@ -2,6 +2,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import type { Express } from 'express';
 import { logger, AuthorizationError } from './logger';
+import { csrfProtection } from './middleware/csrf';
 
 // Security configuration for Replit-only auth
 export const setupSecurity = (app: Express) => {
@@ -120,5 +121,8 @@ export const setupSecurity = (app: Express) => {
     next();
   });
 
+  // CSRF protection for authenticated state-changing requests
+  app.use(csrfProtection);
+  
   logger.info('Security middleware configured successfully');
 };

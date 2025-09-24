@@ -93,9 +93,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (Replit OpenID Connect) - MUST BE FIRST for session setup
   await setupAuth(app);
 
-
-  
-  // CSRF protection not required for current authentication system
+  // CSRF token endpoint for authenticated users
+  const { provideCsrfToken } = await import('./middleware/csrf');
+  app.get('/api/csrf-token', isAuthenticatedEnhanced, provideCsrfToken);
 
   // Error reporting endpoints
   app.post('/api/errors', handleErrorReports);

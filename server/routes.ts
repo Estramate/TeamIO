@@ -619,7 +619,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const membershipData = {
       userId,
       clubId,
-      role: 'member', // Default role, admin can change later
+      roleId: 1, // Member role ID, admin can change later
       status: 'inactive', // Requires admin approval
     };
 

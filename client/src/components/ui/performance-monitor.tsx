@@ -29,7 +29,21 @@ export const usePerformanceMonitor = (componentName: string) => {
     if (process.env.NODE_ENV === 'development' && 'memory' in performance) {
       const memoryInfo = (performance as any).memory;
       if (memoryInfo.usedJSHeapSize > 50 * 1024 * 1024) { // 50MB threshold
-
+        console.warn(`High memory usage in ${componentName}:`, {
+          usedJSHeapSize: `${Math.round(memoryInfo.usedJSHeapSize / 1024 / 1024)}MB`,
+          totalJSHeapSize: `${Math.round(memoryInfo.totalJSHeapSize / 1024 / 1024)}MB`,
+          jsHeapSizeLimit: `${Math.round(memoryInfo.jsHeapSizeLimit / 1024 / 1024)}MB`
+        });
+        
+        errorHandler.reportPerformance('high-memory-usage', memoryInfo.usedJSHeapSize, {
+          component: componentName,
+          renderCount: renderCount.current,
+          memoryInfo: {
+            used: memoryInfo.usedJSHeapSize,
+            total: memoryInfo.totalJSHeapSize,
+            limit: memoryInfo.jsHeapSizeLimit
+          }
+        });
       }
     }
   });
@@ -50,18 +64,22 @@ export const usePerformanceMonitor = (componentName: string) => {
   return { measureInteraction };
 };
 
-// Web Vitals monitoring
+// Web Vitals monitoring with proper buffered entries and CLS aggregation
 export const WebVitalsMonitor = () => {
   useEffect(() => {
-    // Core Web Vitals monitoring
-    const observer = new PerformanceObserver((list) => {
+    let clsValue = 0;
+    
+    // First Contentful Paint Observer with buffered entries
+    const fcpObserver = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        const metric = entry.name;
-        const value = entry.startTime || (entry as any).value;
-
-        // Log important metrics
-        if (['first-contentful-paint', 'largest-contentful-paint'].includes(metric)) {
-          errorHandler.reportPerformance(metric, value, {
+        if (entry.name === 'first-contentful-paint') {
+          console.log(`Performance metric - first-contentful-paint:`, {
+            value: `${Math.round(entry.startTime)}ms`,
+            entryType: entry.entryType,
+            url: window.location.pathname
+          });
+          
+          errorHandler.reportPerformance('first-contentful-paint', entry.startTime, {
             entryType: entry.entryType,
             url: window.location.pathname
           });
@@ -69,15 +87,58 @@ export const WebVitalsMonitor = () => {
       });
     });
 
-    // Observe paint and layout metrics
-    try {
-      observer.observe({ entryTypes: ['paint', 'largest-contentful-paint', 'layout-shift'] });
-    } catch (error) {
-      // Browser might not support all entry types
+    // Largest Contentful Paint Observer with buffered entries
+    const lcpObserver = new PerformanceObserver((list) => {
+      list.getEntries().forEach((entry) => {
+        if (entry.entryType === 'largest-contentful-paint') {
+          console.log(`Performance metric - largest-contentful-paint:`, {
+            value: `${Math.round(entry.startTime)}ms`,
+            entryType: entry.entryType,
+            url: window.location.pathname
+          });
+          
+          errorHandler.reportPerformance('largest-contentful-paint', entry.startTime, {
+            entryType: entry.entryType,
+            url: window.location.pathname
+          });
+        }
+      });
+    });
 
+    // Cumulative Layout Shift Observer with proper aggregation
+    const clsObserver = new PerformanceObserver((list) => {
+      list.getEntries().forEach((entry) => {
+        if (entry.entryType === 'layout-shift' && !(entry as any).hadRecentInput) {
+          clsValue += (entry as any).value;
+          
+          console.log(`Performance metric - cumulative-layout-shift:`, {
+            value: clsValue.toFixed(4),
+            entryType: entry.entryType,
+            url: window.location.pathname
+          });
+          
+          errorHandler.reportPerformance('cumulative-layout-shift', clsValue, {
+            entryType: entry.entryType,
+            url: window.location.pathname
+          });
+        }
+      });
+    });
+
+    try {
+      // FIX: Use buffered:true to capture events that occurred before observer mounted
+      fcpObserver.observe({ type: 'paint', buffered: true });
+      lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+      clsObserver.observe({ type: 'layout-shift', buffered: true });
+    } catch (error) {
+      console.warn('Enhanced Performance observation not supported:', error);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      fcpObserver.disconnect();
+      lcpObserver.disconnect();
+      clsObserver.disconnect();
+    };
   }, []);
 
   return null;

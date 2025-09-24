@@ -14,7 +14,7 @@ import {
   memberFees,
   trainingFees,
   messages,
-  // notifications entfernt - Live Chat System komplett entfernt
+  messageRecipients,
   announcements,
   roles,
   userPlayerAssignments,
@@ -50,18 +50,10 @@ import {
   type InsertMessage,
   type MessageRecipient,
   type InsertMessageRecipient,
-
-  type Notification,
-  type InsertNotification,
+  type Announcement,
+  type InsertAnnouncement,
   type Role,
   type InsertRole,
-  userNotificationPreferences,
-  type UserNotificationPreferences,
-  type InsertUserNotificationPreferences,
-
-  type MessageWithRecipients,
-  type AnnouncementWithAuthor,
-  type CommunicationStats,
   activityLogs,
   emailInvitations,
   type ActivityLog,
@@ -75,9 +67,41 @@ import {
   type SubscriptionPlan,
 
 } from "@shared/schema";
-import { announcements, messageRecipients, type Announcement, type InsertAnnouncement } from "@shared/schemas/communication";
 import { db } from "./db";
 import { and, eq, desc, isNull, gte, lte, sql, or, ilike, asc, inArray, ne } from 'drizzle-orm';
+
+// Custom types for enhanced data structures
+export type MessageWithRecipients = Message & {
+  recipients: MessageRecipient[];
+  senderName?: string;
+  recipientCount?: number;
+};
+
+export type AnnouncementWithAuthor = Announcement & {
+  authorName?: string;
+  authorEmail?: string;
+};
+
+export type CommunicationStats = {
+  totalMessages: number;
+  totalAnnouncements: number;
+  unreadMessages: number;
+  activeConversations: number;
+};
+
+export type CommunicationPreferences = {
+  id: number;
+  userId: string;
+  clubId: number;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  smsNotifications: boolean;
+  weeklyDigest: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type InsertCommunicationPreferences = Omit<CommunicationPreferences, 'id' | 'createdAt' | 'updatedAt'>;
 
 export interface IStorage {
   // Role operations
@@ -252,13 +276,7 @@ export interface IStorage {
   publishAnnouncement(id: number): Promise<Announcement>;
   pinAnnouncement(id: number, isPinned: boolean): Promise<Announcement>;
 
-  // Notification operations
-  getNotifications(userId: string, clubId: number): Promise<Notification[]>;
-  getUnreadNotificationsCount(userId: string, clubId: number): Promise<number>;
-  createNotification(notification: InsertNotification): Promise<Notification>;
-  markNotificationAsRead(id: number): Promise<void>;
-  markAllNotificationsAsRead(userId: string, clubId: number): Promise<void>;
-  deleteNotification(id: number): Promise<void>;
+  // Note: Notification system has been removed - Live Chat System completely removed
 
   // Communication preferences operations
   getCommunicationPreferences(userId: string, clubId: number): Promise<CommunicationPreferences | undefined>;
@@ -594,9 +612,9 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(clubs).orderBy(asc(clubs.name));
   }
 
+  // Alias for getClubs - used for landing page/onboarding  
   async getAllClubs(): Promise<Club[]> {
-    // Public method to get all clubs for landing page/onboarding
-    return await db.select().from(clubs).orderBy(asc(clubs.name));
+    return this.getClubs();
   }
 
   async getClub(id: number): Promise<Club | undefined> {
@@ -631,13 +649,9 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(clubMemberships.joinedAt));
   }
 
-  // Get ALL memberships (active + inactive) - for onboarding logic
+  // Alias for getUserClubs - used for onboarding logic
   async getUserMemberships(userId: string): Promise<ClubMembership[]> {
-    return await db
-      .select()
-      .from(clubMemberships)
-      .where(eq(clubMemberships.userId, userId))
-      .orderBy(desc(clubMemberships.joinedAt));
+    return this.getUserClubs(userId);
   }
 
   async getClubMembers(clubId: number): Promise<ClubMembership[]> {
@@ -2497,73 +2511,7 @@ export class DatabaseStorage implements IStorage {
     return announcement;
   }
 
-  // Notification operations
-  async getNotifications(userId: string, clubId: number): Promise<any[]> {
-    try {
-      // Return empty array for now - notifications not properly implemented
-      return [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  async getNotifications_old(userId: string, clubId: number): Promise<any[]> {
-    return await db
-      .select()
-      .from(notifications)
-      .where(and(
-        eq(notifications.userId, userId),
-        eq(notifications.clubId, clubId)
-      ))
-      .orderBy(desc(notifications.createdAt));
-  }
-
-  async getUnreadNotificationsCount(userId: string, clubId: number): Promise<number> {
-    const [result] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(notifications)
-      .where(and(
-        eq(notifications.userId, userId),
-        eq(notifications.clubId, clubId),
-        eq(notifications.status, 'unread')
-      ));
-    return result?.count || 0;
-  }
-
-  async createNotification(notificationData: InsertNotification): Promise<Notification> {
-    const [notification] = await db.insert(notifications).values(notificationData).returning();
-    return notification;
-  }
-
-  async markNotificationAsRead(id: number): Promise<void> {
-    await db
-      .update(notifications)
-      .set({ 
-        status: 'read',
-        readAt: new Date(),
-        updatedAt: new Date()
-      })
-      .where(eq(notifications.id, id));
-  }
-
-  async markAllNotificationsAsRead(userId: string, clubId: number): Promise<void> {
-    await db
-      .update(notifications)
-      .set({ 
-        status: 'read',
-        readAt: new Date(),
-        updatedAt: new Date()
-      })
-      .where(and(
-        eq(notifications.userId, userId),
-        eq(notifications.clubId, clubId),
-        eq(notifications.status, 'unread')
-      ));
-  }
-
-  async deleteNotification(id: number): Promise<void> {
-    await db.delete(notifications).where(eq(notifications.id, id));
-  }
+  // Note: Notification operations removed - Live Chat System completely removed
 
   // Communication preferences operations
 

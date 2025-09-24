@@ -111,6 +111,10 @@ export const useKeyboardNavigation = (
     if (!containerRef.current) return;
 
     const enabledItems = getEnabledItems();
+    
+    // Guard against empty enabled items to prevent runtime crashes
+    if (enabledItems.length === 0) return;
+    
     const currentIndex = activeIndexRef.current;
 
     switch (e.key) {

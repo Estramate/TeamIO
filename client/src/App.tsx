@@ -81,6 +81,12 @@ function AuthenticatedApp() {
         <Layout>
         <Switch>
           <Route path="/" component={() => <LazyComponentWrapper component={Dashboard} />} />
+          <Route path="/dashboard" component={() => {
+            // Redirect legacy /dashboard route to root
+            const [, setLocation] = useLocation();
+            setLocation('/');
+            return null;
+          }} />
           <Route path="/members" component={() => <LazyComponentWrapper component={Members} />} />
           <Route path="/players" component={() => <LazyComponentWrapper component={Players} />} />
           <Route path="/teams" component={() => <LazyComponentWrapper component={Teams} />} />

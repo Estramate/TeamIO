@@ -86,8 +86,14 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  // Get domains from REPLIT_DOMAINS and also add published domain explicitly
+  const replitDomains = process.env.REPLIT_DOMAINS?.split(",") || [];
+  const publishedDomain = "clubflow.replit.app";
+  
+  // Combine dev domains with published domain (avoid duplicates)
+  const allDomains = [...new Set([...replitDomains, publishedDomain])];
+  
+  for (const domain of allDomains) {
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
